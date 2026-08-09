@@ -1,0 +1,29 @@
+{
+  "artifact_id": "HV2-MPV-BLIND-AUDIT-001",
+  "auditor_input": {
+    "accepted_contract_sha256": "ff8981affe108aad57156f52739b71558dd51f951ccf8609a63adf9cc1a54354",
+    "implementation_source": "not-provided",
+    "project_cli": "not-provided",
+    "runtime_transcript": "not-provided",
+    "target_head": "c110f3594572ea90922bdac19360ae658a46d8ad"
+  },
+  "auditor_procedure_sha256": "e1dd8bfa675f2441014b968e8522e6d1c072908811ae6225088ecad2c428bf87",
+  "authority_home_id": "7d854f54-6538-4cd4-8961-2e2f50ef9653",
+  "classification": "pass",
+  "current_revision_id": "revision-0004",
+  "git_commit_count": 5,
+  "git_status": "clean",
+  "git_tree": "844ed60e0ea1af02e87f8d93e816414b88188405",
+  "lifecycle": "detached",
+  "payload_sha256": "ff8981affe108aad57156f52739b71558dd51f951ccf8609a63adf9cc1a54354",
+  "plain_continuation": "plain",
+  "record_count": 50,
+  "staging_observation": "absent-in-fresh-clone-not-used-as-binding-or-cleanup-proof",
+  "tool_inventory": [
+    "CPython-stdlib-isolated",
+    "git",
+    "sha256-hashlib"
+  ],
+  "verdict": "pass",
+  "zero_pack_provider": true
+}

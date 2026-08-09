@@ -1,0 +1,121 @@
+{
+  "artifact_id": "HV2-MPV-PRODUCTION-RECEIPT-003",
+  "authority": 1,
+  "authority_home_id": "7d854f54-6538-4cd4-8961-2e2f50ef9653",
+  "carrier": {
+    "carrier_sha256": "9789321ee695609cb179c4bbf16dab7e9afb2b1c7de12ae9fb6d322c53045b7c",
+    "inventory_id": "inventory-0002",
+    "inventory_sha256": "5ff4b9e99c54563373bad8168d0a9647cd63ab29b2a7b063f71f98fbf96af6c5",
+    "release_id": "release-0002"
+  },
+  "claim_boundary": {
+    "hardware_power_loss": "not-claimed",
+    "public_default_adopter": "not-claimed",
+    "runtime_support": "not-claimed",
+    "td_acc_three_arm_population": "not-claimed"
+  },
+  "correction_lineage": [
+    {
+      "authority": 0,
+      "run_id": "run-0001",
+      "status": "superseded-preliminary"
+    },
+    {
+      "authority": 0,
+      "run_id": "run-0002",
+      "status": "r1-invalidated-preliminary"
+    },
+    {
+      "changes": [
+        "payload-first carrier verification ordering",
+        "semantic result-acceptance-revision binding",
+        "pointer tip and fork integrity",
+        "payload and self-contained release binding",
+        "persisted interruption resume and binding receipts",
+        "bounded identifiers JSON staging and CLI failure semantics",
+        "presealed blind expected and live staging audit inputs"
+      ],
+      "owner_decision": "R1:A1+B1+C1"
+    },
+    {
+      "changes": [
+        "exact canonical tree coverage in implementation and blind auditor",
+        "executable unavailable scope and durability classification fixtures",
+        "bounded replay and attempt observation semantics",
+        "honest manual ledger precondition and receipt hygiene"
+      ],
+      "owner_decision": "R2:A1+B1+C1"
+    },
+    {
+      "authority": 1,
+      "closure_gate": "complete:Owner Option A",
+      "owner_decision": "R2:Option A",
+      "run_id": "run-0003",
+      "status": "accepted-bounded-private-minimum-production-vertical"
+    }
+  ],
+  "durability": {
+    "cleanup_directory_fsync": "pass",
+    "directory_fsync": "pass",
+    "fsync": "pass",
+    "fullfsync": "pass",
+    "platform": "darwin",
+    "scope": "same-filesystem-process-ordering"
+  },
+  "evidence": {
+    "blind_audit_receipt_sha256": "6873ac8a4c3ba0b41a234a396f2224068b8d9e6c7ea206fb700319c248bc0464",
+    "expected_sha256": "073c043b3b48777d8fcb261fc8e3c0372b892f829fb66f84d1b6cd9c8ce3c744",
+    "manual_operation_receipt_sha256": "c57382fac51eed3a37ce1ccc2b446c63441d636514706eb967d62f34c0fc364c",
+    "run_seal_sha256": "0179121861b4d3d891c9f64727f92f7947eab6d1c21f564d83e06273e6e0b7e8",
+    "staging_audit_sha256": "141d51cfaa18cfb6cf566ee4fe6a77dc350977b7beefdd69a66989f1ecdbf4a4",
+    "verification_sha256": "f1c7aae24add8cc6bd44b44d96506c7d2282d80fbd80a21495ab97bc36cf0122"
+  },
+  "implementation": {
+    "git_branch": "main",
+    "git_commit_count": 0,
+    "git_head": "unborn",
+    "git_identity_recovered": true,
+    "remote_count": 0,
+    "repository_id": "HV2-REPO-IMPL-001",
+    "source_inventory_entry_count": 14,
+    "source_inventory_sha256": "10430e1d8e137caba7da3f2b4ada2c41ed36972c56fbe8ab69585547d459dd4c"
+  },
+  "manual_operation": {
+    "agent_provider_adapter": "not-used",
+    "classification": "pass",
+    "interruption_exit_code": 75,
+    "literal_command_count": 29,
+    "provider_transcript_as_evidence": "not-used"
+  },
+  "payload": {
+    "logical_id": "HV2-PAYLOAD-001",
+    "path": "docs/GENERATION-1-CONTRACT.md",
+    "sha256": "86224066abe04e28a49a2d33f32d9b343ca8ad0552d2d540f39a43270b331717",
+    "size_bytes": 4066,
+    "source_revision_sha256": "10430e1d8e137caba7da3f2b4ada2c41ed36972c56fbe8ab69585547d459dd4c"
+  },
+  "run_id": "run-0003",
+  "target": {
+    "binding_receipt_count": 4,
+    "current_revision_id": "revision-0004",
+    "git_commit_count": 5,
+    "git_head": "d6d354a45786b451ee7c61859baff154213a8681",
+    "git_status": "clean",
+    "git_trailer_check": "5/5",
+    "git_tree": "27f9883aec817575bf29aecd1c994131f415564a",
+    "ignored_staging": true,
+    "interruption_record_count": 1,
+    "lifecycle": "detached",
+    "record_count": 57,
+    "repository_id": "HV2-REPO-TARGET-run-0003",
+    "resume_record_count": 1,
+    "staging_inventory_check": "4/4 sealed",
+    "zero_pack_provider": true
+  },
+  "tests": {
+    "baseline_and_contract": "47/47",
+    "full_vertical": "1/1",
+    "stdlib_unittest_total": "48/48"
+  },
+  "verdict": "pass-accepted-bounded-private-minimum-production-vertical"
+}

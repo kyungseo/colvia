@@ -1,0 +1,41 @@
+{
+  "accepted_contract_sha256": "86224066abe04e28a49a2d33f32d9b343ca8ad0552d2d540f39a43270b331717",
+  "audit_artifact_id": "HV2-MPV-BLIND-AUDIT-003",
+  "authority_home_id": "7d854f54-6538-4cd4-8961-2e2f50ef9653",
+  "continuation": "plain",
+  "current_revision_id": "revision-0004",
+  "git_commit_count": 5,
+  "item_id": "item-0001",
+  "lifecycle": "detached",
+  "operations": [
+    "create",
+    "detach",
+    "rollback",
+    "update"
+  ],
+  "payload_path": "docs/GENERATION-1-CONTRACT.md",
+  "payload_sha256": "86224066abe04e28a49a2d33f32d9b343ca8ad0552d2d540f39a43270b331717",
+  "record_type_counts": {
+    "acceptance": 4,
+    "attempt-intent": 4,
+    "attempt-result": 4,
+    "binding-receipt": 4,
+    "facet-assertion": 28,
+    "generation-assertion": 1,
+    "interruption": 1,
+    "pointer-assertion": 4,
+    "release-binding": 1,
+    "resume": 1,
+    "revision": 4,
+    "tombstone": 1
+  },
+  "revision_ids": [
+    "revision-0001",
+    "revision-0002",
+    "revision-0003",
+    "revision-0004"
+  ],
+  "staging_audit_sha256": "141d51cfaa18cfb6cf566ee4fe6a77dc350977b7beefdd69a66989f1ecdbf4a4",
+  "target_head": "d6d354a45786b451ee7c61859baff154213a8681",
+  "target_tree": "27f9883aec817575bf29aecd1c994131f415564a"
+}

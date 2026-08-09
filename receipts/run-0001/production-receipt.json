@@ -1,0 +1,94 @@
+{
+  "artifact_id": "HV2-MPV-PRODUCTION-RECEIPT-001",
+  "authority_home_id": "7d854f54-6538-4cd4-8961-2e2f50ef9653",
+  "carrier": {
+    "carrier_sha256": "5dc8e932a45c463b533c0f34306d85a2b1e21640d2a2ebc3f8ee964df5ddd39c",
+    "inventory_id": "inventory-0001",
+    "inventory_sha256": "1e03710dc213719591a1625cc91db28ca7f72d081e7cfbe45d960c7e4a568feb",
+    "release_id": "release-0001"
+  },
+  "claim_boundary": {
+    "hardware_power_loss": "not-claimed",
+    "public_default_adopter": "not-claimed",
+    "runtime_support": "not-claimed",
+    "td_acc_three_arm_population": "not-claimed"
+  },
+  "correction_lineage": [
+    {
+      "classification": "input-rejected-before-mutation",
+      "exit_code": 2,
+      "input": "--inject-at after-pointer-assertion",
+      "reason": "contract enum uses after_pointer_assertion"
+    },
+    {
+      "classification": "injected-crash",
+      "exit_code": 75,
+      "input": "--inject-at after_pointer_assertion",
+      "prior_current_revision": "revision-0001",
+      "resume_result": "revision-0002"
+    }
+  ],
+  "durability": {
+    "cleanup_directory_fsync": "pass",
+    "directory_fsync": "pass",
+    "fsync": "pass",
+    "fullfsync": "pass",
+    "platform": "darwin",
+    "scope": "same-filesystem-process-ordering"
+  },
+  "implementation": {
+    "git_branch": "main",
+    "git_commit_count": 0,
+    "git_head": "unborn",
+    "remote_count": 0,
+    "repository_id": "HV2-REPO-IMPL-001",
+    "source_inventory_entry_count": 16,
+    "source_revision_kind": "sealed-relative-path-sha256-inventory",
+    "source_revision_sha256": "80e72ebbac57ef937711d585f015b59a5836c918795be7b30b397d1277dd923a"
+  },
+  "manual_operation": {
+    "agent_provider_adapter": "not-used",
+    "classification": "pass",
+    "operator": "Codex-driver-operating-core-cli",
+    "provider_transcript_as_evidence": "not-used",
+    "tool_inventory": [
+      "CPython-3.14.6-stdlib",
+      "hv2ref-core-cli",
+      "git-local"
+    ]
+  },
+  "payload": {
+    "logical_id": "HV2-PAYLOAD-001",
+    "path": "docs/GENERATION-1-CONTRACT.md",
+    "sha256": "ff8981affe108aad57156f52739b71558dd51f951ccf8609a63adf9cc1a54354",
+    "size_bytes": 3165,
+    "source_revision_sha256": "80e72ebbac57ef937711d585f015b59a5836c918795be7b30b397d1277dd923a"
+  },
+  "run_id": "run-0001",
+  "target": {
+    "binding_completion_before_git_finalization_observed": true,
+    "current_revision_id": "revision-0004",
+    "git_commit_count": 5,
+    "git_head": "c110f3594572ea90922bdac19360ae658a46d8ad",
+    "git_status": "clean",
+    "git_trailer_check": "5/5",
+    "git_tree": "844ed60e0ea1af02e87f8d93e816414b88188405",
+    "ignored_staging": true,
+    "lifecycle": "detached",
+    "record_count": 50,
+    "repository_id": "HV2-REPO-TARGET-run-0001",
+    "staging_inventory_sha256": {
+      "attempt-create-0001": "a1e81dd87c2751560d050a7fb90ba22bb4334afcf3c652bce32326e22cd117ae",
+      "attempt-detach-0004": "acbeeb3ed285884be4a6e19071d1adc8f06e954a18847cf971485395afff1f47",
+      "attempt-rollback-0003": "2cfa658983debbc18860f222f202f5e80e573f90bdb7720b3f47e49d45fb3179",
+      "attempt-update-0002": "45f2bad1db80e531eb215b7456a4ccca645c0655cb15a06c78463dfe1bd48b9d"
+    },
+    "zero_pack_provider": true
+  },
+  "tests": {
+    "baseline_red_and_contract": "18/18",
+    "full_vertical": "1/1",
+    "stdlib_unittest_total": "19/19"
+  },
+  "verdict": "pass"
+}

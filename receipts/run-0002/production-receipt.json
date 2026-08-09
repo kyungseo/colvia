@@ -1,0 +1,103 @@
+{
+  "artifact_id": "HV2-MPV-PRODUCTION-RECEIPT-002",
+  "authority_home_id": "7d854f54-6538-4cd4-8961-2e2f50ef9653",
+  "carrier": {
+    "carrier_sha256": "5dc8e932a45c463b533c0f34306d85a2b1e21640d2a2ebc3f8ee964df5ddd39c",
+    "inventory_id": "inventory-0001",
+    "inventory_sha256": "1e03710dc213719591a1625cc91db28ca7f72d081e7cfbe45d960c7e4a568feb",
+    "release_id": "release-0001"
+  },
+  "claim_boundary": {
+    "hardware_power_loss": "not-claimed",
+    "public_default_adopter": "not-claimed",
+    "runtime_support": "not-claimed",
+    "td_acc_three_arm_population": "not-claimed"
+  },
+  "correction_lineage": [
+    {
+      "authority": 0,
+      "result": "pass",
+      "run_id": "run-0001",
+      "status": "superseded-preliminary"
+    },
+    {
+      "changes": [
+        "reject nonfinite JSON and boolean numeric confusion",
+        "enforce carrier root and symlink/type coverage",
+        "key same-home references by object kind plus local id",
+        "verify all pending refs before resume selector switch",
+        "add five adversarial baseline-red tests"
+      ],
+      "trigger": "Driver pre-R1 self-review"
+    },
+    {
+      "authority": 1,
+      "result": "pass",
+      "run_id": "run-0002",
+      "status": "current"
+    }
+  ],
+  "durability": {
+    "cleanup_directory_fsync": "pass",
+    "directory_fsync": "pass",
+    "fsync": "pass",
+    "fullfsync": "pass",
+    "platform": "darwin",
+    "scope": "same-filesystem-process-ordering"
+  },
+  "implementation": {
+    "git_branch": "main",
+    "git_commit_count": 0,
+    "git_head": "unborn",
+    "remote_count": 0,
+    "repository_id": "HV2-REPO-IMPL-001",
+    "source_inventory_entry_count": 16,
+    "source_revision_kind": "sealed-relative-path-sha256-inventory",
+    "source_revision_sha256": "c43c3df8504f2a5eef35f390acbd902c44ad71f574256e0dfcf5f4fdf7ce3bc9"
+  },
+  "manual_operation": {
+    "agent_provider_adapter": "not-used",
+    "classification": "pass",
+    "operator": "Codex-driver-operating-core-cli",
+    "provider_transcript_as_evidence": "not-used",
+    "tool_inventory": [
+      "CPython-3.14.6-stdlib",
+      "hv2ref-core-cli",
+      "git-local"
+    ]
+  },
+  "payload": {
+    "logical_id": "HV2-PAYLOAD-001",
+    "path": "docs/GENERATION-1-CONTRACT.md",
+    "sha256": "ff8981affe108aad57156f52739b71558dd51f951ccf8609a63adf9cc1a54354",
+    "size_bytes": 3165,
+    "source_revision_sha256": "c43c3df8504f2a5eef35f390acbd902c44ad71f574256e0dfcf5f4fdf7ce3bc9"
+  },
+  "run_id": "run-0002",
+  "target": {
+    "binding_completion_before_git_finalization_observed": true,
+    "current_revision_id": "revision-0004",
+    "git_commit_count": 5,
+    "git_head": "4a57590b201e9b8d8a19da8489c930f09ebb76e3",
+    "git_status": "clean",
+    "git_trailer_check": "5/5",
+    "git_tree": "e637f503cd9dcaacc905b8ceab5b8a12755716aa",
+    "ignored_staging": true,
+    "lifecycle": "detached",
+    "record_count": 50,
+    "repository_id": "HV2-REPO-TARGET-run-0002",
+    "staging_inventory_sha256": {
+      "attempt-create-0001": "3b601fc677f9bf48c46a8223b162c8854642dc9220514fc7fd5002405695796f",
+      "attempt-detach-0004": "4862018ba694207c9dee6e855af51745d7a81de826ed0a3f8fc2ee88c6f32ba6",
+      "attempt-rollback-0003": "a9cbfc0a37fe58d77dbd95d93e5387f11ef0df6ff38297151adc5f3879b0613a",
+      "attempt-update-0002": "9d9beda302cce27b44b489ee5d4416ae3803cc8079bd54c1036dbb9a27d74156"
+    },
+    "zero_pack_provider": true
+  },
+  "tests": {
+    "baseline_red_and_contract": "23/23",
+    "full_vertical": "1/1",
+    "stdlib_unittest_total": "24/24"
+  },
+  "verdict": "pass"
+}

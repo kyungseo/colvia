@@ -1,0 +1,49 @@
+{
+  "artifact_id": "HV2-MPV-VERIFICATION-003",
+  "auditor": {
+    "optimized_mode_exit": 1,
+    "optimized_mode_result": "HV2-AUDIT-OPTIMIZED-MODE-FORBIDDEN",
+    "procedure_sha256": "fa3b2865a00d349e456d347c50b4b29a66f29733f229678a2b58dd409d05fdee",
+    "result": "pass",
+    "tree_coverage_negative": "pass:HV2-AUDIT-TREE-COVERAGE"
+  },
+  "durability": {
+    "cleanup_directory_fsync": "pass",
+    "directory_fsync": "pass",
+    "fsync": "pass",
+    "fullfsync": "pass",
+    "platform": "darwin",
+    "power_loss_claim": "not-claimed",
+    "scope": "same-filesystem-process-ordering"
+  },
+  "implementation_repository": {
+    "branch": "main",
+    "commit_count": 0,
+    "git_identity_recovered": true,
+    "head": "unborn",
+    "remote_count": 0,
+    "source_inventory_entry_count": 14,
+    "source_inventory_sha256": "10430e1d8e137caba7da3f2b4ada2c41ed36972c56fbe8ab69585547d459dd4c"
+  },
+  "python": {
+    "implementation": "CPython",
+    "version": "3.14.6"
+  },
+  "run_id": "run-0003",
+  "target": {
+    "classification": "pass",
+    "current_revision_id": "revision-0004",
+    "git_commit_count": 5,
+    "git_head": "d6d354a45786b451ee7c61859baff154213a8681",
+    "git_status": "clean",
+    "git_tree": "27f9883aec817575bf29aecd1c994131f415564a",
+    "lifecycle": "detached",
+    "record_count": 57,
+    "staging_damaged_count": 0
+  },
+  "tests": {
+    "baseline_and_contract": "47/47",
+    "full_vertical": "1/1",
+    "stdlib_unittest_total": "48/48"
+  }
+}
