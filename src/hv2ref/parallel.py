@@ -9,6 +9,7 @@ from typing import Any
 from .errors import ContractError, InjectedCrash
 from .jsonio import (
     canonical_json_bytes,
+    decode_json_bytes,
     load_json,
     replace_json,
     sha256_bytes,
@@ -236,6 +237,87 @@ class ParallelStateStore:
 
     def _epoch_root(self, epoch_id: str) -> Path:
         return self.generation_root / "integration-epochs" / epoch_id
+
+    def _arbitration_path(self, prior_selector_sha256: str) -> Path:
+        if not isinstance(prior_selector_sha256, str) or SHA256_PATTERN.fullmatch(prior_selector_sha256) is None:
+            raise ContractError("HV2-ARBITRATION-SELECTOR", repr(prior_selector_sha256))
+        return self.generation_root / "finalize-arbitrations" / f"{prior_selector_sha256}.json"
+
+    def _successor_path(self, predecessor_authority_sha256: str) -> Path:
+        if not isinstance(predecessor_authority_sha256, str) or SHA256_PATTERN.fullmatch(predecessor_authority_sha256) is None:
+            raise ContractError("HV2-SUCCESSOR-PREDECESSOR", repr(predecessor_authority_sha256))
+        return self.generation_root / "finalize-successors" / f"{predecessor_authority_sha256}.json"
+
+    def _authority_path_from_ref(self, ref: Any) -> Path:
+        if not isinstance(ref, dict) or set(ref) != {"id", "sha256"} or not isinstance(ref.get("id"), str):
+            raise ContractError("HV2-ARBITRATION-REF", repr(ref))
+        record_id = ref["id"]
+        if record_id.startswith("finalize-arbitration-"):
+            path = self._arbitration_path(record_id.removeprefix("finalize-arbitration-"))
+        elif record_id.startswith("finalization-successor-"):
+            path = self._successor_path(record_id.removeprefix("finalization-successor-"))
+        else:
+            raise ContractError("HV2-ARBITRATION-REF", record_id)
+        _verify_ref(ref, path, record_id)
+        return path
+
+    def _resolve_arbitration_leaf(self, prior_selector_sha256: str) -> tuple[Path, dict[str, Any], dict[str, str]]:
+        path = self._arbitration_path(prior_selector_sha256)
+        if path.is_symlink() or not path.is_file():
+            raise ContractError("HV2-ARBITRATION-MISSING", str(path))
+        seen: set[Path] = set()
+        while True:
+            if path in seen:
+                raise ContractError("HV2-SUCCESSOR-CYCLE", str(path))
+            seen.add(path)
+            value = load_json(path, require_canonical=True)
+            ref = _path_ref(path)
+            if path == self._arbitration_path(prior_selector_sha256) and (
+                value.get("record_id") != f"finalize-arbitration-{prior_selector_sha256}"
+                or value.get("record_type") != "finalization-arbitration"
+                or value.get("schema_generation") != 2
+                or value.get("prior_selector_sha256") != prior_selector_sha256
+            ):
+                raise ContractError("HV2-ARBITRATION-RECORD", str(path))
+            successor_path = self._successor_path(ref["sha256"])
+            if not successor_path.exists() and not successor_path.is_symlink():
+                return path, value, ref
+            if successor_path.is_symlink() or not successor_path.is_file():
+                raise ContractError("HV2-SUCCESSOR-PATH", str(successor_path))
+            successor = load_json(successor_path, require_canonical=True)
+            if (
+                successor.get("record_id") != f"finalization-successor-{ref['sha256']}"
+                or successor.get("record_type") != "finalization-successor"
+                or successor.get("schema_generation") != 2
+                or successor.get("predecessor_arbitration_ref") != ref
+                or successor.get("predecessor_epoch_id") != value.get("epoch_id")
+                or successor.get("prior_selector_sha256") != prior_selector_sha256
+            ):
+                raise ContractError("HV2-SUCCESSOR-RECORD", str(successor_path))
+            path = successor_path
+
+    @staticmethod
+    def _authority_matches(
+        value: dict[str, Any],
+        *,
+        epoch_id: str,
+        finalizer: str,
+        intent_ref: dict[str, str],
+        prior_selector_sha256: str,
+        base_commit: str,
+        result_commit: str,
+        result_tree: str,
+    ) -> bool:
+        return (
+            value.get("record_type") in {"finalization-arbitration", "finalization-successor"}
+            and value.get("epoch_id") == epoch_id
+            and value.get("finalizer") == finalizer
+            and value.get("intent_ref") == intent_ref
+            and value.get("prior_selector_sha256") == prior_selector_sha256
+            and value.get("base_commit") == base_commit
+            and value.get("result_commit") == result_commit
+            and value.get("result_tree") == result_tree
+        )
 
     def _load_repository(self) -> dict[str, Any]:
         return load_json(self._repository_path(), require_canonical=True)
@@ -560,10 +642,20 @@ class ParallelStateStore:
         observed_at: str,
         integration_worktree_root: Path,
         claim_worktrees: dict[str, Path],
+        succeeds_epoch_id: str | None = None,
+        successor_reason: str | None = None,
     ) -> dict[str, Any]:
         self._require_gen2()
         _validate_id("EPOCH", epoch_id)
         _validate_id("ACTOR", finalizer)
+        if (succeeds_epoch_id is None) != (successor_reason is None):
+            raise ContractError("HV2-SUCCESSOR-OPTION", f"{succeeds_epoch_id}:{successor_reason}")
+        if succeeds_epoch_id is not None:
+            _validate_id("EPOCH", succeeds_epoch_id)
+            if succeeds_epoch_id == epoch_id:
+                raise ContractError("HV2-SUCCESSOR-EPOCH", epoch_id)
+            if not isinstance(successor_reason, str) or not successor_reason.strip():
+                raise ContractError("HV2-SUCCESSOR-REASON", repr(successor_reason))
         for value, kind in (
             (base_commit, "BASE-COMMIT"),
             (base_tree, "BASE-TREE"),
@@ -577,7 +669,10 @@ class ParallelStateStore:
         repository = self._load_repository()
         if repository.get("declared_finalizer") != finalizer:
             raise ContractError("HV2-FINALIZER-DECLARATION", finalizer)
-        active = self._load_active_integration()
+        current_selector = self._active_integration_path()
+        active_bytes = current_selector.read_bytes()
+        active = decode_json_bytes(active_bytes, require_canonical=True)
+        prior_selector_sha256 = sha256_bytes(active_bytes)
         if active.get("integration_epoch_id") == epoch_id:
             finalization_path = self._epoch_root(epoch_id) / "finalization.json"
             if not finalization_path.is_file():
@@ -591,6 +686,8 @@ class ParallelStateStore:
                 and prior.get("result_tree") == result_tree
                 and prior.get("finalizer") == finalizer
                 and prior_claim_ids == claim_ids
+                and prior.get("successor_of_epoch_id") == succeeds_epoch_id
+                and prior.get("successor_reason") == successor_reason
                 and active.get("current_commit") == result_commit
                 and active.get("current_tree") == result_tree
             ):
@@ -679,7 +776,10 @@ class ParallelStateStore:
             "record_type": "integration-intent",
             "result_commit": result_commit,
             "result_tree": result_tree,
+            "prior_selector_sha256": prior_selector_sha256,
             "schema_generation": 2,
+            "successor_of_epoch_id": succeeds_epoch_id,
+            "successor_reason": successor_reason,
         }
         marker = {
             "base_commit": base_commit,
@@ -688,7 +788,9 @@ class ParallelStateStore:
             "record_id": f"finalize-marker-{epoch_id}",
             "record_type": "finalize-marker",
             "result_commit": result_commit,
+            "prior_selector_sha256": prior_selector_sha256,
             "schema_generation": 2,
+            "successor_of_epoch_id": succeeds_epoch_id,
         }
         try:
             _write_exact_json(epoch_root / "intent.json", intent)
@@ -706,7 +808,111 @@ class ParallelStateStore:
             }
             _write_exact_json(self._conflict_path(conflict_id), conflict)
             return {"classification": "conflict", "epoch_id": epoch_id}
-        active_after_marker = self._load_active_integration()
+        intent_path = epoch_root / "intent.json"
+        arbitration_id = f"finalize-arbitration-{prior_selector_sha256}"
+        arbitration = {
+            "base_commit": base_commit,
+            "epoch_id": epoch_id,
+            "finalizer": finalizer,
+            "intent_ref": _path_ref(intent_path),
+            "predecessor_arbitration_ref": None,
+            "predecessor_epoch_id": None,
+            "prior_selector_sha256": prior_selector_sha256,
+            "reason": None,
+            "record_id": arbitration_id,
+            "record_type": "finalization-arbitration",
+            "result_commit": result_commit,
+            "result_tree": result_tree,
+            "schema_generation": 2,
+        }
+        arbitration_path = self._arbitration_path(prior_selector_sha256)
+        arbitration_error: ContractError | None = None
+        try:
+            original_created = _write_exact_json(arbitration_path, arbitration)
+        except ContractError as exc:
+            original_created = False
+            if not arbitration_path.exists() and not arbitration_path.is_symlink():
+                arbitration_error = exc
+
+        authority_path: Path
+        authority_ref: dict[str, str]
+        authority_created: bool
+        if original_created:
+            if succeeds_epoch_id is not None:
+                arbitration_error = ContractError("HV2-SUCCESSOR-PREDECESSOR", succeeds_epoch_id)
+            else:
+                authority_path = arbitration_path
+                authority_ref = _path_ref(authority_path)
+                authority_created = True
+        elif arbitration_error is None:
+            leaf_path, leaf, leaf_ref = self._resolve_arbitration_leaf(prior_selector_sha256)
+            if self._authority_matches(
+                leaf,
+                epoch_id=epoch_id,
+                finalizer=finalizer,
+                intent_ref=arbitration["intent_ref"],
+                prior_selector_sha256=prior_selector_sha256,
+                base_commit=base_commit,
+                result_commit=result_commit,
+                result_tree=result_tree,
+            ):
+                successor_input_matches = (
+                    succeeds_epoch_id is None
+                    and leaf.get("record_type") == "finalization-arbitration"
+                ) or (
+                    succeeds_epoch_id is not None
+                    and leaf.get("record_type") == "finalization-successor"
+                    and leaf.get("predecessor_epoch_id") == succeeds_epoch_id
+                    and leaf.get("reason") == successor_reason
+                )
+                if successor_input_matches:
+                    authority_path = leaf_path
+                    authority_ref = leaf_ref
+                    authority_created = False
+                else:
+                    arbitration_error = ContractError("HV2-SUCCESSOR-INPUT", epoch_id)
+            elif succeeds_epoch_id is not None and leaf.get("epoch_id") == succeeds_epoch_id:
+                successor = {
+                    "base_commit": base_commit,
+                    "epoch_id": epoch_id,
+                    "finalizer": finalizer,
+                    "intent_ref": arbitration["intent_ref"],
+                    "observed_at": observed_at,
+                    "predecessor_arbitration_ref": leaf_ref,
+                    "predecessor_epoch_id": succeeds_epoch_id,
+                    "prior_selector_sha256": prior_selector_sha256,
+                    "reason": successor_reason,
+                    "record_id": f"finalization-successor-{leaf_ref['sha256']}",
+                    "record_type": "finalization-successor",
+                    "result_commit": result_commit,
+                    "result_tree": result_tree,
+                    "schema_generation": 2,
+                }
+                successor_path = self._successor_path(leaf_ref["sha256"])
+                try:
+                    authority_created = _write_exact_json(successor_path, successor)
+                    authority_path = successor_path
+                    authority_ref = _path_ref(authority_path)
+                except ContractError as exc:
+                    arbitration_error = exc
+            else:
+                arbitration_error = ContractError("HV2-SUCCESSOR-PREDECESSOR", repr(succeeds_epoch_id))
+
+        if arbitration_error is not None:
+            conflict_id = f"finalize-conflict-{epoch_id}-arbitration"
+            conflict = {
+                "candidate_claim_ref": claim_refs[0],
+                "conflicting_claim_refs": claim_refs[1:],
+                "observed_at": observed_at,
+                "reasons": ["selector-arbitration-held", arbitration_error.code],
+                "record_id": conflict_id,
+                "record_type": "finalization-conflict",
+                "schema_generation": 2,
+            }
+            _write_exact_json(self._conflict_path(conflict_id), conflict)
+            return {"classification": "conflict", "epoch_id": epoch_id}
+        active_after_marker_bytes = current_selector.read_bytes()
+        active_after_marker = decode_json_bytes(active_after_marker_bytes, require_canonical=True)
         claims_after_marker = [_path_ref(path) for path, _ in self._claims()]
         integration_after_marker = _git_identity(
             integration_worktree_root,
@@ -724,12 +930,16 @@ class ParallelStateStore:
             ):
                 worktrees_still_valid = False
                 break
+        leaf_after_path, _, leaf_after_ref = self._resolve_arbitration_leaf(prior_selector_sha256)
         revalidation_failed = (
-            active_after_marker != active
+            active_after_marker_bytes != active_bytes
+            or active_after_marker != active
             or claims_after_marker != closed_claim_refs
             or integration_after_marker["commit"] != result_commit
             or integration_after_marker["tree"] != result_tree
             or not worktrees_still_valid
+            or leaf_after_path != authority_path
+            or leaf_after_ref != authority_ref
         )
         if revalidation_failed:
             conflict_id = f"finalize-conflict-{epoch_id}-revalidation"
@@ -745,6 +955,7 @@ class ParallelStateStore:
             _write_exact_json(self._conflict_path(conflict_id), conflict)
             return {"classification": "stale", "epoch_id": epoch_id}
         finalization = {
+            "arbitration_ref": authority_ref,
             "base_commit": base_commit,
             "base_tree": base_tree,
             "claim_refs": claim_refs,
@@ -752,11 +963,14 @@ class ParallelStateStore:
             "git_state": "integrated",
             "observed_at": observed_at,
             "project_mutation_inventory": project_mutation_inventory,
+            "prior_selector_sha256": prior_selector_sha256,
             "record_id": f"finalization-{epoch_id}",
             "record_type": "integration-finalization",
             "result_commit": result_commit,
             "result_tree": result_tree,
             "schema_generation": 2,
+            "successor_of_epoch_id": succeeds_epoch_id,
+            "successor_reason": successor_reason,
         }
         finalization_path = epoch_root / "finalization.json"
         _write_exact_json(finalization_path, finalization)
@@ -767,10 +981,15 @@ class ParallelStateStore:
             "integration_epoch_id": epoch_id,
             "schema_generation": 2,
         }
-        current_selector = self._active_integration_path()
         if current_selector.read_bytes() != canonical_json_bytes(selector):
             replace_json(current_selector, selector)
-        return {"classification": "pass", "epoch_id": epoch_id, "result_commit": result_commit, "result_tree": result_tree}
+        return {
+            "classification": "pass",
+            "epoch_id": epoch_id,
+            "result_commit": result_commit,
+            "result_tree": result_tree,
+            "resumed": not authority_created,
+        }
 
     def verify_repository(self, item_id: str) -> dict[str, Any]:
         if not self._active_generation_path().exists():
@@ -882,6 +1101,75 @@ class ParallelStateStore:
                 if path != self._reassignment_path(value.get("record_id", "")):
                     raise ContractError("HV2-REASSIGNMENT-PATH", str(path))
                 expected_parallel_files.add(path)
+        arbitration_root = self.generation_root / "finalize-arbitrations"
+        if arbitration_root.exists():
+            for path in sorted(arbitration_root.glob("*.json")):
+                selector_sha256 = path.stem
+                value = load_json(path, require_canonical=True)
+                expected_id = f"finalize-arbitration-{selector_sha256}"
+                if (
+                    SHA256_PATTERN.fullmatch(selector_sha256) is None
+                    or value.get("schema_generation") != 2
+                    or value.get("record_type") != "finalization-arbitration"
+                    or value.get("record_id") != expected_id
+                    or value.get("prior_selector_sha256") != selector_sha256
+                ):
+                    raise ContractError("HV2-ARBITRATION-RECORD", str(path))
+                epoch_id = value.get("epoch_id")
+                _validate_id("EPOCH", epoch_id)
+                intent_ref = value.get("intent_ref")
+                intent_path = self._epoch_root(epoch_id) / "intent.json"
+                intent = _verify_ref(intent_ref, intent_path, f"integration-intent-{epoch_id}")
+                if any(
+                    value.get(field) != intent.get(field)
+                    for field in ("base_commit", "finalizer", "prior_selector_sha256", "result_commit", "result_tree")
+                ):
+                    raise ContractError("HV2-ARBITRATION-INTENT", str(path))
+                if path != self._arbitration_path(selector_sha256):
+                    raise ContractError("HV2-ARBITRATION-PATH", str(path))
+                expected_parallel_files.add(path)
+        successor_root = self.generation_root / "finalize-successors"
+        if successor_root.exists():
+            for path in sorted(successor_root.glob("*.json")):
+                predecessor_sha256 = path.stem
+                value = load_json(path, require_canonical=True)
+                predecessor_ref = value.get("predecessor_arbitration_ref")
+                if (
+                    SHA256_PATTERN.fullmatch(predecessor_sha256) is None
+                    or value.get("schema_generation") != 2
+                    or value.get("record_type") != "finalization-successor"
+                    or value.get("record_id") != f"finalization-successor-{predecessor_sha256}"
+                    or not isinstance(predecessor_ref, dict)
+                    or predecessor_ref.get("sha256") != predecessor_sha256
+                    or not isinstance(value.get("reason"), str)
+                    or not value["reason"].strip()
+                ):
+                    raise ContractError("HV2-SUCCESSOR-RECORD", str(path))
+                predecessor_path = self._authority_path_from_ref(predecessor_ref)
+                predecessor = load_json(predecessor_path, require_canonical=True)
+                if (
+                    value.get("predecessor_epoch_id") != predecessor.get("epoch_id")
+                    or value.get("prior_selector_sha256") != predecessor.get("prior_selector_sha256")
+                    or value.get("finalizer") != predecessor.get("finalizer")
+                    or value.get("epoch_id") == predecessor.get("epoch_id")
+                ):
+                    raise ContractError("HV2-SUCCESSOR-LINEAGE", str(path))
+                epoch_id = value.get("epoch_id")
+                _validate_id("EPOCH", epoch_id)
+                intent_path = self._epoch_root(epoch_id) / "intent.json"
+                intent = _verify_ref(value.get("intent_ref"), intent_path, f"integration-intent-{epoch_id}")
+                if (
+                    any(
+                        value.get(field) != intent.get(field)
+                        for field in ("base_commit", "finalizer", "prior_selector_sha256", "result_commit", "result_tree")
+                    )
+                    or intent.get("successor_of_epoch_id") != value.get("predecessor_epoch_id")
+                    or intent.get("successor_reason") != value.get("reason")
+                ):
+                    raise ContractError("HV2-SUCCESSOR-INTENT", str(path))
+                if path != self._successor_path(predecessor_sha256):
+                    raise ContractError("HV2-SUCCESSOR-PATH", str(path))
+                expected_parallel_files.add(path)
         epoch_root = self.generation_root / "integration-epochs"
         if epoch_root.exists():
             for directory in sorted(path for path in epoch_root.iterdir() if path.is_dir()):
@@ -895,6 +1183,27 @@ class ParallelStateStore:
                     expected_parallel_files.add(path)
                 if not (directory / "intent.json").is_file() or not (directory / "finalize-marker.json").is_file():
                     raise ContractError("HV2-EPOCH-RECORD", str(directory))
+                finalization_path = directory / "finalization.json"
+                if finalization_path.is_file():
+                    finalization = load_json(finalization_path, require_canonical=True)
+                    selector_sha256 = finalization.get("prior_selector_sha256")
+                    arbitration_ref = finalization.get("arbitration_ref")
+                    arbitration_path = self._authority_path_from_ref(arbitration_ref)
+                    arbitration = _verify_ref(
+                        arbitration_ref,
+                        arbitration_path,
+                        arbitration_ref.get("id") if isinstance(arbitration_ref, dict) else None,
+                    )
+                    if (
+                        arbitration.get("epoch_id") != directory.name
+                        or arbitration.get("prior_selector_sha256") != selector_sha256
+                        or arbitration.get("result_commit") != finalization.get("result_commit")
+                        or arbitration.get("result_tree") != finalization.get("result_tree")
+                        or arbitration.get("finalizer") != finalization.get("finalizer")
+                        or arbitration.get("predecessor_epoch_id") != finalization.get("successor_of_epoch_id")
+                        or arbitration.get("reason") != finalization.get("successor_reason")
+                    ):
+                        raise ContractError("HV2-ARBITRATION-EPOCH", str(directory))
         active = self._load_active_integration()
         if active.get("schema_generation") != 2:
             raise ContractError("HV2-ACTIVE-INTEGRATION", repr(active))
@@ -905,6 +1214,9 @@ class ParallelStateStore:
             finalization = _verify_ref(finalization_ref, finalization_path, f"finalization-{epoch_id}")
             if finalization.get("result_commit") != active.get("current_commit") or finalization.get("result_tree") != active.get("current_tree"):
                 raise ContractError("HV2-ACTIVE-INTEGRATION", str(finalization_path))
+            leaf_path, _, leaf_ref = self._resolve_arbitration_leaf(finalization.get("prior_selector_sha256"))
+            if finalization.get("arbitration_ref") != leaf_ref or leaf_path != self._authority_path_from_ref(leaf_ref):
+                raise ContractError("HV2-ACTIVE-ARBITRATION", str(finalization_path))
         actual_parallel_files = {path for path in self.parallel_root.rglob("*") if path.is_file() or path.is_symlink()}
         if actual_parallel_files != expected_parallel_files:
             extra = sorted(str(path.relative_to(self.parallel_root)) for path in actual_parallel_files - expected_parallel_files)

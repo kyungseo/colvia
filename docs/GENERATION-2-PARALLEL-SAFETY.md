@@ -30,6 +30,8 @@ last. A partial activation is non-writable and non-finalizable. Existing authori
     claims/<claim-id>.json
     conflicts/<conflict-id>.json
     reassignments/<reassignment-id>.json
+    finalize-arbitrations/<prior-selector-sha256>.json
+    finalize-successors/<predecessor-authority-sha256>.json
     integration-epochs/<epoch-id>/
       intent.json
       finalize-marker.json
@@ -59,10 +61,17 @@ active selectors, staging or Git index/worktree state.
 ## Finalization And Recovery
 
 One declared finalizer owns an integration epoch. `finalize-work` verifies the exact claim set and caller-provided worktrees, acquires
-the epoch marker with `O_EXCL`, then revalidates the current base, scopes, Git ancestry and integrated result commit/tree. It writes
-the finalization record and switches `active-integration.json` last. Git work and integration commits are caller-owned and occur
-outside the harness.
+the epoch marker, then acquires an append-only arbitration record keyed by the SHA-256 of the prior active selector. Different epochs
+that observed the same selector contend on one `O_EXCL` record, so only the exact winner can write a finalization and reach the
+selector switch. The winner revalidates the current base, scopes, Git ancestry and integrated result commit/tree, writes a
+finalization bound to the arbitration record, and switches `active-integration.json` last. Git work and integration commits are
+caller-owned and occur outside the harness.
 
-A different duplicate marker is a visible conflict. The same finalizer may resume only with byte-identical intent/marker input.
-Abandoned work does not expire; an explicit reassignment or successor epoch preserves the predecessor digest and reason. Actor and
-finalizer equality is logical declaration enforcement, not authentication.
+A different duplicate marker or prior-selector arbitration record is a visible conflict. A crash after arbitration does not release,
+expire or implicitly transfer the record. The same epoch may resume only with byte-identical intent, marker and arbitration input.
+If exact resume is unavailable while the prior selector remains unchanged, the declared finalizer may explicitly name the current
+authority-chain leaf and a non-empty reason when creating a successor epoch. The append-only successor record is keyed by the stored
+byte digest of that predecessor authority, binds the successor intent, and becomes the only valid leaf; concurrent branching and a
+late predecessor resume fail closed. Every predecessor arbitration, successor, marker and finalization remains immutable. Replaceable
+selectors use operation-owned exclusive temp files so concurrent byte-identical resumes do not delete a peer temp or leak raw
+filesystem races. Actor and finalizer equality is logical declaration enforcement, not authentication.

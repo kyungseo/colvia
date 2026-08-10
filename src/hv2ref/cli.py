@@ -113,6 +113,8 @@ def parser() -> argparse.ArgumentParser:
     finalize_work.add_argument("--integration-branch", required=True)
     finalize_work.add_argument("--integration-worktree", type=Path, required=True)
     finalize_work.add_argument("--observed-at", required=True)
+    finalize_work.add_argument("--succeeds-epoch-id")
+    finalize_work.add_argument("--successor-reason")
 
     verify_repository = sub.add_parser("verify-repository")
     verify_repository.add_argument("--target", type=Path, required=True)
@@ -192,6 +194,8 @@ def run(args: argparse.Namespace) -> object:
             observed_at=args.observed_at,
         )
     if args.command == "finalize-work":
+        if (args.succeeds_epoch_id is None) != (args.successor_reason is None):
+            raise ContractError("HV2-SUCCESSOR-OPTION", "both successor options are required")
         claim_worktrees: dict[str, Path] = {}
         for binding in args.claim_worktree:
             claim_id, separator, path = binding.partition("=")
@@ -210,6 +214,8 @@ def run(args: argparse.Namespace) -> object:
             observed_at=args.observed_at,
             integration_worktree_root=args.integration_worktree,
             claim_worktrees=claim_worktrees,
+            succeeds_epoch_id=args.succeeds_epoch_id,
+            successor_reason=args.successor_reason,
         )
     if args.command == "verify-repository":
         return ParallelStateStore(args.target).verify_repository(args.item_id)

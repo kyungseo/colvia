@@ -388,6 +388,7 @@ class ParallelSafetyFixture(unittest.TestCase):
         git(self.integration, "merge", "--no-ff", "work/finalize", "-m", "fixture: integrate claimed work")
         result_commit = git(self.integration, "rev-parse", "HEAD")
         result_tree = git(self.integration, "rev-parse", "HEAD^{tree}")
+        prior_selector = (self.integration / ".harness-v2/parallel/active-integration.json").read_bytes()
 
         kwargs = {
             "epoch_id": "epoch-0001",
@@ -404,6 +405,22 @@ class ParallelSafetyFixture(unittest.TestCase):
         }
         finalized = self.parallel.finalize_work(**kwargs)
         self.assertEqual("pass", finalized["classification"])
+        arbitration_paths = list(
+            (
+                self.integration
+                / ".harness-v2/parallel/generations/2/finalize-arbitrations"
+            ).glob("*.json")
+        )
+        self.assertEqual(1, len(arbitration_paths))
+        self.assertEqual(hashlib.sha256(prior_selector).hexdigest(), arbitration_paths[0].stem)
+        arbitration = load_json(arbitration_paths[0], require_canonical=True)
+        self.assertEqual("epoch-0001", arbitration["epoch_id"])
+        finalization = load_json(
+            self.integration
+            / ".harness-v2/parallel/generations/2/integration-epochs/epoch-0001/finalization.json",
+            require_canonical=True,
+        )
+        self.assertEqual(arbitration["record_id"], finalization["arbitration_ref"]["id"])
         resumed = self.parallel.finalize_work(**kwargs)
         self.assertEqual("pass", resumed["classification"])
         self.assertTrue(resumed["resumed"])

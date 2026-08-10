@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -132,7 +133,13 @@ def _ensure_parent(path: Path) -> None:
     if current.is_symlink() or not current.is_dir():
         raise ContractError("HV2-PARENT-TYPE", str(current))
     for directory in reversed(missing):
-        directory.mkdir()
+        try:
+            directory.mkdir()
+        except FileExistsError as exc:
+            if directory.is_symlink() or not directory.is_dir():
+                raise ContractError("HV2-PARENT-TYPE", str(directory)) from exc
+        if directory.is_symlink() or not directory.is_dir():
+            raise ContractError("HV2-PARENT-TYPE", str(directory))
         sync_directory(directory.parent)
         sync_directory(directory)
 
@@ -141,10 +148,13 @@ def write_new_bytes(path: Path, data: bytes) -> dict[str, str]:
     _ensure_parent(path)
     if path.exists() or path.is_symlink():
         raise ContractError("HV2-IMMUTABLE-EXISTS", str(path))
-    with path.open("xb") as handle:
-        handle.write(data)
-        handle.flush()
-        result = _sync_fd(handle.fileno())
+    try:
+        with path.open("xb") as handle:
+            handle.write(data)
+            handle.flush()
+            result = _sync_fd(handle.fileno())
+    except FileExistsError as exc:
+        raise ContractError("HV2-IMMUTABLE-EXISTS", str(path)) from exc
     result["directory_fsync"] = sync_directory(path.parent)
     return result
 
@@ -155,11 +165,10 @@ def write_new_json(path: Path, value: Any) -> dict[str, str]:
 
 def replace_bytes(path: Path, data: bytes) -> dict[str, str]:
     _ensure_parent(path)
-    tmp = path.parent / f".{path.name}.hv2-tmp"
-    if tmp.exists() or tmp.is_symlink():
-        raise ContractError("HV2-TEMP-RESIDUE", str(tmp))
+    fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.hv2-tmp-", dir=path.parent)
+    tmp = Path(tmp_name)
     try:
-        with tmp.open("xb") as handle:
+        with os.fdopen(fd, "wb") as handle:
             handle.write(data)
             handle.flush()
             result = _sync_fd(handle.fileno())
