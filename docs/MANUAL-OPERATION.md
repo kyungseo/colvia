@@ -29,3 +29,20 @@ The bounded sequence is:
 
 The run receipt must contain every literal command, cwd role, exit code, runtime/tool inventory and input digest. A narrative
 summary without those commands is not manual-operation evidence.
+
+## Generation 2 Parallel Safety
+
+Generation 2 does not allocate worktrees or branches. The caller creates them and supplies a logical repository ID, worktree ID,
+branch, exact base commit/tree and repository-relative write scope. The bounded manual sequence is:
+
+1. Verify Generation 1 and activate Generation 2 from a clean integration worktree at the exact Git base.
+2. Register each additional item add-only.
+3. Create claims from caller-provided clean worktrees at the same exact base.
+4. Treat same-item, normalized path/prefix, stale-base and control-metadata collisions as visible conflict evidence.
+5. Perform work and Git commits outside the harness, integrate them through the declared finalizer, then call `finalize-work` with
+   the exact integrated result commit/tree.
+6. Verify the repository. Shared current state changes only after the integration-epoch marker and final revalidation.
+
+The same actor may run the whole sequence as the one-agent fallback. Actor/finalizer strings are declarations inside a trusted
+local OS-account/operator boundary; they are not credentials. A claim or finalize attempt never expires by wall clock. Recovery is
+an exact same-finalizer resume or an explicit reassignment/successor epoch.
