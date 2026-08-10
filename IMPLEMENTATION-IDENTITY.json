@@ -1,7 +1,8 @@
 {
   "created_on": "2026-08-08",
+  "generation_2_parallel_safety": "owner-gated-bounded-local-implementation",
   "public_transition": "owner-gated-no-automatic-promotion",
-  "remote_policy": "none",
+  "remote_policy": "private-canonical-main-owner-gated-mutation",
   "repository_id": "HV2-REPO-IMPL-001",
   "role": "durable-private-implementation"
 }
