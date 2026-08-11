@@ -75,3 +75,8 @@ byte digest of that predecessor authority, binds the successor intent, and becom
 late predecessor resume fail closed. Every predecessor arbitration, successor, marker and finalization remains immutable. Replaceable
 selectors use operation-owned exclusive temp files so concurrent byte-identical resumes do not delete a peer temp or leak raw
 filesystem races. Actor and finalizer equality is logical declaration enforcement, not authentication.
+
+If a successor is incorrectly declared while the unchanged selector has no predecessor arbitration, its new epoch arbitration may be
+recorded before finalization fails closed with `HV2-SUCCESSOR-PREDECESSOR`. That arbitration is not implicitly reusable; the
+in-contract forward path is a later explicit successor naming the rejected epoch. This is not automatic recovery or a general
+liveness guarantee.

@@ -13,6 +13,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+from hv2ref.errors import ContractError
 from hv2ref.jsonio import load_json
 from hv2ref.parallel import ParallelStateStore
 from hv2ref.state import StateStore
@@ -1136,6 +1137,24 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
         )
         self.assertEqual(0, successor[0])
         self.assertEqual("pass", successor[1]["classification"])
+        before_successor_resume = harness_digest(fixture.integration)
+        before_successor_project = project_digest(fixture.integration)
+        before_successor_index = git(fixture.integration, "write-tree")
+        exact_successor_resume = self.run_single(
+            self.scenario,
+            self.worker_spec(
+                action="finalize",
+                participant="explicit-successor-exact-resume",
+                target=fixture.integration,
+                parameters=successor_parameters,
+            ),
+        )
+        self.assertEqual(0, exact_successor_resume[0])
+        self.assertEqual("pass", exact_successor_resume[1]["classification"])
+        self.assertTrue(exact_successor_resume[1]["outcome"]["resumed"])
+        self.assertEqual(before_successor_resume, harness_digest(fixture.integration))
+        self.assertEqual(before_successor_project, project_digest(fixture.integration))
+        self.assertEqual(before_successor_index, git(fixture.integration, "write-tree"))
         late_predecessor = self.run_single(
             self.scenario,
             self.worker_spec(
@@ -1167,6 +1186,7 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
                 "late_predecessor_classification": late_predecessor[1]["classification"],
                 "repository": verified["classification"],
                 "successor_count": len(successors),
+                "successor_exact_resume": exact_successor_resume[1]["outcome"]["resumed"],
                 "successor_finalization_bound": successor_finalization["arbitration_ref"]["id"]
                 == successor_record["record_id"],
                 "successor_is_active": active["integration_epoch_id"] == "epoch-a10-successor",
@@ -1181,6 +1201,58 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
         self.assertEqual("pass", verified["classification"])
         self.assertEqual("epoch-a10-successor", active["integration_epoch_id"])
         self.assertEqual(successor_record["record_id"], successor_finalization["arbitration_ref"]["id"])
+
+    def test_post_acceptance_successor_option_guards(self) -> None:
+        fixture = RepositoryFixture(self.scenario / "repo")
+        selector_path = fixture.integration / ".harness-v2/parallel/active-integration.json"
+        before_harness = harness_digest(fixture.integration)
+        before_project = project_digest(fixture.integration)
+        before_selector = selector_path.read_bytes()
+        before_index = git(fixture.integration, "write-tree")
+        base_parameters = {
+            "epoch_id": "epoch-post-acceptance",
+            "claim_ids": ["claim-not-reached"],
+            "finalizer": FINALIZER,
+            "base_commit": fixture.base_commit,
+            "base_tree": fixture.base_tree,
+            "result_commit": fixture.base_commit,
+            "result_tree": fixture.base_tree,
+            "integration_branch": "main",
+            "observed_at": OBSERVED,
+            "integration_worktree_root": fixture.integration,
+            "claim_worktrees": {},
+        }
+        cases = [
+            ("successor-epoch-only", "HV2-SUCCESSOR-OPTION", "epoch-predecessor", None),
+            ("successor-reason-only", "HV2-SUCCESSOR-OPTION", None, "explicit recovery"),
+            ("same-epoch", "HV2-SUCCESSOR-EPOCH", "epoch-post-acceptance", "explicit recovery"),
+            ("blank-reason", "HV2-SUCCESSOR-REASON", "epoch-predecessor", "   "),
+        ]
+        observed_codes: dict[str, str] = {}
+        for name, expected_code, succeeds_epoch_id, successor_reason in cases:
+            with self.subTest(name=name), self.assertRaises(ContractError) as failure:
+                fixture.store.finalize_work(
+                    **base_parameters,
+                    succeeds_epoch_id=succeeds_epoch_id,
+                    successor_reason=successor_reason,
+                )
+            self.assertEqual(expected_code, failure.exception.code)
+            observed_codes[name] = failure.exception.code
+            self.assertEqual(before_harness, harness_digest(fixture.integration))
+            self.assertEqual(before_project, project_digest(fixture.integration))
+            self.assertEqual(before_selector, selector_path.read_bytes())
+            self.assertEqual(before_index, git(fixture.integration, "write-tree"))
+
+        self.record(
+            "POST-ACCEPTANCE-OBS-1",
+            {
+                "codes": observed_codes,
+                "harness_unchanged": before_harness == harness_digest(fixture.integration),
+                "index_unchanged": before_index == git(fixture.integration, "write-tree"),
+                "project_unchanged": before_project == project_digest(fixture.integration),
+                "selector_unchanged": before_selector == selector_path.read_bytes(),
+            },
+        )
 
     def test_a11_concurrent_same_epoch_exact_resume_uses_owned_temps(self) -> None:
         fixture = RepositoryFixture(self.scenario / "repo")
