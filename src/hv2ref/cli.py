@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .carrier import build_release, verify_release
 from .errors import ContractError, InjectedCrash
+from .intent import IntentStore, classify_entry
 from .jsonio import durability_probe, load_json
 from .parallel import ParallelStateStore
 from .state import StateStore
@@ -120,6 +121,44 @@ def parser() -> argparse.ArgumentParser:
     verify_repository.add_argument("--target", type=Path, required=True)
     verify_repository.add_argument("--item-id", required=True)
 
+    classify_intent = sub.add_parser("classify-intent-entry")
+    classify_intent.add_argument("--consequence", choices=("consequential", "non-consequential"), required=True)
+    classify_intent.add_argument("--input", type=Path)
+
+    init_intent = sub.add_parser("init-intent-home")
+    init_intent.add_argument("--target", type=Path, required=True)
+    init_intent.add_argument("--authority-home-id", required=True)
+    init_intent.add_argument("--observed-at", required=True)
+
+    create_intent = sub.add_parser("create-intent-draft")
+    create_intent.add_argument("--target", type=Path, required=True)
+    create_intent.add_argument("--intent-id", required=True)
+    create_intent.add_argument("--sequence", type=int, required=True)
+    create_intent.add_argument("--observed-at", required=True)
+    create_intent.add_argument("--input", type=Path, required=True)
+    create_intent.add_argument("--inject-at", choices=("after-draft",))
+
+    show_intent = sub.add_parser("show-intent")
+    show_intent.add_argument("--target", type=Path, required=True)
+    show_intent.add_argument("--intent-id", required=True)
+    show_intent.add_argument("--revision-id", required=True)
+
+    accept_intent = sub.add_parser("accept-intent")
+    accept_intent.add_argument("--target", type=Path, required=True)
+    accept_intent.add_argument("--intent-id", required=True)
+    accept_intent.add_argument("--revision-id", required=True)
+    accept_intent.add_argument("--revision-sha256", required=True)
+    accept_intent.add_argument("--acceptance-id", required=True)
+    accept_intent.add_argument("--actor", required=True)
+    accept_intent.add_argument("--observed-at", required=True)
+    accept_intent.add_argument("--supersedes-selection-id")
+    accept_intent.add_argument("--supersedes-selection-sha256")
+    accept_intent.add_argument("--inject-at", choices=("after-acceptance", "after-selection"))
+
+    verify_intent = sub.add_parser("verify-intent")
+    verify_intent.add_argument("--target", type=Path, required=True)
+    verify_intent.add_argument("--intent-id", required=True)
+
     probe = sub.add_parser("durability-probe")
     probe.add_argument("--root", type=Path, required=True)
     return root
@@ -219,6 +258,47 @@ def run(args: argparse.Namespace) -> object:
         )
     if args.command == "verify-repository":
         return ParallelStateStore(args.target).verify_repository(args.item_id)
+    if args.command == "classify-intent-entry":
+        if args.input is None:
+            gaps = []
+        else:
+            value = load_json(args.input)
+            if not isinstance(value, dict) or set(value) != {"gaps"}:
+                raise ContractError("HV2-INTENT-CLASSIFY-INPUT", str(args.input))
+            gaps = value["gaps"]
+        return classify_entry(args.consequence, gaps)
+    if args.command == "init-intent-home":
+        return IntentStore(args.target).initialize(args.authority_home_id, args.observed_at)
+    if args.command == "create-intent-draft":
+        return IntentStore(args.target).create_draft(
+            args.intent_id,
+            args.sequence,
+            args.observed_at,
+            load_json(args.input),
+            inject_at=args.inject_at,
+        )
+    if args.command == "show-intent":
+        return IntentStore(args.target).show(args.intent_id, args.revision_id)
+    if args.command == "accept-intent":
+        has_id = args.supersedes_selection_id is not None
+        has_sha = args.supersedes_selection_sha256 is not None
+        if has_id != has_sha:
+            raise ContractError("HV2-INTENT-SUPERSEDE-OPTION", "both supersede fields are required")
+        supersedes_ref = None
+        if has_id:
+            supersedes_ref = {"id": args.supersedes_selection_id, "sha256": args.supersedes_selection_sha256}
+        return IntentStore(args.target).accept(
+            args.intent_id,
+            args.revision_id,
+            args.revision_sha256,
+            args.acceptance_id,
+            args.actor,
+            args.observed_at,
+            supersedes_ref,
+            inject_at=args.inject_at,
+        )
+    if args.command == "verify-intent":
+        return IntentStore(args.target).verify(args.intent_id)
     if args.command == "durability-probe":
         return durability_probe(args.root)
     raise AssertionError(args.command)
