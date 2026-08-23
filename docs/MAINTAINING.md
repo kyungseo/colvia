@@ -66,8 +66,8 @@ the managed release.
 ## Protected Surfaces
 
 The D1 product layer is additive. `carrier.py`, `state.py`, `parallel.py`, `intent.py`, existing generation contracts, and retained
-receipts remain protected during `FEAT-20260823-001`. A blocking integration defect needs a separately reviewed minimal delta and full
-regression scope.
+receipts remain protected during the current product lifecycle work. A blocking integration defect needs a separately reviewed
+minimal delta and full regression scope.
 
 The root launcher is byte-stable across D1 updates. Changing it requires an explicit migration gate because a failed launcher update
 could remove the only project-local entry.

@@ -107,7 +107,7 @@ PYTHONPATH=src python3 -m hv2ref.cli accept-intent \
   --revision-id revision-0001 \
   --revision-sha256 <sha256 from create output> \
   --acceptance-id acceptance-0001 \
-  --actor OWNER-LOCAL-001 \
+  --actor PROJECT-LOCAL-ACTOR-001 \
   --observed-at 2026-08-19T10:02:00+09:00
 
 PYTHONPATH=src python3 -m hv2ref.cli verify-intent \

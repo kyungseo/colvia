@@ -189,7 +189,7 @@ class StateStore:
             values["evidence"]["sequence"] = sequence
             return values
         common_evidence = dict(prior_values["evidence"]) if prior_values is not None else {}
-        common_evidence.update({"production_identity_series": "HV2-PROD-001", "sequence": sequence})
+        common_evidence.update({"production_identity_series": "PROJECT-LOCAL-EVIDENCE-001", "sequence": sequence})
         if release is not None:
             entries = release["payload_entries"]
             if len(entries) != 1 or entries[0]["path"] != PAYLOAD_PATH:
@@ -209,7 +209,7 @@ class StateStore:
             "currentness": {"selected_by": "active-pointer", "sequence": sequence},
             "continuation": {"mode": "plain" if operation == "detach" else "manual-provider-null"},
             "evidence": common_evidence,
-            "ownership": {"finalizer": "OWNER-LOCAL-001", "writer": "HV2-REPO-IMPL-001"},
+            "ownership": {"finalizer": "PROJECT-LOCAL-FINALIZER-001", "writer": "PROJECT-LOCAL-WRITER-001"},
         }
 
     def _load_revision_values(self, item_id: str, revision_id: str) -> tuple[dict[str, Any], dict[str, str]]:

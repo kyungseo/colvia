@@ -42,7 +42,7 @@ content or mutates project bytes.
 | `degraded` | known schema but a digest/tree/binding contradiction exists | stop mutation; inspect the stable error code |
 | `incompatible` | schema generation cannot be interpreted safely | use a compatible release or manual path |
 | `unsupported` | runtime/tool tuple is not certified | use the documented tuple or manual fallback |
-| `detached` | product-managed bytes are gone; project truth remains | continue manually or explicitly initialize a new binding |
+| `detached` | product-managed bytes are gone; project truth remains | continue manually; D1-A detach is terminal |
 
 ## Update
 
@@ -58,6 +58,17 @@ operation receipt, then switches the active selector. Project-owned state and in
 
 D1 keeps the root launcher byte-stable across releases. A launcher change fails with `HV2-PRODUCT-LAUNCHER-CHANGE` and needs a
 separate migration gate. A changed or unexpected managed byte also fails before switch; it is never overwritten as accepted drift.
+
+An installed `./hv2 update` transaction is governed by the currently active release. After a successful switch, the next launcher
+invocation is governed by the newly selected release. If the active release cannot admit the current binding, run the update from the
+trusted new contribution source instead:
+
+```sh
+/path/to/new/source/hv2 update --target /path/to/project --source /path/to/new/source --apply
+```
+
+This source-mode bootstrap does not add a new command or infer a release by recency. It uses the candidate code to verify and commit
+the same receipt-backed update contract.
 
 ## Roll Back
 
@@ -78,6 +89,22 @@ changes the active selector and preserves both releases and its receipt.
 - A contradictory retry fails; it does not repair by recency.
 - `partial` initialization is resumed from the contribution source because the target launcher may not yet be active.
 - Unexpected files under `.harness-v2-product/` block detach rather than being deleted.
+
+The `staging/` directory is runtime-only scratch. A fresh clone or worktree may omit an empty
+`.harness-v2-product/staging/`; read-only status treats absence as empty. The next mutating init or update recreates it before writing.
+A symlink, non-directory, or non-empty staging area still fails closed.
+
+For `HV2-PRODUCT-STAGING`, or an `HV2-PRODUCT-IMMUTABLE-CONTRADICTION` whose reported path is below product staging:
+
+1. Stop the mutation and establish that no product writer is active for that target.
+2. Preserve the error output and inspect the exact reported child below `.harness-v2-product/staging/`.
+3. Remove only that reported product-managed scratch child after confirming it is not a durable release, receipt, selector, or
+   project-owned path.
+4. Retry the exact source command; the mutator recreates missing scratch directories.
+
+Do not delete the staging root blindly and do not remove an unreported child. If `.harness-v2-detached.json` differs from the expected
+receipt, do not delete or replace it: stop and report the contradiction. Existing immutable release or receipt contradictions are
+evidence and are never repaired in place.
 
 If only the root `hv2` launcher drifted, read the exact active release ID from `.harness-v2-product/active-release.json`. Confirm
 that the named directory is the intended retained release, then restore its launcher bytes and executable mode:
@@ -110,4 +137,11 @@ is required. The plain receipt records the exact documentation release reference
 detach is `not-guaranteed`.
 
 Continue from project-owned JSON using [Manual Operation](MANUAL-OPERATION.md). Back up the project under its own policy before any
-broader deletion.
+broader deletion. D1-A detach is terminal: neither status nor the receipt promises reinitialization or attachment of the retained
+authority homes.
+
+## Persisted Identity Vocabulary
+
+New Generation 1 records use neutral project-local evidence, finalizer, and writer identifiers. Existing records with earlier logical
+identity strings remain immutable history and can coexist with new records; this release does not rewrite them. These identifiers are
+declarations inside a trusted local OS account boundary, not authentication.

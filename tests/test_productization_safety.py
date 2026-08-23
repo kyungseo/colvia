@@ -8,12 +8,85 @@ import unittest
 from pathlib import Path
 
 from hv2ref.errors import ContractError
+from hv2ref.jsonio import load_json
 from hv2ref.product import ProductStore, source_root
 
-from tests.test_productization import candidate_copy, git_init, snapshot
+from tests.test_productization import candidate_copy, git_commit_all, git_init, snapshot
 
 
 class ProductizationSafetyTests(unittest.TestCase):
+    def test_tracked_binding_survives_clone_and_worktree_without_runtime_staging(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            origin = base / "origin"
+            clone = base / "clone"
+            worktree = base / "worktree"
+            git_init(origin)
+            ProductStore(origin).init(source_root(), apply=True)
+            (origin / ".gitignore").write_text(".harness-v2-product/staging/\n", encoding="utf-8")
+            git_commit_all(origin)
+            subprocess.run(["git", "clone", str(origin), str(clone)], check=True, capture_output=True)
+            subprocess.run(
+                ["git", "worktree", "add", "-b", "fixture/product-worktree", str(worktree)],
+                cwd=origin,
+                check=True,
+                capture_output=True,
+            )
+
+            for name, target in (("clone", clone), ("worktree", worktree)):
+                with self.subTest(target=name):
+                    self.assertFalse((target / ".harness-v2-product/staging").exists())
+                    store = ProductStore(target)
+                    self.assertEqual("pass", store.status()["classification"])
+                    active = load_json(target / ".harness-v2-product/active-release.json", require_canonical=True)
+                    release_launcher = (
+                        target / ".harness-v2-product/releases" / active["release_ref"]["id"] / "hv2"
+                    )
+                    launcher = target / "hv2"
+                    self.assertTrue(launcher.is_file())
+                    self.assertFalse(launcher.is_symlink())
+                    self.assertNotEqual(0, launcher.stat().st_mode & 0o111)
+                    self.assertEqual(release_launcher.read_bytes(), launcher.read_bytes())
+                    candidate = candidate_copy(base / f"candidate-{name}", marker=f"\n{name}\n".encode())
+                    self.assertEqual("pass", store.update(candidate, apply=True)["classification"])
+                    self.assertEqual("detached", store.detach(apply=True)["classification"])
+
+    def test_staging_and_differing_detach_receipt_have_bounded_recovery_actions(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            staging_target = base / "staging-target"
+            git_init(staging_target)
+            staging_store = ProductStore(staging_target)
+            staging_store.init(source_root(), apply=True)
+            scratch = staging_target / ".harness-v2-product/staging/torn-candidate"
+            scratch.mkdir()
+            (scratch / "partial").write_text("torn\n", encoding="utf-8")
+            staging_status = staging_store.status()
+            self.assertEqual("HV2-PRODUCT-STAGING", staging_status["error_code"])
+            self.assertEqual(str(scratch.resolve()), staging_status["message"])
+            self.assertIn("OPERATIONS.md", staging_status["next_action"])
+            self.assertIn("active writer", staging_status["next_action"])
+
+            linked_target = base / "linked-staging-target"
+            git_init(linked_target)
+            linked_store = ProductStore(linked_target)
+            linked_store.init(source_root(), apply=True)
+            linked_staging = linked_target / ".harness-v2-product/staging"
+            linked_staging.rmdir()
+            linked_staging.symlink_to(base, target_is_directory=True)
+            linked_status = linked_store.status()
+            self.assertEqual("degraded", linked_status["classification"])
+            self.assertEqual("HV2-PRODUCT-STAGING", linked_status["error_code"])
+
+            receipt_target = base / "receipt-target"
+            git_init(receipt_target)
+            receipt_store = ProductStore(receipt_target)
+            receipt_store.init(source_root(), apply=True)
+            (receipt_target / ".harness-v2-detached.json").write_text("{}\n", encoding="utf-8")
+            receipt_status = receipt_store.status()
+            self.assertEqual("degraded", receipt_status["classification"])
+            self.assertEqual("HV2-PRODUCT-IMMUTABLE-CONTRADICTION", receipt_status["error_code"])
+            self.assertIn("do not delete", receipt_status["next_action"])
     def test_existing_authority_requires_explicit_attach_contract(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             target = Path(raw) / "target"
