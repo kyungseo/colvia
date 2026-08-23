@@ -21,6 +21,29 @@ characters.
 Initialization stages and verifies that release, creates separate state and intent authority homes, writes the launcher, and switches
 the active release last. Repeating the exact command is idempotent.
 
+## Track A Durable D2-A Binding
+
+For an adopter repository that requires the same binding to survive a fresh clone or Git worktree, track the root `hv2` launcher,
+project-owned `.harness-v2/` and `.harness-v2-intents/` truth, and every durable binding entry:
+
+- `.harness-v2-product/active-release.json`
+- `.harness-v2-product/init-plan.json`
+- `.harness-v2-product/receipts/`
+- `.harness-v2-product/releases/`, including both exact update and rollback releases required by the adopter acceptance plan
+
+Ignore only the runtime scratch path by adding this exact target-root rule:
+
+```gitignore
+.harness-v2-product/staging/
+```
+
+Do not ignore `.harness-v2-product/` as a whole. Before committing the binding, run `status`, verify the managed release payload under
+the repository's disclosure policy, and confirm that the root launcher is a regular executable file whose bytes equal the launcher in
+the active release. Then create both a fresh clone and a `git worktree add` checkout from the committed binding. In each checkout, run
+`./hv2 status` before any mutating command. Success is `classification: pass`; the absent ignored staging directory is expected and the
+next init or update recreates it. A missing durable entry, private payload hit, launcher mismatch, or non-`pass` first status blocks
+adopter acceptance.
+
 ## Status And Doctor
 
 From the initialized project:
