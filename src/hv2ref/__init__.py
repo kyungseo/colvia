@@ -1,3 +1,3 @@
-"""Harness v2 first private reference implementation."""
+"""Harness v2 private Public Core candidate implementation."""
 
-__version__ = "0.1.0-private-reference"
+__version__ = "d1-source-derived"

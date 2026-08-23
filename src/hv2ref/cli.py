@@ -10,6 +10,7 @@ from .errors import ContractError, InjectedCrash
 from .intent import IntentStore, classify_entry
 from .jsonio import durability_probe, load_json
 from .parallel import ParallelStateStore
+from .product import ProductStore, source_root as product_source_root
 from .state import StateStore
 
 
@@ -18,8 +19,47 @@ def _print(value: object) -> None:
 
 
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(prog="hv2ref", description="Harness v2 first private reference core CLI")
+    root = argparse.ArgumentParser(prog="hv2ref", description="Harness v2 private Public Core candidate CLI")
     sub = root.add_subparsers(dest="command", required=True)
+
+    product_init = sub.add_parser("init", help="preview or initialize one project-local product binding")
+    product_init.add_argument("--target", type=Path, required=True)
+    product_init.add_argument("--source", type=Path, default=product_source_root())
+    product_init.add_argument("--apply", action="store_true")
+    product_init.add_argument(
+        "--inject-at",
+        choices=("after-release", "after-plan", "after-state", "after-intent", "after-launcher", "after-switch"),
+        help=argparse.SUPPRESS,
+    )
+
+    product_status = sub.add_parser("status", help="report product binding, state, capability and next action")
+    product_status.add_argument("--target", type=Path, default=Path.cwd())
+
+    product_doctor = sub.add_parser("doctor", help="run read-only runtime and binding diagnostics")
+    product_doctor.add_argument("--target", type=Path, default=Path.cwd())
+
+    product_update = sub.add_parser("update", help="preview or apply a digest-bound product release update")
+    product_update.add_argument("--target", type=Path, default=Path.cwd())
+    product_update.add_argument("--source", type=Path, required=True)
+    product_update.add_argument("--apply", action="store_true")
+    product_update.add_argument(
+        "--inject-at", choices=("after-release", "after-receipt", "after-switch"), help=argparse.SUPPRESS
+    )
+
+    product_rollback = sub.add_parser("rollback", help="preview or switch to a prior immutable product release")
+    product_rollback.add_argument("--target", type=Path, default=Path.cwd())
+    product_rollback.add_argument("--to", dest="to_release_id")
+    product_rollback.add_argument("--apply", action="store_true")
+    product_rollback.add_argument(
+        "--inject-at", choices=("after-receipt", "after-switch"), help=argparse.SUPPRESS
+    )
+
+    product_detach = sub.add_parser("detach", help="preview or remove product-managed bytes while preserving project truth")
+    product_detach.add_argument("--target", type=Path, default=Path.cwd())
+    product_detach.add_argument("--apply", action="store_true")
+    product_detach.add_argument(
+        "--inject-at", choices=("after-receipt", "after-launcher"), help=argparse.SUPPRESS
+    )
 
     build = sub.add_parser("build-release")
     build.add_argument("--source", type=Path, required=True)
@@ -165,6 +205,18 @@ def parser() -> argparse.ArgumentParser:
 
 
 def run(args: argparse.Namespace) -> object:
+    if args.command == "init":
+        return ProductStore(args.target).init(args.source, apply=args.apply, inject_at=args.inject_at)
+    if args.command == "status":
+        return ProductStore(args.target).status()
+    if args.command == "doctor":
+        return ProductStore(args.target).doctor()
+    if args.command == "update":
+        return ProductStore(args.target).update(args.source, apply=args.apply, inject_at=args.inject_at)
+    if args.command == "rollback":
+        return ProductStore(args.target).rollback(args.to_release_id, apply=args.apply, inject_at=args.inject_at)
+    if args.command == "detach":
+        return ProductStore(args.target).detach(apply=args.apply, inject_at=args.inject_at)
     if args.command == "build-release":
         return build_release(args.source, args.output, load_json(args.seal, require_canonical=True))
     if args.command == "verify-release":
@@ -316,6 +368,12 @@ def main() -> int:
             return 12
         if isinstance(result, dict) and result.get("classification") == "stale":
             return 13
+        if isinstance(result, dict) and result.get("classification") == "partial":
+            return 14
+        if isinstance(result, dict) and result.get("classification") == "uninitialized":
+            return 15
+        if isinstance(result, dict) and result.get("classification") == "unsupported":
+            return 16
         return 0
     except InjectedCrash as exc:
         _print({"classification": "injected-crash", "code": exc.code, "point": exc.point})
