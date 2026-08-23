@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import re
+import sys
+from pathlib import Path
+
+
+def fail(code: str, message: str) -> int:
+    print(json.dumps({"classification": "fail", "code": code, "message": message}, sort_keys=True))
+    return 65
+
+
+def main() -> int:
+    root = Path(__file__).resolve().parent
+    source = root / "src"
+    if not (source / "hv2ref/cli.py").is_file():
+        active_path = root / ".harness-v2-product/active-release.json"
+        try:
+            active = json.loads(active_path.read_text(encoding="utf-8"))
+            release_id = active["release_ref"]["id"]
+        except (KeyError, OSError, TypeError, ValueError):
+            return fail("HV2-PRODUCT-LAUNCHER-ACTIVE", str(active_path))
+        if not isinstance(release_id, str) or re.fullmatch(r"product-release-[0-9a-f]{24}", release_id) is None:
+            return fail("HV2-PRODUCT-LAUNCHER-RELEASE", repr(release_id))
+        release = root / ".harness-v2-product/releases" / release_id
+        if release.is_symlink() or not release.is_dir():
+            return fail("HV2-PRODUCT-LAUNCHER-RELEASE", str(release))
+        source = release / "src"
+    if source.is_symlink() or not (source / "hv2ref/cli.py").is_file():
+        return fail("HV2-PRODUCT-LAUNCHER-SOURCE", str(source))
+    sys.dont_write_bytecode = True
+    sys.path.insert(0, str(source))
+    from hv2ref.cli import main as cli_main
+
+    return cli_main()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

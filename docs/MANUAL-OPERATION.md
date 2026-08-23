@@ -2,6 +2,17 @@
 
 The operator runs the core CLI directly. No agent/provider adapter or provider transcript is required or accepted as evidence.
 
+Document authority and currentness: [Documentation Index](README.md).
+
+## Product Lifecycle Entry
+
+The D1 project-local entry is `./hv2`. From a trusted contribution checkout, `init` inventories an exact source-derived release and
+binds it to one fresh Git project. In the project, `status` and `doctor` are read-only; `update`, `rollback`, and `detach` preview by
+default and mutate only with `--apply`. See `OPERATIONS.md` for commands and recovery.
+
+The product lifecycle does not replace the Generation 1 item transition below. Product update changes managed release bytes;
+Generation 1 `transition --operation update` changes one project-owned item revision. The two authorities must not be conflated.
+
 For `resume` and the binding receipt emitted by it, `observed_at` inherits the sealed attempt observation. It is not the
 record write time and does not claim wall-clock monotonicity. Generation 1 never uses timestamps to select authority.
 

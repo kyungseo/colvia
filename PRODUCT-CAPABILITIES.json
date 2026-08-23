@@ -1,0 +1,43 @@
+{
+  "capabilities": [
+    {
+      "boundary": "one item, project-owned plain state, no public or adopter claim",
+      "evidence": "retained run-0003 and current regression suite",
+      "fallback": "plain manual read and operation",
+      "id": "generation-1-state",
+      "status": "observed-bounded-private"
+    },
+    {
+      "boundary": "trusted local OS account; logical actors are not authentication",
+      "evidence": "two-process and caller-created worktree fixtures",
+      "fallback": "single actor and manual finalization",
+      "id": "same-repository-parallel-safety",
+      "status": "observed-bounded-private"
+    },
+    {
+      "boundary": "artifact semantics only; question quality and item integration unavailable",
+      "evidence": "exact-revision acceptance and recovery fixtures",
+      "fallback": "human-authored intent and plain read",
+      "id": "guided-intent-formation",
+      "status": "observed-bounded-private"
+    },
+    {
+      "boundary": "private D1 only; fresh-context agent reading is partial; human fresh-reader, public distribution, and real-adopter evidence unavailable",
+      "evidence": "111 normal and 111 optimized tests passed on CPython 3.14.6 after FEAT-20260823-001 R1 remediation",
+      "fallback": "source CLI and plain project-owned state",
+      "id": "project-local-product-binding",
+      "status": "observed-private-d1"
+    }
+  ],
+  "evidence_as_of": "2026-08-23",
+  "internal_lineage": "Harness v2",
+  "public_version": null,
+  "record_type": "product-capability-declaration",
+  "runtime": {
+    "dependency_count": 0,
+    "implementation": "CPython",
+    "required_version": "3.14.6"
+  },
+  "schema_version": 1,
+  "trust_boundary": "trusted-local-os-account-logical-actor-declarations"
+}
