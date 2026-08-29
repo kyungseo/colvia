@@ -5,18 +5,18 @@ applicable surface, and verification state without requiring per-file frontmatte
 
 Applies to: private D1 source-derived Public Core candidate. Public name and SemVer are unassigned.
 
-Verified on: local product lifecycle and command regression passed on 2026-08-23. A prior fresh-context agent reader was `partial`,
-and the prior bounded focused review is closed. Human fresh-reader evidence remains unavailable. Existing Generation 1, Generation 2,
-and Guided Intent evidence is not a productization result.
+Verified on: full product lifecycle and command regression passed on 2026-08-28, including interrupted-detach and authority-read
+coverage. A prior fresh-context agent reader was `partial`, and the prior bounded focused review is closed. Human fresh-reader evidence
+remains unavailable. Existing Generation 1, Generation 2, and Guided Intent evidence is not a productization result.
 
 | Document | Type / Reader | Jobs | Authority | Currentness |
 | --- | --- | --- | --- | --- |
 | `../README.md` | orientation / user | identity, prerequisites, first command, map, boundary | current D1 entry | local lifecycle regression verified 2026-08-23 |
 | `GETTING-STARTED.md` | onboarding / user | first work and human gate | current D1 procedure | local lifecycle regression verified 2026-08-23 |
 | `CONCEPTS.md` | concept guide / user and operator | mental model, state, identity, collaboration | current D1 explanation; deep contracts win on schema detail | local lifecycle regression verified 2026-08-23 |
-| `OPERATIONS.md` | manual / operator | delivery, update, recovery, exit, diagnostics | current D1 product lifecycle | local lifecycle regression verified 2026-08-23 |
+| `OPERATIONS.md` | manual / operator | delivery, update, recovery, exit, diagnostics | current D1 product lifecycle | interrupted-detach and authority-read regression verified 2026-08-28 |
 | `SECURITY-AND-SUPPORT.md` | boundary / user and operator | trust, runtime, support, integration | current D1 claim boundary | local lifecycle regression verified 2026-08-23 |
-| `REFERENCE.md` | reference / user and operator | command, state, lifecycle, classification | current D1 reference | local lifecycle regression verified 2026-08-23 |
+| `REFERENCE.md` | reference / user and operator | command, state, lifecycle, classification | current D1 reference | interrupted-detach and authority-read regression verified 2026-08-28 |
 | `MAINTAINING.md` | maintainer guide | source, validation, release inventory, change boundary | current D1 maintainer procedure | local lifecycle regression verified 2026-08-23 |
 | `MANUAL-OPERATION.md` | deep manual / operator and auditor | provider-null Generation 1/2 procedure | accepted bounded private contract | historical + current source projection |
 | `GENERATION-1-CONTRACT.md` | technical contract / maintainer and auditor | item state and release payload | Generation 1 contract | accepted bounded private evidence |

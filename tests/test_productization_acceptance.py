@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from hv2ref.errors import InjectedCrash
+from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.jsonio import canonical_json_bytes, load_json
 from hv2ref.product import MANAGED_PATHS, ProductStore, source_root
 
@@ -138,17 +138,61 @@ class ProductizationAcceptanceTests(unittest.TestCase):
             self.assertEqual("pass", json.loads(result.stdout)["classification"])
 
     def test_detach_interruption_is_recoverable(self) -> None:
+        expected_next_action = (
+            "repeat the exact hv2 detach --target <project> --apply command from a trusted contribution source; "
+            "do not init, update, or rollback"
+        )
         for point in ("after-receipt", "after-launcher"):
             with self.subTest(point=point), tempfile.TemporaryDirectory() as raw:
-                target = Path(raw) / "target"
+                base = Path(raw)
+                target = base / "target"
                 git_init(target)
                 store = ProductStore(target)
                 store.init(source_root(), apply=True)
+                state_before = snapshot(target / ".harness-v2")
+                intent_before = snapshot(target / ".harness-v2-intents")
                 with self.assertRaises(InjectedCrash):
                     store.detach(apply=True, inject_at=point)
+
+                interrupted = store.status()
+                self.assertEqual("partial", interrupted["classification"])
+                self.assertEqual("HV2-PRODUCT-DETACH-INCOMPLETE", interrupted["error_code"])
+                self.assertEqual(expected_next_action, interrupted["next_action"])
+                doctor = store.doctor()
+                self.assertEqual("partial", doctor["classification"])
+                self.assertEqual(interrupted, doctor["status"])
+
+                source_code, source_status = run_executable(
+                    source_root() / "hv2", source_root(), "status", "--target", str(target)
+                )
+                self.assertEqual(14, source_code)
+                self.assertEqual(interrupted, source_status)
+                if (target / "hv2").is_file():
+                    launcher_code, launcher_status = run_executable(target / "hv2", target, "status")
+                    self.assertEqual(14, launcher_code)
+                    self.assertEqual(interrupted, launcher_status)
+
+                interrupted_bytes = snapshot(target)
+                changed_candidate = candidate_copy(base / "candidate")
+                blocked_operations = (
+                    lambda: store.init(source_root(), apply=True),
+                    lambda: store.update(source_root(), apply=True),
+                    lambda: store.update(changed_candidate, apply=True),
+                    lambda: store.rollback(None, apply=True),
+                )
+                for operation in blocked_operations:
+                    with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-INCOMPLETE"):
+                        operation()
+                    self.assertEqual(interrupted_bytes, snapshot(target))
+
+                preview = store.detach(apply=False)
+                self.assertEqual("preview", preview["classification"])
+                self.assertEqual(interrupted_bytes, snapshot(target))
                 result = store.detach(apply=True)
                 self.assertEqual("detached", result["classification"])
                 self.assertTrue((target / ".harness-v2-detached.json").is_file())
+                self.assertEqual(state_before, snapshot(target / ".harness-v2"))
+                self.assertEqual(intent_before, snapshot(target / ".harness-v2-intents"))
 
     def test_installed_launcher_first_hop_and_source_mode_bootstrap_are_explicit(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

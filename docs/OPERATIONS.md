@@ -61,7 +61,7 @@ content or mutates project bytes.
 | --- | --- | --- |
 | `pass` | exact binding verified; `doctor` also verifies the required local tuple | continue |
 | `uninitialized` | no product binding | preview `init` |
-| `partial` | an initialization stage exists without an active switch | repeat the exact `init --apply` from source |
+| `partial` | an initialization stage lacks an active switch, or an exact detach receipt exists beside the live managed root | repeat the exact interrupted `init --apply` or `detach --target <project> --apply` from source as reported; do not run another mutator |
 | `degraded` | known schema but a digest/tree/binding contradiction exists | stop mutation; inspect the stable error code |
 | `incompatible` | schema generation cannot be interpreted safely | use a compatible release or manual path |
 | `unsupported` | runtime/tool tuple is not certified | use the documented tuple or manual fallback |
@@ -153,6 +153,13 @@ Preview what will be removed and preserved:
 Detach writes `.harness-v2-detached.json`, verifies the complete managed tree, then removes only `hv2` and
 `.harness-v2-product/`. It preserves `.harness-v2/` and `.harness-v2-intents/`. If the launcher disappears during an interrupted
 detach, repeat the command from a trusted source checkout with `--target /path/to/project`.
+
+If the exact detach receipt and live managed root coexist, `status` and `doctor` return `partial` with
+`HV2-PRODUCT-DETACH-INCOMPLETE`; `init`, `update`, and `rollback` stop before their first write. Detach preview remains read-only and
+the exact apply retry may finish even when a preserved authority home is unavailable or degraded. Retry proves only that the receipt
+matches the active selector and init plan. Receipt statements that project-owned roots remain mean the product did not delete those
+roots; they are not a health, integrity, or authority attestation. A malformed, linked, wrong-type, or differing receipt is not this
+recovery state: preserve it and stop.
 
 Detach also removes the release-local documentation. Before applying detach, preserve `README.md`, `AGENTS.md`,
 `docs/GETTING-STARTED.md`, `docs/OPERATIONS.md`, and `docs/MANUAL-OPERATION.md` outside product-managed paths if offline guidance

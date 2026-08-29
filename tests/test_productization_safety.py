@@ -1,17 +1,38 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
-from hv2ref.errors import ContractError
-from hv2ref.jsonio import load_json
+from hv2ref.errors import ContractError, InjectedCrash
+from hv2ref.jsonio import canonical_json_bytes, load_json
 from hv2ref.product import ProductStore, source_root
 
 from tests.test_productization import candidate_copy, git_commit_all, git_init, snapshot
+
+
+def exact_snapshot(root: Path) -> dict[str, tuple[object, ...]]:
+    paths = [root, *sorted(root.rglob("*"), key=lambda path: path.as_posix())]
+    result: dict[str, tuple[object, ...]] = {}
+    for path in paths:
+        relative = "." if path == root else path.relative_to(root).as_posix()
+        if path.is_symlink():
+            result[relative] = ("symlink", os.readlink(path))
+        elif path.is_dir():
+            result[relative] = ("directory", path.stat().st_mode & 0o777)
+        elif path.is_file():
+            result[relative] = (
+                "file",
+                hashlib.sha256(path.read_bytes()).hexdigest(),
+                path.stat().st_mode & 0o777,
+            )
+    return result
 
 
 class ProductizationSafetyTests(unittest.TestCase):
@@ -82,11 +103,148 @@ class ProductizationSafetyTests(unittest.TestCase):
             git_init(receipt_target)
             receipt_store = ProductStore(receipt_target)
             receipt_store.init(source_root(), apply=True)
-            (receipt_target / ".harness-v2-detached.json").write_text("{}\n", encoding="utf-8")
+            with self.assertRaises(InjectedCrash):
+                receipt_store.detach(apply=True, inject_at="after-receipt")
+            receipt_path = receipt_target / ".harness-v2-detached.json"
+            receipt = load_json(receipt_path, require_canonical=True)
+            receipt["item_id"] = "different-item"
+            receipt_path.write_bytes(canonical_json_bytes(receipt))
             receipt_status = receipt_store.status()
             self.assertEqual("degraded", receipt_status["classification"])
             self.assertEqual("HV2-PRODUCT-IMMUTABLE-CONTRADICTION", receipt_status["error_code"])
             self.assertIn("do not delete", receipt_status["next_action"])
+
+    def test_detach_receipt_semantic_type_is_fail_closed_without_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            target = Path(raw) / "target"
+            git_init(target)
+            store = ProductStore(target)
+            store.init(source_root(), apply=True)
+            with self.assertRaises(InjectedCrash):
+                store.detach(apply=True, inject_at="after-receipt")
+            receipt_path = target / ".harness-v2-detached.json"
+            receipt = load_json(receipt_path, require_canonical=True)
+            receipt["observed_at"] = 7
+            receipt_path.write_bytes(canonical_json_bytes(receipt))
+            before = exact_snapshot(target)
+            status = store.status()
+            self.assertEqual("degraded", status["classification"])
+            self.assertEqual("HV2-PRODUCT-DETACH-RECEIPT", status["error_code"])
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-RECEIPT"):
+                store.detach(apply=True)
+            self.assertEqual(before, exact_snapshot(target))
+
+    def test_authority_root_and_file_forms_are_stable_non_pass_and_read_only(self) -> None:
+        structural_forms = {
+            "root-missing",
+            "root-symlink",
+            "root-file",
+            "authority-missing",
+            "authority-symlink",
+            "authority-directory",
+        }
+        for authority in ("state", "intent"):
+            for form in (*sorted(structural_forms), "malformed", "wrong-identity"):
+                with self.subTest(authority=authority, form=form), tempfile.TemporaryDirectory() as raw:
+                    base = Path(raw)
+                    target = base / "target"
+                    git_init(target)
+                    store = ProductStore(target)
+                    store.init(source_root(), apply=True)
+                    root_name = ".harness-v2" if authority == "state" else ".harness-v2-intents"
+                    error_code = (
+                        "HV2-PRODUCT-STATE-BINDING" if authority == "state" else "HV2-PRODUCT-INTENT-BINDING"
+                    )
+                    authority_root = target / root_name
+                    authority_path = authority_root / "authority.json"
+                    if form == "root-missing":
+                        shutil.rmtree(authority_root)
+                    elif form == "root-symlink":
+                        external = base / "external-authority-root"
+                        shutil.copytree(authority_root, external)
+                        shutil.rmtree(authority_root)
+                        authority_root.symlink_to(external, target_is_directory=True)
+                    elif form == "root-file":
+                        shutil.rmtree(authority_root)
+                        authority_root.write_text("wrong type\n", encoding="utf-8")
+                    elif form == "authority-missing":
+                        authority_path.unlink()
+                    elif form == "authority-symlink":
+                        external = base / "external-authority.json"
+                        external.write_bytes(authority_path.read_bytes())
+                        authority_path.unlink()
+                        authority_path.symlink_to(external)
+                    elif form == "authority-directory":
+                        authority_path.unlink()
+                        authority_path.mkdir()
+                    elif form == "malformed":
+                        authority_path.write_text("{\n", encoding="utf-8")
+                    elif form == "wrong-identity":
+                        payload = load_json(authority_path, require_canonical=True)
+                        payload["authority_home_id"] = "wrong-authority-home"
+                        authority_path.write_bytes(canonical_json_bytes(payload))
+
+                    before = exact_snapshot(target)
+                    status = store.status()
+                    self.assertEqual("degraded", status["classification"])
+                    if form in structural_forms or form == "wrong-identity":
+                        self.assertEqual(error_code, status["error_code"])
+                    else:
+                        self.assertEqual("HV2-JSON-SYNTAX", status["error_code"])
+
+                    for executable, cwd in ((source_root() / "hv2", source_root()), (target / "hv2", target)):
+                        result = subprocess.run(
+                            [str(executable), "status", "--target", str(target)],
+                            cwd=cwd,
+                            check=False,
+                            text=True,
+                            capture_output=True,
+                        )
+                        self.assertEqual(10, result.returncode)
+                        self.assertEqual(status, json.loads(result.stdout))
+                    self.assertEqual(before, exact_snapshot(target))
+
+    def test_unrelated_authority_stat_and_read_permission_errors_are_not_reclassified(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            target = Path(raw) / "target"
+            git_init(target)
+            store = ProductStore(target)
+            store.init(source_root(), apply=True)
+            before = exact_snapshot(target)
+            real_load_json = load_json
+
+            def guarded_load_json(path: Path, *, require_canonical: bool = False):
+                candidate = Path(path)
+                if candidate.resolve() == (target / ".harness-v2/authority.json").resolve():
+                    raise PermissionError(str(candidate))
+                return real_load_json(candidate, require_canonical=require_canonical)
+
+            with mock.patch("hv2ref.product.load_json", side_effect=guarded_load_json):
+                with self.assertRaises(PermissionError):
+                    store.status()
+            self.assertEqual(before, exact_snapshot(target))
+
+            real_lstat = Path.lstat
+            for root_name in (".harness-v2", ".harness-v2-intents"):
+                with self.subTest(root_name=root_name):
+                    authority_path = store.target_root / root_name / "authority.json"
+
+                    def guarded_lstat(path: Path):
+                        if path == authority_path:
+                            raise PermissionError(str(path))
+                        return real_lstat(path)
+
+                    with mock.patch.object(Path, "lstat", new=guarded_lstat):
+                        with self.assertRaises(PermissionError):
+                            store.status()
+                        with mock.patch("sys.argv", ["hv2", "status", "--target", str(target)]):
+                            with mock.patch("hv2ref.cli._print") as print_result:
+                                from hv2ref.cli import main as cli_main
+
+                                self.assertEqual(70, cli_main())
+                                self.assertEqual("PermissionError", print_result.call_args.args[0]["exception_type"])
+                    self.assertEqual(before, exact_snapshot(target))
+
     def test_existing_authority_requires_explicit_attach_contract(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             target = Path(raw) / "target"

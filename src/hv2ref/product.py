@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import uuid
@@ -84,6 +85,16 @@ def _exact_dict(value: object, keys: set[str], code: str) -> dict[str, Any]:
         actual = sorted(value) if isinstance(value, dict) else type(value).__name__
         raise ContractError(code, repr(actual))
     return value
+
+
+def _require_lstat_type(path: Path, *, directory: bool, code: str) -> None:
+    try:
+        mode = path.lstat().st_mode
+    except (FileNotFoundError, NotADirectoryError):
+        raise ContractError(code, str(path)) from None
+    matches = stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)
+    if stat.S_ISLNK(mode) or not matches:
+        raise ContractError(code, str(path))
 
 
 def _validate_ref(value: object, code: str) -> dict[str, str]:
@@ -362,7 +373,11 @@ class ProductStore:
         self._verify_state(plan)
 
     def _verify_state(self, plan: dict[str, Any]) -> dict[str, Any]:
-        authority = load_json(self.target_root / ".harness-v2/authority.json", require_canonical=True)
+        state_root = self.target_root / ".harness-v2"
+        authority_path = state_root / "authority.json"
+        _require_lstat_type(state_root, directory=True, code="HV2-PRODUCT-STATE-BINDING")
+        _require_lstat_type(authority_path, directory=False, code="HV2-PRODUCT-STATE-BINDING")
+        authority = load_json(authority_path, require_canonical=True)
         if not isinstance(authority, dict) or authority.get("authority_home_id") != plan["state_authority_home_id"]:
             raise ContractError("HV2-PRODUCT-STATE-BINDING", repr(authority))
         result = ParallelStateStore(self.target_root).verify_repository(plan["item_id"])
@@ -384,6 +399,8 @@ class ProductStore:
     def _verify_intent_home(self, plan: dict[str, Any]) -> None:
         intent_root = self.target_root / ".harness-v2-intents"
         authority_path = intent_root / "authority.json"
+        _require_lstat_type(intent_root, directory=True, code="HV2-PRODUCT-INTENT-BINDING")
+        _require_lstat_type(authority_path, directory=False, code="HV2-PRODUCT-INTENT-BINDING")
         authority = _exact_dict(
             load_json(authority_path, require_canonical=True),
             {"authority_home_id", "authority_kind", "created_at", "record_type", "schema_generation"},
@@ -521,8 +538,15 @@ class ProductStore:
         try:
             return self._strict_status()
         except ContractError as exc:
+            classification = "degraded"
             next_action = "run doctor from a trusted source checkout; do not update or detach until the contradiction is resolved"
-            if exc.code == "HV2-PRODUCT-STAGING" or (
+            if exc.code == "HV2-PRODUCT-DETACH-INCOMPLETE":
+                classification = "partial"
+                next_action = (
+                    "repeat the exact hv2 detach --target <project> --apply command from a trusted contribution source; "
+                    "do not init, update, or rollback"
+                )
+            elif exc.code == "HV2-PRODUCT-STAGING" or (
                 exc.code == "HV2-PRODUCT-IMMUTABLE-CONTRADICTION" and str(self.staging) in exc.message
             ):
                 next_action = (
@@ -532,7 +556,7 @@ class ProductStore:
             elif exc.code == "HV2-PRODUCT-IMMUTABLE-CONTRADICTION" and str(self.detach_receipt_path) in exc.message:
                 next_action = "do not delete the differing detach receipt; stop and report the contradiction"
             return {
-                "classification": "degraded",
+                "classification": classification,
                 "error_code": exc.code,
                 "message": exc.message,
                 "next_action": next_action,
@@ -752,6 +776,12 @@ class ProductStore:
     def _detach_receipt(
         self, active: dict[str, Any], plan: dict[str, Any], existing_detach: object | None
     ) -> dict[str, Any]:
+        if existing_detach is not None and (
+            not isinstance(existing_detach, dict)
+            or not isinstance(existing_detach.get("observed_at"), str)
+            or not existing_detach["observed_at"]
+        ):
+            raise ContractError("HV2-PRODUCT-DETACH-RECEIPT", str(self.detach_receipt_path))
         return {
             "active_release_ref": active["release_ref"],
             "documentation": {
@@ -783,6 +813,7 @@ class ProductStore:
         existing = load_json(self.detach_receipt_path, require_canonical=True)
         if existing != self._detach_receipt(active, plan, existing):
             raise ContractError("HV2-PRODUCT-IMMUTABLE-CONTRADICTION", str(self.detach_receipt_path))
+        raise ContractError("HV2-PRODUCT-DETACH-INCOMPLETE", str(self.detach_receipt_path))
 
     def detach(self, *, apply: bool, inject_at: str | None = None) -> dict[str, Any]:
         if not self.root.exists() and self.detach_receipt_path.exists():
