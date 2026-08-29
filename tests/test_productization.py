@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -8,14 +9,25 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from hv2ref.errors import InjectedCrash
-from hv2ref.jsonio import load_json
+from hv2ref.errors import ContractError, InjectedCrash
+from hv2ref.jsonio import load_json, replace_json
+from hv2ref.parallel import ParallelStateStore
 from hv2ref.product import MANAGED_PATHS, ProductStore, source_root
+from hv2ref.state import StateStore
 
 
 def git_init(path: Path) -> None:
     path.mkdir()
     subprocess.run(["git", "init", "-b", "main"], cwd=path, check=True, capture_output=True)
+
+
+def git_commit_all(path: Path, message: str = "fixture: persist product binding") -> None:
+    subprocess.run(["git", "config", "user.name", "Harness v2 Product Fixture"], cwd=path, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "harness-v2-product@example.invalid"], cwd=path, check=True
+    )
+    subprocess.run(["git", "add", "-A"], cwd=path, check=True)
+    subprocess.run(["git", "commit", "-m", message], cwd=path, check=True, capture_output=True)
 
 
 def snapshot(root: Path) -> dict[str, tuple[str, int]]:
@@ -113,10 +125,91 @@ class ProductizationLifecycleTests(unittest.TestCase):
             self.assertEqual(preview_before, snapshot(target))
             updated = store.update(candidate, apply=True)
             self.assertNotEqual(initial, updated["release_ref"])
+            self.assertEqual(1, updated["mutation"])
+            self.assertEqual("committed", updated["result"])
+            self.assertEqual(updated["classification"], updated["status"]["classification"])
+            self.assertEqual(initial, updated["prior_release_ref"])
             self.assertEqual(truth_before, snapshot(target / ".harness-v2") | snapshot(target / ".harness-v2-intents"))
             rolled_back = store.rollback(None, apply=True)
             self.assertEqual(initial, rolled_back["release_ref"])
+            self.assertEqual(1, rolled_back["mutation"])
+            self.assertEqual("committed", rolled_back["result"])
+            self.assertEqual(rolled_back["classification"], rolled_back["status"]["classification"])
+            self.assertEqual(updated["release_ref"], rolled_back["prior_release_ref"])
             self.assertEqual(truth_before, snapshot(target / ".harness-v2") | snapshot(target / ".harness-v2-intents"))
+
+    def test_generation_two_binding_is_admitted_and_unregistered_plan_item_fails_before_switch(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            target = base / "target"
+            git_init(target)
+            store = ProductStore(target)
+            initial = store.init(source_root(), apply=True)["release_ref"]
+            git_commit_all(target)
+            base_commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=target, check=True, text=True, capture_output=True
+            ).stdout.strip()
+            base_tree = subprocess.run(
+                ["git", "rev-parse", "HEAD^{tree}"], cwd=target, check=True, text=True, capture_output=True
+            ).stdout.strip()
+            ParallelStateStore(target).activate_parallel(
+                repository_id="REPOSITORY-PRODUCT-FIXTURE",
+                item_id="item-0001",
+                finalizer="ACTOR-PRODUCT-FINALIZER",
+                worktree_id="integration-main",
+                branch="main",
+                base_commit=base_commit,
+                base_tree=base_tree,
+                observed_at="2026-08-23T00:00:00Z",
+                worktree_root=target,
+            )
+            self.assertEqual("pass", store.status()["classification"])
+
+            candidate = candidate_copy(base / "candidate")
+            update_process = subprocess.run(
+                [str(target / "hv2"), "update", "--source", str(candidate), "--apply"],
+                cwd=target,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(0, update_process.returncode)
+            updated = json.loads(update_process.stdout)
+            self.assertEqual("pass", updated["classification"])
+            self.assertEqual(1, updated["mutation"])
+            self.assertEqual("committed", updated["result"])
+            rollback_process = subprocess.run(
+                [str(target / "hv2"), "rollback", "--apply"],
+                cwd=target,
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(0, rollback_process.returncode)
+            rolled_back = json.loads(rollback_process.stdout)
+            self.assertEqual("pass", rolled_back["classification"])
+            self.assertEqual(initial, rolled_back["release_ref"])
+
+            plan_path = target / ".harness-v2-product/init-plan.json"
+            plan = load_json(plan_path, require_canonical=True)
+            plan["item_id"] = "item-unregistered"
+            replace_json(plan_path, plan)
+            active_before = (target / ".harness-v2-product/active-release.json").read_bytes()
+            second_candidate = candidate_copy(base / "second-candidate", marker=b"\nsecond candidate\n")
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-STATE-BINDING"):
+                store.update(second_candidate, apply=True)
+            self.assertEqual(active_before, (target / ".harness-v2-product/active-release.json").read_bytes())
+
+    def test_new_generation_one_records_use_project_local_identity_vocabulary(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            target = Path(raw) / "target"
+            git_init(target)
+            store = StateStore(target)
+            store.initialize("authority-product-fixture", "item-0001", "2026-08-23T00:00:00Z")
+            values = store._values_for("update", 1, None, None, None, None)
+            self.assertEqual("PROJECT-LOCAL-EVIDENCE-001", values["evidence"]["production_identity_series"])
+            self.assertEqual("PROJECT-LOCAL-FINALIZER-001", values["ownership"]["finalizer"])
+            self.assertEqual("PROJECT-LOCAL-WRITER-001", values["ownership"]["writer"])
 
     def test_update_interruption_preserves_or_completes_selector(self) -> None:
         for point in ("after-release", "after-receipt", "after-switch"):

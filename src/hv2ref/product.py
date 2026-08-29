@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import uuid
@@ -23,6 +24,7 @@ from .jsonio import (
     write_new_bytes,
     write_new_json,
 )
+from .parallel import ParallelStateStore
 from .state import StateStore
 
 
@@ -83,6 +85,16 @@ def _exact_dict(value: object, keys: set[str], code: str) -> dict[str, Any]:
         actual = sorted(value) if isinstance(value, dict) else type(value).__name__
         raise ContractError(code, repr(actual))
     return value
+
+
+def _require_lstat_type(path: Path, *, directory: bool, code: str) -> None:
+    try:
+        mode = path.lstat().st_mode
+    except (FileNotFoundError, NotADirectoryError):
+        raise ContractError(code, str(path)) from None
+    matches = stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)
+    if stat.S_ISLNK(mode) or not matches:
+        raise ContractError(code, str(path))
 
 
 def _validate_ref(value: object, code: str) -> dict[str, str]:
@@ -360,10 +372,23 @@ class ProductStore:
             )
         self._verify_state(plan)
 
-    def _verify_state(self, plan: dict[str, Any]) -> None:
-        result = StateStore(self.target_root).verify(plan["item_id"])
-        if result.get("authority_home_id") != plan["state_authority_home_id"] or result.get("classification") != "pass":
+    def _verify_state(self, plan: dict[str, Any]) -> dict[str, Any]:
+        state_root = self.target_root / ".harness-v2"
+        authority_path = state_root / "authority.json"
+        _require_lstat_type(state_root, directory=True, code="HV2-PRODUCT-STATE-BINDING")
+        _require_lstat_type(authority_path, directory=False, code="HV2-PRODUCT-STATE-BINDING")
+        authority = load_json(authority_path, require_canonical=True)
+        if not isinstance(authority, dict) or authority.get("authority_home_id") != plan["state_authority_home_id"]:
+            raise ContractError("HV2-PRODUCT-STATE-BINDING", repr(authority))
+        result = ParallelStateStore(self.target_root).verify_repository(plan["item_id"])
+        if result.get("classification") != "pass":
             raise ContractError("HV2-PRODUCT-STATE-BINDING", repr(result))
+        generation = result.get("generation")
+        if generation not in {1, 2}:
+            raise ContractError("HV2-PRODUCT-STATE-BINDING", repr(result))
+        if generation == 2 and plan["item_id"] not in result.get("item_ids", []):
+            raise ContractError("HV2-PRODUCT-STATE-BINDING", repr(result))
+        return result
 
     def _ensure_intent_home(self, plan: dict[str, Any]) -> None:
         intent_root = self.target_root / ".harness-v2-intents"
@@ -374,6 +399,8 @@ class ProductStore:
     def _verify_intent_home(self, plan: dict[str, Any]) -> None:
         intent_root = self.target_root / ".harness-v2-intents"
         authority_path = intent_root / "authority.json"
+        _require_lstat_type(intent_root, directory=True, code="HV2-PRODUCT-INTENT-BINDING")
+        _require_lstat_type(authority_path, directory=False, code="HV2-PRODUCT-INTENT-BINDING")
         authority = _exact_dict(
             load_json(authority_path, require_canonical=True),
             {"authority_home_id", "authority_kind", "created_at", "record_type", "schema_generation"},
@@ -451,7 +478,7 @@ class ProductStore:
                 return {
                     "classification": "detached",
                     "detach_receipt": receipt,
-                    "next_action": "continue from plain project-owned state or initialize a new product binding",
+                    "next_action": "continue manually from plain project-owned state; D1-A detach is terminal",
                     "product_root": PRODUCT_ROOT_NAME,
                 }
             return {
@@ -465,24 +492,31 @@ class ProductStore:
                 "next_action": "repeat the exact init command from the contribution source",
                 "product_root": PRODUCT_ROOT_NAME,
             }
-        expected_root_entries = {ACTIVE_NAME, INIT_PLAN_NAME, "receipts", "releases", "staging"}
+        durable_root_entries = {ACTIVE_NAME, INIT_PLAN_NAME, "receipts", "releases"}
+        allowed_root_entries = durable_root_entries | {"staging"}
         actual_root_entries = {path.name for path in self.root.iterdir()}
-        if actual_root_entries != expected_root_entries:
-            raise ContractError("HV2-PRODUCT-ROOT-TREE", repr(sorted(actual_root_entries ^ expected_root_entries)))
-        if any(self.staging.iterdir()):
-            raise ContractError("HV2-PRODUCT-STAGING", str(self.staging))
+        missing = durable_root_entries - actual_root_entries
+        unexpected = actual_root_entries - allowed_root_entries
+        if missing or unexpected:
+            raise ContractError("HV2-PRODUCT-ROOT-TREE", repr(sorted(missing | unexpected)))
+        if self.staging.exists() or self.staging.is_symlink():
+            if self.staging.is_symlink() or not self.staging.is_dir():
+                raise ContractError("HV2-PRODUCT-STAGING", str(self.staging))
+            staging_entries = sorted(self.staging.iterdir(), key=lambda path: path.name)
+            if staging_entries:
+                raise ContractError("HV2-PRODUCT-STAGING", str(staging_entries[0]))
         active = self._load_active()
         plan = self._load_plan()
         if active["release_ref"] != plan["release_ref"] and active["prior_release_ref"] is None:
             raise ContractError("HV2-PRODUCT-INIT-PLAN", "active lineage")
+        self._verify_existing_detach_receipt(active, plan)
         self._verify_launcher(active["release_ref"])
-        self._verify_state(plan)
+        state = self._verify_state(plan)
         self._verify_intent_home(plan)
         capabilities_path = self._release_path(active["release_ref"]) / "PRODUCT-CAPABILITIES.json"
         capabilities = load_json(capabilities_path, require_canonical=True)
         if not isinstance(capabilities, dict):
             raise ContractError("HV2-PRODUCT-CAPABILITIES", str(capabilities_path))
-        state = StateStore(self.target_root).verify(plan["item_id"])
         documentation_root = str(
             (Path(PRODUCT_ROOT_NAME) / "releases" / active["release_ref"]["id"] / "docs").as_posix()
         )
@@ -504,11 +538,28 @@ class ProductStore:
         try:
             return self._strict_status()
         except ContractError as exc:
+            classification = "degraded"
+            next_action = "run doctor from a trusted source checkout; do not update or detach until the contradiction is resolved"
+            if exc.code == "HV2-PRODUCT-DETACH-INCOMPLETE":
+                classification = "partial"
+                next_action = (
+                    "repeat the exact hv2 detach --target <project> --apply command from a trusted contribution source; "
+                    "do not init, update, or rollback"
+                )
+            elif exc.code == "HV2-PRODUCT-STAGING" or (
+                exc.code == "HV2-PRODUCT-IMMUTABLE-CONTRADICTION" and str(self.staging) in exc.message
+            ):
+                next_action = (
+                    "stop and confirm there is no active writer; follow docs/OPERATIONS.md product-managed scratch "
+                    "recovery for only the reported child, then retry"
+                )
+            elif exc.code == "HV2-PRODUCT-IMMUTABLE-CONTRADICTION" and str(self.detach_receipt_path) in exc.message:
+                next_action = "do not delete the differing detach receipt; stop and report the contradiction"
             return {
-                "classification": "degraded",
+                "classification": classification,
                 "error_code": exc.code,
                 "message": exc.message,
-                "next_action": "run doctor from a trusted source checkout; do not update or detach until the contradiction is resolved",
+                "next_action": next_action,
                 "product_root": PRODUCT_ROOT_NAME,
             }
 
@@ -597,6 +648,7 @@ class ProductStore:
         return {entry["path"]: entry for entry in inventory["entries"]}
 
     def update(self, source: Path, *, apply: bool, inject_at: str | None = None) -> dict[str, Any]:
+        self._strict_status()
         active = self._load_active()
         self._verify_launcher(active["release_ref"])
         candidate = _candidate(source)
@@ -635,9 +687,19 @@ class ProductStore:
         self._switch(release_ref, active["release_ref"], receipt_ref)
         if inject_at == "after-switch":
             raise InjectedCrash(inject_at)
-        return {"classification": "pass", "operation": "update", "release_ref": release_ref, "status": self._strict_status()}
+        post_status = self.status()
+        return {
+            "classification": post_status["classification"],
+            "mutation": 1,
+            "operation": "update",
+            "prior_release_ref": active["release_ref"],
+            "release_ref": release_ref,
+            "result": "committed",
+            "status": post_status,
+        }
 
     def rollback(self, to_release_id: str | None, *, apply: bool, inject_at: str | None = None) -> dict[str, Any]:
+        self._strict_status()
         active = self._load_active()
         self._verify_launcher(active["release_ref"])
         if to_release_id is None:
@@ -677,15 +739,31 @@ class ProductStore:
         self._switch(target_ref, active["release_ref"], receipt_ref)
         if inject_at == "after-switch":
             raise InjectedCrash(inject_at)
-        return {"classification": "pass", "operation": "rollback", "release_ref": target_ref, "status": self._strict_status()}
+        post_status = self.status()
+        return {
+            "classification": post_status["classification"],
+            "mutation": 1,
+            "operation": "rollback",
+            "prior_release_ref": active["release_ref"],
+            "release_ref": target_ref,
+            "result": "committed",
+            "status": post_status,
+        }
 
     def _validate_detach_tree(self) -> None:
-        allowed = {ACTIVE_NAME, INIT_PLAN_NAME, "receipts", "releases", "staging"}
+        required = {ACTIVE_NAME, INIT_PLAN_NAME, "receipts", "releases"}
+        allowed = required | {"staging"}
         actual = {path.name for path in self.root.iterdir()}
-        if actual != allowed:
-            raise ContractError("HV2-PRODUCT-DETACH-TREE", repr(sorted(actual ^ allowed)))
-        if any(self.staging.iterdir()):
-            raise ContractError("HV2-PRODUCT-DETACH-STAGING", str(self.staging))
+        missing = required - actual
+        unexpected = actual - allowed
+        if missing or unexpected:
+            raise ContractError("HV2-PRODUCT-DETACH-TREE", repr(sorted(missing | unexpected)))
+        if self.staging.exists() or self.staging.is_symlink():
+            if self.staging.is_symlink() or not self.staging.is_dir():
+                raise ContractError("HV2-PRODUCT-DETACH-STAGING", str(self.staging))
+            staging_entries = sorted(self.staging.iterdir(), key=lambda path: path.name)
+            if staging_entries:
+                raise ContractError("HV2-PRODUCT-DETACH-STAGING", str(staging_entries[0]))
         for release in self.releases.iterdir():
             _verify_release(release)
         for receipt in self.receipts.iterdir():
@@ -694,6 +772,48 @@ class ProductStore:
             load_json(receipt, require_canonical=True)
         self._load_plan()
         self._load_active()
+
+    def _detach_receipt(
+        self, active: dict[str, Any], plan: dict[str, Any], existing_detach: object | None
+    ) -> dict[str, Any]:
+        if existing_detach is not None and (
+            not isinstance(existing_detach, dict)
+            or not isinstance(existing_detach.get("observed_at"), str)
+            or not existing_detach["observed_at"]
+        ):
+            raise ContractError("HV2-PRODUCT-DETACH-RECEIPT", str(self.detach_receipt_path))
+        return {
+            "active_release_ref": active["release_ref"],
+            "documentation": {
+                "availability_after_detach": "not-guaranteed",
+                "release_ref": active["release_ref"],
+                "required_relative_paths": list(DETACH_DOCUMENT_PATHS),
+            },
+            "instructions": [
+                "Project-owned state remains in .harness-v2/.",
+                "Accepted intent history remains in .harness-v2-intents/.",
+                "Product-managed documentation is removed; preserve the named release documents before detach if offline guidance is required.",
+                "No path, timestamp, or newest-file heuristic selects authority.",
+                "D1-A detach is terminal; continue manually from project-owned state.",
+            ],
+            "intent_authority_home_id": plan["intent_authority_home_id"],
+            "item_id": plan["item_id"],
+            "observed_at": existing_detach.get("observed_at") if isinstance(existing_detach, dict) else _now(),
+            "record_type": "product-detach-receipt",
+            "removed": ["hv2", f"{PRODUCT_ROOT_NAME}/"],
+            "schema_version": PRODUCT_SCHEMA_VERSION,
+            "state_authority_home_id": plan["state_authority_home_id"],
+        }
+
+    def _verify_existing_detach_receipt(self, active: dict[str, Any], plan: dict[str, Any]) -> None:
+        if not (self.detach_receipt_path.exists() or self.detach_receipt_path.is_symlink()):
+            return
+        if self.detach_receipt_path.is_symlink() or not self.detach_receipt_path.is_file():
+            raise ContractError("HV2-PRODUCT-DETACH-RECEIPT", str(self.detach_receipt_path))
+        existing = load_json(self.detach_receipt_path, require_canonical=True)
+        if existing != self._detach_receipt(active, plan, existing):
+            raise ContractError("HV2-PRODUCT-IMMUTABLE-CONTRADICTION", str(self.detach_receipt_path))
+        raise ContractError("HV2-PRODUCT-DETACH-INCOMPLETE", str(self.detach_receipt_path))
 
     def detach(self, *, apply: bool, inject_at: str | None = None) -> dict[str, Any]:
         if not self.root.exists() and self.detach_receipt_path.exists():
@@ -718,28 +838,7 @@ class ProductStore:
         if not apply:
             return preview
         self._validate_detach_tree()
-        detach_receipt = {
-            "active_release_ref": active["release_ref"],
-            "documentation": {
-                "availability_after_detach": "not-guaranteed",
-                "release_ref": active["release_ref"],
-                "required_relative_paths": list(DETACH_DOCUMENT_PATHS),
-            },
-            "instructions": [
-                "Project-owned state remains in .harness-v2/.",
-                "Accepted intent history remains in .harness-v2-intents/.",
-                "Product-managed documentation is removed; preserve the named release documents before detach if offline guidance is required.",
-                "No path, timestamp, or newest-file heuristic selects authority.",
-                "Reinitialize tooling only through an explicit new product binding.",
-            ],
-            "intent_authority_home_id": plan["intent_authority_home_id"],
-            "item_id": plan["item_id"],
-            "observed_at": existing_detach.get("observed_at") if isinstance(existing_detach, dict) else _now(),
-            "record_type": "product-detach-receipt",
-            "removed": ["hv2", f"{PRODUCT_ROOT_NAME}/"],
-            "schema_version": PRODUCT_SCHEMA_VERSION,
-            "state_authority_home_id": plan["state_authority_home_id"],
-        }
+        detach_receipt = self._detach_receipt(active, plan, existing_detach)
         _write_exact_json(self.detach_receipt_path, detach_receipt)
         if inject_at == "after-receipt":
             raise InjectedCrash(inject_at)
