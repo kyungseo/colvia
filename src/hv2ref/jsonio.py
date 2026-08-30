@@ -5,8 +5,10 @@ import fcntl
 import hashlib
 import json
 import os
+import stat
 import sys
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -30,7 +32,7 @@ def canonical_json_bytes(value: Any) -> bytes:
     try:
         text = json.dumps(value, allow_nan=False, ensure_ascii=False, indent=2, sort_keys=True)
         return (text + "\n").encode("utf-8")
-    except (RecursionError, UnicodeEncodeError, ValueError) as exc:
+    except (RecursionError, TypeError, UnicodeEncodeError, ValueError) as exc:
         raise ContractError("HV2-JSON-EMISSION", type(exc).__name__) from exc
 
 
@@ -142,6 +144,40 @@ def _ensure_parent(path: Path) -> None:
             raise ContractError("HV2-PARENT-TYPE", str(directory))
         sync_directory(directory.parent)
         sync_directory(directory)
+
+
+@contextmanager
+def exclusive_file_lock(path: Path):
+    """Hold a process-scoped advisory lock on a stable macOS file anchor."""
+    _ensure_parent(path)
+    flags = os.O_RDWR | os.O_CREAT
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(path, flags, 0o600)
+    except OSError as exc:
+        raise ContractError("HV2-LOCK-ANCHOR", f"{path}:{exc.errno}") from exc
+    try:
+        opened = os.fstat(fd)
+        try:
+            anchored = path.lstat()
+        except (FileNotFoundError, NotADirectoryError):
+            raise ContractError("HV2-LOCK-ANCHOR", str(path)) from None
+        if (
+            path.is_symlink()
+            or not stat.S_ISREG(opened.st_mode)
+            or not stat.S_ISREG(anchored.st_mode)
+            or (opened.st_dev, opened.st_ino) != (anchored.st_dev, anchored.st_ino)
+        ):
+            raise ContractError("HV2-LOCK-ANCHOR", str(path))
+        sync_directory(path.parent)
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+    finally:
+        os.close(fd)
 
 
 def write_new_bytes(path: Path, data: bytes) -> dict[str, str]:

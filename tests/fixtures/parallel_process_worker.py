@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import json
 import os
 import sys
@@ -61,6 +62,26 @@ def install_barrier(spec: dict[str, Any], store: ParallelStateStore) -> None:
             return original(path, value)
 
         parallel_module.replace_json = wrapped
+    elif mode == "finalize-before-lock":
+        original = parallel_module.exclusive_file_lock
+
+        @contextmanager
+        def wrapped(path: Path):
+            wait_at_barrier(spec)
+            with original(path):
+                yield
+
+        parallel_module.exclusive_file_lock = wrapped
+    elif mode == "finalize-after-lock":
+        original = parallel_module.exclusive_file_lock
+
+        @contextmanager
+        def wrapped(path: Path):
+            with original(path):
+                wait_at_barrier(spec)
+                yield
+
+        parallel_module.exclusive_file_lock = wrapped
     elif mode == "finalize-after-arbitration":
         original = parallel_module._write_exact_json
         epoch_id = spec["parameters"]["epoch_id"]

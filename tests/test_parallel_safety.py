@@ -8,7 +8,9 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+import hv2ref.parallel as parallel_module
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.jsonio import load_json, replace_json
 from hv2ref.parallel import ParallelStateStore, normalize_write_scope
@@ -259,10 +261,63 @@ class ParallelSafetyFixture(unittest.TestCase):
         self.assertEqual(before_project, project_digest(self.integration))
         self.assertEqual(before_index, git(self.integration, "write-tree"))
         self.assertEqual(before_selector, (self.integration / ".harness-v2/parallel/active-integration.json").read_bytes())
-        self.assertFalse((self.integration / ".harness-v2/staging").exists())
+        lock_path = self.integration / ".harness-v2/staging/locks/active-integration.switch.lock"
+        self.assertTrue(lock_path.is_file())
+        self.assertEqual(b"", lock_path.read_bytes())
         verified = self.parallel.verify_repository("item-0001")
         self.assertEqual(4, verified["claim_count"])
         self.assertEqual(2, verified["conflict_count"])
+
+    def test_claim_conflict_retry_is_deterministic_across_observation_time(self) -> None:
+        self.activate()
+        work = self.add_worktree("work-conflict-retry", "work/conflict-retry")
+        self.claim(
+            claim_id="claim-conflict-base",
+            item_id="item-0001",
+            worktree=work,
+            worktree_id="worktree-conflict-base",
+            scope=["src/base"],
+        )
+        result = self.claim(
+            claim_id="claim-conflict-candidate",
+            item_id="item-0001",
+            worktree=work,
+            worktree_id="worktree-conflict-candidate",
+            scope=["src/candidate"],
+        )
+        self.assertEqual("conflict", result["classification"])
+        claims_root = self.integration / ".harness-v2/parallel/generations/2/claims"
+        base_path = claims_root / "claim-conflict-base.json"
+        candidate_path = claims_root / "claim-conflict-candidate.json"
+        retried = self.parallel._write_claim_conflict(
+            candidate_path,
+            load_json(candidate_path, require_canonical=True),
+            [(base_path, load_json(base_path, require_canonical=True))],
+            ["same-item"],
+        )
+        self.assertEqual(result, retried)
+        conflict = load_json(
+            self.integration / ".harness-v2/parallel/generations/2/conflicts/conflict-claim-conflict-candidate.json",
+            require_canonical=True,
+        )
+        self.assertNotIn("observed_at", conflict)
+
+    def test_historical_claim_verify_ignores_later_project_scope_symlink(self) -> None:
+        self.activate()
+        work = self.add_worktree("work-history", "work/history")
+        self.claim(
+            claim_id="claim-history",
+            item_id="item-0001",
+            worktree=work,
+            worktree_id="worktree-history",
+            scope=["future/path"],
+        )
+        outside = self.root / "outside-history"
+        outside.mkdir()
+        (self.integration / "future").symlink_to(outside, target_is_directory=True)
+        verified = self.parallel.verify_repository("item-0001")
+        self.assertEqual("pass", verified["classification"])
+
 
     def test_cli_conflict_exit_and_control_identity_rejection(self) -> None:
         self.activate()
@@ -421,14 +476,20 @@ class ParallelSafetyFixture(unittest.TestCase):
             require_canonical=True,
         )
         self.assertEqual(arbitration["record_id"], finalization["arbitration_ref"]["id"])
+        before_exact_resume = digest_files(self.integration)
         resumed = self.parallel.finalize_work(**kwargs)
         self.assertEqual("pass", resumed["classification"])
         self.assertTrue(resumed["resumed"])
+        self.assertEqual(before_exact_resume, digest_files(self.integration))
 
         conflicting = dict(kwargs)
         conflicting["result_tree"] = "0" * 40
+        conflicting["observed_at"] = "2026-08-10T08:30:00Z"
         duplicate = self.parallel.finalize_work(**conflicting)
         self.assertEqual("conflict", duplicate["classification"])
+        conflicting["observed_at"] = "2026-08-10T08:31:00Z"
+        duplicate_retry = self.parallel.finalize_work(**conflicting)
+        self.assertEqual("conflict", duplicate_retry["classification"])
         self.assertTrue(
             (
                 self.integration
@@ -449,6 +510,46 @@ class ParallelSafetyFixture(unittest.TestCase):
         self.assertEqual(result_commit, selector["current_commit"])
         verified = self.parallel.verify_repository("item-0001")
         self.assertEqual(2, verified["conflict_count"])
+
+    def test_unrelated_arbitration_write_error_is_not_reclassified_as_contention(self) -> None:
+        self.activate()
+        work = self.add_worktree("work-arbitration-error", "work/arbitration-error")
+        self.claim(
+            claim_id="claim-arbitration-error",
+            item_id="item-0001",
+            worktree=work,
+            worktree_id="worktree-arbitration-error",
+            scope=["src/arbitration-error.txt"],
+        )
+        (work / "src").mkdir()
+        (work / "src/arbitration-error.txt").write_text("arbitration error\n", encoding="utf-8")
+        git(work, "add", "src/arbitration-error.txt")
+        git(work, "commit", "-m", "fixture: arbitration error work")
+        git(self.integration, "merge", "--no-ff", "work/arbitration-error", "-m", "fixture: integrate arbitration error")
+        result_commit = git(self.integration, "rev-parse", "HEAD")
+        result_tree = git(self.integration, "rev-parse", "HEAD^{tree}")
+        original = parallel_module._write_exact_json
+
+        def unrelated_error(path: Path, value: object) -> bool:
+            if path.parent.name == "finalize-arbitrations":
+                raise ContractError("HV2-TEST-IO", str(path))
+            return original(path, value)
+
+        with mock.patch.object(parallel_module, "_write_exact_json", side_effect=unrelated_error):
+            with self.assertRaisesRegex(ContractError, "HV2-TEST-IO"):
+                self.parallel.finalize_work(
+                    epoch_id="epoch-arbitration-error",
+                    claim_ids=["claim-arbitration-error"],
+                    finalizer=FINALIZER,
+                    base_commit=self.base_commit,
+                    base_tree=self.base_tree,
+                    result_commit=result_commit,
+                    result_tree=result_tree,
+                    integration_branch="main",
+                    observed_at=OBSERVED,
+                    integration_worktree_root=self.integration,
+                    claim_worktrees={"claim-arbitration-error": work},
+                )
 
     def test_unknown_parallel_tree_is_fail_closed(self) -> None:
         self.activate()

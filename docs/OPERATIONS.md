@@ -61,7 +61,7 @@ content or mutates project bytes.
 | --- | --- | --- |
 | `pass` | exact binding verified; `doctor` also verifies the required local tuple | continue |
 | `uninitialized` | no product binding | preview `init` |
-| `partial` | an initialization stage lacks an active switch, or an exact detach receipt exists beside the live managed root | repeat the exact interrupted `init --apply` or `detach --target <project> --apply` from source as reported; do not run another mutator |
+| `partial` | an initialization stage lacks an active switch, an exact sealed item interruption can resume, or an exact detach receipt exists beside a remaining managed root | run only the exact reported `init --apply`, `resume --target <project> ...`, or `detach --target <project> --apply` action; do not run another mutator |
 | `degraded` | known schema but a digest/tree/binding contradiction exists | stop mutation; inspect the stable error code |
 | `incompatible` | schema generation cannot be interpreted safely | use a compatible release or manual path |
 | `unsupported` | runtime/tool tuple is not certified | use the documented tuple or manual fallback |
@@ -111,6 +111,15 @@ changes the active selector and preserves both releases and its receipt.
 - An exact retry reuses immutable release and receipt bytes.
 - A contradictory retry fails; it does not repair by recency.
 - `partial` initialization is resumed from the contribution source because the target launcher may not yet be active.
+- A sealed Generation 1 interruption after pointer assertion or selector switch makes product `status` return `partial` with
+  `HV2-PRODUCT-STATE-INTERRUPTED` and the exact item `resume --target <project> ...` action. Substitute the initialized project path
+  for `<project>` and run only that action before product update or rollback.
+- If the item staging inventory or any sealed staged byte is absent, linked, damaged, or mismatched, status does not advertise the
+  interruption as resumable. Preserve the checkout and use the checkout that still holds the original sealed staging evidence. Do
+  not recreate staging or copy it from an unverified source.
+- `HV2-RESUME-EVIDENCE` means required sealed evidence became unavailable after admission; `HV2-NONWRITABLE` means current state is
+  not the exact admissible interruption. `HV2-RESUME-NOT-TIP` and `HV2-RESUME-ALREADY-CURRENT` are bounded pointer diagnostics. Stop
+  on any of these codes and rerun read-only status; do not repair selectors or immutable records by hand.
 - Unexpected files under `.harness-v2-product/` block detach rather than being deleted.
 
 The `staging/` directory is runtime-only scratch. A fresh clone or worktree may omit an empty
@@ -160,6 +169,14 @@ the exact apply retry may finish even when a preserved authority home is unavail
 matches the active selector and init plan. Receipt statements that project-owned roots remain mean the product did not delete those
 roots; they are not a health, integrity, or authority attestation. A malformed, linked, wrong-type, or differing receipt is not this
 recovery state: preserve it and stop.
+
+If removal was interrupted after the receipt was committed and `active-release.json` is already absent, the same exact detach retry
+validates the regular canonical receipt and requires every remaining product-root entry to stay within the fixed managed-root
+allowlist before completing removal. It also binds the receipt to both regular local authority homes and any surviving init plan or
+named release. An unexpected entry or differing/linked authority home blocks mutation and is preserved. If root `hv2` exists in this
+interrupted state, treat it as a user/external recreation regardless of byte equality: move it aside and repeat the exact retry; the
+product will not delete it automatically. The receipt is lifecycle commitment, not permission to delete anything outside root `hv2`
+and `.harness-v2-product/`.
 
 Detach also removes the release-local documentation. Before applying detach, preserve `README.md`, `AGENTS.md`,
 `docs/GETTING-STARTED.md`, `docs/OPERATIONS.md`, and `docs/MANUAL-OPERATION.md` outside product-managed paths if offline guidance

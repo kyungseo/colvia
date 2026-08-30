@@ -46,8 +46,15 @@ Forward rollback names a previously selected completed revision by `{id, sha256}
 8. Land project payload bytes idempotently and persist a binding receipt with `git_state: unfinalized`, separately from Git
    finalization. An interrupted step can only continue from the exact sealed attempt and current pointer tip.
 
-An in-process abort at a named semantic point persists an interruption record. An abort before step 7 preserves the prior active
-pointer; retry/resume must either finish the same exact attempt or fail. No latest-wins or heuristic repair is allowed.
+An in-process abort at a named semantic point persists an interruption record. An exact interruption after the pointer assertion or
+after the selector switch is reported as structured `degraded`, non-writable, and `resumable`, with the one exact resume action.
+Resume is admitted only when that exact attempt's runtime staging inventory and every staged byte are still present and sealed, and
+when no unrelated degradation or incompatibility exists. If a fresh clone, worktree, cleanup, or damage removed that ignored staging
+evidence, the interruption remains `degraded` but is not advertised as resumable in that checkout. Use the checkout that still holds
+the sealed staging evidence; do not reconstruct it or silently repair a missing immutable binding receipt. An abort before
+step 7 preserves the prior active pointer; retry/resume must either finish the same exact attempt or fail. No latest-wins or
+heuristic repair is allowed. Once an item's lifecycle is `detached`, generic update, rollback, and repeated detach transitions are
+rejected; retained history does not authorize lifecycle resurrection.
 
 ## Git, Retention, And Privacy
 
