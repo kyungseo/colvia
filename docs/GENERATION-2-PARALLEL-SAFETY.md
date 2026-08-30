@@ -38,11 +38,14 @@ last. A partial activation is non-writable and non-finalizable. Existing authori
       finalization.json
   active-generation.json
   active-integration.json
+.harness-v2/staging/locks/
+  active-integration.switch.lock
 ```
 
 Immutable records use canonical UTF-8 JSON and same-filesystem `O_EXCL` creation. References bind stored bytes with exact
 `{id, sha256}`. The active generation and integration selectors are the only replaceable Generation 2 current-state files and are
-switched last.
+switched last. The empty lock file is a stable, non-authority advisory-lock anchor; its content, timestamp, and presence in ignored
+runtime staging never select current authority.
 
 ## Claim
 
@@ -60,15 +63,16 @@ active selectors, staging or Git index/worktree state.
 
 ## Finalization And Recovery
 
-One declared finalizer owns an integration epoch. `finalize-work` verifies the exact claim set and caller-provided worktrees, acquires
-the epoch marker, then acquires an append-only arbitration record keyed by the SHA-256 of the prior active selector. Different epochs
-that observed the same selector contend on one `O_EXCL` record, so only the exact winner can write a finalization and reach the
-selector switch. The winner revalidates the current base, scopes, Git ancestry and integrated result commit/tree, writes a
-finalization bound to the arbitration record, and switches `active-integration.json` last. Git work and integration commits are
-caller-owned and occur outside the harness.
+One declared finalizer owns an integration epoch. On supported macOS hosts, `finalize-work` takes an exclusive kernel advisory lock
+on `.harness-v2/staging/locks/active-integration.switch.lock` before reading the selector and holds it through claim, authority-leaf,
+Git-result and selector revalidation, immutable finalization, and the last selector switch. It then verifies the exact claim set and
+caller-provided worktrees, acquires the epoch marker, and acquires an append-only arbitration record keyed by the SHA-256 of the prior
+active selector. Different epochs are therefore serialized against fresh selector state; only the exact winner can write a
+finalization and reach the selector switch. Git work and integration commits are caller-owned and occur outside the harness.
 
-A different duplicate marker or prior-selector arbitration record is a visible conflict. A crash after arbitration does not release,
-expire or implicitly transfer the record. The same epoch may resume only with byte-identical intent, marker and arbitration input.
+A different duplicate marker or prior-selector arbitration record is a visible conflict. Process exit or crash releases the kernel
+lock, but it does not release, expire, or implicitly transfer an append-only arbitration record. The same epoch may resume only with
+byte-identical intent, marker and arbitration input.
 If exact resume is unavailable while the prior selector remains unchanged, the declared finalizer may explicitly name the current
 authority-chain leaf and a non-empty reason when creating a successor epoch. The append-only successor record is keyed by the stored
 byte digest of that predecessor authority, binds the successor intent, and becomes the only valid leaf; concurrent branching and a

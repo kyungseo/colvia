@@ -306,7 +306,7 @@ class StateStore:
             raise ContractError("HV2-CREATE-ACTIVE", active["revision_ref"]["id"])
         if operation != "create" and active is None:
             raise ContractError("HV2-NO-ACTIVE", operation)
-        if operation == "detach" and admission.get("lifecycle") == "detached":
+        if operation in {"update", "rollback", "detach"} and admission.get("lifecycle") == "detached":
             raise ContractError("HV2-ALREADY-DETACHED", item_id)
         release = verify_release(release_root) if release_root is not None else None
         authority = load_json(self.root / "authority.json", require_canonical=True)
@@ -563,6 +563,16 @@ class StateStore:
         self._validate_operation_sequence(operation, sequence)
         suffix = f"{sequence:04d}"
         attempt_id = f"attempt-{operation}-{suffix}"
+        admission = self.verify(item_id)
+        interruption = admission.get("interruption")
+        if admission.get("classification") != "pass" and (
+            admission.get("resumable") is not True
+            or not isinstance(interruption, dict)
+            or interruption.get("attempt_id") != attempt_id
+            or interruption.get("operation") != operation
+            or interruption.get("sequence") != sequence
+        ):
+            raise ContractError("HV2-NONWRITABLE", admission.get("classification", "unknown"))
         revision_id = f"revision-{suffix}"
         pointer_id = f"pointer-assertion-{suffix}"
         revision_path = self._record_path(item_id, "revision", revision_id)
@@ -721,6 +731,9 @@ class StateStore:
         identity_path = item_root / "identity.json"
         generation_path = item_root / "active-generation.json"
         active_path = item_root / "generations" / "1" / "active-pointer.json"
+        canonical_roots = (authority_path, identity_path, generation_path)
+        if any(path.is_symlink() for path in canonical_roots) or active_path.is_symlink():
+            raise ContractError("HV2-CANONICAL-SYMLINK", item_id)
         if not authority_path.is_file() or not identity_path.is_file() or not generation_path.is_file():
             raise ContractError("HV2-ROOT-INCOMPLETE", item_id)
         authority = load_json(authority_path, require_canonical=True)
@@ -750,6 +763,8 @@ class StateStore:
         for path in sorted(item_root.rglob("*.json")):
             if path in {identity_path, generation_path, active_path}:
                 continue
+            if path.is_symlink():
+                raise ContractError("HV2-CANONICAL-SYMLINK", str(path))
             value = load_json(path, require_canonical=True)
             record_type = value.get("record_type")
             record_id = value.get("record_id")
@@ -823,6 +838,8 @@ class StateStore:
         staging: list[dict[str, Any]] = []
         if staging_root.exists():
             for directory in sorted(path for path in staging_root.iterdir() if path.is_dir()):
+                if directory.name == "locks":
+                    continue
                 if not (directory / "inventory.json").exists():
                     staging.append({"attempt_id": directory.name, "status": "residue-without-inventory"})
                     continue
@@ -832,7 +849,7 @@ class StateStore:
                     staging.append(verified_stage)
                 except ContractError as exc:
                     staging.append({"attempt_id": directory.name, "error_code": exc.code, "status": "damaged"})
-        temp_residues = sorted(path.relative_to(self.root).as_posix() for path in self.root.rglob("*.hv2-tmp"))
+        temp_residues = sorted(path.relative_to(self.root).as_posix() for path in self.root.rglob("*.hv2-tmp-*"))
         if temp_residues:
             degraded.extend(f"temp-residue:{path}" for path in temp_residues)
 
@@ -845,8 +862,10 @@ class StateStore:
                 "finalizable": False,
                 "incompatible_reasons": incompatible,
                 "item_id": item_id,
+                "interruption": None,
                 "lifecycle": None,
                 "record_count": len(records),
+                "resumable": False,
                 "staging_inventories": staging,
                 "writable": False,
             }
@@ -873,6 +892,8 @@ class StateStore:
         pointer_records: dict[str, dict[str, Any]] = {}
         revisions_by_attempt: dict[str, tuple[dict[str, Any], dict[str, str]]] = {}
         binding_by_attempt: dict[str, dict[str, Any]] = {}
+        resumed_attempts: set[str] = set()
+        interruptions_by_attempt: dict[str, list[dict[str, Any]]] = {}
         for _, record_path, record in records.values():
             record_type = record["record_type"]
             if record_type == "attempt-result":
@@ -957,6 +978,7 @@ class StateStore:
                 verify_ref(record["pointer_after"], "pointer-assertion")
                 if record["pointer_before"] is not None:
                     verify_ref(record["pointer_before"], "pointer-assertion")
+                resumed_attempts.add(record["attempt_id"])
             elif record_type == "interruption":
                 if record.get("exit_code") != 75 or record.get("injected_at") not in {
                     "after_intent",
@@ -970,6 +992,7 @@ class StateStore:
                     raise ContractError("HV2-INTERRUPTION-RECORD", record["record_id"])
                 if record["pointer_before"] is not None:
                     verify_ref(record["pointer_before"], "pointer-assertion")
+                interruptions_by_attempt.setdefault(record["attempt_id"], []).append(record)
 
         release_bindings = {
             record["release_id"]: record
@@ -993,6 +1016,83 @@ class StateStore:
             lifecycle_ref = revision["facet_refs"]["lifecycle"]
             lifecycle = verify_ref(lifecycle_ref, "facet-assertion")["value"].get("state")
 
+        resumable_candidate: dict[str, Any] | None = None
+        interrupted_attempts_without_binding: set[str] = set()
+        unresumable_pending_pointer_ids: set[str] = set()
+        unresumable_after_switch_revision_ids: set[str] = set()
+        for attempt_id, interruption_records in interruptions_by_attempt.items():
+            for interruption_record in interruption_records:
+                point = interruption_record.get("injected_at")
+                revision_entry = revisions_by_attempt.get(attempt_id)
+                matching_pointers = [
+                    (pointer_id, pointer)
+                    for pointer_id, pointer in pointer_records.items()
+                    if pointer.get("attempt_id") == attempt_id
+                ]
+                if point not in {"after_pointer_assertion", "after_switch"} or revision_entry is None or len(matching_pointers) != 1:
+                    continue
+                pointer_id, pending_pointer = matching_pointers[0]
+                _, revision_ref = revision_entry
+                active_pointer_ref = None if active is None else active.get("pointer_assertion_ref")
+                active_revision_ref = None if active is None else active.get("revision_ref")
+                prior_ref = pending_pointer.get("prior_pointer_ref")
+                if (
+                    interruption_record.get("pointer_before") != prior_ref
+                    or binding_by_attempt.get(attempt_id) is not None
+                    or attempt_id in resumed_attempts
+                ):
+                    continue
+                exact = (
+                    point == "after_pointer_assertion"
+                    and active_pointer_ref == prior_ref
+                    and active_revision_ref != revision_ref
+                ) or (
+                    point == "after_switch"
+                    and active_pointer_ref
+                    == _ref(pointer_id, self._record_path(item_id, "pointer-assertion", pointer_id).read_bytes())
+                    and active_revision_ref == revision_ref
+                )
+                if not exact:
+                    continue
+                interrupted_attempts_without_binding.add(attempt_id)
+                stage_root = staging_root / attempt_id
+                stage_is_sealed = False
+                if not stage_root.is_symlink() and stage_root.is_dir():
+                    try:
+                        verified_stage = self._verify_stage(stage_root)
+                        stage_is_sealed = verified_stage.get("attempt_id") == attempt_id
+                    except (ContractError, FileNotFoundError, NotADirectoryError):
+                        stage_is_sealed = False
+                if not stage_is_sealed:
+                    degraded.append(f"interrupted-unresumable:{attempt_id}:staging-evidence")
+                    if point == "after_pointer_assertion":
+                        unresumable_pending_pointer_ids.add(pointer_id)
+                    else:
+                        unresumable_after_switch_revision_ids.add(revision_ref["id"])
+                    continue
+                operation_and_sequence = attempt_id.removeprefix("attempt-").rsplit("-", 1)
+                if len(operation_and_sequence) != 2:
+                    raise ContractError("HV2-INTERRUPTION-RECORD", attempt_id)
+                operation, raw_sequence = operation_and_sequence
+                try:
+                    sequence = int(raw_sequence)
+                except ValueError as exc:
+                    raise ContractError("HV2-INTERRUPTION-RECORD", attempt_id) from exc
+                candidate = {
+                    "attempt_id": attempt_id,
+                    "operation": operation,
+                    "point": point,
+                    "pointer_id": pointer_id,
+                    "resume_action": (
+                        f"resume --target <project> --item-id {item_id} --operation {operation} --sequence {sequence}"
+                    ),
+                    "revision_ref": revision_ref,
+                    "sequence": sequence,
+                }
+                if resumable_candidate is not None:
+                    raise ContractError("HV2-INTERRUPTION-RECORD", "multiple-resumable-attempts")
+                resumable_candidate = candidate
+
         if pointer_records:
             children: dict[str | None, list[str]] = {}
             for pointer_id, pointer in pointer_records.items():
@@ -1002,7 +1102,20 @@ class StateStore:
             if len(children.get(None, [])) != 1 or any(len(child_ids) > 1 for child_ids in children.values()):
                 raise ContractError("HV2-POINTER-HISTORY-CONTRADICTION", "fork-or-root")
             tips = [pointer_id for pointer_id in pointer_records if pointer_id not in children]
-            if len(tips) != 1 or active is None or active["pointer_assertion_ref"]["id"] != tips[0]:
+            exact_pending_tip = (
+                len(tips) == 1
+                and (
+                    (
+                        resumable_candidate is not None
+                        and resumable_candidate["point"] == "after_pointer_assertion"
+                        and tips[0] == resumable_candidate["pointer_id"]
+                    )
+                    or tips[0] in unresumable_pending_pointer_ids
+                )
+            )
+            if len(tips) != 1 or (
+                not exact_pending_tip and (active is None or active["pointer_assertion_ref"]["id"] != tips[0])
+            ):
                 raise ContractError("HV2-POINTER-HISTORY-CONTRADICTION", "active-not-tip")
         elif active is not None:
             raise ContractError("HV2-POINTER-HISTORY-CONTRADICTION", "active-without-history")
@@ -1012,7 +1125,8 @@ class StateStore:
             binding = binding_by_attempt.get(attempt_id)
             if revision["record_id"] in selected_revision_refs:
                 if binding is None or binding.get("revision_ref") != revision_ref or binding.get("result_ref") != revision["result_ref"]:
-                    raise ContractError("HV2-BINDING-RECEIPT", attempt_id)
+                    if attempt_id not in interrupted_attempts_without_binding or binding is not None:
+                        raise ContractError("HV2-BINDING-RECEIPT", attempt_id)
             intent = verify_ref(revision["attempt_ref"], "attempt-intent")
             release_ref = intent.get("release_ref")
             if revision["operation"] == "create":
@@ -1030,14 +1144,30 @@ class StateStore:
             current = verify_ref(active["revision_ref"], "revision")
             evidence = verify_ref(current["facet_refs"]["evidence"], "facet-assertion")["value"]
             target_payload = self.target_root / "docs" / "GENERATION-1-CONTRACT.md"
-            if (
+            payload_invalid = (
                 target_payload.is_symlink()
                 or not target_payload.is_file()
                 or sha256_file(target_payload) != evidence["payload_sha256"]
-            ):
+            )
+            exact_after_switch = (
+                (
+                    resumable_candidate is not None
+                    and resumable_candidate["point"] == "after_switch"
+                    and resumable_candidate["revision_ref"] == active["revision_ref"]
+                )
+                or active["revision_ref"]["id"] in unresumable_after_switch_revision_ids
+            )
+            if payload_invalid and not exact_after_switch:
                 raise ContractError("HV2-PAYLOAD-DIGEST", "target")
 
+        public_interruption = None
+        if resumable_candidate is not None:
+            public_interruption = {key: resumable_candidate[key] for key in ("attempt_id", "operation", "point", "resume_action", "sequence")}
+            degraded.append(f"interrupted:{resumable_candidate['attempt_id']}:{resumable_candidate['point']}")
         classification = "incompatible" if incompatible else "degraded" if degraded else "pass"
+        resumable = resumable_candidate is not None and not incompatible and degraded == [
+            f"interrupted:{resumable_candidate['attempt_id']}:{resumable_candidate['point']}"
+        ]
         return {
             "authority_home_id": authority.get("authority_home_id"),
             "classification": classification,
@@ -1046,8 +1176,10 @@ class StateStore:
             "finalizable": classification == "pass",
             "incompatible_reasons": incompatible,
             "item_id": item_id,
+            "interruption": public_interruption,
             "lifecycle": lifecycle,
             "record_count": len(records),
+            "resumable": resumable,
             "staging_inventories": staging,
             "writable": classification == "pass",
         }

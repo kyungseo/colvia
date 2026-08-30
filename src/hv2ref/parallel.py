@@ -10,6 +10,7 @@ from .errors import ContractError, InjectedCrash
 from .jsonio import (
     canonical_json_bytes,
     decode_json_bytes,
+    exclusive_file_lock,
     load_json,
     replace_json,
     sha256_bytes,
@@ -153,10 +154,9 @@ def _scope_overlap(left: tuple[str, ...], right: tuple[str, ...]) -> bool:
     return False
 
 
-def normalize_write_scope(worktree_root: Path, values: list[str]) -> tuple[str, ...]:
+def _normalize_stored_write_scope(values: list[str]) -> tuple[str, ...]:
     if not isinstance(values, list) or not values:
         raise ContractError("HV2-WRITE-SCOPE", "empty")
-    root = worktree_root.resolve()
     normalized: list[str] = []
     identities: set[tuple[str, ...]] = set()
     for raw in values:
@@ -180,6 +180,20 @@ def normalize_write_scope(worktree_root: Path, values: list[str]) -> tuple[str, 
         if identity in identities:
             raise ContractError("HV2-WRITE-SCOPE-COLLISION", raw)
         identities.add(identity)
+        normalized.append(pure.as_posix())
+    normalized.sort(key=lambda value: tuple(part.casefold() for part in value.split("/")))
+    for index, left in enumerate(normalized):
+        for right in normalized[index + 1 :]:
+            if _scope_overlap((left,), (right,)):
+                raise ContractError("HV2-WRITE-SCOPE-COLLISION", f"{left}:{right}")
+    return tuple(normalized)
+
+
+def normalize_write_scope(worktree_root: Path, values: list[str]) -> tuple[str, ...]:
+    normalized = _normalize_stored_write_scope(values)
+    root = worktree_root.resolve()
+    for raw in normalized:
+        pure = PurePosixPath(raw)
         current = root
         for part in pure.parts:
             current = current / part
@@ -190,13 +204,7 @@ def normalize_write_scope(worktree_root: Path, values: list[str]) -> tuple[str, 
             candidate.relative_to(root)
         except ValueError as exc:
             raise ContractError("HV2-WRITE-SCOPE-ESCAPE", raw) from exc
-        normalized.append(pure.as_posix())
-    normalized.sort(key=lambda value: tuple(part.casefold() for part in value.split("/")))
-    for index, left in enumerate(normalized):
-        for right in normalized[index + 1 :]:
-            if _scope_overlap((left,), (right,)):
-                raise ContractError("HV2-WRITE-SCOPE-COLLISION", f"{left}:{right}")
-    return tuple(normalized)
+    return normalized
 
 
 class ParallelStateStore:
@@ -222,6 +230,9 @@ class ParallelStateStore:
 
     def _active_integration_path(self) -> Path:
         return self.parallel_root / "active-integration.json"
+
+    def _switch_lock_path(self) -> Path:
+        return self.root / "staging" / "locks" / "active-integration.switch.lock"
 
     def _registration_path(self, item_id: str) -> Path:
         return self.generation_root / "item-registrations" / f"{item_id}.json"
@@ -419,6 +430,8 @@ class ParallelStateStore:
             "generation_assertion_ref": generation_ref,
             "schema_generation": 2,
         }
+        with exclusive_file_lock(self._switch_lock_path()):
+            pass
         replace_json(prior_selector_path, item_selector)
         if _inject_at == "after_item_switch":
             raise InjectedCrash("after_gen2_item_switch")
@@ -484,19 +497,17 @@ class ParallelStateStore:
         claim: dict[str, Any],
         conflicting: list[tuple[Path, dict[str, Any]]],
         reasons: list[str],
-        observed_at: str,
     ) -> dict[str, Any]:
         conflict_id = f"conflict-{claim['claim_id']}"
         record = {
             "candidate_claim_ref": _path_ref(claim_path),
             "conflicting_claim_refs": [_path_ref(path) for path, _ in conflicting],
-            "observed_at": observed_at,
             "reasons": sorted(set(reasons)),
             "record_id": conflict_id,
             "record_type": "claim-conflict",
             "schema_generation": 2,
         }
-        write_new_json(self._conflict_path(conflict_id), record)
+        _write_exact_json(self._conflict_path(conflict_id), record)
         return {"claim_id": claim["claim_id"], "classification": "conflict", "conflict_id": conflict_id}
 
     def claim_work(
@@ -574,7 +585,7 @@ class ParallelStateStore:
                 conflicting.append((other_path, other))
                 reasons.extend(pair_reasons)
         if reasons:
-            result = self._write_claim_conflict(claim_path, record, conflicting, reasons, observed_at)
+            result = self._write_claim_conflict(claim_path, record, conflicting, reasons)
             if "stale-base" in reasons:
                 result["classification"] = "stale"
             return result
@@ -629,6 +640,40 @@ class ParallelStateStore:
         return result
 
     def finalize_work(
+        self,
+        *,
+        epoch_id: str,
+        claim_ids: list[str],
+        finalizer: str,
+        base_commit: str,
+        base_tree: str,
+        result_commit: str,
+        result_tree: str,
+        integration_branch: str,
+        observed_at: str,
+        integration_worktree_root: Path,
+        claim_worktrees: dict[str, Path],
+        succeeds_epoch_id: str | None = None,
+        successor_reason: str | None = None,
+    ) -> dict[str, Any]:
+        with exclusive_file_lock(self._switch_lock_path()):
+            return self._finalize_work_locked(
+                epoch_id=epoch_id,
+                claim_ids=claim_ids,
+                finalizer=finalizer,
+                base_commit=base_commit,
+                base_tree=base_tree,
+                result_commit=result_commit,
+                result_tree=result_tree,
+                integration_branch=integration_branch,
+                observed_at=observed_at,
+                integration_worktree_root=integration_worktree_root,
+                claim_worktrees=claim_worktrees,
+                succeeds_epoch_id=succeeds_epoch_id,
+                successor_reason=successor_reason,
+            )
+
+    def _finalize_work_locked(
         self,
         *,
         epoch_id: str,
@@ -703,7 +748,6 @@ class ParallelStateStore:
             conflict = {
                 "candidate_claim_ref": prior_refs[0],
                 "conflicting_claim_refs": prior_refs[1:],
-                "observed_at": observed_at,
                 "reasons": ["duplicate-finalize-input"],
                 "record_id": conflict_id,
                 "record_type": "finalization-conflict",
@@ -800,7 +844,6 @@ class ParallelStateStore:
             conflict = {
                 "candidate_claim_ref": claim_refs[0],
                 "conflicting_claim_refs": claim_refs[1:],
-                "observed_at": observed_at,
                 "reasons": ["duplicate-finalize-marker", exc.code],
                 "record_id": conflict_id,
                 "record_type": "finalization-conflict",
@@ -830,9 +873,9 @@ class ParallelStateStore:
         try:
             original_created = _write_exact_json(arbitration_path, arbitration)
         except ContractError as exc:
+            if exc.code != "HV2-IMMUTABLE-CONTRADICTION":
+                raise
             original_created = False
-            if not arbitration_path.exists() and not arbitration_path.is_symlink():
-                arbitration_error = exc
 
         authority_path: Path
         authority_ref: dict[str, str]
@@ -894,6 +937,8 @@ class ParallelStateStore:
                     authority_path = successor_path
                     authority_ref = _path_ref(authority_path)
                 except ContractError as exc:
+                    if exc.code != "HV2-IMMUTABLE-CONTRADICTION":
+                        raise
                     arbitration_error = exc
             else:
                 arbitration_error = ContractError("HV2-SUCCESSOR-PREDECESSOR", repr(succeeds_epoch_id))
@@ -903,7 +948,6 @@ class ParallelStateStore:
             conflict = {
                 "candidate_claim_ref": claim_refs[0],
                 "conflicting_claim_refs": claim_refs[1:],
-                "observed_at": observed_at,
                 "reasons": ["selector-arbitration-held", arbitration_error.code],
                 "record_id": conflict_id,
                 "record_type": "finalization-conflict",
@@ -946,7 +990,6 @@ class ParallelStateStore:
             conflict = {
                 "candidate_claim_ref": claim_refs[0],
                 "conflicting_claim_refs": claim_refs[1:],
-                "observed_at": observed_at,
                 "reasons": ["pre-switch-revalidation-failed"],
                 "record_id": conflict_id,
                 "record_type": "finalization-conflict",
@@ -1072,7 +1115,7 @@ class ParallelStateStore:
             expected_parallel_files.add(path)
             if not self._registration_path(claim.get("item_id", "")).is_file():
                 raise ContractError("HV2-ITEM-UNREGISTERED", str(claim.get("item_id")))
-            if tuple(claim.get("write_scope", [])) != normalize_write_scope(self.target_root, claim.get("write_scope", [])):
+            if tuple(claim.get("write_scope", [])) != _normalize_stored_write_scope(claim.get("write_scope", [])):
                 raise ContractError("HV2-WRITE-SCOPE", str(path))
         for path, conflict in self._conflicts():
             if conflict.get("schema_generation") != 2 or conflict.get("record_type") not in {"claim-conflict", "finalization-conflict"}:

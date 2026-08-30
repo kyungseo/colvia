@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -10,9 +11,12 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
+from hv2ref.carrier import build_release
+from hv2ref.cli import parser
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.jsonio import canonical_json_bytes, load_json
 from hv2ref.product import ProductStore, source_root
+from hv2ref.state import StateStore
 
 from tests.test_productization import candidate_copy, git_commit_all, git_init, snapshot
 
@@ -36,6 +40,283 @@ def exact_snapshot(root: Path) -> dict[str, tuple[object, ...]]:
 
 
 class ProductizationSafetyTests(unittest.TestCase):
+    def test_missing_plan_with_existing_homes_and_detach_receipt_never_reissues_authority(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            target = Path(raw) / "target"
+            git_init(target)
+            store = ProductStore(target)
+            store.init(source_root(), apply=True)
+            with self.assertRaises(InjectedCrash):
+                store.detach(apply=True, inject_at="after-receipt")
+            (target / ".harness-v2-product/active-release.json").unlink()
+            (target / ".harness-v2-product/init-plan.json").unlink()
+            before = exact_snapshot(target)
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-ATTACH-REQUIRED"):
+                store.init(source_root(), apply=True)
+            self.assertEqual(before, exact_snapshot(target))
+
+    def test_missing_plan_and_compound_detach_have_bounded_recovery(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            missing_target = base / "missing-plan"
+            git_init(missing_target)
+            missing_store = ProductStore(missing_target)
+            missing_store.init(source_root(), apply=True)
+            (missing_target / ".harness-v2-product/init-plan.json").unlink()
+            before = exact_snapshot(missing_target)
+            status = missing_store.status()
+            self.assertEqual("degraded", status["classification"])
+            self.assertEqual("HV2-PRODUCT-INIT-PLAN", status["error_code"])
+            self.assertEqual(before, exact_snapshot(missing_target))
+
+            compound_target = base / "compound-detach"
+            git_init(compound_target)
+            compound_store = ProductStore(compound_target)
+            compound_store.init(source_root(), apply=True)
+            with self.assertRaises(InjectedCrash):
+                compound_store.detach(apply=True, inject_at="after-receipt")
+            (compound_target / "hv2").unlink()
+            (compound_target / ".harness-v2-product/active-release.json").unlink()
+            (compound_target / ".harness-v2-product/init-plan.json").unlink()
+            shutil.rmtree(compound_target / ".harness-v2-product/releases")
+            compound_status = compound_store.status()
+            self.assertEqual("partial", compound_status["classification"])
+            self.assertIn("detach", compound_status["next_action"])
+            self.assertNotIn("repeat the exact init", compound_status["next_action"])
+            unexpected = compound_target / ".harness-v2-product/unexpected"
+            unexpected.write_text("preserve\n", encoding="utf-8")
+            blocked = exact_snapshot(compound_target)
+            blocked_status = compound_store.status()
+            self.assertEqual("degraded", blocked_status["classification"])
+            self.assertEqual("HV2-PRODUCT-DETACH-TREE", blocked_status["error_code"])
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-TREE"):
+                compound_store.detach(apply=True)
+            self.assertEqual(blocked, exact_snapshot(compound_target))
+            unexpected.unlink()
+            before_preview = exact_snapshot(compound_target)
+            preview = compound_store.detach(apply=False)
+            self.assertEqual("preview", preview["classification"])
+            self.assertEqual(before_preview, exact_snapshot(compound_target))
+            command = [
+                str(source_root() / "hv2"),
+                "detach",
+                "--target",
+                str(compound_target),
+                "--apply",
+            ]
+            completed = subprocess.run(command, cwd=source_root(), check=False, text=True, capture_output=True)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertEqual("detached", json.loads(completed.stdout)["classification"])
+            self.assertFalse((compound_target / ".harness-v2-product").exists())
+            self.assertFalse((compound_target / "hv2").exists())
+            self.assertTrue((compound_target / ".harness-v2-detached.json").is_file())
+
+    def test_interrupted_detach_binds_receipt_authority_and_preserves_recreated_launcher(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            target = base / "target"
+            foreign = base / "foreign"
+            for path in (target, foreign):
+                git_init(path)
+                store = ProductStore(path)
+                store.init(source_root(), apply=True)
+                with self.assertRaises(InjectedCrash):
+                    store.detach(apply=True, inject_at="after-receipt")
+
+            target_store = ProductStore(target)
+            target_launcher = target / "hv2"
+            target_launcher.unlink()
+            (target / ".harness-v2-product/active-release.json").unlink()
+            receipt_path = target / ".harness-v2-detached.json"
+            foreign_receipt = (foreign / ".harness-v2-detached.json").read_bytes()
+            original_receipt = receipt_path.read_bytes()
+            receipt_path.write_bytes(foreign_receipt)
+            foreign_snapshot = exact_snapshot(target)
+            foreign_status = target_store.status()
+            self.assertEqual("degraded", foreign_status["classification"])
+            self.assertEqual("HV2-PRODUCT-DETACH-RECEIPT", foreign_status["error_code"])
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-RECEIPT"):
+                target_store.detach(apply=True)
+            self.assertEqual(foreign_snapshot, exact_snapshot(target))
+
+            receipt_path.write_bytes(original_receipt)
+            item_mismatch = load_json(receipt_path, require_canonical=True)
+            item_mismatch["item_id"] = "item-foreign"
+            receipt_path.write_bytes(canonical_json_bytes(item_mismatch))
+            item_snapshot = exact_snapshot(target)
+            item_status = target_store.status()
+            self.assertEqual("degraded", item_status["classification"])
+            self.assertEqual("HV2-PRODUCT-DETACH-RECEIPT", item_status["error_code"])
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-RECEIPT"):
+                target_store.detach(apply=True)
+            self.assertEqual(item_snapshot, exact_snapshot(target))
+
+            receipt_path.write_bytes(original_receipt)
+            receipt = load_json(receipt_path, require_canonical=True)
+            release_readme = (
+                target / ".harness-v2-product/releases" / receipt["active_release_ref"]["id"] / "README.md"
+            )
+            release_readme_bytes = release_readme.read_bytes()
+            release_readme.write_text("tampered release\n", encoding="utf-8")
+            release_snapshot = exact_snapshot(target)
+            release_status = target_store.status()
+            self.assertEqual("degraded", release_status["classification"])
+            self.assertEqual("HV2-PRODUCT-DETACH-RECEIPT", release_status["error_code"])
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-RECEIPT"):
+                target_store.detach(apply=True)
+            self.assertEqual(release_snapshot, exact_snapshot(target))
+
+            release_readme.write_bytes(release_readme_bytes)
+            external_launcher = base / "external-launcher"
+            external_launcher.write_text("external\n", encoding="utf-8")
+            for launcher_form in ("file", "symlink", "directory"):
+                with self.subTest(launcher_form=launcher_form):
+                    if launcher_form == "file":
+                        target_launcher.write_text("#!/bin/sh\necho user-owned\n", encoding="utf-8")
+                    elif launcher_form == "symlink":
+                        target_launcher.symlink_to(external_launcher)
+                    else:
+                        target_launcher.mkdir()
+                    launcher_snapshot = exact_snapshot(target)
+                    launcher_status = target_store.status()
+                    self.assertEqual("degraded", launcher_status["classification"])
+                    self.assertEqual("HV2-PRODUCT-LAUNCHER-DRIFT", launcher_status["error_code"])
+                    with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-LAUNCHER-DRIFT"):
+                        target_store.detach(apply=True)
+                    self.assertEqual(launcher_snapshot, exact_snapshot(target))
+                    self.assertEqual(b"external\n", external_launcher.read_bytes())
+                    if target_launcher.is_dir() and not target_launcher.is_symlink():
+                        target_launcher.rmdir()
+                    else:
+                        target_launcher.unlink()
+
+            (target / ".harness-v2-product/init-plan.json").unlink()
+            shutil.rmtree(target / ".harness-v2-product/releases")
+            receipt_path.write_bytes(foreign_receipt)
+            for home_name in (".harness-v2", ".harness-v2-intents"):
+                target_home = target / home_name
+                target_home.rename(base / f"preserved-{home_name[1:]}")
+                target_home.symlink_to(foreign / home_name, target_is_directory=True)
+            linked_home_snapshot = exact_snapshot(target)
+            linked_home_status = target_store.status()
+            self.assertEqual("degraded", linked_home_status["classification"])
+            self.assertEqual("HV2-PRODUCT-DETACH-RECEIPT", linked_home_status["error_code"])
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-RECEIPT"):
+                target_store.detach(apply=False)
+            with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-DETACH-RECEIPT"):
+                target_store.detach(apply=True)
+            self.assertEqual(linked_home_snapshot, exact_snapshot(target))
+
+    def test_product_projects_resumable_item_interruption_and_blocks_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            target = base / "target"
+            git_init(target)
+            product = ProductStore(target)
+            product.init(source_root(), apply=True)
+            plan = load_json(target / ".harness-v2-product/init-plan.json", require_canonical=True)
+            carrier = base / "carrier"
+            build_release(
+                source_root() / "docs/GENERATION-1-CONTRACT.md",
+                carrier,
+                {
+                    "authority_home_id": plan["state_authority_home_id"],
+                    "created_at": "2026-08-30T00:00:00Z",
+                    "inventory_id": "inventory-product-interruption",
+                    "release_id": "release-product-interruption",
+                },
+            )
+            state = StateStore(target)
+            state.transition(
+                item_id=plan["item_id"],
+                operation="create",
+                sequence=1,
+                observed_at="2026-08-30T00:01:00Z",
+                actor="OWNER-LOCAL-001",
+                release_root=carrier,
+            )
+            with self.assertRaises(InjectedCrash):
+                state.transition(
+                    item_id=plan["item_id"],
+                    operation="update",
+                    sequence=2,
+                    observed_at="2026-08-30T00:02:00Z",
+                    actor="OWNER-LOCAL-001",
+                    inject_at="after_pointer_assertion",
+                )
+            before = exact_snapshot(target)
+            status = product.status()
+            self.assertEqual("partial", status["classification"])
+            self.assertEqual("HV2-PRODUCT-STATE-INTERRUPTED", status["error_code"])
+            self.assertEqual(
+                "resume --target <project> --item-id item-0001 --operation update --sequence 2",
+                status["next_action"],
+            )
+            parsed = parser().parse_args(shlex.split(status["next_action"].replace("<project>", str(target))))
+            self.assertEqual("resume", parsed.command)
+            self.assertEqual(target, parsed.target)
+            self.assertEqual("partial", product.doctor()["classification"])
+            for operation in (
+                lambda: product.update(candidate_copy(base / "candidate"), apply=False),
+                lambda: product.rollback(None, apply=False),
+            ):
+                with self.assertRaisesRegex(ContractError, "HV2-PRODUCT-STATE-INTERRUPTED"):
+                    operation()
+                self.assertEqual(before, exact_snapshot(target))
+            self.assertEqual(before, exact_snapshot(target))
+            state.resume(plan["item_id"], "update", 2)
+            self.assertEqual("pass", product.status()["classification"])
+            binding = target / ".harness-v2/items/item-0001/generations/1/binding-receipts/binding-attempt-update-0002.json"
+            binding.unlink()
+            deleted_binding_status = product.status()
+            self.assertEqual("degraded", deleted_binding_status["classification"])
+            self.assertEqual("HV2-BINDING-RECEIPT", deleted_binding_status["error_code"])
+            with self.assertRaisesRegex(ContractError, "HV2-BINDING-RECEIPT"):
+                state.resume(plan["item_id"], "update", 2)
+
+    def test_product_does_not_project_missing_item_staging_as_resumable(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            target = base / "target"
+            git_init(target)
+            product = ProductStore(target)
+            product.init(source_root(), apply=True)
+            plan = load_json(target / ".harness-v2-product/init-plan.json", require_canonical=True)
+            carrier = base / "carrier"
+            build_release(
+                source_root() / "docs/GENERATION-1-CONTRACT.md",
+                carrier,
+                {
+                    "authority_home_id": plan["state_authority_home_id"],
+                    "created_at": "2026-08-30T00:00:00Z",
+                    "inventory_id": "inventory-product-staging-loss",
+                    "release_id": "release-product-staging-loss",
+                },
+            )
+            state = StateStore(target)
+            state.transition(
+                item_id=plan["item_id"],
+                operation="create",
+                sequence=1,
+                observed_at="2026-08-30T00:01:00Z",
+                actor="OWNER-LOCAL-001",
+                release_root=carrier,
+            )
+            with self.assertRaises(InjectedCrash):
+                state.transition(
+                    item_id=plan["item_id"],
+                    operation="update",
+                    sequence=2,
+                    observed_at="2026-08-30T00:02:00Z",
+                    actor="OWNER-LOCAL-001",
+                    inject_at="after_pointer_assertion",
+                )
+            shutil.rmtree(target / ".harness-v2/staging")
+            status = product.status()
+            self.assertEqual("degraded", status["classification"])
+            self.assertEqual("HV2-PRODUCT-STATE-BINDING", status["error_code"])
+            self.assertNotIn("resume", status["next_action"])
+
     def test_tracked_binding_survives_clone_and_worktree_without_runtime_staging(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             base = Path(raw)

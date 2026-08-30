@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
 
 from hv2ref.carrier import _safe_relative_path, build_release, verify_release
 from hv2ref.errors import ContractError, InjectedCrash
-from hv2ref.jsonio import canonical_json_bytes, decode_json_bytes, load_json, sha256_file
+from hv2ref.jsonio import canonical_json_bytes, decode_json_bytes, exclusive_file_lock, load_json, sha256_file
 from hv2ref.state import StateStore, _base
 
 
@@ -47,6 +48,25 @@ class ContractFixture(unittest.TestCase):
 
 
 class JsonAndCarrierRedTests(ContractFixture):
+    def test_advisory_lock_anchor_rejects_symlink_and_wrong_type(self) -> None:
+        lock_path = self.root / "staging/locks/active-integration.switch.lock"
+        lock_path.parent.mkdir(parents=True)
+        outside = self.root / "outside-lock"
+        outside.write_bytes(b"")
+        lock_path.symlink_to(outside)
+        with self.assertRaisesRegex(ContractError, "HV2-LOCK-ANCHOR"):
+            with exclusive_file_lock(lock_path):
+                self.fail("symlink lock anchor was admitted")
+        lock_path.unlink()
+        lock_path.mkdir()
+        with self.assertRaisesRegex(ContractError, "HV2-LOCK-ANCHOR"):
+            with exclusive_file_lock(lock_path):
+                self.fail("directory lock anchor was admitted")
+
+    def test_unserializable_json_is_stable_contract_error(self) -> None:
+        with self.assertRaisesRegex(ContractError, "HV2-JSON-EMISSION"):
+            canonical_json_bytes({"value": object()})
+
     def test_duplicate_key_is_red(self) -> None:
         with self.assertRaisesRegex(ContractError, "HV2-JSON-DUPLICATE-KEY"):
             decode_json_bytes(b'{"a": 1, "a": 2}\n')
@@ -113,6 +133,175 @@ class JsonAndCarrierRedTests(ContractFixture):
 
 
 class StateContractRedTests(ContractFixture):
+    def test_after_pointer_interruption_is_structured_resumable_nonpass(self) -> None:
+        self.create()
+        with self.assertRaises(InjectedCrash):
+            self.store.transition(
+                item_id="item-0001",
+                operation="update",
+                sequence=2,
+                observed_at="2026-08-08T12:03:00Z",
+                actor="OWNER-LOCAL-001",
+                inject_at="after_pointer_assertion",
+            )
+        result = self.store.verify("item-0001")
+        self.assertEqual("degraded", result["classification"])
+        self.assertFalse(result["writable"])
+        self.assertTrue(result["resumable"])
+        self.assertEqual(
+            {
+                "attempt_id": "attempt-update-0002",
+                "operation": "update",
+                "point": "after_pointer_assertion",
+                "resume_action": "resume --target <project> --item-id item-0001 --operation update --sequence 2",
+                "sequence": 2,
+            },
+            result["interruption"],
+        )
+        self.assertEqual("revision-0002", self.store.resume("item-0001", "update", 2)["revision_id"])
+
+    def test_after_switch_interruption_is_structured_resumable_nonpass(self) -> None:
+        self.create()
+        with self.assertRaises(InjectedCrash):
+            self.store.transition(
+                item_id="item-0001",
+                operation="update",
+                sequence=2,
+                observed_at="2026-08-08T12:03:00Z",
+                actor="OWNER-LOCAL-001",
+                inject_at="after_switch",
+            )
+        result = self.store.verify("item-0001")
+        self.assertEqual("degraded", result["classification"])
+        self.assertEqual("after_switch", result["interruption"]["point"])
+        self.assertTrue(result["resumable"])
+        self.assertEqual("revision-0002", self.store.resume("item-0001", "update", 2)["revision_id"])
+
+    def test_later_recoverable_interruption_survives_earlier_same_attempt_abort_record(self) -> None:
+        self.create()
+        call = {
+            "item_id": "item-0001",
+            "operation": "update",
+            "sequence": 2,
+            "observed_at": "2026-08-08T12:03:00Z",
+            "actor": "OWNER-LOCAL-001",
+        }
+        with self.assertRaises(InjectedCrash):
+            self.store.transition(**call, inject_at="after_stage")
+        with self.assertRaises(InjectedCrash):
+            self.store.transition(**call, inject_at="after_pointer_assertion")
+        result = self.store.verify("item-0001")
+        self.assertTrue(result["resumable"])
+        self.assertEqual("after_pointer_assertion", result["interruption"]["point"])
+        self.assertEqual("revision-0002", self.store.resume("item-0001", "update", 2)["revision_id"])
+
+    def test_resumed_attempt_with_deleted_binding_receipt_is_not_reclassified_as_resumable(self) -> None:
+        self.create()
+        with self.assertRaises(InjectedCrash):
+            self.store.transition(
+                item_id="item-0001",
+                operation="update",
+                sequence=2,
+                observed_at="2026-08-08T12:03:00Z",
+                actor="OWNER-LOCAL-001",
+                inject_at="after_switch",
+            )
+        self.store.resume("item-0001", "update", 2)
+        binding = self.target / ".harness-v2/items/item-0001/generations/1/binding-receipts/binding-attempt-update-0002.json"
+        binding.unlink()
+        with self.assertRaisesRegex(ContractError, "HV2-BINDING-RECEIPT"):
+            self.store.verify("item-0001")
+        with self.assertRaisesRegex(ContractError, "HV2-BINDING-RECEIPT"):
+            self.store.resume("item-0001", "update", 2)
+        self.assertFalse(binding.exists())
+
+    def test_interruption_without_sealed_staging_is_nonresumable(self) -> None:
+        self.create()
+        with self.assertRaises(InjectedCrash):
+            self.store.transition(
+                item_id="item-0001",
+                operation="update",
+                sequence=2,
+                observed_at="2026-08-08T12:03:00Z",
+                actor="OWNER-LOCAL-001",
+                inject_at="after_pointer_assertion",
+            )
+        shutil.rmtree(self.target / ".harness-v2/staging")
+        result = self.store.verify("item-0001")
+        self.assertEqual("degraded", result["classification"])
+        self.assertFalse(result["resumable"])
+        self.assertIsNone(result["interruption"])
+        self.assertIn("interrupted-unresumable:attempt-update-0002:staging-evidence", result["degraded_reasons"])
+        with self.assertRaisesRegex(ContractError, "HV2-NONWRITABLE"):
+            self.store.resume("item-0001", "update", 2)
+
+    def test_resume_rejects_unrelated_degraded_state_before_mutation(self) -> None:
+        self.create()
+        with self.assertRaises(InjectedCrash):
+            self.store.transition(
+                item_id="item-0001",
+                operation="update",
+                sequence=2,
+                observed_at="2026-08-08T12:03:00Z",
+                actor="OWNER-LOCAL-001",
+                inject_at="after_pointer_assertion",
+            )
+        authority_path = self.target / ".harness-v2/authority.json"
+        authority = load_json(authority_path, require_canonical=True)
+        authority["unknown_member"] = True
+        authority_path.write_bytes(canonical_json_bytes(authority))
+        pointer_before = self.store._active_pointer("item-0001")
+        with self.assertRaisesRegex(ContractError, "HV2-NONWRITABLE"):
+            self.store.resume("item-0001", "update", 2)
+        self.assertEqual(pointer_before, self.store._active_pointer("item-0001"))
+
+    def test_detached_item_rejects_generic_transition_before_mutation(self) -> None:
+        self.create()
+        self.store.transition(
+            item_id="item-0001",
+            operation="detach",
+            sequence=2,
+            observed_at="2026-08-08T12:03:00Z",
+            actor="OWNER-LOCAL-001",
+        )
+        pointer_before = self.store._active_pointer("item-0001")
+        for operation, sequence, rollback_revision in (
+            ("update", 3, None),
+            ("rollback", 3, "revision-0001"),
+            ("detach", 3, None),
+        ):
+            with self.subTest(operation=operation), self.assertRaisesRegex(
+                ContractError, "HV2-ALREADY-DETACHED"
+            ):
+                self.store.transition(
+                    item_id="item-0001",
+                    operation=operation,
+                    sequence=sequence,
+                    observed_at="2026-08-08T12:04:00Z",
+                    actor="OWNER-LOCAL-001",
+                    rollback_revision=rollback_revision,
+                )
+            self.assertEqual(pointer_before, self.store._active_pointer("item-0001"))
+
+    def test_canonical_record_symlink_is_rejected_before_read(self) -> None:
+        self.create()
+        revision = self.target / ".harness-v2/items/item-0001/generations/1/revisions/revision-0001.json"
+        outside = self.root / "outside-revision.json"
+        outside.write_bytes(revision.read_bytes())
+        revision.unlink()
+        revision.symlink_to(outside)
+        with self.assertRaisesRegex(ContractError, "HV2-CANONICAL-SYMLINK"):
+            self.store.verify("item-0001")
+
+    def test_actual_replace_temp_suffix_is_named_residue(self) -> None:
+        residue = self.target / ".harness-v2/items/item-0001/active-generation.json.hv2-tmp-deadbeef"
+        residue.write_bytes(b"residue\n")
+        result = self.store.verify("item-0001")
+        self.assertIn(
+            "temp-residue:items/item-0001/active-generation.json.hv2-tmp-deadbeef",
+            result["degraded_reasons"],
+        )
+
     def test_stable_root_reuse_is_red(self) -> None:
         with self.assertRaisesRegex(ContractError, "HV2-STABLE-ID-REUSE"):
             self.store.initialize(SEAL["authority_home_id"], "item-0001", "2026-08-08T12:03:00Z")
@@ -213,7 +402,10 @@ class StateContractRedTests(ContractFixture):
             )
         staged = next((self.target / ".harness-v2/staging/attempt-update-0002/records").rglob("*.json"))
         staged.write_bytes(staged.read_bytes() + b" ")
-        with self.assertRaisesRegex(ContractError, "HV2-STAGING-ENTRY-DIGEST"):
+        result = self.store.verify("item-0001")
+        self.assertEqual("degraded", result["classification"])
+        self.assertFalse(result["resumable"])
+        with self.assertRaisesRegex(ContractError, "HV2-NONWRITABLE"):
             self.store.resume("item-0001", "update", 2)
 
     def test_resume_preflight_corruption_preserves_prior_pointer(self) -> None:

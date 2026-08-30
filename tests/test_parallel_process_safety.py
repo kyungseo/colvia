@@ -310,6 +310,7 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
                 if process.poll() is None:
                     process.terminate()
         collected = [self.collect(process, result_path) for process, _, result_path, _ in spawned]
+        self.assertEqual("all-ready", barrier_state)
         pids = [result[1]["pid"] for result in collected]
         self.assertEqual(len(pids), len(set(pids)))
         self.assertNotIn(os.getpid(), pids)
@@ -683,38 +684,51 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
         before_index = git(fixture.integration, "write-tree")
         result_commit = git(fixture.integration, "rev-parse", "HEAD")
         result_tree = git(fixture.integration, "rev-parse", "HEAD^{tree}")
+        lock_path = fixture.integration / ".harness-v2/staging/locks/active-integration.switch.lock"
+        lock_path.unlink()
+        lock_path.parent.rmdir()
+        lock_path.parent.parent.rmdir()
+        self.assertFalse(lock_path.parent.parent.exists())
         barrier = self.scenario / "barrier"
-        specs = [
-            self.worker_spec(
-                action="finalize",
-                participant="epoch-a",
-                target=fixture.integration,
-                parameters=fixture.finalize_parameters(
-                    epoch_id="epoch-a5-a",
-                    claim_ids=["claim-finalize"],
-                    claim_worktrees={"claim-finalize": work},
-                    result_commit=result_commit,
-                    result_tree=result_tree,
-                ),
-                barrier_root=barrier,
-                barrier_mode="finalize-before-switch",
+        holder_spec = self.worker_spec(
+            action="finalize",
+            participant="epoch-a",
+            target=fixture.integration,
+            parameters=fixture.finalize_parameters(
+                epoch_id="epoch-a5-a",
+                claim_ids=["claim-finalize"],
+                claim_worktrees={"claim-finalize": work},
+                result_commit=result_commit,
+                result_tree=result_tree,
             ),
-            self.worker_spec(
-                action="finalize",
-                participant="epoch-b",
-                target=fixture.integration,
-                parameters=fixture.finalize_parameters(
-                    epoch_id="epoch-a5-b",
-                    claim_ids=["claim-finalize"],
-                    claim_worktrees={"claim-finalize": work},
-                    result_commit=result_commit,
-                    result_tree=result_tree,
-                ),
-                barrier_root=barrier,
-                barrier_mode="finalize-before-switch",
+            barrier_root=barrier,
+            barrier_mode="finalize-after-lock",
+        )
+        contender_spec = self.worker_spec(
+            action="finalize",
+            participant="epoch-b",
+            target=fixture.integration,
+            parameters=fixture.finalize_parameters(
+                epoch_id="epoch-a5-b",
+                claim_ids=["claim-finalize"],
+                claim_worktrees={"claim-finalize": work},
+                result_commit=result_commit,
+                result_tree=result_tree,
             ),
-        ]
-        results, pids = self.run_pair(self.scenario, specs, barrier)
+        )
+        holder, _, holder_result, _ = self.spawn(holder_spec, self.scenario)
+        self.assertEqual("all-ready", self.wait_ready([holder], barrier, ["epoch-a"]))
+        contender, _, contender_result, _ = self.spawn(contender_spec, self.scenario)
+        blocked_deadline = time.monotonic() + 0.75
+        while contender.poll() is None and time.monotonic() < blocked_deadline:
+            time.sleep(0.01)
+        contender_blocked = contender.poll() is None and not contender_result.exists()
+        write_once(barrier / "release", {"released": True})
+        results = [self.collect(holder, holder_result), self.collect(contender, contender_result)]
+        pids = [result[1]["pid"] for result in results]
+        self.assertEqual(2, len(set(pids)))
+        self.assertEqual("pass", results[0][1]["classification"])
+        self.assertEqual("stale", results[1][1]["classification"])
         classifications = sorted(result[1]["classification"] for result in results)
         epoch_root = fixture.integration / ".harness-v2/parallel/generations/2/integration-epochs"
         finalizations = sorted(path.parent.name for path in epoch_root.glob("*/finalization.json"))
@@ -730,11 +744,13 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
                 "arbitration_count": len(arbitrations),
                 "arbitration_matches_finalization": arbitration_epochs == finalizations,
                 "classifications": classifications,
+                "contender_blocked_while_lock_held": contender_blocked,
                 "exit_codes": sorted(result[0] for result in results),
                 "finalization_count": len(finalizations),
                 "index_unchanged": before_index == git(fixture.integration, "write-tree"),
                 "process_count": len(pids),
                 "project_unchanged": before_project == project_digest(fixture.integration),
+                "runtime_anchor_recreated": lock_path.is_file(),
             },
             {
                 "active_epoch": active["integration_epoch_id"],
@@ -745,6 +761,8 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
             },
         )
         self.assertEqual(1, classifications.count("pass"))
+        self.assertTrue(contender_blocked)
+        self.assertTrue(lock_path.is_file())
         self.assertEqual(1, len(arbitrations))
         self.assertEqual(1, len(finalizations))
         peer = [value for value in classifications if value != "pass"]
@@ -1317,7 +1335,7 @@ class ParallelProcessSafetyFixture(unittest.TestCase):
                 target=fixture.integration,
                 parameters=parameters,
                 barrier_root=resume_barrier,
-                barrier_mode="finalize-before-switch",
+                barrier_mode="finalize-before-lock",
             )
             for participant in ("resume-a", "resume-b")
         ]
