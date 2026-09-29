@@ -1,5 +1,7 @@
 # Harness v2 Generation 1 Contract
 
+> Historical contract only. This generation has no runtime or reader in the current source and is not shipped. Do not use its commands or paths on a single-home target. See [current documentation](README.md).
+
 This is the project-owned payload for the first private production reference. It is not filler and does not claim public,
 default, adopter, runtime-support, or population validity.
 

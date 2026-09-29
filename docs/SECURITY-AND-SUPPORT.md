@@ -1,54 +1,30 @@
 # Security And Support
 
-Document authority and currentness: [Documentation Index](README.md).
+This development candidate assumes one trusted local OS account and cooperating agents. Logical actor and acceptance-authority strings are declarations, not authentication. Confirmation tokens bind request bytes; they do not prove a human approved them. File checks and locks do not defend against an adversarial process with the same account bypassing the protocol.
 
-## Trust Profile
+## Runtime And Scope
 
-This D1 candidate is bounded to one trusted local OS account. Actor and finalizer values are logical declarations used for contract
-checks; they are not authentication, authorization, signatures, or tenant isolation.
+Mutation requires final, GIL-enabled CPython 3.14.6 or 3.14.7; there are no third-party runtime dependencies. This is a version/build-mode gate, not an operating-system or distributor-build qualification check. Read-only diagnostics can expose a rejected runtime without admitting mutation. Other operating systems or distributor builds matching these conditions may execute without having been qualified.
 
-The product layer reads a fixed managed-source path list. It does not scan project files to discover secrets, copy environment files,
-or upload content. `status` inspects product binding and named authority files. `doctor` repeats that check and adds runtime identity
-and Git availability.
+Qualification evidence is limited to the exact source/runtime combinations in their immutable receipts:
 
-Do not place credentials or secret values in intent, state, evidence, command arguments, receipts, examples, or support packets.
-Readable examples and real secret-bearing configuration must remain separate. If a future adapter needs a credential, that adapter
-must declare its own admission, storage, access, failure, and removal boundary.
-
-## Control Semantics
-
-The core distinguishes four meanings:
-
-| Meaning | What it promises |
+| Combination | Evidence classification |
 | --- | --- |
-| warning | the product reports risk; it does not stop an external action |
-| approval | the product requires an explicit user signal such as `--apply` for its own mutation |
-| block | the product returns non-zero before its own protected mutation |
-| proxy | an external enforcement layer acts and must provide its own evidence |
+| Linux container, recorded CPython 3.14.6 build | Qualified for the recorded container test scope; this is not native-platform acceptance. |
+| macOS arm64, recorded Homebrew CPython 3.14.7 build | Recorded N4 source: 424 unique tests passed in each of normal and parent-optimized modes, without timeout substitution, under the fixed Seatbelt policy allowing literal /dev/fd listing. Parent optimization does not imply optimized launcher/auditor children. Earlier 353-test calibrated results remain historical. |
+| macOS arm64, recorded pyenv CPython 3.14.6 build | Not qualified; the version gate still admits it. The complete normal run retained one assertion failure. |
+| Linux CPython 3.14.7, Windows, and other OS/distributor builds | Unqualified; matching the version gate does not qualify them. |
 
-Text cannot turn a warning into a physical block. The core does not own an execution sandbox or privileged command broker.
+For the macOS 3.14.6 failure, targeted reruns did not reproduce it, but the original failing path was not captured and the cause remains unknown. The failure is retained and operationally closed by an Owner risk decision, with reopening on recurrence. This does not turn that whole run into a pass or qualify that combination.
 
-## Current Runtime Tuple
+These results belong to their recorded source, not automatically to the current checkout or a later release with changed managed documentation. Verify a candidate against its exact artifact receipt. The evidence does not establish ordinary-user latency, actual worker-1 adoption, anonymous onboarding, production scale, or public distribution.
 
-| Surface | Current D1 Claim | Fallback |
-| --- | --- | --- |
-| CPython | `3.14.6`, standard library only | plain read; other versions are `unsupported` until observed |
-| Git | local project and caller-owned worktrees/commits | plain files remain readable, but Git-profile operations are unavailable |
-| Network | not required by Core operation | none required |
-| Agent provider | not required and not certified by this candidate | manual/provider-null path |
-| Git host, CI, tracker, knowledge provider | no support claim | manual operation |
-| Same-repository parallel work | bounded trusted-local contract | single actor/finalizer |
-| Enterprise multi-project operation | unavailable | separate post-Core extension program |
+Control authority can reside in a primary Git checkout or supported standalone non-Git target. Linked workers cannot publish control truth. Submodules, nested repositories/authorities, separate Git directories, partial clones, alternates, unsafe links, and ambiguous topology are refused within the documented checks. Supported work content excludes ignored untracked files but includes tracked ignored files. See [General Work](GENERAL-WORK.md).
 
-`PRODUCT-CAPABILITIES.json` at the contribution-source root is the machine-readable declaration. After initialization, status reads
-the copy under the exact active release and embeds it in the result. File presence alone is not support evidence. A support claim
-needs product, version, tier, configuration, observed result, date, and fallback.
+## Data And Recovery
 
-## Untrusted Input And Symlinks
+Do not place credentials or secrets in typed records, documents, command examples, or evidence. Product releases inventory an exact managed set. Init preserves unrelated project files; detach removes only verified managed bytes. Unknown and damaged state is preserved with a non-success result. Exact recovery handles documented prefixes, not arbitrary corruption or power-loss atomicity.
 
-Release inventories accept only the fixed relative managed path set. Source files, release files, product roots, and target Git
-markers reject symlink substitution at their protected boundary. Root escape, absolute managed paths, unexpected release files,
-digest mismatch, and product-tree extras fail closed.
+Bounded worker execution and recovery have recorded synthetic qualification. Two private document Works were accepted on the earlier human-1 runtime; actual worker-1 adoption, same-file real-use continuation and general usability remain unverified. Real-project multi-worker efficiency is not established. Generation 1/2 support and migration are removed; archived historical tests or retained contracts do not establish current support. See [Capability Declaration](../PRODUCT-CAPABILITIES.json), [Reference](REFERENCE.md), and [Operations](OPERATIONS.md).
 
-This does not make arbitrary project content safe. Treat external prose, patches, dependencies, and generated artifacts as untrusted
-until the project’s own review and execution policy admits them.
+Runtime qualification uses an explicit patch allowlist, not a minimum-version promise. Later 3.14 patches, 3.15, prereleases and free-threaded builds require separate qualification. Historical receipts retain their original runtime identity.

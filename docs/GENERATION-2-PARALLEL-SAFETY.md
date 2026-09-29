@@ -1,5 +1,7 @@
 # Harness v2 Generation 2 Parallel Safety Contract
 
+> Historical contract only. This generation has no runtime or reader in the current source and is not shipped. Do not use its commands or paths on a single-home target. See [current documentation](README.md).
+
 Generation 2 adds repository-wide work claims and single-finalizer integration while preserving Generation 1 bytes and reader
 semantics. It is a private, same-filesystem, local-trust reference contract. It does not claim public, distributed, NFS,
 cross-filesystem, cryptographic authentication, runtime-provider or automatic worktree support.

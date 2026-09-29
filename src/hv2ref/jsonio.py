@@ -4,6 +4,7 @@ import errno
 import fcntl
 import hashlib
 import json
+import math
 import os
 import stat
 import sys
@@ -81,12 +82,14 @@ def decode_json_bytes(data: bytes, *, require_canonical: bool = False) -> Any:
         current, depth = stack.pop()
         if depth > MAX_JSON_DEPTH:
             raise ContractError("HV2-JSON-LIMIT", f"depth:{depth}")
+        if isinstance(current, float) and not math.isfinite(current):
+            raise ContractError("HV2-JSON-NONFINITE", "numeric overflow")
         if isinstance(current, dict):
             stack.extend((child, depth + 1) for child in current.values())
         elif isinstance(current, list):
             stack.extend((child, depth + 1) for child in current)
     if require_canonical and canonical_json_bytes(value) != data:
-        raise ContractError("HV2-JSON-NONCANONICAL", "stored bytes do not match generation 1 emission")
+        raise ContractError("HV2-JSON-NONCANONICAL", "stored bytes do not match canonical emission")
     return value
 
 
