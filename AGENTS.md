@@ -1,34 +1,33 @@
 # Agent Entry
 
-This file is the canonical minimal entry for an agent working in a project with the Harness v2 private D1 candidate.
-Document authority and currentness are indexed in [docs/README.md](docs/README.md).
+This is the canonical agent entry for the Harness v2 single-home development candidate.
+Read [docs/README.md](docs/README.md) for document authority and currentness.
 
 ## Authority Floor
 
-- The human owner decides material scope, acceptance, and shared-state finalization.
-- `.harness-v2/` and `.harness-v2-intents/` are project-owned truth. Do not select authority by path, timestamp, recency, or filename.
-- `.harness-v2-product/` and `hv2` are product-managed and removable. Do not edit them as project customization.
-- Actor and finalizer strings are logical declarations inside one trusted local OS account, not authentication.
-- Do not read, copy, print, or place secrets in state, intent, evidence, examples, commands, or review packets.
-- Never turn `degraded`, `partial`, `incompatible`, `conflict`, `stale`, `unsupported`, or unavailable evidence into success.
+- The human owner decides material scope and acceptance. Agent output and confirmation tokens do not prove human authorization.
+- `.hrn/format.json`, `.hrn/intents/`, and `.hrn/work/` are project-owned authority. Select current state only through verified typed references; never by timestamp or filename.
+- `.hrn/product/` and the root `hv2` are managed runtime. Do not customize them. `.hrn/staging/` and `.hrn/locks/` are scratch, not authority.
+- Actor strings declare roles inside one trusted local OS account; they are not authentication.
+- Never put secrets in records, inputs, evidence, examples, or review packets.
+- Preserve unknown, damaged, stale, partial, or unsupported state. Never turn unavailable evidence into success or delete records to unblock a command.
 
 ## Start
 
-1. Run `./hv2 status`.
-2. Read `docs/GETTING-STARTED.md` for the first work or `docs/OPERATIONS.md` for recovery.
-3. Propose the exact scope and evidence. A human accepts consequential intent and finalizes shared truth.
+1. In an installed project run `./hv2 view`. Read the current verified manual and adapter paths it displays; never pin a release directory in the project entry.
+2. For setup or broken-launcher diagnosis, use an independent trusted source with explicit `--source-checkout`; see [Getting Started](docs/GETTING-STARTED.md) and [Operations](docs/OPERATIONS.md).
+3. Propose scope and evidence. Obtain human acceptance of the exact intent and result. Keep one editing Work at a time during serial use.
 
-Mutating product commands preview by default and require explicit `--apply`. Do not add it without the user’s authorization.
+Lifecycle commands preview by default. Intent/Work publication writes machine records; prepare is read-only and apply requires the exact ticket/token. Obtain the relevant authorization before invoking a writer. Worker worktrees cannot write control authority.
 
 ## Typed Pointers
 
-- Mental model and identity: `docs/CONCEPTS.md`
-- Product lifecycle and recovery: `docs/OPERATIONS.md`
-- Provider-null and plain-file procedure: `docs/MANUAL-OPERATION.md`
-- Trust and support boundary: `docs/SECURITY-AND-SUPPORT.md`
-- Exact commands and classifications: `docs/REFERENCE.md`
-- Generation 1 state: `docs/GENERATION-1-CONTRACT.md`
-- Generation 2 parallel safety: `docs/GENERATION-2-PARALLEL-SAFETY.md`
-- Guided intent: `docs/GUIDED-INTENT-FORMATION.md`
+- Mental model: [Concepts](docs/CONCEPTS.md)
+- Machine commands and failures: [Reference](docs/REFERENCE.md)
+- Work records and content: [General Work](docs/GENERAL-WORK.md)
+- Root and lifecycle: [Workspace Contract](docs/WORKSPACE-CONTRACT.md)
+- Intent acceptance: [Guided Intent](docs/GUIDED-INTENT-FORMATION.md)
+- Recovery and exit: [Operations](docs/OPERATIONS.md), [Manual Operation](docs/MANUAL-OPERATION.md)
+- Trust and support: [Security and Support](docs/SECURITY-AND-SUPPORT.md)
 
-If a pointer is unavailable or contradicts persisted bytes, stop, report the contradiction, and preserve the last useful state.
+Bounded worker execution and recovery have recorded synthetic qualification. Two private document Works were accepted on the earlier human-1 runtime; actual worker-1 adoption, same-file real-use continuation and general usability remain unverified. A local passing suite does not establish production readiness.
