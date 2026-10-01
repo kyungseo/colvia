@@ -28,6 +28,8 @@ class ContentContractTests(unittest.TestCase):
         self.addCleanup(self.env.stop)
 
     def git(self, *args):
+        if args and args[0] == "commit":
+            args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
         return subprocess.run(["git", "-C", str(self.target), *args], capture_output=True, check=True).stdout
 
     def init(self):

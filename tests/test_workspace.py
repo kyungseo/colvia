@@ -29,6 +29,8 @@ class WorkspaceRootTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def git(self, *args, target=None):
+        if args and args[0] == "commit":
+            args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
         return subprocess.run(["git", "-C", str(target or self.target), *args], env=git_environment(), check=True, capture_output=True, text=True).stdout.strip()
 
     def init_git(self):

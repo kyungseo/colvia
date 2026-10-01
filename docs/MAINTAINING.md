@@ -1,6 +1,6 @@
 # Maintaining
 
-Current document authority is indexed in [README.md](README.md). This source supports only the single-home `worker-1` development profile.
+Current document authority is indexed in [README.md](README.md). This source supports only the single-home `umbrella-1` development profile.
 
 ## Source Layout
 
@@ -9,6 +9,7 @@ Current document authority is indexed in [README.md](README.md). This source sup
 - `workspace.py`: root format, target classification, cooperating writer guard.
 - `work.py`: content observations, Work graph, publication and decisions.
 - `intent.py`: guided intent validation, graph and publication.
+- `umbrella.py`: direct-child composition, captured references and history/current predicates; no scheduler.
 - `product.py`: exact inventory, binding, lifecycle and recovery.
 - `view.py`: read-only GFM projection and bounded document observations.
 - `adapters/harness-v2-work/SKILL.md`: manual natural-language entry guidance.
@@ -52,7 +53,7 @@ For unexplained failures, preserve the original run and capture failing syntheti
 
 ## Release Inventory
 
-`SERIAL_MANAGED_PATHS` in `product.py` defines 27 shipped files. Canonical inventory names, byte counts and SHA-256 determine release identity. Exact membership includes directories; missing, extra, linked, reordered, or mismatched bytes fail. The launcher validates all nine importable modules before executing them. Tests, historical generation contracts and receipts are not shipped.
+`SERIAL_MANAGED_PATHS` in `product.py` defines 28 shipped files; `LEGACY_MANAGED_PATHS` retains the exact 27-path old history set. Canonical inventory names, byte counts and SHA-256 determine release identity. Exact membership includes directories; missing, extra, linked, reordered, or mismatched bytes fail. The launcher validates all ten importable modules before executing them. Tests, historical generation contracts and receipts are not shipped.
 
 Keep inventory, bootstrap module allowlist, docs and detach tests aligned. Do not add project truth, configuration or secrets to the managed set. Updating launcher bytes requires the existing receipt-bound switch and independent-source recovery path. Release compatibility requires qualification; a valid digest is not compatibility proof.
 
@@ -66,8 +67,24 @@ Runtime qualification uses an explicit patch allowlist, not a minimum-version pr
 
 ## Inventory Window Compatibility
 
-New candidates declare `WORKSPACE_INVENTORY_ID = "worker-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The managed set stays at 27 paths. The new reader retains human-1 history and rejects serial-1 or unknown windows.
+New candidates declare `WORKSPACE_INVENTORY_ID = "umbrella-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The current managed set is 28 paths. The new reader retains the original 27-path human-1 and worker-1 history and rejects serial-1 or unknown windows.
 
-Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable worker-1 transition receipt, human-1 downgrade is refused even before any worker Work exists. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
+Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable umbrella-1 receipt, downgrade to worker-1 or human-1 is refused even before any schema2 record exists. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
 
 The recorded N4 source completed bounded worker execution, complete 424-ID regression in both modes and exact-artifact checks. A later documentation or source change has a different release identity and requires the fixed-candidate gate above. This document does not attest its own current bytes as qualified; use the separate immutable qualification receipt and artifact digest. Previous human-1 evidence does not qualify worker-1.
+
+## Umbrella Candidate Boundary
+
+The umbrella-1 development result has recorded review, Driver disposition and Owner acceptance with limitations. The earlier fixed source passed complete normal/parent-optimized regression; the later test-source follow-up has focused evidence. Keep those identities separate. The exact release candidate still requires complete regression, exact-artifact transition and recovery qualification; do not describe development acceptance as release qualification. Do not promote earlier worker-1 receipts or a focused pass to qualification of this checkout. Include schema2 intent/Work round trips, ordinary schema1 behavior, mixed old/new inventory history, old-artifact refusal, Q-created records on P, and detach/plain reading.
+
+The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Schema2 writes require umbrella-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
+
+## Adopter Impact At Development Closeout
+
+After completing and validating a Harness source change, the agent assesses its effect on known adopters and proactively reports one outcome: update recommended, no update currently needed, or installation state unverified. Assess once for the completed change, not after every source edit; use existing Work, release and adopter evidence rather than creating a registry or an extra mandatory document.
+
+For a recommended update, report the target, observed installed release identity, exact candidate source/artifact identity and qualification state, expected effect, verification method, and rollback/recovery limits. Do not equate a source commit with an installed release digest. If the candidate is not fixed or the installed state cannot be verified, state that explicitly and identify the next check. Reconfirm state before applying; a snapshot is not permanent authority. A target without a current installation needs an adoption proposal, not an update claim.
+
+Apply only after explicit Owner approval for that target and candidate, through the existing preview/confirmation procedure in [Operations](OPERATIONS.md). Verify the resulting binding, project-state preservation and relevant changed behavior, and link the result to the original change. Approval of source work, its completion or a merge is not adopter-update approval. A deferred update records the reason and re-evaluation trigger in the existing completion report; it does not force source work to remain open unless its agreed completion criteria require actual application.
+
+Do not add automatic monitoring, bulk updates, Core management state or an additional acceptance gate. Keep target identifiers and installation observations in the private task report; the shipped instructions remain generic.

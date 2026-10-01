@@ -1,6 +1,6 @@
 # Operations
 
-Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKSPACE-CONTRACT.md) for exact lifecycle rules. Installed commands use the bound product. Independent source commands require `--source-checkout`; init/update/rollback/detach additionally require `--profile worker-1`.
+Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKSPACE-CONTRACT.md) for exact lifecycle rules. Installed commands use the bound product. Independent source commands require `--source-checkout`; init/update/rollback/detach additionally require `--profile umbrella-1`.
 
 ## Observe Before Acting
 
@@ -10,7 +10,7 @@ Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKS
 
 `hv2 update --source PATH --operation-id ID --observed-at TIME` previews a new release. `hv2 rollback [--to RELEASE] --operation-id ID --observed-at TIME` previews a receipt-backed prior release. Save the exact preview `request` outside the target and apply it with `--apply --input FILE --confirm TOKEN`. Pending Work/intent publication blocks a new switch.
 
-For the first human-1 to worker-1 switch, use the qualified independent worker-1 source CLI with explicit `--source-checkout`, `--profile worker-1` and `--target PATH`; never use the old installed packager for new bytes. Follow [Transition From Human-1](GETTING-STARTED.md#transition-from-human-1). After the first durable worker-1 transition receipt, rollback to human-1 is unsupported. Exact interrupted-switch recovery and active-release repair are different operations; a preserved backup does not add a downgrade path.
+For an older-window transition, use the qualified independent umbrella-1 source and explicit profile. See [Transition To Umbrella-1](GETTING-STARTED.md#transition-to-umbrella-1). After the first durable umbrella-1 receipt, only exact forward recovery and same-window rollback are supported. Use retained old sources for old-window repair; never package new code with an old installed launcher.
 
 A switch preserves project truth and results but changes the product binding and may replace the launcher. Existing confirmation tickets become stale. Re-prepare them against the new binding. Release digest verification does not establish arbitrary candidate compatibility; qualify the new release before use.
 

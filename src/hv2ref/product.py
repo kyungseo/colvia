@@ -42,8 +42,16 @@ SERIAL_MANAGED_PATHS = tuple(sorted({
     "src/hv2ref/__init__.py", "src/hv2ref/cli.py", "src/hv2ref/errors.py",
     "src/hv2ref/intent.py", "src/hv2ref/jsonio.py", "src/hv2ref/product.py",
     "src/hv2ref/work.py", "src/hv2ref/workspace.py",
-    "src/hv2ref/view.py", "adapters/harness-v2-work/SKILL.md",
+    "src/hv2ref/view.py", "src/hv2ref/umbrella.py", "adapters/harness-v2-work/SKILL.md",
 }, key=lambda path: path.encode("utf-8")))
+
+
+LEGACY_MANAGED_PATHS = tuple(p for p in SERIAL_MANAGED_PATHS if p != "src/hv2ref/umbrella.py")
+
+
+def _managed_paths(window: str) -> tuple[str, ...]:
+    _serial_require(window in ("human-1", "worker-1", "umbrella-1"), "unsupported inventory window")
+    return SERIAL_MANAGED_PATHS if window == "umbrella-1" else LEGACY_MANAGED_PATHS
 
 
 def _serial_require(condition: bool, detail: str) -> None:
@@ -63,7 +71,7 @@ def _launcher_inventory_window(data: bytes, *, allow_legacy: bool = False) -> st
     declarations = [node for node in module.body
                     if isinstance(node, ast.Assign) and len(node.targets) == 1
                     and isinstance(node.targets[0], ast.Name) and node.targets[0].id == name
-                    and isinstance(node.value, ast.Constant) and node.value.value == "worker-1"]
+                    and isinstance(node.value, ast.Constant) and node.value.value in (("worker-1", "umbrella-1") if allow_legacy else ("umbrella-1",))]
     target = declarations[0].targets[0] if len(declarations) == 1 else None
     bindings = []
     try:
@@ -91,8 +99,8 @@ def _launcher_inventory_window(data: bytes, *, allow_legacy: bool = False) -> st
     if not bindings and allow_legacy:
         return "human-1"
     _serial_require(len(declarations) == 1 and bindings == [target],
-                    "launcher must declare exactly one literal worker-1 inventory window")
-    return "worker-1"
+                    "launcher must declare exactly one supported literal inventory window")
+    return declarations[0].value.value
 
 
 def _serial_file(path: Path) -> bytes:
@@ -137,17 +145,17 @@ def _serial_inventory(value: Any) -> dict[str, Any]:
     _serial_require(value["record_type"] == "release-inventory"
                     and type(value["schema_version"]) is int and value["schema_version"] == 1,
                     "unsupported release inventory schema")
-    _serial_require(isinstance(value["inventory_id"], str) and value["inventory_id"] in {"human-1", "worker-1"}, "unsupported inventory window")
+    _serial_require(isinstance(value["inventory_id"], str) and value["inventory_id"] in {"human-1", "worker-1", "umbrella-1"}, "unsupported inventory window")
     _serial_require(isinstance(value["entries"], list), "inventory entries must be an array")
     paths = []
     for item in value["entries"]:
         item = _exact_dict(item, {"path", "sha256", "size_bytes"}, "HV2-WORKSPACE-INVENTORY")
-        _serial_require(isinstance(item["path"], str) and item["path"] in SERIAL_MANAGED_PATHS,
+        _serial_require(isinstance(item["path"], str) and item["path"] in _managed_paths(value["inventory_id"]),
                         "unknown inventory path")
         _serial_require(_sha(item["sha256"]) and type(item["size_bytes"]) is int and item["size_bytes"] >= 0,
                         "invalid inventory digest or size")
         paths.append(item["path"])
-    _serial_require(paths == list(SERIAL_MANAGED_PATHS), "inventory coverage, order or duplicate")
+    _serial_require(paths == list(_managed_paths(value["inventory_id"])), "inventory coverage, order or duplicate")
     return value
 
 
@@ -178,8 +186,12 @@ def verify_workspace_release(path: Path) -> dict[str, Any]:
     """Verify immutable inventory bytes, exact payload membership and every digest."""
     from .workspace import safe_target
     path = safe_target(path)
-    files = _serial_tree(path, {"inventory.json"} | {"payload/" + p for p in SERIAL_MANAGED_PATHS})
-    inventory = _serial_inventory(decode_json_bytes(files["inventory.json"], require_canonical=True))
+    from .workspace import _require_kind
+    _require_kind(path / "inventory.json", False)
+    inventory_bytes = _serial_file(path / "inventory.json")
+    inventory = _serial_inventory(decode_json_bytes(inventory_bytes, require_canonical=True))
+    files = _serial_tree(path, {"inventory.json"} | {"payload/" + p for p in _managed_paths(inventory["inventory_id"])})
+    _serial_require(files["inventory.json"] == inventory_bytes, "inventory changed while reading")
     digest = sha256_bytes(files["inventory.json"])
     _serial_require(path.name == "product-release-" + digest[:24], "release directory/inventory mismatch")
     for entry in inventory["entries"]:
@@ -205,7 +217,7 @@ def _switch_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
     validate_ref(plan["expected_binding_ref"])
     ref = _exact_dict(plan["candidate_release"], {"id", "sha256", "inventory_id"}, "HV2-WORKSPACE-RELEASE")
     _serial_require(_sha(ref["sha256"]) and ref["id"] == "product-release-" + ref["sha256"][:24]
-                    and isinstance(ref["inventory_id"], str) and ref["inventory_id"] in {"human-1", "worker-1"}, "invalid switch release")
+                    and isinstance(ref["inventory_id"], str) and ref["inventory_id"] in {"human-1", "worker-1", "umbrella-1"}, "invalid switch release")
     _serial_require(plan["remove"] == [] and plan["preserve"] == [] and isinstance(plan["truth_refs"], list), "switch cannot remove truth")
     names = []
     for ref in plan["truth_refs"]:
@@ -223,9 +235,9 @@ def _switch_binding_receipt(plan: dict[str, Any], prior: dict[str, Any]) -> tupl
     from .work import record_ref
     _serial_require(plan["expected_binding_ref"] == record_ref(prior, "operation_id"), "switch predecessor mismatch")
     _serial_require(plan["candidate_release"] != prior["active_release"], "switch to active release is not an operation")
-    _serial_require(not (prior["active_release"]["inventory_id"] == "worker-1"
-                             and plan["candidate_release"]["inventory_id"] != "worker-1"),
-                    "worker-1 history cannot return to human-1")
+    rank = {"human-1": 0, "worker-1": 1, "umbrella-1": 2}
+    _serial_require(rank[plan["candidate_release"]["inventory_id"]] >= rank[prior["active_release"]["inventory_id"]],
+                    "inventory history cannot downgrade to an older semantic window")
     if plan["action"] == "rollback":
         _serial_require(plan["candidate_release"] == prior["prior_release"], "rollback must select the recorded previous release")
     binding = {"record_type":"product-binding", "schema_version":1, "authority_home_id":plan["authority_home_id"],
@@ -281,8 +293,8 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
     index = matches[0]; binding = bindings[index]; pending = chain[-1] if index != len(bindings)-1 else None
     _serial_require(allow_pending or pending is None, "pending lifecycle blocks product use; recover exact plan from independent source")
     if repair_candidate is not None:
-        _serial_require(binding["active_release"]["inventory_id"] == "worker-1",
-                        "human-1 repair requires the exact retained old source")
+        _serial_require(binding["active_release"]["inventory_id"] == "umbrella-1",
+                        "older-window repair requires the exact retained old source")
         _serial_require(pending is None and repair_candidate["release_ref"] == binding["active_release"],
                         "repair requires the exact active release and no pending lifecycle")
     repair_paths = set()
@@ -296,7 +308,7 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
         if i > index and not _exists(path): continue
         _require_kind(product / "releases", True)
         if repair_candidate is not None and ref == repair_candidate["release_ref"]:
-            repair_paths = {"releases/"+rid+"/inventory.json"} | {"releases/"+rid+"/payload/"+p for p in SERIAL_MANAGED_PATHS}
+            repair_paths = {"releases/"+rid+"/inventory.json"} | {"releases/"+rid+"/payload/"+p for p in _managed_paths(ref["inventory_id"])}
             verified = {key: repair_candidate[key] for key in ("release_ref", "inventory")}
         else:
             verified = verify_workspace_release(path)
@@ -304,7 +316,7 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
         releases[rid] = verified
     expected = {"init-plan.json", "binding.json"} | {"receipts/"+op+".json" for op in receipts}
     for rid in releases:
-        expected |= {"releases/"+rid+"/inventory.json"} | {"releases/"+rid+"/payload/"+p for p in SERIAL_MANAGED_PATHS}
+        expected |= {"releases/"+rid+"/inventory.json"} | {"releases/"+rid+"/payload/"+p for p in _managed_paths(releases[rid]["inventory"]["inventory_id"])}
     files = _serial_tree(product, expected, optional_files=repair_paths)
     _serial_require(files["binding.json"] == raw_binding and files["init-plan.json"] == canonical_json_bytes(initial)
                     and all(files["receipts/"+op+".json"] == data for op,data in raw_receipts.items()), "product changed while reading")
@@ -344,7 +356,7 @@ process modifying Python objects or undetectable manual edits between observatio
     require_supported_runtime()
     target = Path(classify_target(target, mutation=True)["target"])
     observed = verify_workspace_product(target)
-    _serial_require(observed["inventory"]["inventory_id"] == "worker-1", "new installed runtime requires worker-1")
+    _serial_require(observed["inventory"]["inventory_id"] == "umbrella-1", "new installed runtime requires umbrella-1")
     _serial_require(sys.flags.isolated == 1 and sys.dont_write_bytecode,
                     "writer must use isolated Python startup without bytecode writes")
     main = sys.modules.get("__main__")
@@ -373,7 +385,7 @@ process modifying Python objects or undetectable manual edits between observatio
                             and list(getattr(spec, "submodule_search_locations", []) or []) == [str(package)],
                             "package search path escaped bound payload")
     _serial_require(observed == verify_workspace_product(target), "product changed during runtime verification")
-    return {key: observed[key] for key in ("binding_ref", "launcher_sha256")}
+    return {**{key: observed[key] for key in ("binding_ref", "launcher_sha256")}, "inventory_id": observed["inventory"]["inventory_id"]}
 
 
 def workspace_init_preview(source: Path, target: Path, *, authority_home_id: str, operation_id: str, created_at: str) -> dict[str, Any]:
@@ -641,7 +653,7 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
         _serial_require(source is None and binding["prior_release"] is not None, "no recorded rollback release")
         candidate = binding["prior_release"]
         _serial_require(to_release_id is None or to_release_id == candidate["id"], "rollback target is not previous release")
-    _serial_require(candidate["inventory_id"] == "worker-1", "new source switches only to worker-1; retain old source for human-1 operations")
+    _serial_require(candidate["inventory_id"] == "umbrella-1", "new source switches only to umbrella-1; retain old source for older-window operations")
     fmt = _file_json(target/".hrn/format.json"); truth = _lifecycle_truth(target)
     plan = {"record_type":"lifecycle-plan","schema_version":1,"operation_id":operation_id,"action":action,
             "authority_home_id":fmt["authority_home_id"],"expected_binding_ref":state["binding_ref"],"candidate_release":candidate,
@@ -654,7 +666,7 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
 
 
 def _switch_preflight(target: Path, plan: dict[str, Any], *, recover: bool) -> tuple[dict[str, Any], bool]:
-    _serial_require(plan["candidate_release"]["inventory_id"] == "worker-1", "new source switches only to worker-1")
+    _serial_require(plan["candidate_release"]["inventory_id"] == "umbrella-1", "new source switches only to umbrella-1")
     state = _workspace_observe(target, allow_pending=True)
     matching = [r for r in state["history"] if r["operation_id"] == plan["operation_id"]]
     _serial_require(not any(r["operation_id"] != plan["operation_id"] and r["operation_id"].casefold() == plan["operation_id"].casefold() for r in state["history"]), "operation id case alias")
@@ -996,7 +1008,10 @@ def _detach_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
     _serial_require(bool(releases) and bool(receipts) and plan["operation_id"].casefold() not in {n.casefold() for n in receipts}, "detach operation/release set")
     for rid in releases:
         prefix=".hrn/product/releases/"+rid+"/"
-        required |= {prefix+"inventory.json"} | {prefix+"payload/"+p for p in SERIAL_MANAGED_PATHS}
+        # Resumption can occur after inventory bytes have been removed. Only the
+        # two exact shipped memberships are allowed; preflight bound their bytes.
+        paths = SERIAL_MANAGED_PATHS if prefix+"payload/src/hv2ref/umbrella.py" in remove else LEGACY_MANAGED_PATHS
+        required |= {prefix+"inventory.json"} | {prefix+"payload/"+p for p in paths}
         _serial_require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24], "detach release/inventory mismatch")
     _serial_require(set(remove)==required and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"], "detach incomplete removal/binding set")
     _serial_require(any((remove["hv2"]["sha256"], remove["hv2"]["size_bytes"]) ==

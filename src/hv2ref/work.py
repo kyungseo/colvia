@@ -519,8 +519,7 @@ def verify_worker_sources(target: Path, manifest: dict[str, Any], *, verified_la
     except (OSError, ValueError) as exc:
         raise _fail("worker sources unavailable or malformed") from exc
 
-# Typed Work records use the bound-release verifier by default. These APIs remain
-# internal until the production installed CLI routes through them.
+# Typed Work records use the bound-release verifier by default, including CLI writers.
 _RECORD_BASE = {"record_type", "schema_version", "authority_home_id", "work_id"}
 _PROVENANCE = {"record_id", "observed_at", "observed_scope", "unavailable_scope"}
 _REVISION_KEYS = _RECORD_BASE | _PROVENANCE | {"author", "operation", "expected_prior_selection", "intent_ref", "scope", "document_refs", "evidence_refs", "result_refs", "progress", "next_action", "relations", "rebind_from", "execution_context"}
@@ -623,8 +622,9 @@ def validate_work_record(value: Any) -> dict[str, Any]:
         "work-current": _RECORD_BASE | {"selection_ref"},
     }
     _require(isinstance(kind, str) and kind in fields, "unknown Work record type")
-    _keys(value, fields[kind])
-    _require(type(value["schema_version"]) is int and value["schema_version"] == 1, "unsupported record version")
+    version = value.get("schema_version")
+    _require(type(version) is int and version in ((1, 2) if kind == "work-revision" else (1,)), "unsupported record version")
+    _keys(value, fields[kind] | ({"umbrella_evidence"} if version == 2 else set()))
     _identifier(value["authority_home_id"]); _identifier(value["work_id"])
     if "record_id" in value:
         _identifier(value["record_id"])
@@ -667,6 +667,9 @@ def validate_work_record(value: Any) -> dict[str, Any]:
             _require(relation["target"]["authority_home_id"] == value["authority_home_id"] and relation["target"]["id"] != value["work_id"], "cross-home or self relation")
             key = (relation["relation"], relation["target"]["id"])
             _require(key not in seen, "duplicate relation"); seen.add(key)
+        if version == 2:
+            from .umbrella import validate_evidence
+            validate_evidence(value["umbrella_evidence"], value["authority_home_id"], submitted=value["operation"] == "submit-result")
         _require((value["operation"] == "rebind") == (value["rebind_from"] is not None), "rebind provenance")
         if value["rebind_from"] is not None:
             validate_intent_ref(value["rebind_from"])
@@ -729,6 +732,10 @@ relations across Works and human confirmation remain publication prerequisites.
                 _require(manifest["base_commit"] == manifest["candidate_commit"], "worker baseline requires one commit")
         if prior is not None:
             old = revision(prior)
+            if old["schema_version"] == 2:
+                _require(record["schema_version"] == 2, "selected parent cannot downgrade record schema")
+            if record["schema_version"] == 2 and operation != "rebind":
+                _require(old["schema_version"] == 2 and record["umbrella_evidence"]["children"] == old["umbrella_evidence"]["children"], "parent evidence differs from selected baseline")
             _require(mode == old["execution_context"]["mode"], "Work execution mode cannot change")
             if mode == "isolated-worktree" and operation == "checkpoint":
                 _require(old["operation"] != "submit-result", "worker checkpoint cannot absorb submitted result; human baseline refresh required")
@@ -885,6 +892,9 @@ def read_work(target: Path, work_id: str) -> dict[str, Any]:
         for revision in graph["revisions"].values():
             bound = read_workspace_intent(target, revision["intent_ref"]["id"], revision["intent_ref"], require_current=False)
             _require(bound["acceptance_authority"] == identity["acceptance_authority"], "Work and intent authorities differ")
+            _require((revision["schema_version"] == 2) == (bound["composition"] is not None), "Work schema and bound intent composition differ")
+            if bound["composition"] is not None:
+                _require(bound["composition"]["parent"]["id"] == identity["work_id"], "composition names another parent Work")
         return graph
     except PermissionError as exc:
         raise ContractError("HV2-WORK-UNAVAILABLE", "Work read permission denied: " + str(target / ".hrn/work" / work_id)) from exc
@@ -924,13 +934,22 @@ def _live_external_refs(target: Path, revision: dict[str, Any], launcher_sha: st
 
 def _worker_required_refs(target, revision, manifest, launcher_sha, sources):
     from .intent import read_workspace_intent_graph
-    graph = read_workspace_intent_graph(target, revision["intent_ref"]["id"])
-    acceptance = _resolve(graph["acceptances"], revision["intent_ref"]["acceptance_ref"])["confirmation"]
+    intent_refs = [revision["intent_ref"]]
+    if revision["schema_version"] == 2:
+        intent_refs.extend(child["intent_ref"] for child in revision["umbrella_evidence"]["children"])
     changed = [unicodedata.normalize("NFC", c["path"].casefold()) for c in manifest["changes"]]
-    for category in ("document_refs", "evidence_refs"):
-        for ref in acceptance[category]:
-            path = unicodedata.normalize("NFC", ref["path"].casefold())
-            _require(not ref["required"] or not any(path == c or path.startswith(c + "/") or c.startswith(path + "/") for c in changed), "worker result overlaps required intent input; use separate output or obtain human intent revision first")
+    checked = set()
+    for intent_ref in intent_refs:
+        key = (intent_ref["id"], intent_ref["acceptance_ref"]["sha256"])
+        if key in checked:
+            continue
+        checked.add(key)
+        graph = read_workspace_intent_graph(target, intent_ref["id"])
+        acceptance = _resolve(graph["acceptances"], intent_ref["acceptance_ref"])["confirmation"]
+        for category in ("document_refs", "evidence_refs"):
+            for ref in acceptance[category]:
+                path = unicodedata.normalize("NFC", ref["path"].casefold())
+                _require(not ref["required"] or not any(path == c or path.startswith(c + "/") or c.startswith(path + "/") for c in changed), "worker result overlaps required intent input; use separate output or obtain human intent revision first")
     remaining = {"document_refs": [], "evidence_refs": []}
     for category in remaining:
         for ref in revision[category]:
@@ -1056,12 +1075,13 @@ def _publish_current(target: Path, path: Path, value: dict[str, Any], inject_at:
 
 
 class WorkStore:
-    """Development local-serial writer, requiring an outer runtime verification seam.
+    """Control writer for local and worker results, with a bound-runtime verifier.
 
 runtime_check(target) MUST verify the executing bound release under this module's
-shared guard and return {binding_ref, launcher_sha256}. The default verifies the
-isolated installed applied binding. Tests may explicitly supply a fixture double;
-no installed CLI entry exists yet. Lifecycle publication remains separate.
+shared guard and return {binding_ref, launcher_sha256, inventory_id}. The default
+verifies the isolated installed applied binding. Older ordinary-Work fixture
+doubles may omit inventory_id; schema2 requires umbrella-1. Lifecycle publication
+remains separate.
 Human confirmation is a trusted-local declaration, not OS authentication.
 """
     def __init__(self, target: Path, runtime_check=None):
@@ -1074,10 +1094,16 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     def _runtime(self) -> dict[str, Any]:
         result = self.runtime_check(self.target)
-        _keys(result, {"binding_ref", "launcher_sha256"})
+        _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
+        if "inventory_id" in result:
+            _require(result["inventory_id"] in ("worker-1", "umbrella-1"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
         return result
+
+    @staticmethod
+    def _umbrella_runtime(runtime: dict[str, Any]) -> None:
+        _require(runtime.get("inventory_id") == "umbrella-1", "umbrella writer requires umbrella-1 runtime")
 
     def _all(self) -> dict[str, Any]:
         root = self.target / ".hrn/work"
@@ -1098,6 +1124,10 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             leaves = {k for k, v in todo.items() if not v}
             _require(bool(leaves), "Work relation cycle")
             todo = {k: v - leaves for k, v in todo.items() if k not in leaves}
+        if any(r["schema_version"] == 2 for g in result.values() for r in g["revisions"].values()):
+            from .intent import workspace_intents
+            from .umbrella import check_work_histories
+            check_work_histories(result, workspace_intents(self.target))
         return result
 
     def _pending_guard(self, graphs: dict[str, Any], work_id: str, *, content_write: bool = False) -> None:
@@ -1106,9 +1136,12 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         for key, graph in graphs.items():
             if key == work_id: continue
             for d in graph["pending_decisions"]:
-                _require(graph["decisions"][d]["confirmation"]["execution_mode"] == "local", "worker pending blocks project mutation")
+                ticket = graph["decisions"][d]["confirmation"]
+                _require(graph["revisions"][ticket["target_revision_ref"]["id"]]["schema_version"] == 1, "umbrella decision pending blocks mutation")
+                _require(ticket["execution_mode"] == "local", "worker pending blocks project mutation")
             for s in graph["pending_selections"]:
                 revision = graph["revisions"][graph["selections"][s]["revision_ref"]["id"]]
+                _require(revision["schema_version"] == 1, "umbrella publication pending blocks mutation")
                 _require(revision["execution_context"]["mode"] == "local", "worker publication pending")
             if content_write:
                 _require(not graph["pending_decisions"] and not graph["pending_selections"], "pending Work blocks worker content application")
@@ -1117,6 +1150,24 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         from .intent import read_workspace_intent
         observed = read_workspace_intent(self.target, revision["intent_ref"]["id"], revision["intent_ref"], require_current=require_current)
         _require(observed["acceptance_authority"] == identity["acceptance_authority"], "Work and intent authorities differ")
+
+    def _umbrella(self, revision: dict[str, Any], runtime: dict[str, Any], *, current: bool) -> None:
+        from .intent import workspace_intents, read_workspace_intent, read_workspace_intent_graph
+        from .umbrella import bound_composition, prior_revision, check_baseline_binding
+        iid = revision["intent_ref"]["id"]
+        intents = {iid: read_workspace_intent_graph(self.target, iid)}
+        composition = bound_composition(revision, intents)
+        if composition is None and revision["schema_version"] == 1:
+            return  # Ordinary Work gets no new authority or required inputs.
+        self._umbrella_runtime(runtime)
+        intents = workspace_intents(self.target)
+        graphs = self._all()
+        prior = prior_revision(revision, graphs.get(revision["work_id"]))
+        check_baseline_binding(composition, revision, prior, graphs, intents, current=current)
+        if current and composition is not None and revision["operation"] in ("start", "rebind", "submit-result"):
+            for child in revision["umbrella_evidence"]["children"]:
+                ref = child["intent_ref"]
+                read_workspace_intent(self.target, ref["id"], ref)
 
     def publish(self, identity: dict[str, Any], revision: dict[str, Any], manifest: dict[str, Any], *, selection_id: str | None = None, operation_id: str | None = None, inject_at: str | None = None, worker: Path | None = None) -> dict[str, Any]:
         """Publish an agent baseline/result. Rebind proposals wait for human apply."""
@@ -1152,6 +1203,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                 if revision["execution_context"]["mode"] == "isolated-worktree":
                     self._runtime_equal(runtime)
                 self._intent(revision, identity)
+                self._umbrella(revision, runtime, current=True)
                 if revision["execution_context"]["mode"] == "isolated-worktree":
                     _worker_record_preflight(self.target, revision, manifest, runtime["launcher_sha256"], worker=worker, initial_baseline=revision["record_id"] not in graph["revisions"] and revision["operation"] in ("start", "rebind"))
                 else:
@@ -1159,7 +1211,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                     _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"]) == manifest["result"], "live result differs from proposed manifest")
             check_publication()
             selection = {k: revision[k] for k in _RECORD_BASE | _PROVENANCE}
-            selection.update(record_type="work-selection", record_id=selection_id, parent_selection_ref=parent, revision_ref=record_ref(revision), decision_ref=None, operation_id=operation_id)
+            selection.update(schema_version=1, record_type="work-selection", record_id=selection_id, parent_selection_ref=parent, revision_ref=record_ref(revision), decision_ref=None, operation_id=operation_id)
             if revision["operation"] != "rebind":
                 _require(selection_id not in graph["selections"] or graph["selections"][selection_id] == selection, "selection ID collision")
             revisions = graph["revisions"] | {revision["record_id"]: revision}
@@ -1181,7 +1233,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             if revision["operation"] != "rebind": planned += ["selections/" + selection_id + ".json", "current.json"]
             _visible_truth(self.target, [planned_home + name for name in planned])
             self._runtime_equal(runtime)
-            if revision["execution_context"]["mode"] == "isolated-worktree": check_publication()
+            if revision["execution_context"]["mode"] == "isolated-worktree" or revision["schema_version"] == 2: check_publication()
             root = self.target / ".hrn/work"; _durable_directory(root)
             _require(not any(p.name.casefold() == wid.casefold() and p.name != wid for p in root.iterdir()), "Work case alias")
             home = _publish_object_home(self.target, "work", wid, identity, inject_at)
@@ -1190,10 +1242,10 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             _publish_immutable(home / "revisions" / (revision["record_id"] + ".json"), revision)
             if inject_at == "after-revision": raise InjectedCrash(inject_at)
             if revision["operation"] == "rebind": return read_work(self.target, wid)
-            if revision["execution_context"]["mode"] == "isolated-worktree": check_publication()
+            if revision["execution_context"]["mode"] == "isolated-worktree" or revision["schema_version"] == 2: check_publication()
             _publish_immutable(home / "selections" / (selection_id + ".json"), selection)
             if inject_at == "after-selection": raise InjectedCrash(inject_at)
-            if revision["execution_context"]["mode"] == "isolated-worktree": check_publication()
+            if revision["execution_context"]["mode"] == "isolated-worktree" or revision["schema_version"] == 2: check_publication()
             _publish_current(self.target, home / "current.json", {**{k: identity[k] for k in _RECORD_BASE}, "record_type": "work-current", "selection_ref": record_ref(selection)}, inject_at)
             if inject_at == "after-current": raise InjectedCrash(inject_at)
             return read_work(self.target, wid)
@@ -1212,6 +1264,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         self._pending_guard(self._all(), work_id, content_write=ticket["execution_mode"] == "isolated-worktree" and action == "accept")
         grants_authority = action in ("accept", "rebind")
         self._intent(revision, graph["identity"], require_current=grants_authority)
+        self._umbrella(revision, runtime, current=grants_authority)
         manifest = _resolve(graph["manifests"], revision["result_refs"]["manifest"])
         if ticket["execution_mode"] == "isolated-worktree":
             self._worker_confirmation(ticket, revision, manifest, runtime, initial=decision["record_id"] not in graph["decisions"])
@@ -1257,13 +1310,14 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             def check_confirmation(*, initial=False, final=False):
                 self._runtime_equal(runtime)
                 self._intent(revision, graph["identity"], require_current=grants_authority)
+                self._umbrella(revision, runtime, current=grants_authority)
                 if worker_mode:
                     return self._worker_confirmation(ticket, revision, manifest, runtime, initial=initial, final=final)
                 if grants_authority:
                     _live_external_refs(self.target, revision, runtime["launcher_sha256"])
                     _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"]) == manifest["result"], "result changed since submission")
             check_confirmation(initial=did not in graph["decisions"], final=bool(existing))
-            selection = existing[0] if existing else {**{k: revision[k] for k in _RECORD_BASE | _PROVENANCE}, "record_type": "work-selection", "record_id": "selection-" + _digest(ticket), "observed_at": ticket["observed_at"], "parent_selection_ref": ticket["expected_selection_ref"], "revision_ref": ticket["target_revision_ref"], "decision_ref": record_ref(decision), "operation_id": ticket["request_id"]}
+            selection = existing[0] if existing else {**{k: revision[k] for k in _RECORD_BASE | _PROVENANCE}, "schema_version": 1, "record_type": "work-selection", "record_id": "selection-" + _digest(ticket), "observed_at": ticket["observed_at"], "parent_selection_ref": ticket["expected_selection_ref"], "revision_ref": ticket["target_revision_ref"], "decision_ref": record_ref(decision), "operation_id": ticket["request_id"]}
             selections = graph["selections"] | {selection["record_id"]: selection}
             work_graph(graph["identity"], graph["revisions"], decisions, selections, graph["manifests"], graph["current"])
             _canonical_record_bytes(decision); _canonical_record_bytes(selection)
@@ -1281,7 +1335,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             check_confirmation(final=True)
             _publish_immutable(home / "selections" / (selection["record_id"] + ".json"), selection)
             if inject_at == "after-selection": raise InjectedCrash(inject_at)
-            if worker_mode: check_confirmation(final=True)
+            if worker_mode or revision["schema_version"] == 2: check_confirmation(final=True)
             _publish_current(self.target, home / "current.json", {**{k: graph["identity"][k] for k in _RECORD_BASE}, "record_type": "work-current", "selection_ref": record_ref(selection)}, inject_at)
             if inject_at == "after-current": raise InjectedCrash(inject_at)
             return read_work(self.target, wid)

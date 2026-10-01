@@ -10,4 +10,4 @@ def git_commit_all(path: Path, message: str = "fixture: persist product binding"
         ["git", "config", "user.email", "harness-v2-product@example.invalid"], cwd=path, check=True
     )
     subprocess.run(["git", "add", "-A"], cwd=path, check=True)
-    subprocess.run(["git", "commit", "-m", message], cwd=path, check=True, capture_output=True)
+    subprocess.run(["git", "-c", "maintenance.auto=false", "-c", "gc.auto=0", "commit", "-m", message], cwd=path, check=True, capture_output=True)

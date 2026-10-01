@@ -136,8 +136,13 @@ def workspace_intent_graph(data: dict[str, Any], intent_id: str, authority: str)
     ]:
         _require(len({key.casefold() for key in group}) == len(group), "intent record ID case collision")
         for key, record in group.items():
-            _keys(record, base | extra)
-            _require(record["record_type"] == kind and record[id_key] == key and record["authority_home_id"] == authority and record["intent_id"] == intent_id and type(record["schema_version"]) is int and record["schema_version"] == 1, "intent record type/identity mismatch")
+            version = record.get("schema_version") if isinstance(record, dict) else None
+            _require(type(version) is int and version in ((1, 2) if kind == "intent-draft" else (1,)), "unsupported intent record version")
+            _keys(record, base | extra | ({"composition"} if version == 2 else set()))
+            _require(record["record_type"] == kind and record[id_key] == key and record["authority_home_id"] == authority and record["intent_id"] == intent_id, "intent record type/identity mismatch")
+            if version == 2:
+                from .umbrella import validate_composition
+                validate_composition(record["composition"], authority)
             _identifier(key)
     for draft in drafts.values():
         _require(type(draft["sequence"]) is int and draft["sequence"] > 0, "draft sequence must be a positive integer")
@@ -184,7 +189,9 @@ def workspace_intent_graph(data: dict[str, Any], intent_id: str, authority: str)
         if not any(facet["status"] == "known" for facet in draft["facets"].values()):
             raise ContractError("HV2-INTENT-VACUOUS-ACCEPTANCE", draft["revision_id"])
         _require(t["actor"] == draft["acceptance_authority"] and not any(g["material"] and g["status"] == "unresolved" for g in draft["gaps"]), "intent cannot be accepted")
-        _resolve(selections, t["expected_selection_ref"], nullable=True)
+        prior_selection = _resolve(selections, t["expected_selection_ref"], nullable=True)
+        from .umbrella import check_intent_role
+        check_intent_role(_resolve(drafts, prior_selection["revision_ref"]) if prior_selection else None, draft)
         _require(t["request_id"] not in request_ids, "intent request ID reused")
         request_ids.add(t["request_id"])
     children = {}; selected_acceptances = set()
@@ -253,7 +260,7 @@ def read_workspace_intent(target: Path, intent_id: str, expected_ref: dict[str, 
     if require_current:
         _live_external_refs(target, _resolve(graph["acceptances"], bound["acceptance_ref"])["confirmation"], None)
     draft = _resolve(graph["drafts"], bound["revision_ref"])
-    return {"acceptance_authority": draft["acceptance_authority"], "intent_ref": expected_ref, "is_current": expected_ref["selection_ref"] == current["selection_ref"]}
+    return {"acceptance_authority": draft["acceptance_authority"], "composition": draft.get("composition"), "intent_ref": expected_ref, "is_current": expected_ref["selection_ref"] == current["selection_ref"]}
 
 
 def workspace_intents(target: Path) -> dict[str, Any]:
@@ -312,6 +319,7 @@ class WorkspaceIntentStore:
             data = dict(graph["data"]) if graph else {"identity.json": identity}
             data["drafts/" + rid + ".json"] = draft
             workspace_intent_graph(data, iid, authority)
+            if draft["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
             _visible_truth(self.target, [f".hrn/intents/{iid}/identity.json", f".hrn/intents/{iid}/drafts/{rid}.json"])
             self.work_store._runtime_equal(runtime)
             root = self.target / ".hrn/intents"; _durable_directory(root)
@@ -344,6 +352,7 @@ class WorkspaceIntentStore:
         self._guard_pending(intent_id)
         ticket = {"record_type": "confirmation-ticket", "schema_version": 1, "authority_home_id": graph["identity"]["authority_home_id"], "object": {"authority_home_id": graph["identity"]["authority_home_id"], "kind": "intent", "id": intent_id}, "action": "accept", "actor": actor, "reason": reason, "request_id": request_id, "observed_at": observed_at, "target_fingerprint": target_fingerprint(self.target), "target_revision_ref": revision_ref, "expected_selection_ref": graph["current"]["selection_ref"] if graph["current"] else None, "intent_ref": None, "product_binding_ref": runtime["binding_ref"], "document_refs": document_refs if document_refs is not None else [], "evidence_refs": evidence_refs if evidence_refs is not None else [], "execution_mode": None, "supersedes_decision_ref": None}
         self._accepted_data(graph, ticket)
+        if graph["drafts"][revision_ref["id"]]["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
         _live_external_refs(self.target, ticket, runtime["launcher_sha256"])
         return {"ticket": ticket, "confirm_token": _digest(ticket)[:16]}
 
@@ -369,6 +378,7 @@ class WorkspaceIntentStore:
             expected = graph["current"]["selection_ref"] if graph["current"] else None
             _require(ticket["expected_selection_ref"] == expected, "stale intent confirmation")
             data, acceptance, selection = self._accepted_data(graph, ticket)
+            if graph["drafts"][ticket["target_revision_ref"]["id"]]["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
             current = {**graph["identity"], "record_type": "intent-current", "selection_ref": record_ref(selection, "selection_id")}
             for value in (acceptance, selection, current): _canonical_record_bytes(value)
             _live_external_refs(self.target, ticket, runtime["launcher_sha256"])

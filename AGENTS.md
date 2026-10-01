@@ -30,4 +30,10 @@ Lifecycle commands preview by default. Intent/Work publication writes machine re
 - Recovery and exit: [Operations](docs/OPERATIONS.md), [Manual Operation](docs/MANUAL-OPERATION.md)
 - Trust and support: [Security and Support](docs/SECURITY-AND-SUPPORT.md)
 
-Bounded worker execution and recovery have recorded synthetic qualification. Two private document Works were accepted on the earlier human-1 runtime; actual worker-1 adoption, same-file real-use continuation and general usability remain unverified. A local passing suite does not establish production readiness.
+Bounded worker execution and recovery have recorded synthetic qualification. Two private document Works were accepted on the earlier human-1 runtime. Subsequent private evidence records worker-1 installation and bounded worker document continuation, including an existing-file follow-up; this does not establish general usability or real-project multi-worker efficiency. A local passing suite does not establish production readiness.
+
+The optional umbrella-1 parent gate has a reviewed, Owner-accepted development result with recorded limitations; qualification of the exact release candidate remains required. Earlier worker-1 qualification does not qualify the new runtime. Follow the current index and the exact installed release.
+
+## Source Development Closeout
+
+When closing a Harness source change, follow [Adopter Impact At Development Closeout](docs/MAINTAINING.md#adopter-impact-at-development-closeout) and report the update recommendation in the existing completion report. This applies to Harness development, not ordinary work inside an installed project.

@@ -50,7 +50,7 @@ These are project-owned files prepared by the agent/operator within the approved
 From a trusted source checkout:
 
 ```sh
-./hv2 --source-checkout init --profile worker-1 --target /path/to/project \
+./hv2 --source-checkout init --profile umbrella-1 --target /path/to/project \
   --source /path/to/source --authority-home-id project-home \
   --operation-id init-1 --observed-at 2026-01-01T00:00:00Z
 ```
@@ -58,7 +58,7 @@ From a trusted source checkout:
 This previews the candidate and returns a `request` and `confirm_token`. Review the target and source; save only the `request` object as canonical JSON outside the target. Then apply that exact request:
 
 ```sh
-./hv2 --source-checkout init --profile worker-1 --target /path/to/project \
+./hv2 --source-checkout init --profile umbrella-1 --target /path/to/project \
   --source /path/to/source --apply --input /path/to/init-request.json --confirm TOKEN
 ```
 
@@ -88,10 +88,14 @@ The default human review is your existing Work narrative and a conversation in y
 
 Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds matching the accepted version conditions may execute; that is not a claim that they have been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
 
-## Transition From Human-1
+## Transition To Umbrella-1
 
-Use a qualified independent worker-1 source's launcher with `--source-checkout update --profile worker-1 --target PROJECT --source CANDIDATE`. Review the exact preview request and token before apply. Do not run the old project's `./hv2 update --source CANDIDATE`: the old packager can incorrectly label new code as human-1. Check that the preview candidate has inventory_id worker-1. Source lifecycle requires an explicit worker-1 profile; retain the exact old source for pre-transition human-1 operations.
+This candidate adds parent acceptance semantics and requires a new inventory window. Qualification of these exact bytes and human approval are required before an actual project upgrade. Earlier worker-1 qualification is historical evidence, not permission to install this candidate.
 
-Preserve the old history, exact candidate bytes, confirmation request/token, and a trusted recovery tool outside the target. Update recovery uses the exact candidate supplied by --source; the trusted executing tool may be a separately verified worker-1-aware fix. After any durable worker-1 transition receipt, resume that exact transition from the independent source. A launcher/binding mismatch after interruption is not permission to delete records or reinstall.
+Use a qualified independent umbrella-1 source with `--source-checkout update --profile umbrella-1 --target PROJECT --source CANDIDATE`. Review the preview request and confirmation token. Never package new bytes with an old installed packager. Preserve the old history, exact candidate, request/token and trusted recovery source outside the target.
 
-The first worker-1 release has no supported rollback into human-1. After an update to another worker-1 release, rollback selects only the recorded previous worker-1 release. A mispackaged human-1 history containing a worker declaration is rejected even if an old tool restored the old active binding; automatic rescue of that unsupported history is not provided. New-source repair refuses human-1; use the exact old source before transition. Actual adoption requires exact-candidate qualification and human approval. Worker execution requires a committed control baseline including the installed launcher; upgrading the runtime does not require every later Work to use worker mode.
+After the first durable umbrella-1 receipt, use that exact candidate for forward recovery, including when no schema2 record exists yet. Returning to worker-1 or human-1 is unsupported. Later umbrella-1 P→Q→P selects the recorded prior release; Q-created ordinary and parent records must keep their meaning on P. A launcher/binding mismatch is not permission to reinstall, remove records or copy a launcher alone.
+
+Old human-1 and worker-1 inventories keep their original 27 paths and remain readable. New umbrella-1 releases contain 28 paths. Exact repair from this source targets umbrella-1 only; before transition use the retained old source for old-window operations. A mispackaged release is refused even when rehashed. Backup is not a supported downgrade.
+
+For an umbrella, use [General Work](GENERAL-WORK.md#direct-child-umbrella) after establishing the project's goal and acceptance criteria. Ordinary work still uses the existing schema1 flow without an umbrella or extra document.

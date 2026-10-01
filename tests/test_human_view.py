@@ -54,8 +54,8 @@ class HumanViewInstalledTests(unittest.TestCase):
         a=self.screen([]);b=self.screen([],source=True)
         self.assertIn('No Work',a);self.assertIn('natural_language_adapter',a);self.assertNotIn('inventory:',a);self.assertNotIn('src/hv2ref/view.py',a)
         self.assertIn('not the bound release',b)
-        self.assertEqual('worker-1',workspace_candidate(self.source)['inventory']['inventory_id'])
-        self.assertEqual(27,len(workspace_candidate(self.source)['inventory']['entries']))
+        self.assertEqual('umbrella-1',workspace_candidate(self.source)['inventory']['inventory_id'])
+        self.assertEqual(28,len(workspace_candidate(self.source)['inventory']['entries']))
 
     def test_draft_is_not_acceptance_and_hostile_facets_are_escaped(self):
         self.apply_init(self.preview());draft=self.draft()
@@ -180,11 +180,14 @@ class HumanViewInstalledTests(unittest.TestCase):
         self.apply_init(self.preview())
         for key,value in [('user.name','Fixture'),('user.email','fixture@example.invalid')]:subprocess.run(['git','-C',str(self.target),'config',key,value],check=True)
         subprocess.run(['git','-C',str(self.target),'add','.'],check=True)
-        subprocess.run(['git','-C',str(self.target),'commit','-qm','fixture'],check=True)
+        # Isolate the view's no-write assertion from detached setup maintenance.
+        subprocess.run(['git','-c','maintenance.auto=false','-c','gc.auto=0','-C',str(self.target),'commit','-qm','fixture'],check=True)
         worker=self.base/'worker';subprocess.run(['git','-C',str(self.target),'worktree','add','--detach',str(worker)],check=True,capture_output=True)
         before=exact_snapshot(self.base)
         result=self.call(['view'],launcher=worker/'hv2')
-        self.assertEqual(before,exact_snapshot(self.base))
+        after=exact_snapshot(self.base)
+        changed=sorted(name for name in before.keys()|after.keys() if before.get(name)!=after.get(name))
+        self.assertEqual(before,after,'Changed paths: '+repr(changed))
         out=html.unescape(result.stdout.decode());self.assertIn('authoritative\\_control: False',out)
         self.assertIn('linked',out)
 

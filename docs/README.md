@@ -1,6 +1,6 @@
 # Documentation Index
 
-This index identifies current single-home development instructions. The `worker-1` development profile has installed machine commands, local record writers, init/update/rollback, exact repair and receipt-bound detach. Bounded worker execution and recovery have recorded synthetic qualification. Two private document Works were accepted on the earlier human-1 runtime; actual worker-1 adoption, same-file real-use continuation and general usability remain unverified.
+This index identifies current single-home development instructions. The `umbrella-1` development profile has installed machine commands, local record writers, init/update/rollback, exact repair and receipt-bound detach. Bounded worker execution and recovery have recorded synthetic qualification. Two private document Works were accepted on the earlier human-1 runtime. Subsequent private evidence records worker-1 installation and bounded worker document continuation, including an existing-file follow-up; this does not establish general usability or real-project multi-worker efficiency.
 
 Verified active status exposes a derived, read-only `documentation_root`. Follow that release's index rather than guessing a newer document path. Project-authored DR, brief and Work documents remain project-owned Markdown referenced by path and digest; the product does not impose their repository layout.
 
@@ -26,3 +26,7 @@ Source checkouts retain `docs/GENERATION-1-CONTRACT.md`, `docs/GENERATION-2-PARA
 If a current document and source disagree, report the difference and preserve state. Align code and docs in the same qualified change; do not promote a historical receipt to current support. Public version and distribution remain unassigned.
 
 Human entry: run `./hv2 view` in the project and read the current managed adapter it identifies. [Reference](REFERENCE.md#human-review) defines command and observation boundaries.
+
+## Current Candidate
+
+Umbrella-1 adds optional direct-child composition and parent acceptance checks. The development result has received review, Driver disposition and Owner acceptance with recorded limitations. Qualification of the exact release candidate remains required. Earlier worker-1 evidence below and in historical receipts does not qualify these bytes. See [Direct-Child Umbrella](GENERAL-WORK.md#direct-child-umbrella) and [Transition To Umbrella-1](GETTING-STARTED.md#transition-to-umbrella-1).

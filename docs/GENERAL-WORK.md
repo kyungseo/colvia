@@ -106,7 +106,7 @@ inspection; the installed entry cannot repair its own missing binding.
 
 Installed startup never guesses source-checkout mode when `.hrn` is missing. Invoke an independent
 trusted source launcher with `--source-checkout` for init or diagnostic commands. Source init/update/rollback/detach
-commands require the explicit `worker-1` profile; repair has no profile option and requires the exact active release, refusing human-1. Removed generation commands are parser errors;
+commands require the explicit `umbrella-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
 there is no legacy fallback mode.
 Confirmation tokens bind request bytes; they are not independent evidence of human authorization.
 
@@ -148,7 +148,7 @@ backup bytes are refused. The installed launcher cannot invoke this operation.
 Use the installed `hv2 detach --operation-id detach-1 --observed-at TIME` to
 preview. Save its `request` object, then run `hv2 detach --apply --input request.json
 --confirm TOKEN`. An independent source can use the same command with explicit
-`--source-checkout`, `--profile worker-1`, and `--target /path/to/project`.
+`--source-checkout`, `--profile umbrella-1`, and `--target /path/to/project`.
 
 Detach writes `.hrn/detached.json` before removing anything. It removes the verified
 launcher and managed product files, then their empty directories. Format, ignore
@@ -202,3 +202,28 @@ The read-only view separates the retained base/candidate from current control co
 Confirmation observations distinguish a new acceptance, pending D recovery, a durable result selection, baseline refresh and all-pre cancellation. They do not provide an aggregate permission to apply. Reject/revoke do not require current document agreement; cancelling a worker accept still needs safe all-pre occupants and no durable result selection. The graph and apply enforce those conditions independently.
 
 A worker rebind view compares previous baseline to proposed baseline and, when present, previous submitted candidate to proposed baseline. It lists matches to currently completed Works' changed-path post entries, with exact revision/decision references. Content equality does not prove cause, timing or attribution. In-scope changes with unproven origin remain explicit even when a matching completed entry exists. The decision selects a baseline only, never a completed result. Read the current adapter for the human-language explanation; the project Work narrative remains primary.
+
+## Direct-Child Umbrella
+
+The umbrella-1 candidate adds a bounded parent acceptance contract. Ordinary intent drafts and Work revisions keep schema1 and their existing inputs. Only a parent draft uses schema2 with `composition`; only its Work revisions use schema2 with `umbrella_evidence`. Every version has exact keys. Identity, ticket, decision, selection, current and manifest remain version1. This is a development contract; use the exact candidate's validation receipt before deployment.
+
+Composition has `parent` (qualified Work identity) and a nonempty `required_children` array of `{work, intent}` qualified identities. All are in one home. Sort by Work ID UTF-8 bytes; reject aliases, duplicates, self references and nested umbrella children. Child revisions must declare exactly the intended parent relation. Required membership does not add reverse dependency edges or a scheduler. A dropped completed child's historical parent relation can remain.
+
+Each evidence child row contains `work`, exact `intent_ref`, and `selection_ref`, `revision_ref`, `decision_ref`, `manifest_ref`. Presence of digests is insufficient: the selected accept ticket, result and current accepted child intent must identify the same chain. Child A's historical complete-tree snapshot need not equal today's tree after child B edits the same file.
+
+Start/rebind capture currently eligible completed children and use `integration_document=null`; an empty or partial initial capture is permitted. The same guarded publication checks both control content and child references. Checkpoint/rework retain those children. Submit-result copies the selected baseline children exactly, covers every required child, and names an integration document. Changed child results require human rebind/baseline refresh before verification and resubmission. The usual worker mode supports same-intent human baseline refresh; local mode still requires a new accepted intent for rebind.
+
+The integration path must be a required `document_refs` entry with role=result. At least one required `evidence_refs` entry must be control-required. One project-authored report may serve both roles. Bind the real verification command, inputs, child snapshot, result and limits in that report; references and hashes do not prove that an oracle actually ran or that its claims are true. Core verifies chains and bytes, while the human judges the result.
+
+An accepted parent intent cannot remove composition or change parent identity. A selected parent Work cannot rebind to ordinary intent or downgrade to schema1. Unaccepted orphan drafts do not establish a role. Replanning changes parent intent acceptance and human Work rebind; unchanged children need no new acceptance merely because the required set changed.
+
+Publish/prepare/apply share the predicate. Apply checks again before decision, selection and current publication. Pending parent decision/selection blocks other control Work writes in both local and worker modes. Exact retry and supported cancellation remain available; there is no new per-child lock, lease or quarantine. Reject/revoke do not require current child readiness. A durable accept selection cannot be cancelled; restore exact prerequisites and resume. Corrupt external edits fail closed and require separately authorized exact restoration, never record deletion or force unlock.
+
+Historical chain validation is separate from today's readiness. A later child revision/revoke does not undo a completed parent. `view work ID` shows declared identities, captured/submitted/current references, first selected capture and unmet reasons in a dedicated review section. Before first capture, change timing is unknown. A view observation does not accept the parent or waive content, runtime, authority or required-reference checks.
+
+
+## Umbrella Input Protection
+
+A parent worker result must not rewrite a required document or evidence input bound to a captured child intent. The same preflight protection already applies to the parent intent. Overlap is refused before result publication or content application; use a separate output, or have the human revise the affected intent and refresh the Work baseline. Required child current/live checks remain in force through publication. This restriction does not prevent children from successively modifying the same output file when it is not such a required intent input.
+
+Writer validation is fail-closed for the authority home: existing Work relation and pending-intent checks already read across that home, and umbrella records add historical child-reference validation. A damaged unrelated authority record can therefore block an ordinary writer. This is not a per-Work isolation guarantee, and no new index or separate synchronization document is required.
