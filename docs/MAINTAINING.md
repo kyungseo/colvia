@@ -75,6 +75,16 @@ The recorded N4 source completed bounded worker execution, complete 424-ID regre
 
 ## Umbrella Candidate Boundary
 
-The current umbrella-1 change is in development. Focused evidence is separate from the required complete normal/parent-optimized matrix, exact-artifact transition, recovery and final review. Do not promote earlier worker-1 receipts or a focused pass to qualification of this checkout. Include schema2 intent/Work round trips, ordinary schema1 behavior, mixed old/new inventory history, old-artifact refusal, Q-created records on P, and detach/plain reading.
+The umbrella-1 development result has recorded review, Driver disposition and Owner acceptance with limitations. The earlier fixed source passed complete normal/parent-optimized regression; the later test-source follow-up has focused evidence. Keep those identities separate. The exact release candidate still requires complete regression, exact-artifact transition and recovery qualification; do not describe development acceptance as release qualification. Do not promote earlier worker-1 receipts or a focused pass to qualification of this checkout. Include schema2 intent/Work round trips, ordinary schema1 behavior, mixed old/new inventory history, old-artifact refusal, Q-created records on P, and detach/plain reading.
 
 The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Schema2 writes require umbrella-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
+
+## Adopter Impact At Development Closeout
+
+After completing and validating a Harness source change, the agent assesses its effect on known adopters and proactively reports one outcome: update recommended, no update currently needed, or installation state unverified. Assess once for the completed change, not after every source edit; use existing Work, release and adopter evidence rather than creating a registry or an extra mandatory document.
+
+For a recommended update, report the target, observed installed release identity, exact candidate source/artifact identity and qualification state, expected effect, verification method, and rollback/recovery limits. Do not equate a source commit with an installed release digest. If the candidate is not fixed or the installed state cannot be verified, state that explicitly and identify the next check. Reconfirm state before applying; a snapshot is not permanent authority. A target without a current installation needs an adoption proposal, not an update claim.
+
+Apply only after explicit Owner approval for that target and candidate, through the existing preview/confirmation procedure in [Operations](OPERATIONS.md). Verify the resulting binding, project-state preservation and relevant changed behavior, and link the result to the original change. Approval of source work, its completion or a merge is not adopter-update approval. A deferred update records the reason and re-evaluation trigger in the existing completion report; it does not force source work to remain open unless its agreed completion criteria require actual application.
+
+Do not add automatic monitoring, bulk updates, Core management state or an additional acceptance gate. Keep target identifiers and installation observations in the private task report; the shipped instructions remain generic.
