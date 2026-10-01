@@ -44,7 +44,7 @@ Bounded synthetic process interruption/contention is recorded for the N4 source;
 
 ## Initial Installed Runtime Verification (Development Checkpoint)
 
-The exact `worker-1` inventory contains the same 27 managed paths as human-1, including `workspace.py`
+The exact `umbrella-1` inventory contains 28 managed paths, including the new `umbrella.py` and existing `workspace.py`
 and `work.py` and excluding retired generation modules. `workspace_candidate`
 reads that subset without publishing it. `verify_workspace_release` checks the
 inventory encoding, ordered exact set, release ID and full digest, every payload
@@ -76,10 +76,10 @@ Python object mutation or undetectable outside edits between observations.
 
 ## Actual Init And Recovery (Development)
 
-From the trusted source checkout, `hv2 --source-checkout init --profile worker-1 --target PATH
+From the trusted source checkout, `hv2 --source-checkout init --profile umbrella-1 --target PATH
 --authority-home-id ID --operation-id ID --observed-at UTC` emits a preview with
 `request` (format plus lifecycle plan) and its `confirm_token`. It writes nothing.
-Apply uses `hv2 --source-checkout init --profile worker-1 --target PATH --apply --input -
+Apply uses `hv2 --source-checkout init --profile umbrella-1 --target PATH --apply --input -
 --confirm TOKEN`, with the exact request on stdin; `--source PATH` selects the
 candidate in both calls. A changed source, target, format, or confirmation fails.
 This machine interface does not replace the future human-facing onboarding.
@@ -99,11 +99,11 @@ project source/docs are preserved. A preexisting launcher or old-generation home
 is refused. No Gen1 item is created. Update/rollback use their own exact lifecycle plans. Exact repair and receipt-bound detach are separate lifecycle paths below; neither is an alias for init recovery.
 
 The production launcher starts Python isolated with bytecode disabled. Before
-importing package code it checks the bound inventory digest, all nine module
-bytes and its own bytes. The import root must contain only `hv2ref`, whose members are exactly the nine managed modules.
+importing package code it checks the bound inventory digest, all ten module
+bytes and its own bytes. The import root must contain only `hv2ref`, whose members are exactly the ten managed modules.
 With `.hrn` absent the installed launcher fails closed; it never automatically imports project `src`
 or an old home. Trusted developer invocation explicitly uses `--source-checkout` before the command.
-Generation runtime/readers and `--legacy-baseline` are removed. Source init/update/rollback/detach calls must specify `--profile worker-1`; repair has no profile option and targets the exact active release. Valid human-1 history remains readable; new candidates require a matching literal worker-1 launcher declaration. Once a worker-1 transition receipt is durable, history cannot return to human-1. New-source repair refuses human-1. See [Transition From Human-1](GETTING-STARTED.md#transition-from-human-1) for the independent-source transition and recovery boundary.
+Generation runtime/readers and `--legacy-baseline` are removed. Source init/update/rollback/detach require `--profile umbrella-1`. Repair has no profile option and requires the exact active umbrella-1 release. Valid human-1/worker-1 history remains readable with each window's original 27-path membership. New candidates declare umbrella-1 and ship 28 paths. After the first durable umbrella-1 receipt, older-window downgrade is refused. See [Transition To Umbrella-1](GETTING-STARTED.md#transition-to-umbrella-1).
 Explicit source mode does not override a present `.hrn`. These operator choices are not an authentication boundary.
 Loaded-module provenance and full product checks still run at writer entry and
 before publication. This is a trusted-local guard, not a signature/trust service.
@@ -121,7 +121,7 @@ a LifecyclePlan and token. Apply takes the exact plan on stdin with `--apply
 --input - --confirm TOKEN` and the same source. `rollback` uses the recorded
 previous active release; optional `--to ID` must name that release. It needs no
 source candidate. Source recovery uses an independent trusted launcher with
-`--source-checkout update|rollback --profile worker-1 --target PATH ... --recover`.
+`--source-checkout update|rollback --profile umbrella-1 --target PATH ... --recover`.
 The command must match the plan action. Same-active updates and reused operation
 IDs with different bytes are refused. These are machine interfaces, not human approval.
 
@@ -151,7 +151,7 @@ releases and is not yet measured as a production-scale claim. Tests cover cooper
 serial process interruptions, not power-loss atomicity or a malicious outside writer.
 Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed; the human view has bounded private narrative-review evidence on the earlier human-1 runtime, while actual worker-1 admission remains pending.
 
-Rollback selects the current binding's previous release when permitted by the inventory window (human-1 is refused after a durable worker-1 transition receipt): a second rollback
+Rollback selects the current binding's previous release when permitted by the inventory window (older windows are refused after a durable umbrella-1 receipt): a second rollback
 can therefore reselect the release just left. Each switch still requires a new exact
 plan/token. Binding replacement preserves existing ordinary permission bits; launcher
 replacement explicitly sets executable mode 0755.

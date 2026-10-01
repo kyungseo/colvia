@@ -32,6 +32,8 @@ class WorkerPublicationTests(unittest.TestCase):
         self.worker=self.target.parent/"worker"
 
     def git(self,target,*args):
+        if args and args[0] == "commit":
+            args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
         return subprocess.run(["git","-C",str(target),*args],capture_output=True,check=True,env=git_environment(),timeout=30).stdout.strip().decode()
 
     def commit_control(self):

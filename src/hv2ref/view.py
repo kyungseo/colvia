@@ -246,6 +246,43 @@ def _changes(before, after):
     return rows or ["- no path/mode/size/digest changes"]
 
 
+def _umbrella_lines(target, revision, graph, works, intents):
+    from .umbrella import bound_composition, capture, check_baseline_binding, prior_revision
+    composition = bound_composition(revision, intents)
+    if composition is None: return []
+    captured = capture(composition, works, intents)
+    evidence = revision["umbrella_evidence"]
+    lines = ["", "## 상위 작업과 필수 하위 작업", "",
+             "저장된 수락 결과와 지금의 하위 작업 상태를 구분합니다. 이 화면은 수락 권한을 부여하지 않습니다.", ""]
+    lines += fields({"부모 Work": composition["parent"]["id"], "필수 하위 작업": composition["required_children"],
+                     "이 판본의 기준점 또는 제출 근거": evidence,
+                     "현재 참조 가능한 결과": captured["children"], "현재 미충족 이유": captured["unavailable"]})
+    first = {}
+    ref = graph["current"]["selection_ref"] if graph["current"] else None
+    chain = []
+    while ref:
+        selected = _resolve(graph["selections"], ref); chain.append(selected); ref = selected["parent_selection_ref"]
+    for selected in reversed(chain):
+        record = _resolve(graph["revisions"], selected["revision_ref"])
+        for child in record.get("umbrella_evidence", {}).get("children", []):
+            first.setdefault(child["work"]["id"], child["intent_ref"])
+    lines += fields({"선택 이력에서 처음 포착한 요청 판본": first or "unknown — 아직 선택된 포착 기록 없음"})
+    if revision["operation"] != "submit-result":
+        lines += ["- 아직 결과 제출 판본이 아닙니다. 기준점을 새로 맞춰야 하는지는 현재 결과 참조와 비교합니다."]
+    else:
+        try:
+            check_baseline_binding(composition, revision, prior_revision(revision, graph), works, intents, current=True)
+            for child in evidence["children"]:
+                ref = child["intent_ref"]
+                read_workspace_intent(target, ref["id"], ref)
+            lines += ["- 하위 결과 참조 조건: 충족. 문서 원문·실행 근거·통합 결과·실행 환경과 사람의 판단은 별도 확인합니다."]
+        except ContractError as exc:
+            lines += ["- 현재 하위 결과 참조 조건: 미충족 — " + text(exc.message)]
+    lines += ["- 완료 뒤 하위 작업이 바뀌어도 과거 수락은 자동 취소되지 않습니다.",
+              "- 처음 포착하기 전 변경 여부는 unknown입니다. 시각만으로 구성 수락 이후의 변경이라고 추정하지 않습니다."]
+    return lines
+
+
 def _work(target, graph, rid, product, intents, works):
     current = _current_revision(graph)
     rid = rid or current
@@ -260,6 +297,8 @@ def _work(target, graph, rid, product, intents, works):
     r = graph["revisions"][rid]; manifest = _resolve(graph["manifests"], r["result_refs"]["manifest"])
     lines += ["", "## Selected revision fields (recorded at publication)" if rid == current else "## Historical or unselected proposal", "", "Recorded progress and next_action are historical agent fields, not a new action request or the current derived Work state.", ""]
     lines += fields({key: r[key] for key in ("record_id", "author", "operation", "progress", "scope", "next_action", "observed_scope", "unavailable_scope", "relations", "rebind_from", "execution_context")})
+    if r["schema_version"] == 2:
+        lines += _umbrella_lines(target, r, graph, works, intents)
     try:
         bound = read_workspace_intent(target, r["intent_ref"]["id"], r["intent_ref"], require_current=False)
         lines += fields({"bound_intent_current": bound["is_current"]})
@@ -411,7 +450,7 @@ def _confirmation(target, ticket, works, intents, product):
             decisions = graph["decisions"] | {decision["record_id"]: decision}
             work_graph(graph["identity"], graph["revisions"], decisions, graph["selections"], graph["manifests"], graph["current"])
             existing = [v for v in graph["selections"].values() if v["decision_ref"] == record_ref(decision)]
-            selection = existing[0] if existing else {**{k: r[k] for k in _RECORD_BASE | _PROVENANCE}, "record_type": "work-selection", "record_id": "selection-" + _digest(ticket), "observed_at": ticket["observed_at"], "parent_selection_ref": ticket["expected_selection_ref"], "revision_ref": ticket["target_revision_ref"], "decision_ref": record_ref(decision), "operation_id": ticket["request_id"]}
+            selection = existing[0] if existing else {**{k: r[k] for k in _RECORD_BASE | _PROVENANCE}, "schema_version": 1, "record_type": "work-selection", "record_id": "selection-" + _digest(ticket), "observed_at": ticket["observed_at"], "parent_selection_ref": ticket["expected_selection_ref"], "revision_ref": ticket["target_revision_ref"], "decision_ref": record_ref(decision), "operation_id": ticket["request_id"]}
             work_graph(graph["identity"], graph["revisions"], decisions, graph["selections"] | {selection["record_id"]: selection}, graph["manifests"], graph["current"])
         check("actor and decision/selection graph", proposed_graph)
         check("not cancelled", lambda: _require(not any(d["confirmation"]["action"] == "reject" and d["confirmation"]["supersedes_decision_ref"] == record_ref(decision) for d in graph["decisions"].values()), "cancelled decision cannot resume"))
@@ -422,6 +461,12 @@ def _confirmation(target, ticket, works, intents, product):
                 _require(observed["is_current"], "intent changed; rebind then resubmit required")
             return "current" if observed["is_current"] else "historical; no new authority"
         check("bound intent", bound_intent)
+        if r["schema_version"] == 2:
+            from .umbrella import bound_composition, check_baseline_binding, prior_revision
+            check("부모 기준점과 하위 결과 참조", lambda: check_baseline_binding(
+                bound_composition(r, intents), r, prior_revision(r, graph), works, intents,
+                current=ticket["action"] in ("accept", "rebind")))
+            lines += _umbrella_lines(target, r, graph, works, intents)
         if ticket["action"] in ("accept", "rebind"):
             manifest = _resolve(graph["manifests"], r["result_refs"]["manifest"])
             if candidate is None: checks.append({"check": "whole result", "observation": _live(target, manifest, product)})

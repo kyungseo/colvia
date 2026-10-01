@@ -127,7 +127,8 @@ def audit_once(target):
     require(bool(releases) and bool(receipt_ids) and plan["operation_id"].casefold() not in {n.casefold() for n in receipt_ids},"remove-release-receipt")
     for rid in releases:
         prefix=".hrn/product/releases/"+rid+"/"
-        expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in SERIAL_PATHS}
+        paths = set(SERIAL_PATHS) | {"src/hv2ref/umbrella.py"} if prefix+"payload/src/hv2ref/umbrella.py" in remove else SERIAL_PATHS
+        expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in paths}
         require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24],"release-inventory")
     require(set(remove)==expected and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"],"remove-completeness")
     require(any((remove["hv2"]["sha256"], remove["hv2"]["size_bytes"]) ==

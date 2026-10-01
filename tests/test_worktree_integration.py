@@ -88,6 +88,8 @@ class InstalledTwoWorkerIntegrationTests(unittest.TestCase):
         return p
 
     def git(self,target,*args):
+        if args and args[0] == "commit":
+            args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
         start=time.monotonic();p=subprocess.run(['git','-C',str(target),*args],capture_output=True,env=git_environment(),timeout=30)
         self.record(p,'operator-git',cwd=target,seconds=round(time.monotonic()-start,6));self.assertEqual(0,p.returncode,p.stderr.decode(errors='replace'))
         return p.stdout.strip().decode()
@@ -177,7 +179,7 @@ class InstalledTwoWorkerIntegrationTests(unittest.TestCase):
         self.git(self.target,'add','.');self.git(self.target,'commit','-qm','operator records B baseline review')
         records_oid=self.git(self.target,'rev-parse','HEAD');self.assertNotEqual(after_a_oid,records_oid)
         self.assertEqual(after_a,self.observe(self.target))
-        beta=workers['beta'];self.git(beta,'rebase','--onto',after_a_oid,base_oid)
+        beta=workers['beta'];self.git(beta,'-c','maintenance.auto=false','-c','gc.auto=0','rebase','--onto',after_a_oid,base_oid)
         expected=initial.replace('alpha = 0','alpha = 1').replace('beta = 0','beta = 1')
         self.assertEqual(expected,(beta/'a').read_text())
         expected_path=self.evidence/'expected-result.txt';expected_path.write_text(expected)

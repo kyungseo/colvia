@@ -41,7 +41,7 @@ def load(path):
 
 
 def record(value, kind, authority, iid):
-    require(value.get("record_type") == kind and type(value.get("schema_version")) is int and value["schema_version"] == 1, "record-type")
+    require(value.get("record_type") == kind and type(value.get("schema_version")) is int and value["schema_version"] in ((1, 2) if kind == "intent-draft" else (1,)), "record-type")
     require(value.get("authority_home_id") == authority and value.get("intent_id") == iid, "record-identity")
 
 

@@ -75,3 +75,9 @@ Keep project purpose, plan, progress and results in the existing project narrati
 - For manual fallback, continue through a separately authorized local Work from the current control content; do not switch an existing Work's execution mode or bypass a pending worker decision. Re-read after action and distinguish selected completion from current file agreement.
 
 This describes the development workflow. Multi-process behavior and actual adopter use require their own evidence; the view does not qualify either.
+
+## Optional Umbrella Review
+
+Use a parent only when the human needs independently accepted child results plus a separately verified integrated result. Ordinary work keeps its current flow. Explain the parent goal, required child identities and integration oracle in the human's language; do not require a second status file or registry.
+
+Use the accepted composition and exact child snapshot from the parent baseline to run verification, write the existing project report and submit its required result/evidence references. If children change, explain the human baseline refresh and repeat verification; never substitute newer typed references behind an older report. Before parent acceptance, show the parent Work and confirmation views, distinguish captured/submitted/current child revisions, and expose unavailable evidence. A completed-child count is not parent acceptance. Keep historical completion when later child drift appears, and explain the next human decision instead of automatically revoking or creating work.

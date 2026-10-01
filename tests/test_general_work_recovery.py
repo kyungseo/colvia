@@ -112,6 +112,8 @@ class SerialWriterTests(unittest.TestCase):
     def test_port_parallel_competing_serial_proposals_and_retries_preserve_truth(self):
         import subprocess
         def git(*args):
+            if args and args[0] == "commit":
+                args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
             result = subprocess.run(["git", *args], cwd=self.target, capture_output=True, check=True)
             return result.stdout
         git("init", "-b", "main"); git("config", "user.name", "Fixture"); git("config", "user.email", "fixture@example.invalid")

@@ -4,17 +4,17 @@ Document authority and currentness: [Documentation Index](README.md).
 
 ## Single-Home Development Commands
 
-The current development profile is `worker-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./hv2`. An independent contribution source uses `./hv2 --source-checkout` explicitly.
+The current development profile is `umbrella-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./hv2`. An independent contribution source uses `./hv2 --source-checkout` explicitly.
 A source path or a successful test suite is not permission to modify an adopter.
 
 | Entry | Command | Input and effect |
 | --- | --- | --- |
-| Independent source | `init --profile worker-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
+| Independent source | `init --profile umbrella-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
 | Installed or independent source | `status`, `doctor` | Read-only product and complete record-graph diagnostics. Source accepts `--target PATH`. Healthy product output derives `documentation_root` and its README entry from the verified active release. |
 | Installed | `update --source PATH --operation-id ID --observed-at TIME` | Preview a candidate; `--apply --input FILE --confirm TOKEN` applies the exact request. |
 | Installed | `rollback [--to RELEASE] --operation-id ID --observed-at TIME` | Preview a receipt-backed release; apply the exact request and token. |
 | Installed | `detach --operation-id ID --observed-at TIME` | Preview exact managed removal; apply the exact request and token. Project truth remains. |
-| Independent source | `update`, `rollback`, `detach` with `--profile worker-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
+| Independent source | `update`, `rollback`, `detach` with `--profile umbrella-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
 | Independent source | `repair --target PATH --source PATH --backup NEW_EXTERNAL_PATH --operation-id ID --observed-at TIME` | Preview restoration of the exact active product. Apply its request/token; interrupted repair uses `--recover`. Installed repair is not exposed. |
 | Installed | `intent draft`, `intent prepare`, `intent apply` | Canonical JSON from `--input FILE` or stdin. Apply additionally needs `--confirm TOKEN`. |
 | Installed | `work publish [--worker PATH]`, `work prepare`, `work apply` | Canonical JSON from `--input FILE` or stdin. Worker result publish requires the registered linked worker path; start/baseline rebind omit it. Apply additionally needs `--confirm TOKEN`. Worker accept records the decision before exact file application and selects completion only after whole-result checks; human baseline rebind is separate. |
@@ -80,7 +80,7 @@ If the launcher is unavailable, inspect from an independent trusted source. Runt
 
 `classify-intent-entry --consequence consequential|non-consequential [--input FILE]` classifies provided gaps without publishing records. An input file has exactly one `gaps` field. `durability-probe --root PATH` writes disposable diagnostic files to an explicitly chosen scratch directory; it refuses a workspace root or descendant. It is not a read-only status command.
 
-Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile worker-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
+Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile umbrella-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
 
 ## Human Review
 
@@ -90,7 +90,7 @@ Confirmation consumes canonical ticket bytes, not the prepare response envelope.
 
 Document bodies remain project Markdown. The view displays role, path, recorded digest and current observation; open those documents or have your agent explain them. Advisory reads reject links, special/unstable inputs and files over 4 MiB. A Core-readable large file can therefore be unavailable in the view. Worker-observed evidence is not reverified on control.
 
-The worker-1 runtime does not support serial-1 or unknown inventory windows. Independent-source reading retains valid human-1 history, but new candidate creation and execution require worker-1. The installed worker-1 launcher refuses a human-1 binding with HV2-WORKSPACE-LAUNCHER/65. Source --profile human-1 or serial-1 is a parser error/2. Use the independent new source for a reviewed human-1 transition; old binaries are not upgraded by copying a launcher. See [Transition From Human-1](GETTING-STARTED.md#transition-from-human-1).
+The umbrella-1 runtime rejects serial-1 and unknown windows. Independent-source reading retains valid human-1 and worker-1 history; candidate creation and execution require umbrella-1. The installed launcher refuses old bindings before loading managed code. Old source profiles are parser errors. Transition uses the qualified independent new source; see [Transition To Umbrella-1](GETTING-STARTED.md#transition-to-umbrella-1).
 
 Command syntax/argument errors retain argparse stderr and exit2; the GFM error contract begins after argument parsing. The default human view omits the managed file inventory; status/doctor retain machine diagnostics.
 

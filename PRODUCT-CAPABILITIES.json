@@ -15,8 +15,8 @@
       "status": "development-typed-artifacts"
     },
     {
-      "boundary": "worker-1 candidate; human-1 history read; no downgrade to human-1, generation compatibility or attach",
-      "evidence": "recorded N4 synthetic transition/recovery and artifact lifecycle qualification; exact candidate receipt required",
+      "boundary": "umbrella-1 development candidate; human-1/worker-1 history read; older-window downgrade, generation compatibility and attach unsupported",
+      "evidence": "prior N4 qualification belongs to worker-1; umbrella-1 focused synthetic checks are recorded separately and do not replace exact-candidate full qualification",
       "fallback": "independent trusted exact source and retained project truth",
       "id": "project-local-product-lifecycle",
       "status": "development-bounded-synthetic"
@@ -34,9 +34,16 @@
       "fallback": "machine interface and project-authored documents",
       "id": "human-readable-view-and-entry",
       "status": "development-bounded-local"
+    },
+    {
+      "id": "same-home-direct-child-umbrella",
+      "status": "development-in-progress",
+      "boundary": "direct same-home children; human parent acceptance; no nested umbrella, scheduler, automatic completion or cross-home support",
+      "evidence": "focused schema2 writer/local recovery and installed same-window lifecycle checks; full fixed-candidate qualification and actual adoption pending",
+      "fallback": "retain exact history and review the parent plan and child evidence without automatic acceptance"
     }
   ],
-  "evidence_as_of": "2026-09-29",
+  "evidence_as_of": "2026-10-01",
   "internal_lineage": "Harness v2",
   "public_version": null,
   "record_type": "product-capability-declaration",
