@@ -227,7 +227,7 @@ def workspace_intent_graph(data: dict[str, Any], intent_id: str, authority: str)
     return {"data": data, "identity": identity, "drafts": drafts, "acceptances": acceptances, "selections": selections, "chain": chain, "current": current, "pending_acceptances": sorted(pending_acceptances), "pending_selections": pending_selections}
 
 
-def read_workspace_intent_graph(target: Path, intent_id: str) -> dict[str, Any]:
+def read_workspace_intent_graph(target: Path, intent_id: str, *, _topology_observation=None) -> dict[str, Any]:
     from .work import _authority_directory, _record_tree, _visible_truth, _require
     from .workspace import safe_target
     target = safe_target(target)
@@ -236,7 +236,11 @@ def read_workspace_intent_graph(target: Path, intent_id: str) -> dict[str, Any]:
         folders = {"drafts", "acceptances", "selections"}
         data = _record_tree(home, folders)
         _require(data == _record_tree(home, folders), "unstable intent observation")
-        _visible_truth(target, [str(home.relative_to(target) / path) for path in data])
+        truth_paths = [str(home.relative_to(target) / path) for path in data]
+        if _topology_observation is None:
+            _visible_truth(target, truth_paths)
+        else:
+            _visible_truth(target, truth_paths, _topology_observation=_topology_observation)
         return workspace_intent_graph(data, intent_id, authority)
     except PermissionError as exc:
         raise ContractError("HV2-INTENT-UNAVAILABLE", "Intent read permission denied: " + str(target / ".hrn/intents" / intent_id)) from exc
@@ -246,9 +250,20 @@ def read_workspace_intent_graph(target: Path, intent_id: str) -> dict[str, Any]:
 
 def read_workspace_intent(target: Path, intent_id: str, expected_ref: dict[str, Any], *, require_current: bool = True) -> dict[str, Any]:
     """Resolve an exact published acceptance; latest intent is required for new authority."""
-    from .work import _require, _resolve, validate_intent_ref, _live_external_refs
+    from .work import _resolve, validate_intent_ref, _live_external_refs
     validate_intent_ref(expected_ref)
     graph = read_workspace_intent_graph(target, intent_id)
+    observed, bound = _resolve_workspace_intent(graph, intent_id, expected_ref, require_current=require_current)
+    if require_current:
+        _live_external_refs(target, _resolve(graph["acceptances"], bound["acceptance_ref"])["confirmation"], None)
+    return observed
+
+
+def _resolve_workspace_intent(graph: dict[str, Any], intent_id: str, expected_ref: dict[str, Any],
+                              *, require_current: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Resolve each exact binding against a verified graph; perform no live reads."""
+    from .work import _require, _resolve, validate_intent_ref
+    validate_intent_ref(expected_ref)
     current = graph["current"]
     _require(current is not None, "intent has no published acceptance")
     if require_current:
@@ -257,13 +272,11 @@ def read_workspace_intent(target: Path, intent_id: str, expected_ref: dict[str, 
     bound = _resolve(graph["selections"], expected_ref["selection_ref"])
     _require(graph["chain"].index(bound["selection_id"]) <= graph["chain"].index(current["selection_ref"]["id"]), "intent reference is not yet published")
     _require(expected_ref == {"authority_home_id": graph["identity"]["authority_home_id"], "kind": "intent", "id": intent_id, "revision_ref": bound["revision_ref"], "acceptance_ref": bound["acceptance_ref"], "selection_ref": expected_ref["selection_ref"]}, "intent binding mismatch")
-    if require_current:
-        _live_external_refs(target, _resolve(graph["acceptances"], bound["acceptance_ref"])["confirmation"], None)
     draft = _resolve(graph["drafts"], bound["revision_ref"])
-    return {"acceptance_authority": draft["acceptance_authority"], "composition": draft.get("composition"), "intent_ref": expected_ref, "is_current": expected_ref["selection_ref"] == current["selection_ref"]}
+    return {"acceptance_authority": draft["acceptance_authority"], "composition": draft.get("composition"), "intent_ref": expected_ref, "is_current": expected_ref["selection_ref"] == current["selection_ref"]}, bound
 
 
-def workspace_intents(target: Path) -> dict[str, Any]:
+def workspace_intents(target: Path, *, _graph_reader=None) -> dict[str, Any]:
     from .workspace import _require_kind
     from .work import _require
     root = target / ".hrn/intents"
@@ -271,7 +284,7 @@ def workspace_intents(target: Path) -> dict[str, Any]:
     _require_kind(root, True)
     names = [p.name for p in root.iterdir()]
     _require(len({n.casefold() for n in names}) == len(names), "intent ID case collision")
-    return {name: read_workspace_intent_graph(target, name) for name in names}
+    return {name: (read_workspace_intent_graph(target, name) if _graph_reader is None else _graph_reader(name)) for name in names}
 
 
 def require_no_pending_intents(target: Path, *, except_id: str | None = None) -> dict[str, Any]:

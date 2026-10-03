@@ -132,25 +132,83 @@ def git_environment() -> dict[str, str]:
     return env
 
 
-def _classify_target(target: Path, *, mutation: bool = False) -> dict[str, str]:
+def _topology_probe(target: Path, env: dict[str, str]) -> tuple[int, bytes, bytes]:
+    result = subprocess.run(
+        ["git", "-C", str(target), "rev-parse", "--path-format=absolute", "--show-toplevel", "--absolute-git-dir", "--git-common-dir", "--show-superproject-working-tree"],
+        capture_output=True, env=env, check=False,
+    )
+    return result.returncode, result.stdout, result.stderr
+
+
+class _TopologyObservation:
+    """Share only validated primary raw probes within one status Work sweep."""
+    def __init__(self, target: Path):
+        self.target = safe_target(target)
+        self._environment = None
+        self._raw = None
+        self._reused = 0
+        self._finishing = False
+        self._closed = False
+
+    def _probe(self, target: Path, env: dict[str, str], *, mutation: bool):
+        if self._closed or mutation or target != self.target:
+            raise ContractError("HV2-WORKSPACE-TARGET", "invalid topology observation use")
+        if self._environment is not None and self._environment != env:
+            raise ContractError("HV2-WORKSPACE-TARGET", "topology observation environment changed")
+        if self._raw is None or self._finishing:
+            return _topology_probe(target, env)
+        self._reused += 1
+        return self._raw
+
+    def _accept(self, env: dict[str, str], raw: tuple[int, bytes, bytes], kind: str):
+        if kind != "primary":
+            raise ContractError("HV2-WORKSPACE-TARGET", "topology observation is not primary")
+        if self._finishing:
+            if raw != self._raw:
+                raise ContractError("HV2-WORKSPACE-TARGET", "unstable topology observation")
+        elif self._raw is None:
+            self._raw = raw
+            self._environment = dict(env)
+
+    def finish(self) -> None:
+        if self._closed:
+            raise ContractError("HV2-WORKSPACE-TARGET", "topology observation already closed")
+        try:
+            if self._reused:
+                self._finishing = True
+                classify_target(self.target, _topology_observation=self)
+        finally:
+            self.close()
+
+    def close(self) -> None:
+        self._closed = True
+        self._raw = None
+        self._environment = None
+
+
+def _classify_target(target: Path, *, mutation: bool = False, _topology_observation=None) -> dict[str, str]:
     target = safe_target(target)
     if any(any(p.name.casefold() == ROOT_NAME.casefold() for p in parent.iterdir()) for parent in target.parents):
         raise ContractError("HV2-WORKSPACE-TARGET", "nested workspace authority is unsupported")
     try:
-        result = subprocess.run(
-            ["git", "-C", str(target), "rev-parse", "--path-format=absolute", "--show-toplevel", "--absolute-git-dir", "--git-common-dir", "--show-superproject-working-tree"],
-            capture_output=True, env=git_environment(), check=False,
-        )
+        env = git_environment()
+        raw = (_topology_probe(target, env) if _topology_observation is None else
+               _topology_observation._probe(target, env, mutation=mutation))
+        returncode, stdout, stderr = raw
     except FileNotFoundError:
+        if _topology_observation is not None:
+            raise ContractError("HV2-WORKSPACE-TARGET", "Git unavailable during topology observation") from None
         # No Git binary is sufficient only for a tree with no ancestral Git metadata.
         if any(_exists(p / ".git") for p in (target, *target.parents)):
             raise ContractError("HV2-WORKSPACE-TARGET", "Git unavailable for repository target") from None
         return {"kind": "non-git", "target": str(target)}
-    if result.returncode:
-        if b"not a git repository" in result.stderr.lower() and not any(_exists(p / ".git") for p in (target, *target.parents)):
+    if returncode:
+        if b"not a git repository" in stderr.lower() and not any(_exists(p / ".git") for p in (target, *target.parents)):
+            if _topology_observation is not None:
+                raise ContractError("HV2-WORKSPACE-TARGET", "topology observation is not primary")
             return {"kind": "non-git", "target": str(target)}
         raise ContractError("HV2-WORKSPACE-TARGET", "Git classification failed")
-    lines = os.fsdecode(result.stdout).splitlines()
+    lines = os.fsdecode(stdout).splitlines()
     if len(lines) not in {3, 4}:
         raise ContractError("HV2-WORKSPACE-TARGET", "ambiguous Git topology")
     top, git_dir, common_dir = (Path(p).resolve(strict=True) for p in lines[:3])
@@ -168,11 +226,15 @@ def _classify_target(target: Path, *, mutation: bool = False) -> dict[str, str]:
         kind = "primary"
     if mutation and kind != "primary":
         raise ContractError("HV2-WORKSPACE-TARGET", f"mutation unsupported: {kind}")
+    if _topology_observation is not None:
+        _topology_observation._accept(env, raw, kind)
     return {"kind": kind, "target": str(target)}
 
 
-def classify_target(target: Path, *, mutation: bool = False) -> dict[str, str]:
+def classify_target(target: Path, *, mutation: bool = False, _topology_observation=None) -> dict[str, str]:
     try:
+        if _topology_observation is not None:
+            return _classify_target(target, mutation=mutation, _topology_observation=_topology_observation)
         return _classify_target(target, mutation=mutation)
     except (OSError, UnicodeError, ValueError) as exc:
         raise ContractError("HV2-WORKSPACE-TARGET", "target classification unavailable") from exc

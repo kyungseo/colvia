@@ -23,6 +23,18 @@ def _exact_dict(value: object, keys: set[str], code: str) -> dict[str, Any]:
     return value
 
 
+def _lifecycle_output_bytes(value: Any, label: str) -> bytes:
+    """Check the exact prospective bytes before publishing lifecycle output."""
+    data = canonical_json_bytes(value)
+    try:
+        decode_json_bytes(data, require_canonical=True)
+    except ContractError as exc:
+        if exc.code == "HV2-JSON-LIMIT":
+            raise ContractError(exc.code, f"prospective-output:{label}:{exc.message}") from exc
+        raise
+    return data
+
+
 def _write_exact(path: Path, data: bytes) -> None:
     if path.exists() or path.is_symlink():
         if path.is_symlink() or not path.is_file() or path.read_bytes() != data:
@@ -550,7 +562,12 @@ def workspace_init_apply(source: Path, target: Path, request: dict[str, Any], *,
 
 def workspace_status(target: Path) -> dict[str, Any]:
     """Read-only diagnostics; pending product/truth never becomes a healthy pass."""
-    from .workspace import classify_target, inspect_root, _exists, runtime_supported, SUPPORTED_PYTHON_STRINGS, SUPPORTED_PYTHON_TEXT
+    return _workspace_status_observation(target)[0]
+
+
+def _workspace_status_observation(target: Path, *, _share_intents: bool = True) -> tuple[dict[str, Any], tuple[dict, dict] | None]:
+    """Keep healthy status and its graphs within one read-only observation."""
+    from .workspace import classify_target, inspect_root, _exists, runtime_supported, SUPPORTED_PYTHON_STRINGS, SUPPORTED_PYTHON_TEXT, _TopologyObservation
     from .work import WorkStore
     from .intent import workspace_intents
     topology = classify_target(target); target = Path(topology["target"])
@@ -561,24 +578,44 @@ def workspace_status(target: Path) -> dict[str, Any]:
             next_action = ("preserve remaining files; use the exact original detach request and confirmation token with --recover from an independent trusted source"
                            if result["classification"] == "partial" else
                            "read retained project truth with an independent trusted source; no active product runtime remains")
-            return {**result, "topology":topology["kind"], "authoritative_control":False, "next_action":next_action}
+            return {**result, "topology":topology["kind"], "authoritative_control":False, "next_action":next_action}, None
         except ContractError as exc:
-            return {"classification":"degraded", "error_code":exc.code, "message":exc.message, "topology":topology["kind"]}
+            return {"classification":"degraded", "error_code":exc.code, "message":exc.message, "topology":topology["kind"]}, None
     if root["classification"] != "root-ready":
         classification = {"partial-candidate":"partial", "detach-candidate":"partial", "integrity-failure":"degraded", "unrecognized":"degraded", "unstable":"degraded"}.get(root["classification"], root["classification"])
-        return {**root, "root_classification":root["classification"], "classification":classification, "topology":topology["kind"]}
+        return {**root, "root_classification":root["classification"], "classification":classification, "topology":topology["kind"]}, None
     if not _exists(target / ".hrn/product/binding.json"):
         return {"classification": "partial", "product_verification": "incomplete", "topology": topology["kind"],
-                "next_action": "use independent trusted source and exact original init request; unknown/torn bytes require manual preservation"}
+                "next_action": "use independent trusted source and exact original init request; unknown/torn bytes require manual preservation"}, None
     try:
         state = _workspace_observe(target, allow_pending=True)
         if state["pending"] is not None:
             return {"classification":"partial", "topology":topology["kind"],
                     "pending_lifecycle":state["pending"]["operation_id"], "binding_ref":state["binding_ref"],
-                    "next_action":"recover exact lifecycle request from independent trusted source; receipt alone is not completion"}
+                    "next_action":"recover exact lifecycle request from independent trusted source; receipt alone is not completion"}, None
         product = verify_workspace_product(target)
-        works = WorkStore(target)._all()  # Read-only graph check, no runtime mutation seam invoked.
-        intents = workspace_intents(target)
+        observed_intents = {}
+        topology_observation = _TopologyObservation(target) if _share_intents and topology["kind"] == "primary" else None
+        def intent_graph(intent_id):
+            from .intent import read_workspace_intent_graph
+            if intent_id not in observed_intents:
+                observed_intents[intent_id] = (read_workspace_intent_graph(target, intent_id) if topology_observation is None else
+                                               read_workspace_intent_graph(target, intent_id, _topology_observation=topology_observation))
+            return observed_intents[intent_id]
+        # Only this read-only sweep shares graphs/raw probes; writers stay fresh.
+        try:
+            if topology_observation is not None:
+                works = WorkStore(target)._all(_intent_graph_reader=intent_graph, _topology_observation=topology_observation)
+                topology_observation.finish()
+            else:
+                works = (WorkStore(target)._all(_intent_graph_reader=intent_graph) if _share_intents else
+                         WorkStore(target)._all())
+        finally:
+            if topology_observation is not None:
+                topology_observation.close()
+        intents = workspace_intents(target)  # Independent final read, never the shared getter.
+        _serial_require(all(intents.get(key) == graph for key, graph in observed_intents.items()),
+                        "unstable intent observation")
         from .candidates import read_candidates
         try:
             observed_planning = read_candidates(target)
@@ -604,7 +641,7 @@ def workspace_status(target: Path) -> dict[str, Any]:
             next_action = "preserve pending decision; resume apply with the exact original ticket and confirmation token after prerequisites are restored; " + next_action
         if pending_publish:
             next_action = "preserve pending publication; retry the exact original publish request after prerequisites are restored; " + next_action
-        return {"classification": "partial" if pending_work or pending_intent or not planning["available"] else ("pass" if supported else "unsupported"), "topology": topology["kind"],
+        status = {"classification": "partial" if pending_work or pending_intent or not planning["available"] else ("pass" if supported else "unsupported"), "topology": topology["kind"],
                 "authoritative_control": topology["kind"] in {"primary", "non-git"}, "product": product,
                 "documentation_root": documentation_root, "next_action": next_action,
                 "pending_work": pending_work, "pending_intent": pending_intent,
@@ -612,8 +649,13 @@ def workspace_status(target: Path) -> dict[str, Any]:
                 "planning": planning,
                 "runtime": {"implementation": sys.implementation.name, "python": ".".join(map(str, sys.version_info[:3])), "supported_baseline": SUPPORTED_PYTHON_STRINGS[0], "supported_versions": list(SUPPORTED_PYTHON_STRINGS), "required_releaselevel": "final", "free_threaded_supported": False,
                             "supported": supported}}
+        if _share_intents and status["classification"] != "pass":
+            return _workspace_status_observation(target, _share_intents=False)
+        return status, (works, intents) if status["classification"] == "pass" else None
     except ContractError as exc:
-        return {"classification": "degraded", "error_code": exc.code, "message": exc.message, "topology": topology["kind"]}
+        if _share_intents:
+            return _workspace_status_observation(target, _share_intents=False)
+        return {"classification": "degraded", "error_code": exc.code, "message": exc.message, "topology": topology["kind"]}, None
 
 def _workspace_observe(target: Path, *, allow_pending: bool = False, repair_candidate: dict[str, Any] | None = None) -> dict[str, Any]:
     from .workspace import classify_target
@@ -673,7 +715,11 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
             "authority_home_id":fmt["authority_home_id"],"expected_binding_ref":state["binding_ref"],"candidate_release":candidate,
             "format_sha256":sha256_bytes(canonical_json_bytes(fmt)),"truth_refs":truth,"remove":[],"preserve":[],
             "created_at":created_at,"target_fingerprint":target_fingerprint(target)}
-    _switch_plan_shape(plan,fmt); _switch_binding_receipt(plan,binding)
+    _switch_plan_shape(plan,fmt)
+    result_binding, receipt = _switch_binding_receipt(plan,binding)
+    _lifecycle_output_bytes(plan, "plan")
+    _lifecycle_output_bytes(result_binding, "binding")
+    _lifecycle_output_bytes(receipt, "receipt")
     _serial_require(all(r["operation_id"].casefold() != operation_id.casefold() for r in state["history"]), "operation id already used")
     _serial_require(state == _workspace_observe(target) and truth == _lifecycle_truth(target), "preview changed while reading")
     return {"classification":"preview","request":plan,"confirm_token":sha256_bytes(canonical_json_bytes(plan))[:16],
@@ -745,8 +791,10 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
         state,done = _switch_preflight(target,plan,recover=recover)
         if done: return {"classification":"replayed","operation_id":plan["operation_id"],"product":verify_workspace_product(target)}
         binding,receipt = _switch_binding_receipt(plan,state["binding"])
+        binding_bytes = _lifecycle_output_bytes(binding, "binding")
+        receipt_bytes = _lifecycle_output_bytes(receipt, "receipt")
         _visible_truth(target,planned)
-        _write_exact(product/"receipts"/(plan["operation_id"]+".json"),canonical_json_bytes(receipt))
+        _write_exact(product/"receipts"/(plan["operation_id"]+".json"),receipt_bytes)
         if inject_at == "after-receipt": raise InjectedCrash(inject_at)
         release=product/"releases"/rid
         if not _exists(release):
@@ -775,7 +823,7 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
         if inject_at == "after-launcher": raise InjectedCrash(inject_at)
         current,_ = _switch_preflight(target,plan,recover=True)
         _serial_require(current["binding_ref"] == state["binding_ref"], "binding changed before publication")
-        _replace_product_file(target,product/"binding.json",canonical_json_bytes(binding),executable=False)
+        _replace_product_file(target,product/"binding.json",binding_bytes,executable=False)
         if inject_at == "after-binding": raise InjectedCrash(inject_at)
         return {"classification":"updated" if plan["action"] == "update" else "rolled-back",
                 "operation_id":plan["operation_id"],"product":verify_workspace_product(target)}
@@ -1082,6 +1130,8 @@ def workspace_detach_preview(target: Path, *, operation_id: str, created_at: str
     target=Path(classify_target(target,mutation=True)["target"])
     if installed: require_workspace_runtime(target)
     plan=_detach_preview_plan(target,operation_id,created_at)
+    _lifecycle_output_bytes(plan, "plan")
+    _lifecycle_output_bytes(_detach_receipt(plan), "receipt")
     return {"classification":"preview","request":plan,"confirm_token":sha256_bytes(canonical_json_bytes(plan))[:16]}
 
 
@@ -1167,7 +1217,8 @@ def workspace_detach_apply(target: Path, plan: dict[str, Any], *, confirm_token:
         previous=preflight()
         _visible_truth(target,[".hrn/detached.json"]+[e["path"] for e in plan["preserve"]])
         if previous and previous["classification"]=="detached":return {**previous,"replayed":True}
-        _write_exact(receipt_path,canonical_json_bytes(_detach_receipt(plan)))
+        receipt_bytes = _lifecycle_output_bytes(_detach_receipt(plan), "receipt")
+        _write_exact(receipt_path,receipt_bytes)
         if inject_at=="after-receipt":raise InjectedCrash(inject_at)
         state=workspace_detached_status(target)
         for name in state["remaining_files"]:

@@ -2696,5 +2696,178 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
         with self.assertRaises(ContractError): _validate_plan_shape(plan)
 
 
+
+@unittest.skipUnless(runtime_supported(), "requires the supported native runtime")
+class ProductLifecycleOutputLimitTests(unittest.TestCase):
+    """Ordinary installed writers seed history; limit injection stays in this process."""
+    TIME = "2026-01-01T00:00:00Z"
+
+    @classmethod
+    def setUpClass(cls):
+        from hv2ref import product
+        cls.temp = tempfile.TemporaryDirectory(prefix="lifecycle-limit-seeds-")
+        cls.addClassCleanup(cls.temp.cleanup)
+        cls.root = Path(cls.temp.name).resolve()
+        cls.source = source_root()
+        cls.candidate = cls.root / "candidate"
+        for name in product.SERIAL_MANAGED_PATHS:
+            destination = cls.candidate / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(cls.source / name, destination)
+        with (cls.candidate / "docs/CONCEPTS.md").open("a") as handle:
+            handle.write("\n<!-- Synthetic distinct release for lifecycle limit tests. -->\n")
+        cls.templates = {}
+        for git in (False, True):
+            target = cls.root / ("git" if git else "non-git")
+            target.mkdir(); (target / "a").write_text("synthetic project\n")
+            if git:
+                subprocess.run(["git", "init", "-q", str(target)], check=True)
+                git_commit_all(target, "fixture: initialize synthetic target")
+            preview = product.workspace_init_preview(cls.source, target, authority_home_id="home-a",
+                operation_id="init-a", created_at=cls.TIME)
+            product.workspace_init_apply(cls.source, target, preview["request"], confirm_token=preview["confirm_token"])
+            for number in range(32):
+                draft = {"record_type":"intent-draft", "schema_version":1, "authority_home_id":"home-a",
+                    "intent_id":f"intent-{number:03d}", "revision_id":"draft-a", "sequence":1,
+                    "prior_revision_ref":None, "actor":"agent", "acceptance_authority":"owner",
+                    "observed_at":cls.TIME, "facets":{key:{"status":"known", "value":"synthetic"} for key in
+                    ("acceptance_oracle", "destination", "expected_outcome", "forbidden_scope", "goal", "scope")},
+                    "gaps":[], "statements":[], "route":"direct-entry"}
+                result = subprocess.run([sys.executable, "-I", "-B", str(target / "hv2"), "intent", "draft"],
+                    cwd=target, input=canonical_json_bytes(draft), capture_output=True, timeout=45)
+                if result.returncode:
+                    raise AssertionError((result.stdout + result.stderr).decode(errors="replace"))
+            if product.workspace_status(target)["classification"] != "pass":
+                raise AssertionError("ordinary writer seed did not reach a healthy status")
+            cls.templates[git] = target
+
+    def case(self, action, git, *, anchor=True):
+        from hv2ref import product
+        temp = tempfile.TemporaryDirectory(prefix="lifecycle-limit-case-")
+        self.addCleanup(temp.cleanup)
+        target = Path(temp.name).resolve() / "project"
+        shutil.copytree(self.templates[git], target)
+        if action == "rollback":
+            preview = product.workspace_switch_preview(target, action="update", source=self.candidate,
+                operation_id="seed-update", created_at=self.TIME)
+            product.workspace_switch_apply(target, preview["request"], confirm_token=preview["confirm_token"], source=self.candidate)
+        if not anchor:
+            (target / ".hrn/locks/writer.lock").unlink()
+            (target / ".hrn/locks").rmdir()
+        preview = self.preview(target, action)
+        plan = preview["request"]
+        receipt = product._detach_receipt(plan) if action == "detach" else product._switch_binding_receipt(
+            plan, product._workspace_observe(target)["binding"])[1]
+        limit = len(canonical_json_bytes(receipt)) - 1
+        self.assertLessEqual(len(canonical_json_bytes(plan)), limit)
+        self.assertLess(limit, len(canonical_json_bytes(receipt)))
+        self.assertLess(max(p.stat().st_size for p in (target / ".hrn").rglob("*.json") if p.is_file()), limit)
+        return target, preview, receipt, limit
+
+    def preview(self, target, action):
+        from hv2ref import product
+        if action == "detach":
+            return product.workspace_detach_preview(target, operation_id="boundary-a", created_at=self.TIME)
+        return product.workspace_switch_preview(target, action=action,
+            source=self.candidate if action == "update" else None, operation_id="boundary-a", created_at=self.TIME)
+
+    def apply(self, target, action, preview, *, recover=False):
+        from hv2ref import product
+        if action == "detach":
+            return product.workspace_detach_apply(target, preview["request"], confirm_token=preview["confirm_token"], recover=recover)
+        return product.workspace_switch_apply(target, preview["request"], confirm_token=preview["confirm_token"],
+            source=self.candidate if action == "update" else None, recover=recover)
+
+    def test_preview_oversize_no_token_no_write(self):
+        from hv2ref import jsonio
+        for action in ("update", "rollback", "detach"):
+            for git in (False, True):
+                with self.subTest(action=action, git=git):
+                    target, preview, receipt, limit = self.case(action, git, anchor=False)
+                    before = exact_snapshot(target)
+                    with mock.patch.object(jsonio, "MAX_JSON_BYTES", limit):
+                        with self.assertRaises(ContractError) as error:
+                            self.preview(target, action)
+                    self.assertEqual("HV2-JSON-LIMIT", error.exception.code)
+                    self.assertIn("prospective-output:receipt:bytes:", error.exception.message)
+                    self.assertEqual(before, exact_snapshot(target))
+
+    def test_apply_oversize_no_lifecycle_write(self):
+        from hv2ref import jsonio
+        for action in ("update", "rollback", "detach"):
+            for git in (False, True):
+                with self.subTest(action=action, git=git):
+                    target, preview, receipt, limit = self.case(action, git)
+                    before = exact_snapshot(target)
+                    with mock.patch.object(jsonio, "MAX_JSON_BYTES", limit):
+                        with self.assertRaises(ContractError) as error:
+                            self.apply(target, action, preview)
+                    self.assertEqual("HV2-JSON-LIMIT", error.exception.code)
+                    self.assertIn("prospective-output:receipt:bytes:", error.exception.message)
+                    self.assertEqual(before, exact_snapshot(target))
+
+    def test_missing_lock_anchor_only_allowed_delta(self):
+        from hv2ref import jsonio
+        for action in ("update", "rollback", "detach"):
+            with self.subTest(action=action):
+                target, preview, receipt, limit = self.case(action, False, anchor=False)
+                before = exact_snapshot(target)
+                with mock.patch.object(jsonio, "MAX_JSON_BYTES", limit):
+                    with self.assertRaises(ContractError) as error:
+                        self.apply(target, action, preview)
+                self.assertEqual("HV2-JSON-LIMIT", error.exception.code)
+                after = exact_snapshot(target)
+                self.assertEqual({".hrn/locks", ".hrn/locks/writer.lock"}, set(after) - set(before))
+                self.assertEqual("directory", after[".hrn/locks"][0])
+                self.assertEqual(("file", hashlib.sha256(b"").hexdigest(), 0o600), after[".hrn/locks/writer.lock"])
+                self.assertEqual(before, {key:value for key,value in after.items() if key in before})
+
+    def test_under_limit_round_trip(self):
+        from hv2ref import jsonio, product
+        for action in ("update", "rollback", "detach"):
+            for git in (False, True):
+                with self.subTest(action=action, git=git):
+                    target, preview, receipt, limit = self.case(action, git)
+                    truth = exact_snapshot(target / ".hrn/intents")
+                    with mock.patch.object(jsonio, "MAX_JSON_BYTES", len(canonical_json_bytes(receipt))):
+                        self.apply(target, action, preview)
+                        before = exact_snapshot(target)
+                        self.apply(target, action, preview, recover=action == "detach")
+                        self.assertEqual(before, exact_snapshot(target))
+                        expected = "detached" if action == "detach" else "pass"
+                        self.assertEqual(expected, product.workspace_status(target)["classification"])
+                    self.assertEqual(truth, exact_snapshot(target / ".hrn/intents"))
+
+    def test_existing_oversize_recovery_preserves_state(self):
+        from hv2ref import jsonio
+        for action in ("update", "rollback", "detach"):
+            with self.subTest(action=action):
+                target, preview, receipt, limit = self.case(action, False)
+                path = target / (".hrn/detached.json" if action == "detach" else ".hrn/product/receipts/boundary-a.json")
+                # Exact synthetic pre-existing receipt; the ordinary-writer originals are separate evidence.
+                path.write_bytes(canonical_json_bytes(receipt))
+                before = exact_snapshot(target)
+                with mock.patch.object(jsonio, "MAX_JSON_BYTES", limit):
+                    with self.assertRaises(ContractError) as error:
+                        self.apply(target, action, preview, recover=True)
+                self.assertEqual("HV2-JSON-LIMIT", error.exception.code)
+                self.assertNotIn("prospective-output:", error.exception.message)
+                self.assertEqual(before, exact_snapshot(target))
+
+    def test_real_4mib_output_boundary(self):
+        from hv2ref import jsonio, product
+        self.assertEqual(4 * 1024 * 1024, jsonio.MAX_JSON_BYTES)
+        for size in (jsonio.MAX_JSON_BYTES - 1, jsonio.MAX_JSON_BYTES, jsonio.MAX_JSON_BYTES + 1):
+            with self.subTest(size=size):
+                value = "x" * (size - 3)
+                self.assertEqual(size, len(canonical_json_bytes(value)))
+                if size <= jsonio.MAX_JSON_BYTES:
+                    self.assertEqual(canonical_json_bytes(value), product._lifecycle_output_bytes(value, "receipt"))
+                else:
+                    with self.assertRaises(ContractError) as error:
+                        product._lifecycle_output_bytes(value, "receipt")
+                    self.assertEqual("HV2-JSON-LIMIT", error.exception.code)
+                    self.assertEqual(f"prospective-output:receipt:bytes:{size}", error.exception.message)
+
 if __name__ == "__main__":
     unittest.main()

@@ -32,7 +32,10 @@ tracked. The record/content and lifecycle layers verify effective Git ignore pol
 
 The writer guard serializes cooperating calls only. It neither authenticates the caller nor makes several files or Git operations
 atomic. It does not authorize an operation merely because the lock was acquired. The caller must revalidate under the guard and must
-not recursively acquire it (same-thread recursion fails immediately). Read-only inspection never creates a lock or cache. The same anchor admits an explicit detach-recovery purpose,
+not recursively acquire it (same-thread recursion fails immediately). Read-only inspection never creates a lock or on-disk cache. A healthy primary status observation may reuse verified intent graphs
+and a raw Git topology probe within its first Work sweep. Target/ancestor/path checks and effective ignore checks remain live. A reused
+topology probe is checked again before the independent final intent read; changed observations fall back to fresh reads. No context
+crosses observations or reaches writers. Intermediate changes that revert before the final probe are not guaranteed to be observed. The same anchor admits an explicit detach-recovery purpose,
 but receipt verification remains the lifecycle caller's responsibility. Root-ready is the default guard purpose.
 Ancestor or descendant workspace authorities are unsupported, including non-Git targets. Target fingerprints bind the literal resolved
 path spelling; case/normalization aliases are not promised equivalent. Pending operations cannot resume after path relocation.
@@ -138,6 +141,15 @@ preview and apply. The same checks repeat under the shared writer guard. A pendi
 lifecycle receipt blocks ordinary record writers and any new lifecycle operation.
 Completed Work is permitted; its records and project result bytes are not rewritten.
 
+Update/rollback preview checks the canonical plan, result binding and embedded-plan
+receipt against the existing JSON reader limits before issuing a token. Apply repeats
+the output check under the writer guard using the freshly observed prior binding,
+before writing the exact checked receipt/binding bytes. Oversized output is refused
+before lifecycle publication; it does not create a pending receipt or candidate release.
+Acquiring a previously absent writer lock may still create its normal scratch anchor.
+This prevents new unreadable output; it does not increase capacity or recover an
+already oversized stored receipt. Preserve such existing bytes for explicit disposition.
+
 Publication is receipt (planned result), staged candidate, immutable release, atomic
 executable launcher replacement, then atomic binding replacement. The receipt alone
 is not completion. Exact explicit recovery resumes supported complete-file prefixes.
@@ -225,6 +237,13 @@ last. Each deletion is preceded by exact remaining-inventory/truth checks under
 the common guard; no recursive deletion is permitted. A valid receipt with a
 remaining suffix of that sequence is partial. Unexpected bytes, unsafe file
 kinds, modified preservation entries or a non-prefix deletion state are degraded.
+
+Detach preview checks its plan and derived receipt against the same reader limits.
+Apply rechecks the exact receipt bytes under the guard before recording the receipt
+or removing files. A refused preview emits no token; a refused apply creates no
+lifecycle output, apart from the normal scratch lock anchor if it was absent.
+These checks do not guarantee that every large workspace can detach under the
+current format and limits, or make an existing oversized receipt recoverable.
 
 Recovery requires the same explicit plan/token from an independent source and the
 original target fingerprint. Complete replay is read-only. The receipt, format and
