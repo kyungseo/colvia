@@ -17,3 +17,7 @@ This stdlib-only fixture checks receipt inventory, deletion prefix, and selected
 ## Recovery Boundary
 
 Keep original requests, tokens, backups, and candidate source on durable storage. Use only the supported exact recovery paths in [Operations](OPERATIONS.md). If required bytes are unavailable, record that limitation and preserve the target for human disposition. There is no general manual rewrite procedure, Gen1/2 compatibility reader, or automatic attach operation.
+
+## Retained Candidate Planning
+
+After detach, keep `.hrn/planning/candidates.json` with the format, intent and Work records. The detach receipt binds its preserved digest and size. The independent stdlib product auditor checks those bytes and receipt inventory; it does not reimplement candidate transitions or authenticate Owner declarations. Use an independent trusted planning-1 source for `--source-checkout view candidates --target PATH`. Preserve damaged/conflicted planning and follow the explicit branch recovery in [Candidate Planning](REFERENCE.md#candidate-planning); do not delete it to make another command succeed.

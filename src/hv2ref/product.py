@@ -42,16 +42,17 @@ SERIAL_MANAGED_PATHS = tuple(sorted({
     "src/hv2ref/__init__.py", "src/hv2ref/cli.py", "src/hv2ref/errors.py",
     "src/hv2ref/intent.py", "src/hv2ref/jsonio.py", "src/hv2ref/product.py",
     "src/hv2ref/work.py", "src/hv2ref/workspace.py",
-    "src/hv2ref/view.py", "src/hv2ref/umbrella.py", "adapters/harness-v2-work/SKILL.md",
+    "src/hv2ref/view.py", "src/hv2ref/umbrella.py", "src/hv2ref/candidates.py", "adapters/harness-v2-work/SKILL.md",
 }, key=lambda path: path.encode("utf-8")))
 
 
-LEGACY_MANAGED_PATHS = tuple(p for p in SERIAL_MANAGED_PATHS if p != "src/hv2ref/umbrella.py")
+UMBRELLA_MANAGED_PATHS = tuple(p for p in SERIAL_MANAGED_PATHS if p != "src/hv2ref/candidates.py")
+LEGACY_MANAGED_PATHS = tuple(p for p in UMBRELLA_MANAGED_PATHS if p != "src/hv2ref/umbrella.py")
 
 
 def _managed_paths(window: str) -> tuple[str, ...]:
-    _serial_require(window in ("human-1", "worker-1", "umbrella-1"), "unsupported inventory window")
-    return SERIAL_MANAGED_PATHS if window == "umbrella-1" else LEGACY_MANAGED_PATHS
+    _serial_require(window in ("human-1", "worker-1", "umbrella-1", "planning-1"), "unsupported inventory window")
+    return SERIAL_MANAGED_PATHS if window == "planning-1" else UMBRELLA_MANAGED_PATHS if window == "umbrella-1" else LEGACY_MANAGED_PATHS
 
 
 def _serial_require(condition: bool, detail: str) -> None:
@@ -71,7 +72,7 @@ def _launcher_inventory_window(data: bytes, *, allow_legacy: bool = False) -> st
     declarations = [node for node in module.body
                     if isinstance(node, ast.Assign) and len(node.targets) == 1
                     and isinstance(node.targets[0], ast.Name) and node.targets[0].id == name
-                    and isinstance(node.value, ast.Constant) and node.value.value in (("worker-1", "umbrella-1") if allow_legacy else ("umbrella-1",))]
+                    and isinstance(node.value, ast.Constant) and node.value.value in (("worker-1", "umbrella-1", "planning-1") if allow_legacy else ("planning-1",))]
     target = declarations[0].targets[0] if len(declarations) == 1 else None
     bindings = []
     try:
@@ -145,7 +146,7 @@ def _serial_inventory(value: Any) -> dict[str, Any]:
     _serial_require(value["record_type"] == "release-inventory"
                     and type(value["schema_version"]) is int and value["schema_version"] == 1,
                     "unsupported release inventory schema")
-    _serial_require(isinstance(value["inventory_id"], str) and value["inventory_id"] in {"human-1", "worker-1", "umbrella-1"}, "unsupported inventory window")
+    _serial_require(isinstance(value["inventory_id"], str) and value["inventory_id"] in {"human-1", "worker-1", "umbrella-1", "planning-1"}, "unsupported inventory window")
     _serial_require(isinstance(value["entries"], list), "inventory entries must be an array")
     paths = []
     for item in value["entries"]:
@@ -217,14 +218,13 @@ def _switch_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
     validate_ref(plan["expected_binding_ref"])
     ref = _exact_dict(plan["candidate_release"], {"id", "sha256", "inventory_id"}, "HV2-WORKSPACE-RELEASE")
     _serial_require(_sha(ref["sha256"]) and ref["id"] == "product-release-" + ref["sha256"][:24]
-                    and isinstance(ref["inventory_id"], str) and ref["inventory_id"] in {"human-1", "worker-1", "umbrella-1"}, "invalid switch release")
+                    and isinstance(ref["inventory_id"], str) and ref["inventory_id"] in {"human-1", "worker-1", "umbrella-1", "planning-1"}, "invalid switch release")
     _serial_require(plan["remove"] == [] and plan["preserve"] == [] and isinstance(plan["truth_refs"], list), "switch cannot remove truth")
     names = []
     for ref in plan["truth_refs"]:
         ref = _exact_dict(ref, {"path", "sha256"}, "HV2-WORKSPACE-TRUTH")
         name = ref["path"]
-        _serial_require(isinstance(name, str) and name.split("/")[0] in ("intents", "work")
-                        and len(name.split("/")) >= 3 and all(p not in ("", ".", "..") for p in name.split("/"))
+        _serial_require(isinstance(name, str) and (name == "planning/candidates.json" or (name.split("/")[0] in ("intents", "work") and len(name.split("/")) >= 3)) and all(p not in ("", ".", "..") for p in name.split("/"))
                         and "\\" not in name and _sha(ref["sha256"]), "invalid truth path/digest")
         names.append(name)
     _serial_require(names == sorted(set(names), key=lambda n:n.encode()), "truth refs order/duplicate")
@@ -235,7 +235,7 @@ def _switch_binding_receipt(plan: dict[str, Any], prior: dict[str, Any]) -> tupl
     from .work import record_ref
     _serial_require(plan["expected_binding_ref"] == record_ref(prior, "operation_id"), "switch predecessor mismatch")
     _serial_require(plan["candidate_release"] != prior["active_release"], "switch to active release is not an operation")
-    rank = {"human-1": 0, "worker-1": 1, "umbrella-1": 2}
+    rank = {"human-1": 0, "worker-1": 1, "umbrella-1": 2, "planning-1": 3}
     _serial_require(rank[plan["candidate_release"]["inventory_id"]] >= rank[prior["active_release"]["inventory_id"]],
                     "inventory history cannot downgrade to an older semantic window")
     if plan["action"] == "rollback":
@@ -291,9 +291,10 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
     matches = [i for i,b in enumerate(bindings) if canonical_json_bytes(b) == raw_binding]
     _serial_require(len(matches) == 1 and matches[0] >= len(bindings)-2, "binding is not the current or single pending predecessor")
     index = matches[0]; binding = bindings[index]; pending = chain[-1] if index != len(bindings)-1 else None
+    _serial_require(not _exists(root / "planning") or binding["active_release"]["inventory_id"] == "planning-1", "planning records require an applied planning-1 binding")
     _serial_require(allow_pending or pending is None, "pending lifecycle blocks product use; recover exact plan from independent source")
     if repair_candidate is not None:
-        _serial_require(binding["active_release"]["inventory_id"] == "umbrella-1",
+        _serial_require(binding["active_release"]["inventory_id"] == "planning-1",
                         "older-window repair requires the exact retained old source")
         _serial_require(pending is None and repair_candidate["release_ref"] == binding["active_release"],
                         "repair requires the exact active release and no pending lifecycle")
@@ -356,7 +357,7 @@ process modifying Python objects or undetectable manual edits between observatio
     require_supported_runtime()
     target = Path(classify_target(target, mutation=True)["target"])
     observed = verify_workspace_product(target)
-    _serial_require(observed["inventory"]["inventory_id"] == "umbrella-1", "new installed runtime requires umbrella-1")
+    _serial_require(observed["inventory"]["inventory_id"] == "planning-1", "new installed runtime requires planning-1")
     _serial_require(sys.flags.isolated == 1 and sys.dont_write_bytecode,
                     "writer must use isolated Python startup without bytecode writes")
     main = sys.modules.get("__main__")
@@ -458,7 +459,7 @@ def _workspace_init_preflight(target: Path, request: dict[str, Any], candidate: 
     _serial_require(recover, "partial init requires explicit exact recovery")
     state = inspect_root(target)["classification"]
     _serial_require(state in {"root-ready", "partial-candidate"}, "root is not an exact initialization prefix")
-    for category in ("intents", "work"):
+    for category in ("intents", "work", "planning"):
         path = root / category
         if _exists(path):
             _require_kind(path, True)
@@ -578,6 +579,15 @@ def workspace_status(target: Path) -> dict[str, Any]:
         product = verify_workspace_product(target)
         works = WorkStore(target)._all()  # Read-only graph check, no runtime mutation seam invoked.
         intents = workspace_intents(target)
+        from .candidates import read_candidates
+        try:
+            observed_planning = read_candidates(target)
+            planning = {"available": True, "present": observed_planning["present"], "sha256": observed_planning["sha256"],
+                        "candidate_count": len(observed_planning["store"]["candidates"]), "selected": observed_planning["store"]["selected"],
+                        "selection_semantics": "recorded planning choice; not Work readiness or execution authority", "execution_authority": False}
+        except ContractError as exc:
+            planning = {"available": False, "error_code": exc.code, "message": exc.message, "execution_authority": False,
+                        "next_action": "preserve planning bytes; unavailable is not empty; inspect with an independent trusted source"}
         pending_work = [key for key, graph in works.items() if graph["pending_decisions"] or graph["pending_selections"]]
         pending_intent = [key for key, graph in intents.items() if graph["pending_acceptances"] or graph["pending_selections"]]
         documentation_root = (Path(product["release_path"]) / "payload/docs").relative_to(target).as_posix()
@@ -594,11 +604,12 @@ def workspace_status(target: Path) -> dict[str, Any]:
             next_action = "preserve pending decision; resume apply with the exact original ticket and confirmation token after prerequisites are restored; " + next_action
         if pending_publish:
             next_action = "preserve pending publication; retry the exact original publish request after prerequisites are restored; " + next_action
-        return {"classification": "partial" if pending_work or pending_intent else ("pass" if supported else "unsupported"), "topology": topology["kind"],
+        return {"classification": "partial" if pending_work or pending_intent or not planning["available"] else ("pass" if supported else "unsupported"), "topology": topology["kind"],
                 "authoritative_control": topology["kind"] in {"primary", "non-git"}, "product": product,
                 "documentation_root": documentation_root, "next_action": next_action,
                 "pending_work": pending_work, "pending_intent": pending_intent,
                 "work_states": {key: graph["state"] for key, graph in works.items()}, "intent_count": len(intents),
+                "planning": planning,
                 "runtime": {"implementation": sys.implementation.name, "python": ".".join(map(str, sys.version_info[:3])), "supported_baseline": SUPPORTED_PYTHON_STRINGS[0], "supported_versions": list(SUPPORTED_PYTHON_STRINGS), "required_releaselevel": "final", "free_threaded_supported": False,
                             "supported": supported}}
     except ContractError as exc:
@@ -634,6 +645,9 @@ def _lifecycle_truth(target: Path, *, allow_pending: bool = False) -> list[dict[
             else:
                 _require_kind(p, False)
                 result.append({"path":p.relative_to(root).as_posix(),"sha256":sha256_bytes(_serial_file(p))})
+    from .candidates import read_candidates
+    planning = read_candidates(target)
+    if planning["present"]: result.append({"path": "planning/candidates.json", "sha256": planning["sha256"]})
     result.sort(key=lambda r:r["path"].encode())
     _visible_truth(target, [".hrn/"+r["path"] for r in result])
     return result
@@ -653,7 +667,7 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
         _serial_require(source is None and binding["prior_release"] is not None, "no recorded rollback release")
         candidate = binding["prior_release"]
         _serial_require(to_release_id is None or to_release_id == candidate["id"], "rollback target is not previous release")
-    _serial_require(candidate["inventory_id"] == "umbrella-1", "new source switches only to umbrella-1; retain old source for older-window operations")
+    _serial_require(candidate["inventory_id"] == "planning-1", "new source switches only to planning-1; retain old source for older-window operations")
     fmt = _file_json(target/".hrn/format.json"); truth = _lifecycle_truth(target)
     plan = {"record_type":"lifecycle-plan","schema_version":1,"operation_id":operation_id,"action":action,
             "authority_home_id":fmt["authority_home_id"],"expected_binding_ref":state["binding_ref"],"candidate_release":candidate,
@@ -662,11 +676,12 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
     _switch_plan_shape(plan,fmt); _switch_binding_receipt(plan,binding)
     _serial_require(all(r["operation_id"].casefold() != operation_id.casefold() for r in state["history"]), "operation id already used")
     _serial_require(state == _workspace_observe(target) and truth == _lifecycle_truth(target), "preview changed while reading")
-    return {"classification":"preview","request":plan,"confirm_token":sha256_bytes(canonical_json_bytes(plan))[:16]}
+    return {"classification":"preview","request":plan,"confirm_token":sha256_bytes(canonical_json_bytes(plan))[:16],
+            "transition_notice": "planning-1 lifecycle: once the first planning-1 receipt is durable, downgrade to older windows is unavailable, even before any candidate is recorded. Preserve the exact recovery source and request; a note request alone does not authorize update."}
 
 
 def _switch_preflight(target: Path, plan: dict[str, Any], *, recover: bool) -> tuple[dict[str, Any], bool]:
-    _serial_require(plan["candidate_release"]["inventory_id"] == "umbrella-1", "new source switches only to umbrella-1")
+    _serial_require(plan["candidate_release"]["inventory_id"] == "planning-1", "new source switches only to planning-1")
     state = _workspace_observe(target, allow_pending=True)
     matching = [r for r in state["history"] if r["operation_id"] == plan["operation_id"]]
     _serial_require(not any(r["operation_id"] != plan["operation_id"] and r["operation_id"].casefold() == plan["operation_id"].casefold() for r in state["history"]), "operation id case alias")
@@ -1009,8 +1024,8 @@ def _detach_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
     for rid in releases:
         prefix=".hrn/product/releases/"+rid+"/"
         # Resumption can occur after inventory bytes have been removed. Only the
-        # two exact shipped memberships are allowed; preflight bound their bytes.
-        paths = SERIAL_MANAGED_PATHS if prefix+"payload/src/hv2ref/umbrella.py" in remove else LEGACY_MANAGED_PATHS
+        # three exact shipped memberships are allowed; preflight bound their bytes.
+        paths = SERIAL_MANAGED_PATHS if prefix+"payload/src/hv2ref/candidates.py" in remove else UMBRELLA_MANAGED_PATHS if prefix+"payload/src/hv2ref/umbrella.py" in remove else LEGACY_MANAGED_PATHS
         required |= {prefix+"inventory.json"} | {prefix+"payload/"+p for p in paths}
         _serial_require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24], "detach release/inventory mismatch")
     _serial_require(set(remove)==required and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"], "detach incomplete removal/binding set")
@@ -1023,7 +1038,7 @@ def _detach_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
     for ref in plan["truth_refs"]:
         _exact_dict(ref,{"path","sha256"},"HV2-WORKSPACE-DETACH")
         name=ref["path"]
-        _serial_require(isinstance(name,str) and name.split("/")[0] in ("intents","work") and len(name.split("/"))>=3
+        _serial_require(isinstance(name,str) and (name == "planning/candidates.json" or (name.split("/")[0] in ("intents","work") and len(name.split("/"))>=3))
                         and all(p not in ("", ".", "..") for p in name.split("/")) and "\\" not in name and _sha(ref["sha256"]), "detach truth path/digest")
         truth.append(name)
         _serial_require(".hrn/"+name in preserve and preserve[".hrn/"+name]["sha256"]==ref["sha256"], "detach preserve/truth mismatch")

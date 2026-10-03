@@ -20,6 +20,10 @@ Read [docs/README.md](docs/README.md) for document authority and currentness.
 
 Lifecycle commands preview by default. Intent/Work publication writes machine records; prepare is read-only and apply requires the exact ticket/token. Obtain the relevant authorization before invoking a writer. Worker worktrees cannot write control authority.
 
+## Candidate Entry
+
+Read `./hv2 view candidates` before recording an idea or answering what to do next. Planning is project-owned but grants no execution authority. Follow the installed adapter's Candidate Conversation section. Recommendations and ambiguous resume requests are read-only; an explicit planning request authorizes only that named planning change. Never upgrade the runtime merely to save an idea.
+
 ## Typed Pointers
 
 - Mental model: [Concepts](docs/CONCEPTS.md)

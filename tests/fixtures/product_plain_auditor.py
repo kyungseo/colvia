@@ -97,7 +97,7 @@ def scan(root,allowed_files,allowed_dirs):
 def audit_once(target):
     home=target/".hrn";require(stat.S_ISDIR(home.lstat().st_mode),"unsafe-home")
     require(not any(p.name.casefold()==".hrn" and p.name!=".hrn" for p in target.iterdir()),"home-alias")
-    require(set(p.name for p in home.iterdir())<={"format.json",".gitignore","detached.json","product","work","intents","locks","staging"},"unknown-home-member")
+    require(set(p.name for p in home.iterdir())<={"format.json",".gitignore","detached.json","product","work","intents","planning","locks","staging"},"unknown-home-member")
     for name in ("locks","staging"):
         if os.path.lexists(home/name):require(stat.S_ISDIR((home/name).lstat().st_mode),"unsafe-ignored-directory")
     fmt_raw=raw_file(home/"format.json");fmt=strict_json(fmt_raw)
@@ -128,6 +128,7 @@ def audit_once(target):
     for rid in releases:
         prefix=".hrn/product/releases/"+rid+"/"
         paths = set(SERIAL_PATHS) | {"src/hv2ref/umbrella.py"} if prefix+"payload/src/hv2ref/umbrella.py" in remove else SERIAL_PATHS
+        if prefix+"payload/src/hv2ref/candidates.py" in remove:paths=set(paths)|{"src/hv2ref/candidates.py"}
         expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in paths}
         require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24],"release-inventory")
     require(set(remove)==expected and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"],"remove-completeness")
@@ -138,12 +139,12 @@ def audit_once(target):
     require(isinstance(plan["truth_refs"],list),"truth-list");truth={};truth_names=[]
     for t in plan["truth_refs"]:
         keys(t,{"path","sha256"});name=t["path"]
-        require(isinstance(name,str) and name.split("/")[0] in ("intents","work") and len(name.split("/"))>=3 and valid_sha(t["sha256"]),"truth-path")
+        require(isinstance(name,str) and (name=="planning/candidates.json" or (name.split("/")[0] in ("intents","work") and len(name.split("/"))>=3)) and valid_sha(t["sha256"]),"truth-path")
         truth[".hrn/"+name]=t["sha256"];truth_names.append(name)
     require(truth_names==sorted(set(truth_names),key=lambda n:n.encode()) and set(preserve)==set(truth)|{".hrn/format.json",".hrn/.gitignore"},"truth-preservation")
     saved={".hrn/format.json":fmt_raw,".hrn/.gitignore":raw_file(home/".gitignore")}
     require(saved[".hrn/.gitignore"]==b"staging/\nlocks/\n","ignore-bytes")
-    for collection in ("intents","work"):
+    for collection in ("intents","work","planning"):
         allowed={n for n in truth if n.startswith(".hrn/"+collection+"/")}
         dirs={".hrn/"+collection}|{p.as_posix() for n in allowed for p in Path(n).parents if p.as_posix().startswith(".hrn/"+collection)}
         files,_=scan(home/collection,allowed,dirs);require(set(files)==allowed,"missing-truth");saved.update(files)

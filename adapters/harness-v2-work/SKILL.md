@@ -1,11 +1,11 @@
 ---
 name: harness-v2-work
-description: Guide a human through project intent, Work, document review and exact acceptance using the installed human interface.
+description: Guide candidate recording, comparison, selection, deferral and resumption, then project intent, Work review and exact acceptance through the installed human interface.
 ---
 
 # Harness v2 Work Entry
 
-Use when the human asks to start, continue or review a project task. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
+Use when the human asks to record an idea, choose what to do next, defer a candidate, or start, continue or review a project task. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
 
 1. Run `./hv2 view` at the control checkout. Follow its current verified manual/adapter path, not an old release path saved elsewhere. If the launcher fails, preserve the output and use an independent trusted source for `--source-checkout view --target PATH` or doctor. A worker copy is non-authoritative.
 2. Explain the current intent, Work state, pending operations and unavailable evidence in ordinary language. Ask only for missing material goals, scope, forbidden actions, outcome and acceptance criteria. Propose the six intent facets; do not invent the human's decisions.
@@ -81,3 +81,26 @@ This describes the development workflow. Multi-process behavior and actual adopt
 Use a parent only when the human needs independently accepted child results plus a separately verified integrated result. Ordinary work keeps its current flow. Explain the parent goal, required child identities and integration oracle in the human's language; do not require a second status file or registry.
 
 Use the accepted composition and exact child snapshot from the parent baseline to run verification, write the existing project report and submit its required result/evidence references. If children change, explain the human baseline refresh and repeat verification; never substitute newer typed references behind an older report. Before parent acceptance, show the parent Work and confirmation views, distinguish captured/submitted/current child revisions, and expose unavailable evidence. A completed-child count is not parent acceptance. Keep historical completion when later child drift appears, and explain the next human decision instead of automatically revoking or creating work.
+
+
+## Candidate Conversation
+
+Use the human's language. Start with `./hv2 view` and `./hv2 view candidates`; read the current planning digest and actual intent/Work graphs. Candidate notes live only in this control checkout/branch. Absence here does not prove another branch has no ideas. Do not create a second backlog, report or hidden queue.
+
+| Human request (Korean example) | Agent behavior and write boundary |
+| --- | --- |
+| “이 아이디어 남겨줘” | Explain the interpreted title, purpose and expected effect; compare existing candidates/Work for semantic overlap. The explicit request authorizes `add` once sufficiently clear. Ask only about material ambiguity. Re-read and report the saved ID/title. |
+| “다음에 뭐 하지?” | Read only. Compare effects, existing Work, recorded choice, reasons and deferral conditions. Offer a recommendation with its rationale separately from the stored Owner choice. Do not record a selection. |
+| “이걸 먼저 하자” | Resolve the exact open candidate, explain any replaced choice, then `select` with the actual short Owner statement and reason. Re-read. Selection prepares the next intent discussion; it does not start Work. |
+| “이건 나중에 하자” | For an unlinked open candidate, `defer` with the stated reason and condition (empty means unspecified). A Work-linked candidate cannot pause the Work: show its actual state and use the separate authorized Work decision flow. |
+| “다시 이어가자” | Read only first. Explain pending recovery and active Work before candidates. Only an explicitly named deferred candidate authorizes `resume`; record the observed condition or unknown. Resume returns it to open and leaves another selection unchanged. Do not infer that its condition became true. |
+
+Prepare canonical machine input yourself from [Candidate Planning](../../docs/REFERENCE.md#candidate-planning). The human should not edit JSON or repeat authorization already given for the same named action. Show the impact before mutation: any outstanding lifecycle preview must be prepared again after a saved planning change. Never run init/update as an implied part of a note request; explain the explicit planning-1 transition first if needed.
+
+Core checks exact IDs, typed links, history and durability. Semantic duplicates, recommendation quality and whether a condition is met are agent/human judgments. Do not silently combine similar titles, absorb another Work, reject a candidate or replace a linked object. With explicit authority use `disposition` for absorption/rejection, `amend` for narrative correction, and `reopen` for an unlinked rejected candidate. Absorbed candidates cannot reopen; with explicit authority create a successor related to the old candidate to correct a mistaken absorption. Keep the original decisions. Correct a mistaken selection with a new explicit selection/deferral, not record editing.
+
+After an authorized intent acceptance for the selected candidate, record `link` to that exact current accepted intent. After its Work is created, record `link` to that exact current Work revision. These bookkeeping links follow the already authorized candidate-to-Work scope and do not require duplicate execution approval. If a link fails, report “연결 미저장” and retry the link after re-reading; never repeat intent acceptance or Work creation to repair a link. A valid linked Work consumes the next-choice display, even after completion. Follow its actual state or propose a successor candidate. A missing/historical link is not current authorization.
+
+For bookkeeping link/amend, use the original relevant Owner statement or the fixed label `bookkeeping: prior authorized candidate/Work relation`; never invent a new Owner utterance. State narrative corrections without attributing an unsaid decision to the human.
+
+On a refusal, report that this call made no new write, quote the short requested idea in conversation, and name the recovery step. Read planning before claiming that the requested decision is absent; a previous interrupted call may already have published it. Keep the original request for an exact retry after interruption; after stale-CAS rejection re-read and prepare a new request. Do not claim failure after a crash means nothing was saved: read first and check that request ID. Unknown, damaged, conflicted or over-limit records are preserved; do not compact history or invent an empty backlog. Product does not authenticate Owner statements or decide priority automatically.

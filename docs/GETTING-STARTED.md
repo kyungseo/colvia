@@ -33,7 +33,7 @@ These defaults keep personal IDE files out of Git. If a project deliberately sha
 
 Create the root `temp/` directory for local scratch when preparing the project or when first needed. An empty ignored directory is not restored by a clone. Important ignored results need a durable copy outside that scratch directory before a pause or cleanup.
 
-Never ignore the entire `.hrn/` tree: its records and managed runtime remain eligible for version control. Harness manages its own `.hrn/.gitignore` for `staging/` and `locks/`. Check representative IDE/temp paths with `git check-ignore`, and check that `.hrn/format.json`, `.hrn/intents/`, `.hrn/work/`, `.hrn/product/`, `hv2` and project Markdown are not hidden by the effective rules. Git ignore rules do not untrack files already committed; do not remove tracked files as part of this setup without authorization.
+Never ignore the entire `.hrn/` tree: its records and managed runtime remain eligible for version control. Harness manages its own `.hrn/.gitignore` for `staging/` and `locks/`. Check representative IDE/temp paths with `git check-ignore`, and check that `.hrn/format.json`, `.hrn/intents/`, `.hrn/work/`, `.hrn/planning/`, `.hrn/product/`, `hv2` and project Markdown are not hidden by the effective rules. Git ignore rules do not untrack files already committed; do not remove tracked files as part of this setup without authorization.
 
 This is an adoption procedure performed by the agent/operator, not an extra write in the Core `init` transaction. Root `.gitignore` and `temp/` remain project-owned and are not replaced by update, rollback or detach. After a Work has started, changes to project ignore rules must follow that Work's scope and content-validation rules.
 
@@ -50,7 +50,7 @@ These are project-owned files prepared by the agent/operator within the approved
 From a trusted source checkout:
 
 ```sh
-./hv2 --source-checkout init --profile umbrella-1 --target /path/to/project \
+./hv2 --source-checkout init --profile planning-1 --target /path/to/project \
   --source /path/to/source --authority-home-id project-home \
   --operation-id init-1 --observed-at 2026-01-01T00:00:00Z
 ```
@@ -58,7 +58,7 @@ From a trusted source checkout:
 This previews the candidate and returns a `request` and `confirm_token`. Review the target and source; save only the `request` object as canonical JSON outside the target. Then apply that exact request:
 
 ```sh
-./hv2 --source-checkout init --profile umbrella-1 --target /path/to/project \
+./hv2 --source-checkout init --profile planning-1 --target /path/to/project \
   --source /path/to/source --apply --input /path/to/init-request.json --confirm TOKEN
 ```
 
@@ -88,14 +88,14 @@ The default human review is your existing Work narrative and a conversation in y
 
 Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds matching the accepted version conditions may execute; that is not a claim that they have been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
 
-## Transition To Umbrella-1
+## Transition To Planning-1
 
 This candidate adds parent acceptance semantics and requires a new inventory window. Qualification of these exact bytes and human approval are required before an actual project upgrade. Earlier worker-1 qualification is historical evidence, not permission to install this candidate.
 
-Use a qualified independent umbrella-1 source with `--source-checkout update --profile umbrella-1 --target PROJECT --source CANDIDATE`. Review the preview request and confirmation token. Never package new bytes with an old installed packager. Preserve the old history, exact candidate, request/token and trusted recovery source outside the target.
+Use a qualified independent planning-1 source with `--source-checkout update --profile planning-1 --target PROJECT --source CANDIDATE`. Review the preview request and confirmation token. Never package new bytes with an old installed packager. Preserve the old history, exact candidate, request/token and trusted recovery source outside the target.
 
-After the first durable umbrella-1 receipt, use that exact candidate for forward recovery, including when no schema2 record exists yet. Returning to worker-1 or human-1 is unsupported. Later umbrella-1 P→Q→P selects the recorded prior release; Q-created ordinary and parent records must keep their meaning on P. A launcher/binding mismatch is not permission to reinstall, remove records or copy a launcher alone.
+After the first durable planning-1 receipt, use that exact candidate for forward recovery, including when no candidate record exists yet. Returning to umbrella-1, worker-1 or human-1 is unsupported, even if no candidate was recorded. Later planning-1 P→Q→P selects the recorded prior release; Q-created ordinary and parent records must keep their meaning on P. A launcher/binding mismatch is not permission to reinstall, remove records or copy a launcher alone.
 
-Old human-1 and worker-1 inventories keep their original 27 paths and remain readable. New umbrella-1 releases contain 28 paths. Exact repair from this source targets umbrella-1 only; before transition use the retained old source for old-window operations. A mispackaged release is refused even when rehashed. Backup is not a supported downgrade.
+Old human-1 and worker-1 inventories keep their original 27 paths and remain readable. Retained umbrella-1 inventories keep 28 paths. New planning-1 releases contain 29 paths. Exact repair from this source targets planning-1 only; before transition use the retained old source for old-window operations. A mispackaged release is refused even when rehashed. Backup is not a supported downgrade.
 
 For an umbrella, use [General Work](GENERAL-WORK.md#direct-child-umbrella) after establishing the project's goal and acceptance criteria. Ordinary work still uses the existing schema1 flow without an umbrella or extra document.

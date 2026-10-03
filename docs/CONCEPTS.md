@@ -26,3 +26,7 @@ The human authority of a Work must agree with its referenced intent. A stale int
 ## Collaboration Boundary
 
 The shared guard serializes cooperating record writers. It does not authenticate role names or prevent unrelated processes from editing files. Serial use requires one editing Work by procedure. Multi-worker integration, revalidation cost, and usefulness remain future qualification work.
+
+## Candidate Before Work
+
+A candidate keeps an idea, reason and deferral condition before execution. The human may record one next choice; an agent recommendation is read-only. Accepted intent defines the authorized task, and Work records its actual progress and result. Candidate selection never substitutes for either. `./hv2 view candidates` follows verified links to show actual Work state and labels a linked choice as consumed. See [Candidate Planning](REFERENCE.md#candidate-planning).

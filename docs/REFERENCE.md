@@ -4,17 +4,17 @@ Document authority and currentness: [Documentation Index](README.md).
 
 ## Single-Home Development Commands
 
-The current development profile is `umbrella-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./hv2`. An independent contribution source uses `./hv2 --source-checkout` explicitly.
+The current development profile is `planning-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./hv2`. An independent contribution source uses `./hv2 --source-checkout` explicitly.
 A source path or a successful test suite is not permission to modify an adopter.
 
 | Entry | Command | Input and effect |
 | --- | --- | --- |
-| Independent source | `init --profile umbrella-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
+| Independent source | `init --profile planning-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
 | Installed or independent source | `status`, `doctor` | Read-only product and complete record-graph diagnostics. Source accepts `--target PATH`. Healthy product output derives `documentation_root` and its README entry from the verified active release. |
 | Installed | `update --source PATH --operation-id ID --observed-at TIME` | Preview a candidate; `--apply --input FILE --confirm TOKEN` applies the exact request. |
 | Installed | `rollback [--to RELEASE] --operation-id ID --observed-at TIME` | Preview a receipt-backed release; apply the exact request and token. |
 | Installed | `detach --operation-id ID --observed-at TIME` | Preview exact managed removal; apply the exact request and token. Project truth remains. |
-| Independent source | `update`, `rollback`, `detach` with `--profile umbrella-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
+| Independent source | `update`, `rollback`, `detach` with `--profile planning-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
 | Independent source | `repair --target PATH --source PATH --backup NEW_EXTERNAL_PATH --operation-id ID --observed-at TIME` | Preview restoration of the exact active product. Apply its request/token; interrupted repair uses `--recover`. Installed repair is not exposed. |
 | Installed | `intent draft`, `intent prepare`, `intent apply` | Canonical JSON from `--input FILE` or stdin. Apply additionally needs `--confirm TOKEN`. |
 | Installed | `work publish [--worker PATH]`, `work prepare`, `work apply` | Canonical JSON from `--input FILE` or stdin. Worker result publish requires the registered linked worker path; start/baseline rebind omit it. Apply additionally needs `--confirm TOKEN`. Worker accept records the decision before exact file application and selects completion only after whole-result checks; human baseline rebind is separate. |
@@ -80,7 +80,7 @@ If the launcher is unavailable, inspect from an independent trusted source. Runt
 
 `classify-intent-entry --consequence consequential|non-consequential [--input FILE]` classifies provided gaps without publishing records. An input file has exactly one `gaps` field. `durability-probe --root PATH` writes disposable diagnostic files to an explicitly chosen scratch directory; it refuses a workspace root or descendant. It is not a read-only status command.
 
-Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile umbrella-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
+Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile planning-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
 
 ## Human Review
 
@@ -90,7 +90,7 @@ Confirmation consumes canonical ticket bytes, not the prepare response envelope.
 
 Document bodies remain project Markdown. The view displays role, path, recorded digest and current observation; open those documents or have your agent explain them. Advisory reads reject links, special/unstable inputs and files over 4 MiB. A Core-readable large file can therefore be unavailable in the view. Worker-observed evidence is not reverified on control.
 
-The umbrella-1 runtime rejects serial-1 and unknown windows. Independent-source reading retains valid human-1 and worker-1 history; candidate creation and execution require umbrella-1. The installed launcher refuses old bindings before loading managed code. Old source profiles are parser errors. Transition uses the qualified independent new source; see [Transition To Umbrella-1](GETTING-STARTED.md#transition-to-umbrella-1).
+The planning-1 runtime rejects serial-1 and unknown windows. Independent-source reading retains valid human-1, worker-1 and umbrella-1 history; candidate creation and execution require planning-1. The installed launcher refuses old bindings before loading managed code. Old source profiles are parser errors. Transition uses the qualified independent new source; see [Transition To Planning-1](GETTING-STARTED.md#transition-to-planning-1).
 
 Command syntax/argument errors retain argparse stderr and exit2; the GFM error contract begins after argument parsing. The default human view omits the managed file inventory; status/doctor retain machine diagnostics.
 
@@ -114,3 +114,34 @@ The author-declared `unavailable_scope`, an advisory reference observation label
 
 
 Worker Work/confirmation views distinguish control baseline from retained candidate and partial application. Changed Work references display candidate and live-control observations separately. Human baseline refresh compares old baseline/candidate with the proposed baseline and labels content matches without attributing their cause. These read-only observations do not authorize an action or replace guarded validation. See [Worker Review Observations](GENERAL-WORK.md#worker-review-observations).
+
+
+## Candidate Planning
+
+Candidate planning records ideas before they become execution work. Ask the agent naturally; the installed adapter prepares machine input. `./hv2 view candidates` is read-only and shows the recorded choice, reasons, conditions and actual linked Work state. The root `./hv2 view` includes the same section. A recommendation writes nothing; selection is not intent acceptance or execution approval.
+
+Only an explicitly installed planning-1 runtime writes candidates. `./hv2 candidate ACTION --input FILE` (or `-` for stdin) accepts one canonical JSON object. Source mode has no candidate writer. Supported actions are `add`, `amend`, `select`, `defer`, `resume`, `link`, `disposition`, `reopen`. Success returns `saved` or exact-retry `unchanged`, the resulting store and digest. Before writing, tell the human any outstanding lifecycle preview will need preparation again.
+
+The request has exactly these fields: `record_type: "candidate-request"`, integer `schema_version: 1`, `authority_home_id`, unique `request_id`, `candidate_id`, `action`, `expected_sha256` (null only for the first absent store), `writer`, `owner_statement`, `reason`, `observed_at`, and `payload`. IDs use the existing 1–96-character ASCII ID grammar; request IDs and candidate IDs reject case aliases. Narrative fields are nonempty strings up to 2,000 characters, except an unspecified resume condition may be empty. Writer and short Owner statement are declarations, not authentication; never save secrets or the full conversation.
+
+| Action | Exact payload | Effect |
+| --- | --- | --- |
+| `add`, `amend` | `title`, `purpose`, `expected_effect`, `related_candidates` (existing distinct candidate IDs) | Add an open candidate or correct its narrative, preserving history. |
+| `select` | `{}` | Select one open candidate; replace the prior choice with a recorded reason. |
+| `defer` | `resume_condition` | Open → deferred; clear this choice if selected. |
+| `resume` | `condition_observation` | Named deferred → open; never selects it or replaces another choice. |
+| `link` | `target` | Record an exact current intent/Work revision in this home. |
+| `disposition` | `disposition: "absorbed"` with `target`, or `"rejected"` with null target | Open/deferred → terminal; clear this selection. |
+| `reopen` | `{}` | Rejected without a Work link → open, with a new reason. |
+
+A target contains exactly `authority_home_id`, `kind` (`intent` or `work`), `id`, and `revision_ref: {id, sha256}`. It must resolve to the current selected/accepted revision at write time. A Work link must agree with any linked intent. Links cannot replace a different object; use a successor candidate. A Work-linked candidate cannot select/defer/resume/reopen; use the Work's own decision flow. Later historical links remain labelled rather than silently updated. A linked Work consumes the next-choice display; completion is read from Work, not copied into planning. If only the intent link was saved but a Work revision already uses that intent, the view lists those Works and reports an incomplete candidate link; verify scope/current revision and retry the link, without creating the Work again. This lookup never writes a link. `status.planning.selected` is only the recorded planning choice, not Work readiness. A deferred record linked to Work retains its historical disposition but no longer displays a candidate resume condition. Absorbed candidates cannot reopen: correct a mistaken absorption with an explicitly authorized successor candidate referencing the old candidate, preserving the original history.
+
+The store is `.hrn/planning/candidates.json`, with `record_type: "candidate-planning"`, `schema_version: 1`, `authority_home_id`, derived `candidates`, at most one `selected` ID, and `decisions`. Each decision appends the exact request and before/after disposition/selection. Do not edit it directly. Required intent/Work inputs and results cannot point into `.hrn/`; planning is excluded by the existing content snapshot boundary. A planning-only commit is an external Git operation requiring its own authority.
+
+The writer shares the control guard, validates the expected prior digest, then replaces the whole file atomically from `.hrn/staging/`. A crash leaves old or complete new planning; preserve the exact request, read, and retry it. Temporary `candidate-*` files can remain after interruption or a refusal before replacement; they are non-authoritative scratch, not a queue, and are not automatically cleaned. They do not prevent lifecycle preview/detach. A pending refusal means this call made no new write; an earlier interrupted call may already have published the same request. The same request ID with different bytes is refused. Ordinary editing or submitted-review allows candidate writing; pending Work/intent transactions or lifecycle recovery refuse it until the original exact operation is recovered. Candidate notes do not waive content/required-reference drift checks.
+
+Limits are 100 candidates, 1,000 decisions and 1 MiB, whichever is reached first. At 80% the view warns; a write exceeding a limit is not saved. History is not pruned automatically. `HV2-CANDIDATE-STALE` means read before preparing a new request; `HV2-CANDIDATE-PENDING` means recover the original transaction; `HV2-CANDIDATE-WINDOW` means explicit update is needed. `HV2-CANDIDATE-RECORD`, `-UNAVAILABLE` and `-LIMIT` mean preserve bytes and inspect the stated issue. Refused requests are not saved in a hidden queue.
+
+Candidate records are tracked branch-local planning. Commit/clone can carry them; no central ranking or cross-project graph exists. Preserve both branch refs/unique bytes before resolving a conflict. After Owner decision, restore one verified complete history and explicitly re-record needed decisions from the other branch as new requests. Restore from a known complete Git ref or preserved complete bytes; never manually stitch decision arrays or overwrite another history automatically. The reader checks transition history and the derived projection, but does not recompute every historical `expected_sha256` against its prefix. Those digests declare the writer-time CAS input, not a cryptographically verified chain: a manually stitched, internally consistent history may pass. This is not tamper authentication. Missing/unreadable/conflicted data must not be described as an empty list.
+
+A candidate-only read error makes active `status`/`view` partial, with planning unavailable rather than empty; independently valid Work/intent graphs remain readable. Candidate writes and lifecycle operations still refuse invalid planning. The bounded no-follow reader checks exact spelling by listing each ancestor directory, like the existing view reference reader; an ancestor that permits traversal but forbids listing can make candidate observation unavailable. Preserve bytes and use a trusted readable path; do not weaken path checks.

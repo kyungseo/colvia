@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -I -B
 from __future__ import annotations
 
-WORKSPACE_INVENTORY_ID = "umbrella-1"
+WORKSPACE_INVENTORY_ID = "planning-1"
 
 import hashlib
 import json
@@ -68,7 +68,7 @@ def workspace_source(root: Path) -> Path:
         entries[name] = entry
     # Validate every importable module before any package code executes. Full
     # product/record verification still belongs to the imported readers/guards.
-    modules = ("__init__", "cli", "errors", "intent", "jsonio", "product", "umbrella", "view", "work", "workspace")
+    modules = ("__init__", "candidates", "cli", "errors", "intent", "jsonio", "product", "umbrella", "view", "work", "workspace")
     expected = {"src/hv2ref/" + name + ".py" for name in modules}
     package = release / "payload/src/hv2ref"
     for directory in reversed((package, *package.parents)):
