@@ -12,7 +12,7 @@ import unicodedata
 from .errors import ContractError
 from .intent import WorkspaceIntentStore, workspace_intents, read_workspace_intent
 from .jsonio import decode_json_bytes
-from .product import workspace_status, verify_workspace_product
+from .product import _workspace_status_observation, verify_workspace_product
 from .workspace import safe_target, target_fingerprint
 from .work import (WorkStore, _digest, _resolve, _require, project_path, record_ref,
                    snapshot, validate_ticket, work_graph, _RECORD_BASE, _PROVENANCE,
@@ -212,11 +212,12 @@ def references(target, obj, candidate=None):
 
 
 def _observe(target):
-    status = workspace_status(target)
+    status, graphs = _workspace_status_observation(target)
     if status["classification"] in ("degraded", "uninitialized", "incompatible", "unstable"):
         return status, {}, {}
     # Partial bootstrap has no readable authority yet; pending records and detach do.
     if not (target / ".hrn/format.json").is_file(): return status, {}, {}
+    if graphs is not None: return status, *graphs
     return status, WorkStore(target)._all(), workspace_intents(target)
 
 

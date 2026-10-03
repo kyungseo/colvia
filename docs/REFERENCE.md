@@ -76,6 +76,16 @@ If the launcher is unavailable, inspect from an independent trusted source. Runt
 | `HV2-INTERNAL` | Unexpected internal failure. Preserve the source version, exact non-secret input, diagnostic output, and target state for investigation. Do not treat this as successful recovery. |
 | `HV2-LOCK-ANCHOR` | Writer lock anchor is linked, replaced, or wrong-type. Stop concurrent mutation and investigate the local guard; lock bytes are not authority. |
 
+For update/rollback/detach, `HV2-JSON-LIMIT` with
+`prospective-output:plan:`, `prospective-output:binding:` or
+`prospective-output:receipt:` identifies output refused before lifecycle publication.
+A preview with this error issues no confirmation token. Apply preserves project truth
+and existing product files; normal lock-anchor creation is still possible. This is a
+capacity refusal, not evidence of a newly damaged stored record. An existing oversized
+record can still produce the reader's ordinary limit error: preserve it rather than
+editing or deleting it. The preflight does not expand the 4 MiB limit or provide a
+recovery path for previously oversized receipts.
+
 ## Source Utilities
 
 `classify-intent-entry --consequence consequential|non-consequential [--input FILE]` classifies provided gaps without publishing records. An input file has exactly one `gaps` field. `durability-probe --root PATH` writes disposable diagnostic files to an explicitly chosen scratch directory; it refuses a workspace root or descendant. It is not a read-only status command.
@@ -84,7 +94,9 @@ Generation commands and `--legacy-baseline` are removed. A source init/update/ro
 
 ## Human Review
 
-`./hv2 view` lists verified intent/Work state and current release entry paths. Use `view intent ID [--revision ID]`, `view work ID [--revision ID]`, or `view confirmation --input FILE|-`. Independent source: `hv2 --source-checkout view --target PATH ...`. These commands write GFM to stdout without publishing files, locks, caches or decisions. Imported view errors are GFM with a nonzero exit; bootstrap failures remain JSON/65. Status/doctor and machine commands retain their JSON contracts.
+A healthy observation shares its verified graphs between status and rendering. Within its Work sweep, repeated intent references share a verified intent graph while every exact historical binding is still checked. A final independent intent collection read must match every shared graph; changes or failures discard the shared result and use the existing fresh, unshared status path. Partial, pending and unsupported graph results also use the unshared path. Work records and independently loaded intent graphs retain double reads. Before and after view observations, retries and separate commands never share this temporary state. All Works, relations and umbrella histories remain checked; writers and current/live-reference checks keep fresh reads. Changes restored between checks are not guaranteed to be detected. Stable inputs retain the same output and exit status. Concurrent changes may cause a retry and a degraded or unstable result instead of an immediate unavailable result; this is not an atomic snapshot or permission to apply.
+
+`./hv2 view` lists verified intent/Work state and current release entry paths. Use `view intent ID [--revision ID]`, `view work ID [--revision ID]`, or `view confirmation --input FILE|-`. Independent source: `hv2 --source-checkout view --target PATH ...`. These commands write GFM to stdout without publishing files, locks, on-disk caches or decisions. Imported view errors are GFM with a nonzero exit; bootstrap failures remain JSON/65. Status/doctor and machine commands retain their JSON contracts.
 
 Confirmation consumes canonical ticket bytes, not the prepare response envelope. Observations are advisory and may be unavailable or stale; there is no aggregate permission-to-apply result. Apply checks prerequisites again. A completed record does not prove current project files match. Work comparisons list path/mode/size/digest changes, not historical text bytes; rebind discontinuities are not attributed to the Work.
 
@@ -114,6 +126,16 @@ The author-declared `unavailable_scope`, an advisory reference observation label
 
 
 Worker Work/confirmation views distinguish control baseline from retained candidate and partial application. Changed Work references display candidate and live-control observations separately. Human baseline refresh compares old baseline/candidate with the proposed baseline and labels content matches without attributing their cause. These read-only observations do not authorize an action or replace guarded validation. See [Worker Review Observations](GENERAL-WORK.md#worker-review-observations).
+
+### Observation-Local Topology Reads
+
+A healthy Git primary status observation may share only the raw topology probe within its first Work sweep. Target, ancestor,
+resolved-path and effective ignore checks still run on each read. After any raw reuse, a final fresh topology probe must match
+before the independent final intent read and graph comparison. Failure discards the context and uses the existing fresh fallback.
+The context is not passed to writers or retained across requests or view observations, and creates no disk cache or lock.
+Persistent topology changes may therefore be detected more strictly than an entry-only status label. Intermediate Git failures
+or topology changes that revert between the first and final probes are not guaranteed to be observed. These reads are not an atomic
+snapshot or a performance guarantee.
 
 
 ## Candidate Planning

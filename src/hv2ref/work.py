@@ -869,28 +869,38 @@ def _record_tree(home: Path, folders: set[str]) -> dict[str, Any]:
     return data
 
 
-def _visible_truth(target: Path, paths: list[str]) -> None:
-    if classify_target(target)["kind"] != "non-git" and paths:
+def _visible_truth(target: Path, paths: list[str], *, _topology_observation=None) -> None:
+    topology = (classify_target(target) if _topology_observation is None else
+                classify_target(target, _topology_observation=_topology_observation))
+    if topology["kind"] != "non-git" and paths:
         result = _git(target, "check-ignore", "--no-index", "-z", "--stdin", input_data=b"\0".join(p.encode() for p in paths) + b"\0", allowed=(0, 1))
         _require(result.returncode == 1 and not result.stdout, "truth hidden by effective Git ignore policy")
 
 
-def read_work(target: Path, work_id: str) -> dict[str, Any]:
-    """Read every immutable record twice; no locks, cache or selector writes."""
+def read_work(target: Path, work_id: str, *, _intent_graph_reader=None, _topology_observation=None) -> dict[str, Any]:
+    """Double-read Work records; status may supply observation-local intent graphs."""
     try:
         home, authority = _authority_directory(target, "work", work_id)
         folders = {"revisions", "decisions", "selections", "results"}
         data = _record_tree(home, folders)
         _require(data == _record_tree(home, folders), "unstable Work observation")
-        _visible_truth(target, [str(home.relative_to(safe_target(target)) / key) for key in data])
+        truth_paths = [str(home.relative_to(safe_target(target)) / key) for key in data]
+        if _topology_observation is None:
+            _visible_truth(target, truth_paths)
+        else:
+            _visible_truth(target, truth_paths, _topology_observation=_topology_observation)
         _require("identity.json" in data, "partial Work identity")
         identity = validate_work_record(data["identity.json"])
         _require(identity.get("authority_home_id") == authority and identity.get("work_id") == work_id, "directory identity mismatch")
         maps = [{key.split("/")[1][:-5]: value for key, value in data.items() if key.startswith(folder + "/")} for folder in ("revisions", "decisions", "selections", "results")]
         graph = work_graph(identity, *maps, data.get("current.json"))
-        from .intent import read_workspace_intent
+        from .intent import read_workspace_intent, _resolve_workspace_intent
         for revision in graph["revisions"].values():
-            bound = read_workspace_intent(target, revision["intent_ref"]["id"], revision["intent_ref"], require_current=False)
+            ref = revision["intent_ref"]
+            if _intent_graph_reader is None:
+                bound = read_workspace_intent(target, ref["id"], ref, require_current=False)
+            else:
+                bound, _ = _resolve_workspace_intent(_intent_graph_reader(ref["id"]), ref["id"], ref)
             _require(bound["acceptance_authority"] == identity["acceptance_authority"], "Work and intent authorities differ")
             _require((revision["schema_version"] == 2) == (bound["composition"] is not None), "Work schema and bound intent composition differ")
             if bound["composition"] is not None:
@@ -1105,11 +1115,16 @@ Human confirmation is a trusted-local declaration, not OS authentication.
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
         _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1"), "umbrella writer requires umbrella-1 or planning-1 runtime")
 
-    def _all(self) -> dict[str, Any]:
+    def _all(self, *, _intent_graph_reader=None, _topology_observation=None) -> dict[str, Any]:
         root = self.target / ".hrn/work"
         if not root.exists(): return {}
         _require(root.is_dir() and not root.is_symlink(), "invalid Work collection")
-        result = {p.name: read_work(self.target, p.name) for p in root.iterdir()}
+        readers = {}
+        if _intent_graph_reader is not None:
+            readers["_intent_graph_reader"] = _intent_graph_reader
+        if _topology_observation is not None:
+            readers["_topology_observation"] = _topology_observation
+        result = {p.name: read_work(self.target, p.name, **readers) for p in root.iterdir()}
         _require(len({k.casefold() for k in result}) == len(result), "Work case alias")
         # Relations on every proposal must resolve. Detect cycles without recursion.
         edges = {key: set() for key in result}
@@ -1127,7 +1142,9 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         if any(r["schema_version"] == 2 for g in result.values() for r in g["revisions"].values()):
             from .intent import workspace_intents
             from .umbrella import check_work_histories
-            check_work_histories(result, workspace_intents(self.target))
+            intents = (workspace_intents(self.target) if _intent_graph_reader is None else
+                       workspace_intents(self.target, _graph_reader=_intent_graph_reader))
+            check_work_histories(result, intents)
         return result
 
     def _pending_guard(self, graphs: dict[str, Any], work_id: str, *, content_write: bool = False) -> None:
