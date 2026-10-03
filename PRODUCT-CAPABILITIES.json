@@ -22,8 +22,8 @@
       "status": "development-bounded-synthetic"
     },
     {
-      "boundary": "cooperating linked workers; one control writer/finalizer; real-project worker use and efficiency unverified",
-      "evidence": "recorded N4 synthetic worker integration, process interruption/contention and whole regression; exact candidate receipt required",
+      "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified",
+      "evidence": "recorded N4 synthetic worker integration, process interruption/contention and whole regression; bounded private worker document continuation, including an existing-file follow-up, observed separately; exact candidate receipt required",
       "fallback": "one editing Work in control checkout",
       "id": "same-repository-parallel-integration",
       "status": "development-bounded-synthetic"
