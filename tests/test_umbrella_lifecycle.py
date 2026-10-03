@@ -16,7 +16,7 @@ import unittest
 from hv2ref.errors import ContractError
 from hv2ref.jsonio import canonical_json_bytes
 from hv2ref.intent import workspace_intents
-from hv2ref.product import (SERIAL_MANAGED_PATHS, LEGACY_MANAGED_PATHS, _serial_inventory,
+from hv2ref.product import (SERIAL_MANAGED_PATHS, UMBRELLA_MANAGED_PATHS, LEGACY_MANAGED_PATHS, _serial_inventory,
                            _launcher_inventory_window, verify_workspace_product, _switch_binding_receipt)
 from hv2ref.work import WorkStore, read_work, record_ref, snapshot, make_manifest
 from hv2ref.umbrella import capture
@@ -29,19 +29,19 @@ def digest(value):return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
 
 class UmbrellaInventoryTests(unittest.TestCase):
     def test_windows_require_their_own_exact_membership(self):
-        for window,paths in [('human-1',LEGACY_MANAGED_PATHS),('worker-1',LEGACY_MANAGED_PATHS),('umbrella-1',SERIAL_MANAGED_PATHS)]:
+        for window,paths in [('human-1',LEGACY_MANAGED_PATHS),('worker-1',LEGACY_MANAGED_PATHS),('umbrella-1',UMBRELLA_MANAGED_PATHS),('planning-1',SERIAL_MANAGED_PATHS)]:
             value={'record_type':'release-inventory','schema_version':1,'inventory_id':window,
                    'entries':[{'path':p,'sha256':'a'*64,'size_bytes':1} for p in paths]}
             self.assertEqual(value,_serial_inventory(value))
             wrong=copy.deepcopy(value)
-            wrong['inventory_id']='worker-1' if window=='umbrella-1' else 'umbrella-1'
+            wrong['inventory_id']='worker-1' if window in ('umbrella-1','planning-1') else 'planning-1'
             with self.assertRaises(ContractError):_serial_inventory(wrong)
-        self.assertEqual(27,len(LEGACY_MANAGED_PATHS));self.assertEqual(28,len(SERIAL_MANAGED_PATHS))
+        self.assertEqual(27,len(LEGACY_MANAGED_PATHS));self.assertEqual(28,len(UMBRELLA_MANAGED_PATHS));self.assertEqual(29,len(SERIAL_MANAGED_PATHS))
 
     def test_old_window_is_read_only_and_all_downgrades_refuse(self):
         self.assertEqual('worker-1',_launcher_inventory_window(b'WORKSPACE_INVENTORY_ID = "worker-1"',allow_legacy=True))
         with self.assertRaises(ContractError):_launcher_inventory_window(b'WORKSPACE_INVENTORY_ID = "worker-1"')
-        for old,new in [('worker-1','human-1'),('umbrella-1','worker-1'),('umbrella-1','human-1')]:
+        for old,new in [('planning-1','umbrella-1'),('planning-1','worker-1'),('worker-1','human-1'),('umbrella-1','worker-1'),('umbrella-1','human-1')]:
             prior={'record_type':'product-binding','schema_version':1,'authority_home_id':'home-a','operation_id':'p',
                    'active_release':{'id':'product-release-'+'a'*24,'sha256':'a'*64,'inventory_id':old},'prior_release':None}
             plan={'expected_binding_ref':record_ref(prior,'operation_id'),'candidate_release':{'id':'product-release-'+'b'*24,'sha256':'b'*64,'inventory_id':new},'action':'update','authority_home_id':'home-a','operation_id':'q'}
@@ -159,20 +159,22 @@ class InstalledUmbrellaLifecycleTests(unittest.TestCase):
     def test_detach_missing_umbrella_member_refuses_apply_and_resume(self):
         from hv2ref.product import workspace_detach_preview,workspace_detach_apply,workspace_detached_status,_detach_receipt
         from hv2ref.errors import InjectedCrash
-        self.apply_init(self.preview())
-        preview=workspace_detach_preview(self.target,operation_id='detach-membership',created_at=self.TIME)
-        plan=preview['request'];bad=copy.deepcopy(plan)
-        bad['remove']=[entry for entry in bad['remove'] if not entry['path'].endswith('/payload/src/hv2ref/umbrella.py')]
-        before=fixtures.exact_snapshot(self.target)
-        with self.assertRaisesRegex(ContractError,'detach plan changed since preview'):
-            workspace_detach_apply(self.target,bad,confirm_token=digest(bad)[:16])
-        self.assertEqual(before,fixtures.exact_snapshot(self.target))
-        with self.assertRaises(InjectedCrash):
-            workspace_detach_apply(self.target,plan,confirm_token=preview['confirm_token'],inject_at='after-receipt')
-        # Deliberately damaged synthetic receipt: required module is unplanned.
-        (self.target/'.hrn/detached.json').write_bytes(canonical_json_bytes(_detach_receipt(bad)))
-        before=fixtures.exact_snapshot(self.target)
-        with self.assertRaisesRegex(ContractError,'unknown detach member'):workspace_detached_status(self.target)
-        with self.assertRaisesRegex(ContractError,'unknown detach member'):
-            workspace_detach_apply(self.target,bad,confirm_token=digest(bad)[:16],recover=True)
-        self.assertEqual(before,fixtures.exact_snapshot(self.target));self.success=True
+        for module,apply_error,recover_error in [('umbrella','detach incomplete removal/binding set','detach incomplete removal/binding set'),('candidates','detach plan changed since preview','unknown detach member')]:
+            self.target=self.base/('missing-'+module);self.target.mkdir();self.apply_init(self.preview())
+            preview=workspace_detach_preview(self.target,operation_id='detach-membership',created_at=self.TIME)
+            plan=preview['request'];bad=copy.deepcopy(plan)
+            bad['remove']=[entry for entry in bad['remove'] if not entry['path'].endswith('/payload/src/hv2ref/'+module+'.py')]
+            before=fixtures.exact_snapshot(self.target)
+            with self.assertRaisesRegex(ContractError,apply_error):
+                workspace_detach_apply(self.target,bad,confirm_token=digest(bad)[:16])
+            self.assertEqual(before,fixtures.exact_snapshot(self.target))
+            with self.assertRaises(InjectedCrash):
+                workspace_detach_apply(self.target,plan,confirm_token=preview['confirm_token'],inject_at='after-receipt')
+            # Deliberately damaged synthetic receipt: a required module is unplanned.
+            (self.target/'.hrn/detached.json').write_bytes(canonical_json_bytes(_detach_receipt(bad)))
+            before=fixtures.exact_snapshot(self.target)
+            with self.assertRaisesRegex(ContractError,recover_error):workspace_detached_status(self.target)
+            with self.assertRaisesRegex(ContractError,recover_error):
+                workspace_detach_apply(self.target,bad,confirm_token=digest(bad)[:16],recover=True)
+            self.assertEqual(before,fixtures.exact_snapshot(self.target))
+        self.success=True

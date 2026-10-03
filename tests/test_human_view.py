@@ -54,8 +54,8 @@ class HumanViewInstalledTests(unittest.TestCase):
         a=self.screen([]);b=self.screen([],source=True)
         self.assertIn('No Work',a);self.assertIn('natural_language_adapter',a);self.assertNotIn('inventory:',a);self.assertNotIn('src/hv2ref/view.py',a)
         self.assertIn('not the bound release',b)
-        self.assertEqual('umbrella-1',workspace_candidate(self.source)['inventory']['inventory_id'])
-        self.assertEqual(28,len(workspace_candidate(self.source)['inventory']['entries']))
+        self.assertEqual('planning-1',workspace_candidate(self.source)['inventory']['inventory_id'])
+        self.assertEqual(29,len(workspace_candidate(self.source)['inventory']['entries']))
 
     def test_draft_is_not_acceptance_and_hostile_facets_are_escaped(self):
         self.apply_init(self.preview());draft=self.draft()
@@ -104,7 +104,7 @@ class HumanViewInstalledTests(unittest.TestCase):
         result=self.screen(['work','work-a'],source=True,expected=10);self.assertNotIn('Stored state: completed',result);self.assertIn('degraded',result)
 
     def test_view_no_import_backedge_from_core(self):
-        for name in ['work','intent','product','workspace','jsonio']:
+        for name in ['work','intent','product','workspace','jsonio','candidates']:
             tree=ast.parse((self.source/'src/hv2ref'/f'{name}.py').read_text())
             for n in ast.walk(tree):
                 if isinstance(n,ast.ImportFrom):self.assertNotEqual(n.module,'view')

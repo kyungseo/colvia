@@ -490,11 +490,70 @@ def _confirmation(target, ticket, works, intents, product):
     return lines
 
 
+def render_candidates(target, *, works: dict, intents: dict) -> tuple[list[str], dict]:
+    from .candidates import read_candidates, check_link, _selected_revision, MAX_CANDIDATES, MAX_DECISIONS, MAX_BYTES
+    from .jsonio import canonical_json_bytes
+    try:
+        observed = read_candidates(target)
+    except ContractError as exc:
+        return ['', '## 후보 계획 — 확인 불가', '', '- 후보 목록이 비었다는 뜻이 아닙니다. 원본을 보존하고 독립된 신뢰 source로 확인하세요.',
+                '- code: ' + code(exc.code), '- 이유: ' + text(exc.message)], {'available': False, 'error_code': exc.code, 'message': exc.message}
+    store = observed['store']
+    lines = ['', '## 후보 계획 — 실행 승인 아님', '', '- 기록된 Owner 선택은 agent 기록이며 인증이 아닙니다. 추천만 하는 조회는 쓰지 않습니다.',
+             '- 명령: ' + code('hv2 view candidates') + '; ' + code('hv2 candidate --help'),
+             '- 이 control checkout/branch의 기록만 읽습니다. 다른 branch의 기록은 포함하지 않습니다.',
+             '- 후보 기록 digest: ' + code(observed['sha256'] or 'none')]
+    if not observed['present']:
+        return lines + ['- 이 checkout에는 후보 기록이 없습니다. 다른 branch일 수 있습니다.'], observed
+    count = len(store['candidates']); decisions = len(store['decisions']); size = len(canonical_json_bytes(store))
+    lines += [f'- 한도: 후보 {count}/{MAX_CANDIDATES}, 결정 {decisions}/{MAX_DECISIONS}, bytes {size}/{MAX_BYTES}.']
+    if count >= MAX_CANDIDATES * .8 or decisions >= MAX_DECISIONS * .8 or size >= MAX_BYTES * .8:
+        lines += ['- 한도 근접: 초과 쓰기는 미저장으로 거부합니다. 이력을 삭제하지 말고 지원 한도/후속 제품 판단을 요청하세요.']
+    for cid, row in sorted(store['candidates'].items()):
+        lines += ['', '### ' + text(cid) + ' — ' + text(row['title']), '- 목적: ' + text(row['purpose']), '- 기대 효과: ' + text(row['expected_effect']), '- 후보 처분: ' + text(row['disposition']), '- 최근 이유: ' + text(row['reason'])]
+        linked_work = False; bad_link = False; linked_intent = False; intent_ids = set()
+        for ref in row['links']:
+            try:
+                g = check_link(ref, store['authority_home_id'], works, intents, current=False)
+                same = _selected_revision(g) == ref['revision_ref']
+                label = 'current' if same else 'historical link; current revision differs'
+                if ref['kind'] == 'work':
+                    linked_work = True
+                    lines += ['- 관련 Work: ' + text(ref['id']) + ' / 실제 상태: ' + text(g['state']) + ' / ' + text(label), '- 선택 소진: 이 후보로 다시 착수하지 말고 실제 Work의 다음 행동 또는 새 후속 후보를 검토하세요.']
+                else:
+                    linked_intent = True; intent_ids.add(ref['id'])
+                    lines += ['- 관련 intent: ' + text(ref['id']) + ' / ' + text(label)]
+            except ContractError as exc:
+                bad_link = True
+                lines += ['- 관련 대상 확인 불가: ' + text(ref['id']) + ' / ' + text(exc.message)]
+        inferred_works = []
+        if not linked_work and intent_ids:
+            for wid, graph in sorted(works.items()):
+                if any((r.get('intent_ref') or {}).get('id') in intent_ids for r in graph['revisions'].values()):
+                    inferred_works.append(wid)
+                    lines += ['- 이 intent를 사용한 Work: ' + text(wid) + ' / 실제 상태: ' + text(graph['state'])]
+            if inferred_works:
+                lines += ['- 후보 연결 미완료: Work를 다시 만들지 말고 기존 Work의 범위·현재 revision을 확인한 뒤 link를 재시도하세요. 연결은 자동 저장하지 않습니다.']
+        if row['disposition'] == 'deferred' and not linked_work and not inferred_works:
+            lines += ['- 재개 조건: ' + text(row['resume_condition'] or '미정 — 자동 재개하지 않음')]
+        elif row['disposition'] == 'deferred':
+            lines += ['- deferred는 과거 후보 기록입니다. 현재 진행과 재개 판단은 실제 Work에서 확인하세요.']
+        if row['related_candidates']: lines += ['- 관련 후보: ' + text(', '.join(row['related_candidates']))]
+        if store['selected'] == cid:
+            decisions_for_selection = [d for d in store['decisions'] if d['request']['action'] == 'select' and d['request']['candidate_id'] == cid]
+            latest = decisions_for_selection[-1]['request']
+            lines += ['- 기록된 Owner 선택 (agent 기록, 인증 아님): ' + text(latest['reason']), '- 발화 근거: ' + text(latest['owner_statement'])]
+            if bad_link: lines += ['- 다음 행동: 연결 확인 필요; 새 실행 승인이나 준비 완료로 해석하지 마세요.']
+            elif not linked_work and not inferred_works: lines += ['- 다음 행동: ' + ('수락된 intent의 currentness와 범위를 확인하고 Work 준비.' if linked_intent else 'intent 구체화·Owner 수락 필요. 선택만으로 실행하지 않습니다.')]
+    lines += ['', '- 제품은 우선순위 점수·조건 충족·자동 재개를 판단하지 않습니다. Agent 추천과 저장된 선택, 실제 Work 권한을 구분하세요.']
+    return lines, observed
+
+
 def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None, installed=False):
     """Return GFM and exit status; make no filesystem changes even on degraded input."""
     try:
         target = safe_target(target)
-        _require(kind in (None, "intent", "work", "confirmation"), "unknown view kind")
+        _require(kind in (None, "intent", "work", "confirmation", "candidates"), "unknown view kind")
         _require((kind in ("intent", "work")) == (object_id is not None), "view object ID required only for intent/work")
         _require(revision is None or kind in ("intent", "work"), "revision requires intent/work")
         _require((kind == "confirmation") == (ticket is not None), "confirmation requires ticket input")
@@ -509,12 +568,20 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                 root = str(Path(product["release_path"]).relative_to(target) / "payload")
                 lines += ["", "## Next entry", ""] + fields({"manual": root + "/docs/README.md", "natural_language_adapter": root + "/adapters/harness-v2-work/SKILL.md"})
             if classification not in ("degraded", "uninitialized", "incompatible", "unstable"):
+                if status.get("planning", {}).get("available") is False and kind not in (None, "candidates"):
+                    candidate_lines, _ = render_candidates(target, works=works, intents=intents)
+                    lines += candidate_lines
                 if kind == "work":
                     _require(object_id in works, "Work not found"); lines += _work(target, works[object_id], revision, product, intents, works)
                 elif kind == "intent":
                     _require(object_id in intents, "intent not found"); lines += _intent(target, intents[object_id], revision)
                 elif kind == "confirmation": lines += _confirmation(target, ticket, works, intents, product)
+                elif kind == "candidates":
+                    candidate_lines, _ = render_candidates(target, works=works, intents=intents)
+                    lines += candidate_lines
                 else:
+                    candidate_lines, _ = render_candidates(target, works=works, intents=intents)
+                    lines += candidate_lines
                     lines += ["", "## Intents", ""]
                     for key, g in sorted(intents.items()): lines += fields({"intent": key, "current_accepted_revision": _current_revision(g), "drafts": list(g["drafts"]), "pending": g["pending_acceptances"] + g["pending_selections"]})
                     if not intents: lines += ["- No accepted intent or draft. Ask your agent to clarify the goal and propose an intent."]

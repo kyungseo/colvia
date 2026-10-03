@@ -106,7 +106,7 @@ inspection; the installed entry cannot repair its own missing binding.
 
 Installed startup never guesses source-checkout mode when `.hrn` is missing. Invoke an independent
 trusted source launcher with `--source-checkout` for init or diagnostic commands. Source init/update/rollback/detach
-commands require the explicit `umbrella-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
+commands require the explicit `planning-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
 there is no legacy fallback mode.
 Confirmation tokens bind request bytes; they are not independent evidence of human authorization.
 
@@ -148,7 +148,7 @@ backup bytes are refused. The installed launcher cannot invoke this operation.
 Use the installed `hv2 detach --operation-id detach-1 --observed-at TIME` to
 preview. Save its `request` object, then run `hv2 detach --apply --input request.json
 --confirm TOKEN`. An independent source can use the same command with explicit
-`--source-checkout`, `--profile umbrella-1`, and `--target /path/to/project`.
+`--source-checkout`, `--profile planning-1`, and `--target /path/to/project`.
 
 Detach writes `.hrn/detached.json` before removing anything. It removes the verified
 launcher and managed product files, then their empty directories. Format, ignore

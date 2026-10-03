@@ -1080,7 +1080,7 @@ class WorkStore:
 runtime_check(target) MUST verify the executing bound release under this module's
 shared guard and return {binding_ref, launcher_sha256, inventory_id}. The default
 verifies the isolated installed applied binding. Older ordinary-Work fixture
-doubles may omit inventory_id; schema2 requires umbrella-1. Lifecycle publication
+doubles may omit inventory_id; schema2 requires umbrella-1 or planning-1. Lifecycle publication
 remains separate.
 Human confirmation is a trusted-local declaration, not OS authentication.
 """
@@ -1096,14 +1096,14 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         result = self.runtime_check(self.target)
         _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
         if "inventory_id" in result:
-            _require(result["inventory_id"] in ("worker-1", "umbrella-1"), "unsupported writer inventory window")
+            _require(result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
         return result
 
     @staticmethod
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") == "umbrella-1", "umbrella writer requires umbrella-1 runtime")
+        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1"), "umbrella writer requires umbrella-1 or planning-1 runtime")
 
     def _all(self) -> dict[str, Any]:
         root = self.target / ".hrn/work"

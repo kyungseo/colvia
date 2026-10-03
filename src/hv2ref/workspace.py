@@ -22,7 +22,7 @@ from .jsonio import canonical_json_bytes, exclusive_file_lock, load_json, sync_d
 
 ROOT_NAME = ".hrn"
 IGNORE_BYTES = b"staging/\nlocks/\n"
-ROOT_MEMBERS = frozenset({"format.json", ".gitignore", "detached.json", "product", "intents", "work", "staging", "locks"})
+ROOT_MEMBERS = frozenset({"format.json", ".gitignore", "detached.json", "product", "intents", "work", "planning", "staging", "locks"})
 FORMAT_KEYS = {"record_type", "format_version", "authority_home_id", "created_at", "lineage"}
 PLAN_KEYS = {"record_type", "schema_version", "operation_id", "action", "target_fingerprint", "authority_home_id", "expected_binding_ref", "candidate_release", "format_sha256", "truth_refs", "remove", "preserve", "created_at"}
 ID = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,95}\Z")
@@ -210,7 +210,7 @@ def inspect_root(target: Path) -> dict[str, Any]:
         for name in ROOT_MEMBERS:
             path = root / name
             if _exists(path):
-                _require_kind(path, name in {"product", "intents", "work", "staging", "locks"})
+                _require_kind(path, name in {"product", "intents", "work", "planning", "staging", "locks"})
         product = root / "product"
         if _exists(root / "detached.json"):
             if value is None:
@@ -257,7 +257,7 @@ def _validate_plan_shape(plan: Any) -> None:
     if plan["expected_binding_ref"] is not None or any(plan[k] != [] for k in ("truth_refs", "remove", "preserve")):
         raise _error("invalid fresh init claims")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1"}):
+    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1"}):
         raise _error("invalid init release")
 
 
@@ -303,7 +303,7 @@ def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[
     if plan["expected_binding_ref"] is not None or plan["truth_refs"] != [] or plan["remove"] != [] or plan["preserve"] != []:
         raise _error("fresh init plan cannot claim existing truth")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1"}):
+    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1"}):
         raise _error("init plan candidate")
     if release["id"] != "product-release-" + release["sha256"][:24]:
         raise _error("init plan release identity")
@@ -335,7 +335,7 @@ unknown state is never adopted. Process crash tests do not establish power-loss 
         for name in ROOT_MEMBERS:
             member = root / name
             if _exists(member):
-                _require_kind(member, name in {"product", "intents", "work", "staging", "locks"})
+                _require_kind(member, name in {"product", "intents", "work", "planning", "staging", "locks"})
         product = root / "product"
         if not _exists(product / "init-plan.json"):
             raise _error("no durable ownership plan; preserve root")
