@@ -19,13 +19,13 @@ Human accepts intent -> Agent proposes Work and result -> Human accepts exact re
 
 Intent records describe the goal, boundaries, evidence, and acceptance authority. Drafting proposes meaning; acceptance binds the exact draft and its prerequisites. Work refers to accepted intent and preserves the initial baseline, later submissions, rework, and human rebind history.
 
-A result manifest binds full before/after content and exact scoped changes. Content freshness is separate from Git commit identity, so a HEAD-only commit does not invalidate unchanged content. A serial result is already present in the control checkout when submitted. Automatic worker result application is not implemented.
+A result manifest binds full before/after content and exact scoped changes. Content freshness is separate from Git commit identity, so a HEAD-only commit does not invalidate unchanged content. A serial result is already present in the control checkout when submitted. For worker results, explicit human acceptance records the exact decision before applying the retained scoped changes to control; interrupted application follows the bounded recovery contract. This is not unattended acceptance or scheduling.
 
 The human authority of a Work must agree with its referenced intent. A stale intent or document reference cannot silently authorize acceptance. Pending publication and failed verification remain visible. See [General Work](GENERAL-WORK.md) and [Workspace Contract](WORKSPACE-CONTRACT.md).
 
 ## Collaboration Boundary
 
-The shared guard serializes cooperating record writers. It does not authenticate role names or prevent unrelated processes from editing files. Serial use requires one editing Work by procedure. Multi-worker integration, revalidation cost, and usefulness remain future qualification work.
+The shared guard serializes cooperating record writers. It does not authenticate role names or prevent unrelated processes from editing files. Serial use requires one editing Work by procedure. Bounded synthetic multi-worker integration and recovery have recorded qualification, and private worker document continuation has been observed. General multi-worker efficiency, revalidation cost and usefulness still need project-specific evidence.
 
 ## Candidate Before Work
 
