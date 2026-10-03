@@ -1,11 +1,11 @@
 ---
 name: harness-v2-work
-description: Guide candidate recording, comparison, selection, deferral and resumption, then project intent, Work review and exact acceptance through the installed human interface.
+description: Guide candidate planning, requested project briefs and decisions, intent, session handoff, targeted document checks, Work review and exact acceptance through the installed human interface.
 ---
 
 # Harness v2 Work Entry
 
-Use when the human asks to record an idea, choose what to do next, defer a candidate, or start, continue or review a project task. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
+Use when the human asks to record an idea, author a brief or decision, choose what to do next, defer a candidate, or start, continue or review a project task. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
 
 1. Run `./hv2 view` at the control checkout. Follow its current verified manual/adapter path, not an old release path saved elsewhere. If the launcher fails, preserve the output and use an independent trusted source for `--source-checkout view --target PATH` or doctor. A worker copy is non-authoritative.
 2. Explain the current intent, Work state, pending operations and unavailable evidence in ordinary language. Ask only for missing material goals, scope, forbidden actions, outcome and acceptance criteria. Propose the six intent facets; do not invent the human's decisions.
@@ -45,7 +45,7 @@ This response contract is instruction, not evidence that an agent followed it or
 
 For first work, explicitly propose a document_ref to the project's Work narrative so a new session can find it from the selected revision. Explain a non-required plan/narrative reference as an option for a progress document, with the human choosing its role and required flag; do not silently change reference policy. On resume, follow that reference. If it is absent or ambiguous, report the gap and locate the document with the human instead of inventing a narrative or declaring resume complete.
 
-When a non-required progress document has changed since publication, explain that the recorded digest identifies the prior published version and the file is now a changed working draft. That reference observation alone is not a Core acceptance block. A non-required flag does not exempt the document from whole-project content validation: editing it can still make a submitted result stale and require the documented mode-specific rework or human baseline refresh/resubmission flow before new acceptance. Do not claim the changed prose was accepted. A required reference has the existing stricter acceptance/rebind consequences. Refresh reference bytes only through the next authorized publication; never edit an immutable record or silently convert a reference to non-required.
+When a non-required progress document has changed since publication, explain that the recorded digest identifies the prior published version and the file is now a changed working draft. That reference observation alone is not a Core acceptance block. A non-required flag does not exempt the document from whole-project content validation: editing it can still make a submitted result stale and require the documented mode-specific rework or human baseline refresh/resubmission flow before new acceptance. Do not claim the changed prose was accepted. A required intent input has the existing stricter acceptance/rebind consequences. For Work-revision document edits, refresh the digest in the authorized result submission; a checkpoint cannot absorb changed content. See [reference-owner checks](../../docs/REFERENCE.md#check-before-writing). Never edit an immutable record or silently convert a reference to non-required.
 
 
 ## Unavailable Observations Before Acceptance
@@ -82,6 +82,14 @@ Use a parent only when the human needs independently accepted child results plus
 
 Use the accepted composition and exact child snapshot from the parent baseline to run verification, write the existing project report and submit its required result/evidence references. If children change, explain the human baseline refresh and repeat verification; never substitute newer typed references behind an older report. Before parent acceptance, show the parent Work and confirmation views, distinguish captured/submitted/current child revisions, and expose unavailable evidence. A completed-child count is not parent acceptance. Keep historical completion when later child drift appears, and explain the next human decision instead of automatically revoking or creating work.
 
+
+## Requested Project Documents
+
+For comparisons, human decisions or unresolved project questions, load [Project Document Assistance](../../docs/REFERENCE.md#project-document-assistance) only when needed. Reuse project conventions and the existing narrative. Task/idea planning follows Candidate Conversation; when the object of “save this” or “later” is unclear, ask once without writing.
+
+Before any document or index write, follow that section's scope and reference-impact checks. An unrelated file can invalidate whole-project content even when its reference is non-required. Defer in conversation when outside scope or when a submission, worker baseline or pending recovery would be disturbed; never expand scope, publish a checkpoint, save a candidate or upgrade the runtime as an implicit fallback. A human DR decision is not typed intent/result acceptance.
+
+For a pause or fresh resume, load [Session Handoff And Resume](../../docs/REFERENCE.md#session-handoff-and-resume); do not publish a handoff-only revision. For missing context or a requested document health check, use [Project Context And Targeted Document Checks](../../docs/REFERENCE.md#project-context-and-targeted-document-checks). Keep these optional and preserve existing project conventions.
 
 ## Candidate Conversation
 

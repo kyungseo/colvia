@@ -88,9 +88,11 @@ The default human review is your existing Work narrative and a conversation in y
 
 Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds matching the accepted version conditions may execute; that is not a claim that they have been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
 
+For a requested brief, decision record or unresolved question, ask the agent to use [Project Document Assistance](REFERENCE.md#project-document-assistance) with your existing project documents.
+
 ## Transition To Planning-1
 
-This candidate adds parent acceptance semantics and requires a new inventory window. Qualification of these exact bytes and human approval are required before an actual project upgrade. Earlier worker-1 qualification is historical evidence, not permission to install this candidate.
+The planning-1 window adds project-owned candidate recording, selection, deferral and links to intent/Work, while retaining umbrella parent acceptance. It ships 29 managed paths and preserves the older supported history windows. Qualification of these exact bytes and human approval are required before an actual project upgrade. Earlier worker-1 qualification is historical evidence, not permission to install this candidate.
 
 Use a qualified independent planning-1 source with `--source-checkout update --profile planning-1 --target PROJECT --source CANDIDATE`. Review the preview request and confirmation token. Never package new bytes with an old installed packager. Preserve the old history, exact candidate, request/token and trusted recovery source outside the target.
 

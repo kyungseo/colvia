@@ -1,6 +1,6 @@
 # Workspace Contract
 
-Status: single-home development contract with bounded worker integration. Synthetic qualification is recorded; actual worker-1 adoption and public release remain pending.
+Status: single-home development contract with bounded worker integration. Synthetic qualification is recorded; bounded private worker installation and document continuation have been observed. General adoption and public release remain unqualified.
 
 The format uses one `.hrn/` authority. Installed machine commands and the lifecycle layer build on the root primitives below.
 Root-layer success alone does not verify records or product binding.
@@ -69,7 +69,7 @@ doubles remain available only as a Python testing seam; they are not CLI options
 
 The original runtime tests use installation-shaped fixtures. A subsequent actual
 init test suite uses the unmodified managed launcher and CLI. Update/rollback now has a separate actual lifecycle checkpoint;
-exact active repair now has an independent-source path; receipt-bound detach is implemented, while actual worker-1 adoption remains pending. Path/digest
+exact active repair now has an independent-source path; receipt-bound detach is implemented. Separately, bounded private worker installation and document continuation have been observed; this does not establish general adoption qualification. Path/digest
 checks operate within the trusted local process boundary, not against malicious
 Python object mutation or undetectable outside edits between observations.
 
@@ -149,7 +149,7 @@ previous release. Same-filesystem staging is ignored and may retain interrupted 
 History inspection checks the full retained release chain; cost grows with retained
 releases and is not yet measured as a production-scale claim. Tests cover cooperative
 serial process interruptions, not power-loss atomicity or a malicious outside writer.
-Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed; the human view has bounded private narrative-review evidence on the earlier human-1 runtime, while actual worker-1 admission remains pending.
+Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed; the human view has bounded private narrative-review evidence on the earlier human-1 runtime, with subsequent bounded private worker installation and document-continuation evidence. These observations do not qualify general adoption or later modified release bytes.
 
 Rollback selects the current binding's previous release when permitted by the inventory window (older windows are refused after a durable planning-1 receipt): a second rollback
 can therefore reselect the release just left. Each switch still requires a new exact
