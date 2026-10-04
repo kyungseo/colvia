@@ -46,7 +46,7 @@ class CandidateContractTests(unittest.TestCase):
     bytes=serial.SerialWriterTests.bytes
     def setUp(self):
         serial.SerialWriterTests.setUp(self)
-        self.candidates=CandidateStore(self.target, lambda target:{'inventory_id':'planning-1','binding_ref':self.binding,'launcher_sha256':None})
+        self.candidates=CandidateStore(self.target, lambda target:{'inventory_id':'checkout-1','binding_ref':self.binding,'launcher_sha256':None})
     def act(self,action='add',cid='idea-a',**kw):
         return self.candidates.mutate(proposal(self.target,action,cid,**kw))
     def lines(self):
@@ -457,6 +457,8 @@ class CandidateLifecycleTests(unittest.TestCase):
         p=json.loads(self.call(['repair','--target',self.target,'--source',self.source,'--backup',self.base/'backup','--operation-id','repair-candidate','--observed-at',TIME]).stdout)
         self.call(['repair','--target',self.target,'--source',self.source,'--apply','--input','-','--confirm',p['confirm_token']],p['request'])
         self.assertEqual(plan,(self.target/'.hrn/planning/candidates.json').read_bytes());self.installed(['view','candidates'])
+        self.act('defer',payload={'resume_condition':'explicit fixture continuation'})
+        self.act('resume',payload={'condition_observation':'fixture Owner resumed'})
 
     def test_pending_lifecycle_refuses_plan_then_exact_recovery_preserves_it(self):
         self.act();original=(self.target/'.hrn/planning/candidates.json').read_bytes();self.candidate=self.switch_candidate()

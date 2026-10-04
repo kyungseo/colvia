@@ -237,7 +237,7 @@ class CandidateStore:
         classify_target(self.target, mutation=True)
         with writer_guard(self.target):
             runtime = self.runtime(self.target)
-            require(runtime.get('inventory_id') == 'planning-1', 'candidate writing requires an explicitly installed planning-1 release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
+            require(runtime.get('inventory_id') == 'checkout-1', 'candidate writing requires an explicitly installed checkout-1 release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
             observed = read_candidates(self.target); store = observed['store']
             require(store['authority_home_id'] == request['authority_home_id'], 'request authority differs')
             works, intents = _graphs(self.target)

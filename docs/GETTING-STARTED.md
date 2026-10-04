@@ -50,7 +50,7 @@ These are project-owned files prepared by the agent/operator within the approved
 From a trusted source checkout:
 
 ```sh
-./hv2 --source-checkout init --profile planning-1 --target /path/to/project \
+./hv2 --source-checkout init --profile checkout-1 --target /path/to/project \
   --source /path/to/source --authority-home-id project-home \
   --operation-id init-1 --observed-at 2026-01-01T00:00:00Z
 ```
@@ -58,7 +58,7 @@ From a trusted source checkout:
 This previews the candidate and returns a `request` and `confirm_token`. Review the target and source; save only the `request` object as canonical JSON outside the target. Then apply that exact request:
 
 ```sh
-./hv2 --source-checkout init --profile planning-1 --target /path/to/project \
+./hv2 --source-checkout init --profile checkout-1 --target /path/to/project \
   --source /path/to/source --apply --input /path/to/init-request.json --confirm TOKEN
 ```
 
@@ -90,14 +90,14 @@ Later patches, prereleases and free-threaded builds are rejected. Other OS or di
 
 For a requested brief, decision record or unresolved question, ask the agent to use [Project Document Assistance](REFERENCE.md#project-document-assistance) with your existing project documents.
 
-## Transition To Planning-1
+## Transition To Checkout-1
 
-The planning-1 window adds project-owned candidate recording, selection, deferral and links to intent/Work, while retaining umbrella parent acceptance. It ships 29 managed paths and preserves the older supported history windows. Qualification of these exact bytes and human approval are required before an actual project upgrade. Earlier worker-1 qualification is historical evidence, not permission to install this candidate.
+The checkout-1 window retains candidate planning and direct-child umbrella behavior and adds bounded verification of unchanged CRLF checkout files. It ships the same 29 managed paths. Qualify the exact candidate and obtain human approval before upgrading a project; historical qualification does not qualify these bytes.
 
-Use a qualified independent planning-1 source with `--source-checkout update --profile planning-1 --target PROJECT --source CANDIDATE`. Review the preview request and confirmation token. Never package new bytes with an old installed packager. Preserve the old history, exact candidate, request/token and trusted recovery source outside the target.
+Use a qualified independent checkout-1 source with `--source-checkout update --profile checkout-1 --target PROJECT --source CANDIDATE`. Only an active planning-1 or checkout-1 target can transition with this source. Older human-1/worker-1/umbrella-1 history remains readable; use retained qualified sources for their operations and a separate transition to planning-1 first. Preserve exact old/new sources and the original request/token outside the target.
 
-After the first durable planning-1 receipt, use that exact candidate for forward recovery, including when no candidate record exists yet. Returning to umbrella-1, worker-1 or human-1 is unsupported, even if no candidate was recorded. Later planning-1 P→Q→P selects the recorded prior release; Q-created ordinary and parent records must keep their meaning on P. A launcher/binding mismatch is not permission to reinstall, remove records or copy a launcher alone.
+After the first durable checkout-1 receipt, only the exact new candidate and original request support forward recovery. Downgrade to planning-1 or earlier windows is refused even before any new Work or candidate exists. The first rollback target is the older release and is therefore unavailable. Loss of the exact recovery source or request can leave no supported recovery path. Backup preserves evidence; it is not permission to undo the transition.
 
-Old human-1 and worker-1 inventories keep their original 27 paths and remain readable. Retained umbrella-1 inventories keep 28 paths. New planning-1 releases contain 29 paths. Exact repair from this source targets planning-1 only; before transition use the retained old source for old-window operations. A mispackaged release is refused even when rehashed. Backup is not a supported downgrade.
+Existing local Work, parent/child graphs and candidate history retain their meaning. An old worker manifest contains the old launcher: direct acceptance on the new runtime is refused. Preserve its unique result and refs, separately approve a control commit containing the new installation, then explicitly rebind the same-intent baseline and resubmit the result. Core does not commit, move worker HEADs or authorize rebind automatically.
 
-For an umbrella, use [General Work](GENERAL-WORK.md#direct-child-umbrella) after establishing the project's goal and acceptance criteria. Ordinary work still uses the existing schema1 flow without an umbrella or extra document.
+Within checkout-1, update/rollback must preserve record meaning in both directions. Pending writes must be resolved before lifecycle changes. A synthetic document-only counterpart tests one exact pair; future code or launcher changes need their own compatibility evidence. Exact repair uses the active checkout-1 source. New detach plans and receipts use schema 2; the new reader retains schema 1 history, whose writes/recovery require its retained old source. Detach does not enable old reinstallation or attach.

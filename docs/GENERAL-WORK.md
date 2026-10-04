@@ -27,6 +27,34 @@ the product neither creates nor manages refs. Exact ref names are required (no D
 and promisor/partial clones or alternate object stores are explicitly unsupported. Every content Git command disables lazy fetching;
 refusing configured remote-object dependencies also covers Git versions that ignore that environment setting. Worker source verification checks retained-ref reachability, base-to-candidate ancestry, the exact whole tracked diff and all project commit paths/blob bytes/modes, including unchanged paths. Managed launcher exclusion requires the control-verified digest in both commits. It does not apply patches, move HEAD, refresh the index or create an acceptance decision.
 
+### Unchanged Explicit CRLF Checkout Entries
+
+Worker source verification has one narrow checkout exception. A path may have a
+pure-LF retained blob and CRLF filesystem bytes when the blob/mode and raw
+manifest entry are unchanged between base and candidate. Both commits must
+explicitly resolve `text` to set and `eol` to `crlf`; every committed
+`.gitattributes` entry must remain unchanged. Verification reconstructs LF-to-CRLF
+bytes and checks their exact size and SHA-256 against the raw manifest. It does
+not normalize snapshots, accept mixed line endings, skip whole-tree validation,
+or convert any changed-path application/recovery source.
+
+The proof requires Git `check-attr --source` support. It checks committed policy
+without global/system attributes and also checks the effective attributes;
+nonempty or linked `info/attributes` is refused for this exception. Active
+`filter`, `working-tree-encoding`, `ident`, or legacy `crlf` attributes are not
+supported. No clean/smudge command is executed. The exception is path-specific,
+including when two paths share one blob. Changed files that require a checkout
+conversion, changed attributes, other encodings and binary conversions remain
+unsupported. Ordinary exact-byte LF/binary results retain their existing checks.
+
+Manifest and record schemas remain unchanged: they still bind actual checkout
+bytes. Older releases retain their own stricter source verifier and cannot use
+this exception. A source change is not same-window rollback qualification;
+validate exact old/new artifacts and resulting records before an adopter switch.
+This bounded path is not Windows qualification or general Git filter support.
+
+The unchanged CRLF exception requires verified active checkout-1 inventory. Older/unknown or omitted inventory values keep strict blob matching, including in read-only worker inspection. A planning-1 worker's retained launcher is not silently accepted after transition: preserve its result/refs and follow the explicit baseline rebind/resubmission procedure in [Getting Started](GETTING-STARTED.md#transition-to-checkout-1). Attribute/capability drift after a decision can refuse resume; restore the original environment for exact recovery or use cancellation only where its existing conditions permit. Completed replay remains historical, while view observations can become unavailable.
+
 Recovery observation distinguishes full result, mixed pre/post, unknown changed content and outside drift. The content-only
 `all_changed_paths_pre` observation cannot authorize cancellation: actual ignored occupants and safe ancestors must also pass
 `preflight_changed_paths`. Record graph, human authority, current intent, active executing release, document/evidence references
@@ -106,7 +134,7 @@ inspection; the installed entry cannot repair its own missing binding.
 
 Installed startup never guesses source-checkout mode when `.hrn` is missing. Invoke an independent
 trusted source launcher with `--source-checkout` for init or diagnostic commands. Source init/update/rollback/detach
-commands require the explicit `planning-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
+commands require the explicit `checkout-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
 there is no legacy fallback mode.
 Confirmation tokens bind request bytes; they are not independent evidence of human authorization.
 
@@ -148,7 +176,7 @@ backup bytes are refused. The installed launcher cannot invoke this operation.
 Use the installed `hv2 detach --operation-id detach-1 --observed-at TIME` to
 preview. Save its `request` object, then run `hv2 detach --apply --input request.json
 --confirm TOKEN`. An independent source can use the same command with explicit
-`--source-checkout`, `--profile planning-1`, and `--target /path/to/project`.
+`--source-checkout`, `--profile checkout-1`, and `--target /path/to/project`.
 
 Detach writes `.hrn/detached.json` before removing anything. It removes the verified
 launcher and managed product files, then their empty directories. Format, ignore

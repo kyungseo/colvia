@@ -27,6 +27,8 @@ class InstalledPendingLifecycleTests(unittest.TestCase):
 
     def setUp(self):
         fixtures.InstalledWorkerPublicationTests.setUp(self)
+        (self.target/'.gitattributes').write_bytes(b'*.bat text eol=crlf\n')
+        (self.target/'unchanged.bat').write_bytes(b'@echo off\r\necho fixture\r\n')
         self.command_evidence=self.base.parent/('worker-pending-evidence-'+self.base.name)
         self.command_evidence.mkdir();self.command_records=[]
         self.addCleanup(self.preserve_commands)

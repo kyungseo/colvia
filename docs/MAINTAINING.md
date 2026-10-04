@@ -1,6 +1,6 @@
 # Maintaining
 
-Current document authority is indexed in [README.md](README.md). This source supports only the single-home `planning-1` development profile.
+Current document authority is indexed in [README.md](README.md). This source supports only the single-home `checkout-1` development profile.
 
 ## Source Layout
 
@@ -78,9 +78,9 @@ Runtime qualification uses an explicit patch allowlist, not a minimum-version pr
 
 ## Inventory Window Compatibility
 
-New candidates declare `WORKSPACE_INVENTORY_ID = "planning-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The current managed set is 29 paths. The new reader retains the exact 28-path umbrella-1 and original 27-path human-1 and worker-1 history and rejects serial-1 or unknown windows.
+New candidates declare `WORKSPACE_INVENTORY_ID = "checkout-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The current managed set is 29 paths. The new reader retains planning-1 with the same 29 paths, the exact 28-path umbrella-1 and original 27-path human-1 and worker-1 history and rejects serial-1 or unknown windows.
 
-Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable planning-1 receipt, downgrade to umbrella-1, worker-1 or human-1 is refused even before any candidate record exists. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
+Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable checkout-1 receipt, downgrade to planning-1, umbrella-1, worker-1 or human-1 is refused even before any candidate record exists. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
 
 The recorded N4 source completed bounded worker execution, complete 424-ID regression in both modes and exact-artifact checks. A later documentation or source change has a different release identity and requires the evidence assessment and exact-artifact checks above; it does not automatically invalidate every prior regression result. This document does not attest its own current bytes as qualified; use the separate immutable qualification receipt and artifact digest. Previous human-1 evidence does not qualify worker-1.
 
@@ -88,7 +88,7 @@ The recorded N4 source completed bounded worker execution, complete 424-ID regre
 
 The umbrella-1 development result has recorded review, Driver disposition and Owner acceptance with limitations. The earlier fixed source passed complete normal/parent-optimized regression; the later test-source follow-up has focused evidence. Keep those identities separate. The exact release candidate still requires the complete regression anchor and cumulative change coverage described above, plus exact-artifact transition and recovery qualification; do not describe development acceptance as release qualification. Do not promote earlier worker-1 receipts or a focused pass to qualification of this checkout. Include schema2 intent/Work round trips, ordinary schema1 behavior, mixed old/new inventory history, old-artifact refusal, Q-created records on P, and detach/plain reading.
 
-The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Schema2 writes require umbrella-1 or planning-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
+The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Current installed writes require checkout-1; the internal schema2 seam retains umbrella-1 and planning-1 fixture support alongside checkout-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
 
 ## Adopter Impact At Development Closeout
 
@@ -99,3 +99,9 @@ For a recommended update, report the target, observed installed release identity
 Apply only after explicit Owner approval for that target and candidate, through the existing preview/confirmation procedure in [Operations](OPERATIONS.md). Verify the resulting binding, project-state preservation and relevant changed behavior, and link the result to the original change. Approval of source work, its completion or a merge is not adopter-update approval. A deferred update records the reason and re-evaluation trigger in the existing completion report; it does not force source work to remain open unless its agreed completion criteria require actual application.
 
 Do not add automatic monitoring, bulk updates, Core management state or an additional acceptance gate. Keep target identifiers and installation observations in the private task report; the shipped instructions remain generic.
+
+## Checkout Proof And Detach Versions
+
+Only a verified active checkout-1 inventory enables the unchanged CRLF exception. Publication, same-intent rebind, acceptance/resume and view inspection use that verified value; absent, older or unknown windows keep exact-blob proof. Raw manifests and changed-path recovery are unchanged. Git must support `check-attr --source`; no minimum Git version is inferred. Live attributes/capability changes can refuse pending recovery until the original conditions are restored. Existing cancellation rules remain applicable; completed decision replay preserves recorded meaning while view reports fresh observations separately.
+
+New detach plans and their enclosing receipts both use schema 2. Keys, null candidate release and removal/preservation semantics are unchanged. Readers retain schema 1 and reject mixed/unknown/non-integer versions; current writers and recovery require schema 2. This version boundary prevents retained planning-1 code from consuming a checkout-1 detach prefix. Preserve old bytes; legacy detach recovery requires the exact retained old source. The independent stdlib auditor checks paired versions and preserved inventory/bytes, not full Work/candidate semantics.

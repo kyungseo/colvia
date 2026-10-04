@@ -1,4 +1,4 @@
-"""General Work content evidence primitives; no installed writer entry yet.
+"""General Work content evidence, installed writers and recovery guards.
 
 Snapshots and recovery observations never grant acceptance or mutate project bytes.
 Record graph, intent/product binding and human confirmation are separate prerequisites.
@@ -85,9 +85,9 @@ def _parents(path: str) -> list[str]:
     return ["/".join(pieces[:i]) for i in range(1, len(pieces))]
 
 
-def _git(target: Path, *args: str, allowed: tuple[int, ...] = (0,), input_data: bytes | None = None) -> subprocess.CompletedProcess[bytes]:
+def _git(target: Path, *args: str, allowed: tuple[int, ...] = (0,), input_data: bytes | None = None, isolated_attributes: bool = False) -> subprocess.CompletedProcess[bytes]:
     try:
-        result = subprocess.run(["git", "--no-replace-objects", "-c", "core.fsmonitor=false", "-C", str(target), *args], capture_output=True, input=input_data, env={**git_environment(), "GIT_NO_LAZY_FETCH": "1"}, check=False)
+        result = subprocess.run(["git", "--no-replace-objects", "-c", "core.fsmonitor=false", "-C", str(target), *args], capture_output=True, input=input_data, env={**git_environment(), "GIT_NO_LAZY_FETCH": "1", **({"GIT_ATTR_NOSYSTEM": "1"} if isolated_attributes else {})}, check=False)
     except OSError as exc:
         raise _fail("Git unavailable for content evidence") from exc
     if result.returncode not in allowed:
@@ -400,7 +400,61 @@ immediately before each write and before publication; outside actors are trusted
     return states
 
 
-def _verify_worker_sources(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None) -> dict[str, dict[str, bytes | None]]:
+def _allows_unchanged_crlf(verified_inventory_id: str | None) -> bool:
+    """A verified active window, never a caller-facing conversion option."""
+    return verified_inventory_id == "checkout-1"
+
+
+def _unchanged_crlf_matches(target: Path, manifest: dict[str, Any],
+                            tables: dict[str, dict[str, tuple[str, str]]],
+                            entries: dict[str, dict[str, dict[str, Any]]],
+                            path: str, data: bytes, expected: dict[str, Any]) -> bool:
+    """Prove one unchanged raw checkout entry; never convert application bytes."""
+    if tables["pre"].get(path) != tables["post"].get(path):
+        return False
+    before = entries["base"].get(path)
+    after = entries["result"].get(path)
+    if before != after or before != expected:
+        return False
+    # A deterministic LF-to-CRLF expansion cannot justify other transformations.
+    if b"\n" not in data or b"\r" in data or b"\0" in data:
+        return False
+    checkout = data.replace(b"\n", b"\r\n")
+    if len(checkout) != expected["size_bytes"] or hashlib.sha256(checkout).hexdigest() != expected["sha256"]:
+        return False
+    attributes = {p for table in tables.values() for p in table if p.rsplit("/", 1)[-1] == ".gitattributes"}
+    if any(tables["pre"].get(p) != tables["post"].get(p) for p in attributes):
+        return False
+    # --source still consults info/attributes. Do not let unretained overrides
+    # masquerade as a policy bound by both commits.
+    # Asking Git for the absolute attributes path resolves its final symlink.
+    # Keep the untrusted suffix literal so links remain observable here.
+    common = Path(_decode(_git(target, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout).rstrip("\n"))
+    if not common.is_absolute():
+        common = target / common
+    info = common / "info" / "attributes"
+    if info.parent.is_symlink() or info.is_symlink() or (info.exists() and _stable_file(info)[1] != 0):
+        raise _fail("unchanged CRLF proof requires no info/attributes overrides")
+    names = ("text", "eol", "filter", "working-tree-encoding", "ident", "crlf")
+    for commit in dict.fromkeys((manifest["base_commit"], manifest["candidate_commit"])):
+        for isolated in (True, False):
+            options = ("-c", "core.attributesFile=/dev/null") if isolated else ()
+            output = _git(target, *options, "check-attr", "--source=" + commit, "-z", *names, "--", path, isolated_attributes=isolated).stdout
+            fields = output.split(b"\0")
+            if fields[-1:] != [b""] or len(fields) != len(names) * 3 + 1:
+                raise _fail("CRLF attribute observation is malformed")
+            values = {}
+            for index, name in enumerate(names):
+                file, attribute, value = map(_decode, fields[index * 3:index * 3 + 3])
+                if file != path or attribute != name:
+                    raise _fail("CRLF attribute observation differs from requested path")
+                values[name] = value
+            if values["text"] != "set" or values["eol"] != "crlf" or any(values[name] not in {"unspecified", "unset"} for name in names[2:]):
+                return False
+    return True
+
+
+def _verify_worker_sources(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None, verified_inventory_id: str | None = None) -> dict[str, dict[str, bytes | None]]:
     """Read durable pre/post blobs from existing control refs without creating refs.
 
 Returned bytes are reconstruction inputs, not acceptance authority. A caller must
@@ -440,6 +494,8 @@ also verify whole-tree currentness, physical path preflight and the record graph
     # Whole commit trees bind unchanged paths too. Excluded authority may remain
     # identical in both commits; it cannot be hidden in a worker result diff.
     blobs: dict[str, bytes] = {}
+    verified_crlf: set[str] = set()
+    entries = {name: {e["path"]: e for e in manifest[name]["entries"]} for name in ("base", "result")}
     for side, name in (("pre", "base"), ("post", "result")):
         table = tables[side]
         project = {p: v for p, v in table.items() if not p.startswith(".hrn/")}
@@ -451,7 +507,7 @@ also verify whole-tree currentness, physical path preflight and the record graph
             if hashlib.sha256(data).hexdigest() != verified_launcher_sha256:
                 raise _fail("commit launcher differs from bound runtime")
         _path_set(list(project))
-        expected = {e["path"]: e for e in manifest[name]["entries"]}
+        expected = entries[name]
         if project.keys() != expected.keys():
             raise _fail("whole commit membership differs from manifest")
         for path, (mode, oid) in project.items():
@@ -461,7 +517,10 @@ also verify whole-tree currentness, physical path preflight and the record graph
                 blobs[oid] = _git(target, "cat-file", "blob", oid).stdout
             data = blobs[oid]
             if len(data) != expected[path]["size_bytes"] or hashlib.sha256(data).hexdigest() != expected[path]["sha256"]:
-                raise _fail("whole commit content differs from manifest")
+                if path not in verified_crlf:
+                    if not _allows_unchanged_crlf(verified_inventory_id) or not _unchanged_crlf_matches(target, manifest, tables, entries, path, data, expected[path]):
+                        raise _fail("whole commit content differs from manifest")
+                    verified_crlf.add(path)
     sources: dict[str, dict[str, bytes | None]] = {}
     for change in manifest["changes"]:
         sources[change["path"]] = {}
@@ -512,10 +571,10 @@ def preflight_changed_paths(target: Path, manifest: dict[str, Any], *, verified_
         raise _fail("changed-path preflight unavailable or unstable") from exc
 
 
-def verify_worker_sources(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None) -> dict[str, dict[str, bytes | None]]:
+def verify_worker_sources(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None, verified_inventory_id: str | None = None) -> dict[str, dict[str, bytes | None]]:
     """Verify local-only retained blobs; does not grant acceptance authority."""
     try:
-        return _verify_worker_sources(target, manifest, verified_launcher_sha256=verified_launcher_sha256)
+        return _verify_worker_sources(target, manifest, verified_launcher_sha256=verified_launcher_sha256, verified_inventory_id=verified_inventory_id)
     except (OSError, ValueError) as exc:
         raise _fail("worker sources unavailable or malformed") from exc
 
@@ -971,11 +1030,11 @@ def _worker_required_refs(target, revision, manifest, launcher_sha, sources):
     _live_external_refs(target, remaining, launcher_sha)
 
 
-def _worker_record_preflight(target: Path, revision: dict[str, Any], manifest: dict[str, Any], launcher_sha: str | None, *, worker: Path | None = None, initial_baseline: bool = False) -> None:
+def _worker_record_preflight(target: Path, revision: dict[str, Any], manifest: dict[str, Any], launcher_sha: str | None, *, verified_inventory_id: str | None = None, worker: Path | None = None, initial_baseline: bool = False) -> None:
     """Control-side observation only; it neither accepts nor applies worker bytes."""
     _require(classify_target(target, mutation=True)["kind"] == "primary", "worker publication requires primary control")
     _require(snapshot(target, verified_launcher_sha256=launcher_sha) == manifest["base"], "control differs from worker baseline; human baseline refresh required")
-    sources = verify_worker_sources(target, manifest, verified_launcher_sha256=launcher_sha)
+    sources = verify_worker_sources(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id)
     if revision["operation"] == "submit-result":
         _require(worker is not None, "worker result requires explicit linked worktree")
         worker = safe_target(worker)
@@ -1090,7 +1149,7 @@ class WorkStore:
 runtime_check(target) MUST verify the executing bound release under this module's
 shared guard and return {binding_ref, launcher_sha256, inventory_id}. The default
 verifies the isolated installed applied binding. Older ordinary-Work fixture
-doubles may omit inventory_id; schema2 requires umbrella-1 or planning-1. Lifecycle publication
+doubles may omit inventory_id; schema2 requires umbrella-1, planning-1 or checkout-1. Lifecycle publication
 remains separate.
 Human confirmation is a trusted-local declaration, not OS authentication.
 """
@@ -1106,14 +1165,14 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         result = self.runtime_check(self.target)
         _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
         if "inventory_id" in result:
-            _require(result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1"), "unsupported writer inventory window")
+            _require(result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
         return result
 
     @staticmethod
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1"), "umbrella writer requires umbrella-1 or planning-1 runtime")
+        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1"), "umbrella writer requires umbrella-1, planning-1 or checkout-1 runtime")
 
     def _all(self, *, _intent_graph_reader=None, _topology_observation=None) -> dict[str, Any]:
         root = self.target / ".hrn/work"
@@ -1222,7 +1281,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                 self._intent(revision, identity)
                 self._umbrella(revision, runtime, current=True)
                 if revision["execution_context"]["mode"] == "isolated-worktree":
-                    _worker_record_preflight(self.target, revision, manifest, runtime["launcher_sha256"], worker=worker, initial_baseline=revision["record_id"] not in graph["revisions"] and revision["operation"] in ("start", "rebind"))
+                    _worker_record_preflight(self.target, revision, manifest, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"), worker=worker, initial_baseline=revision["record_id"] not in graph["revisions"] and revision["operation"] in ("start", "rebind"))
                 else:
                     _live_external_refs(self.target, revision, runtime["launcher_sha256"])
                     _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"]) == manifest["result"], "live result differs from proposed manifest")
@@ -1360,9 +1419,9 @@ Human confirmation is a trusted-local declaration, not OS authentication.
     def _worker_confirmation(self, ticket, revision, manifest, runtime, *, initial=False, final=False):
         sha = runtime["launcher_sha256"]
         if ticket["action"] == "rebind":
-            _worker_record_preflight(self.target, revision, manifest, sha)
+            _worker_record_preflight(self.target, revision, manifest, sha, verified_inventory_id=runtime.get("inventory_id"))
         elif ticket["action"] == "accept":
-            sources = verify_worker_sources(self.target, manifest, verified_launcher_sha256=sha)
+            sources = verify_worker_sources(self.target, manifest, verified_launcher_sha256=sha, verified_inventory_id=runtime.get("inventory_id"))
             _worker_required_refs(self.target, revision, manifest, sha, sources)
             _worker_content_state(self.target, manifest, sha, initial=initial, final=final)
             if final: _live_external_refs(self.target, revision, sha)

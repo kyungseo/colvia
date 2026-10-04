@@ -72,7 +72,7 @@ class SingleHomeRuntimeTests(unittest.TestCase):
             data = self.candidate["payload"][item["path"]]
             item.update(sha256=hashlib.sha256(data).hexdigest(), size_bytes=len(data))
         digest = hashlib.sha256(canonical_json_bytes(self.inventory)).hexdigest()
-        self.ref = {"id": "product-release-" + digest[:24], "sha256": digest, "inventory_id": "planning-1"}
+        self.ref = {"id": "product-release-" + digest[:24], "sha256": digest, "inventory_id": "checkout-1"}
         self.fmt = {"record_type": "workspace-format", "format_version": 1, "authority_home_id": "home-a",
                     "created_at": "2026-01-01T00:00:00Z", "lineage": None}
         self.plan = {"record_type": "lifecycle-plan", "schema_version": 1, "operation_id": "init-a", "action": "init",
@@ -105,7 +105,7 @@ class SingleHomeRuntimeTests(unittest.TestCase):
     @staticmethod
     def launcher():
         return '''#!/usr/bin/env python3
-WORKSPACE_INVENTORY_ID = "planning-1"
+WORKSPACE_INVENTORY_ID = "checkout-1"
 import sys
 sys.dont_write_bytecode = True
 from pathlib import Path
@@ -397,12 +397,12 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def preview(self, *, target=None, source=None):
         target = target or self.target;source = source or self.source
-        result = self.call(["init", "--profile", "planning-1", "--target", target, "--source", source,
+        result = self.call(["init", "--profile", "checkout-1", "--target", target, "--source", source,
                             "--authority-home-id", "home-a", "--operation-id", "init-a", "--observed-at", self.TIME])
         return json.loads(result.stdout)
 
     def apply_init(self, preview, *, recover=False, point=None, expected=0, source=None):
-        args = ["init", "--profile", "planning-1", "--target", self.target, "--source", source or self.source,
+        args = ["init", "--profile", "checkout-1", "--target", self.target, "--source", source or self.source,
                 "--apply", "--input", "-", "--confirm", preview["confirm_token"]]
         if recover: args.append("--recover")
         if point: args += ["--inject-at", point]
@@ -599,7 +599,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 if kind=="file":(self.target/"hv2").write_bytes(b"project-owned\n")
                 else:(self.target/"hv2").symlink_to(external)
                 before=exact_snapshot(self.target)
-                result=self.call(["init","--profile","planning-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
+                result=self.call(["init","--profile","checkout-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
                 for response in (result,self.apply_init(preview,expected=65)):
                     error=json.loads(response.stdout);self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
                     self.assertIn("preexisting launcher is not owned",error["message"])
@@ -761,7 +761,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
             if kind=="ignored":
                 preview=self.preview();self.apply_init(preview,expected=65)
             else:
-                self.call(["init","--profile","planning-1","--target",self.target,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
+                self.call(["init","--profile","checkout-1","--target",self.target,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
             self.assertEqual(before,exact_snapshot(self.target))
 
     def test_recovery_preserves_unknown_and_torn_staged_bytes(self):
@@ -813,7 +813,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
             with self.subTest(command=command[0]):
                 result=self.call(command,expected=65); error=json.loads(result.stdout)
                 self.assertEqual("HV2-WORKSPACE-COMMAND",error["code"])
-                self.assertEqual("source lifecycle requires explicit planning-1 profile; use retained old source for older windows",error["message"])
+                self.assertEqual("source lifecycle requires explicit checkout-1 profile; use retained old source for older windows",error["message"])
                 self.assertEqual(before,exact_snapshot(self.base))
         result=self.call(["status","--target",self.target],expected=15)
         self.assertEqual("uninitialized",json.loads(result.stdout)["classification"])
@@ -868,7 +868,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         release=self.target/".hrn/product/releases"/rid;data=canonical_json_bytes([]);digest=hashlib.sha256(data).hexdigest()
         (release/"inventory.json").write_bytes(data);new_id="product-release-"+digest[:24];release.rename(release.with_name(new_id))
         binding_path=self.target/".hrn/product/binding.json";binding=json.loads(binding_path.read_text())
-        binding["active_release"]={"id":new_id,"sha256":digest,"inventory_id":"planning-1"};binding_path.write_bytes(canonical_json_bytes(binding))
+        binding["active_release"]={"id":new_id,"sha256":digest,"inventory_id":"checkout-1"};binding_path.write_bytes(canonical_json_bytes(binding))
         result=self.installed(["status"],expected=65);self.assertNotIn(b"Traceback",result.stderr)
 
 
@@ -908,7 +908,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 result=self.call(["init","--target",target,"--apply"],expected=65)
                 error=json.loads(result.stdout)
                 self.assertEqual("HV2-WORKSPACE-COMMAND",error["code"])
-                self.assertEqual("source lifecycle requires explicit planning-1 profile; use retained old source for older windows",error["message"])
+                self.assertEqual("source lifecycle requires explicit checkout-1 profile; use retained old source for older windows",error["message"])
                 self.assertEqual(before,exact_snapshot(self.base))
 
 
@@ -940,7 +940,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         args=[action,"--operation-id",operation,"--observed-at",self.TIME]
         if action=="update":args += ["--source",source or self.candidate]
         if installed: result=self.installed(args)
-        else: result=self.call([*args,"--profile","planning-1","--target",self.target])
+        else: result=self.call([*args,"--profile","checkout-1","--target",self.target])
         return json.loads(result.stdout)
 
     def switch_apply(self,preview,*,source=None,recover=False,point=None,expected=0,installed=False):
@@ -949,7 +949,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         if recover:args += ["--recover"]
         if point:args += ["--inject-at",point]
         if installed:return self.installed(args,plan,expected=expected)
-        return self.call([*args,"--profile","planning-1","--target",self.target],plan,expected=expected)
+        return self.call([*args,"--profile","checkout-1","--target",self.target],plan,expected=expected)
 
     def test_actual_update_rollback_round_trip_preserves_truth_and_runs_both_launchers(self):
         from hv2ref.product import verify_workspace_product
@@ -1022,7 +1022,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 (home/"current.json").write_bytes(canonical_json_bytes(current))
                 if form=="decision":selection.unlink()
                 before=exact_snapshot(self.target)
-                result=self.call(["update","--profile","planning-1","--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
+                result=self.call(["update","--profile","checkout-1","--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
                 self.assertIn("pending Work",result.stdout.decode());self.switch_apply(up,expected=65)
                 status=json.loads(self.installed(["status"],expected=14).stdout)
                 self.assertEqual(["work-a"],status["pending_work"])
@@ -1039,7 +1039,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 current=json.loads((home/"current.json").read_bytes());(home/"current.json").unlink()
                 if form=="acceptance":(home/"selections"/(current["selection_ref"]["id"]+".json")).unlink()
                 before=exact_snapshot(self.target)
-                result=self.call(["update","--profile","planning-1","--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
+                result=self.call(["update","--profile","checkout-1","--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
                 self.assertIn("pending intent",result.stdout.decode());self.switch_apply(up,expected=65)
                 status=json.loads(self.installed(["status"],expected=14).stdout)
                 self.assertEqual(["intent-a"],status["pending_intent"])
@@ -1052,7 +1052,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());self.candidate=self.switch_candidate();up=self.switch_preview()
         self.switch_apply(up,point="after-receipt",expected=75);before=exact_snapshot(self.target)
         self.installed(["intent","draft"],self.draft(),expected=65)
-        self.call(["rollback","--profile","planning-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME],expected=65)
+        self.call(["rollback","--profile","checkout-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target));self.switch_apply(up,recover=True)
 
     def test_switch_unknown_and_torn_published_bytes_are_preserved(self):
@@ -1090,7 +1090,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());self.candidate=self.switch_candidate();up=self.switch_preview();self.switch_apply(up)
         bad=copy.deepcopy(up);bad["request"]["created_at"]="later";bad["confirm_token"]=hashlib.sha256(canonical_json_bytes(bad["request"])).hexdigest()[:16]
         before=exact_snapshot(self.target);self.switch_apply(bad,expected=65)
-        self.call(["rollback","--profile","planning-1","--target",self.target,"--to","other-release","--operation-id","rollback-a","--observed-at",self.TIME],expected=65)
+        self.call(["rollback","--profile","checkout-1","--target",self.target,"--to","other-release","--operation-id","rollback-a","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
 
@@ -1099,7 +1099,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         up["request"]["operation_id"]="INIT-A"
         up["confirm_token"]=hashlib.sha256(canonical_json_bytes(up["request"])).hexdigest()[:16]
         before=exact_snapshot(self.target);self.switch_apply(up,expected=65)
-        self.call(["update","--profile","planning-1","--target",self.target,"--source",self.candidate,"--operation-id","INIT-A","--observed-at",self.TIME],expected=65)
+        self.call(["update","--profile","checkout-1","--target",self.target,"--source",self.candidate,"--operation-id","INIT-A","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
 
@@ -1125,7 +1125,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());self.candidate=self.switch_candidate();up=self.switch_preview();self.switch_apply(up)
         down=self.switch_preview("rollback",operation="rollback-a");down["request"]["candidate_release"]=[]
         before=exact_snapshot(self.target)
-        result=self.call(["rollback","--profile","planning-1","--target",self.target,"--to","wrong","--apply","--input","-","--confirm",down["confirm_token"]],down["request"],expected=65)
+        result=self.call(["rollback","--profile","checkout-1","--target",self.target,"--to","wrong","--apply","--input","-","--confirm",down["confirm_token"]],down["request"],expected=65)
         self.assertEqual("HV2-WORKSPACE-SWITCH-INPUT",json.loads(result.stdout)["code"])
         self.assertEqual(before,exact_snapshot(self.target))
 
@@ -1389,13 +1389,13 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def detach_preview(self, *, installed=False, expected=0):
         args=["detach","--target",self.target,"--operation-id","detach-a","--observed-at",self.TIME]
-        if not installed:args += ["--profile","planning-1"]
+        if not installed:args += ["--profile","checkout-1"]
         r=self.installed(args,expected=expected) if installed else self.call(args,expected=expected)
         return json.loads(r.stdout)
 
     def detach_apply(self, preview, *, installed=False, recover=False, point=None, expected=0):
         args=["detach","--target",self.target,"--apply","--input","-","--confirm",preview["confirm_token"]]
-        if not installed:args += ["--profile","planning-1"]
+        if not installed:args += ["--profile","checkout-1"]
         if recover:args.append("--recover")
         if point:args += ["--inject-at",point]
         r=self.installed(args,preview["request"],expected=expected) if installed else self.call(args,preview["request"],expected=expected)
@@ -1533,10 +1533,10 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.assertEqual("HV2-WORKSPACE-PRODUCT",original_init["code"])
                 self.assertEqual("root is not ready",original_init["message"])
                 self.assertEqual(before,exact_snapshot(self.target))
-                for command in (["init","--profile","planning-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","other","--observed-at",self.TIME],
-                                ["update","--profile","planning-1","--target",self.target,"--source",self.source,"--operation-id","other","--observed-at",self.TIME],
-                                ["rollback","--profile","planning-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME],
-                                ["detach","--profile","planning-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME]):
+                for command in (["init","--profile","checkout-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","other","--observed-at",self.TIME],
+                                ["update","--profile","checkout-1","--target",self.target,"--source",self.source,"--operation-id","other","--observed-at",self.TIME],
+                                ["rollback","--profile","checkout-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME],
+                                ["detach","--profile","checkout-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME]):
                     error=json.loads(self.call(command,expected=65).stdout)
                     self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
                     # A fresh init plan is separately refused; original init replay above exercises the detached-root gate.
@@ -1741,7 +1741,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         original = self.target; self.apply_init(self.preview()); self.accept_intent()
         preview = self.detach_preview(); self.detach_apply(preview, point="after-receipt", expected=75)
         foreign = self.base / "foreign"; foreign.mkdir(); self.target = foreign
-        args = ["init", "--profile", "planning-1", "--target", foreign, "--source", self.source, "--authority-home-id", "foreign-home", "--operation-id", "init-foreign", "--observed-at", self.TIME]
+        args = ["init", "--profile", "checkout-1", "--target", foreign, "--source", self.source, "--authority-home-id", "foreign-home", "--operation-id", "init-foreign", "--observed-at", self.TIME]
         foreign_init = json.loads(self.call(args).stdout); self.apply_init(foreign_init)
         foreign_preview = self.detach_preview(); self.detach_apply(foreign_preview, point="after-receipt", expected=75)
         self.target = original; receipt = original / ".hrn/detached.json"; original_receipt = receipt.read_bytes()
@@ -2159,7 +2159,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         fmt["authority_home_id"]="other";plan.update(authority_home_id="other",operation_id="other",format_sha256=hashlib.sha256(canonical_json_bytes(fmt)).hexdigest())
         fresh["confirm_token"]=hashlib.sha256(canonical_json_bytes(fresh["request"])).hexdigest()[:16]
         for response in (self.apply_init(fresh,expected=65),self.apply_init(init,recover=True,expected=65),
-                         self.call(["init","--profile","planning-1","--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)):
+                         self.call(["init","--profile","checkout-1","--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)):
             error=json.loads(response.stdout);self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
             self.assertEqual("no durable ownership plan; preserve existing root",error["message"])
         self.assertEqual(before,exact_snapshot(self.target))
@@ -2222,7 +2222,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def test_port_recovery_existing_root_refuses_authority_reissue(self):
         prepared=self.preview();(self.target/".hrn").mkdir();before=exact_snapshot(self.target)
-        response=self.call(["init","--profile","planning-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
+        response=self.call(["init","--profile","checkout-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
         error=json.loads(response.stdout);self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
         self.assertEqual("no durable ownership plan; preserve existing root",error["message"])
         applied=json.loads(self.apply_init(prepared,expected=65).stdout)
@@ -2232,7 +2232,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
     def test_port_recovery_installed_launcher_cannot_init_another_target(self):
         self.apply_init(self.preview());other=self.base/"other";other.mkdir();(other/"a").write_bytes(b"other project\n")
         before=exact_snapshot(self.target);other_before=exact_snapshot(other)
-        args=["init","--profile","planning-1","--target",other,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME]
+        args=["init","--profile","checkout-1","--target",other,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME]
         for prefix in ([],["--source-checkout"],["--legacy-baseline"]):
             response=self.installed(prefix+args,expected=2)
             self.assertIn(b"invalid choice",response.stderr);self.assertIn(b"'init'",response.stderr)
@@ -2378,7 +2378,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());initial=self.preview();preview=self.detach_preview();self.detach_apply(preview)
         before=exact_snapshot(self.target)
         self.apply_init(initial,recover=True,expected=65)
-        self.call(["init","--profile","planning-1","--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)
+        self.call(["init","--profile","checkout-1","--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)
         self.repair_preview(expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
@@ -2429,7 +2429,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         result=subprocess.run([sys.executable,"-B","-m","hv2ref.cli","repair","--target",str(self.target),"--source",str(self.source),
                                "--backup",str(self.base/"backup"),"--operation-id","repair-a","--observed-at",self.TIME],capture_output=True,timeout=45)
         self.assertEqual(0,result.returncode,(result.stdout+result.stderr).decode());self.repair_apply(json.loads(result.stdout))
-        result=subprocess.run([sys.executable,"-B","-m","hv2ref.cli","detach","--profile","planning-1","--target",str(self.target),
+        result=subprocess.run([sys.executable,"-B","-m","hv2ref.cli","detach","--profile","checkout-1","--target",str(self.target),
                                "--operation-id","detach-a","--observed-at",self.TIME],capture_output=True,timeout=45)
         self.assertEqual(0,result.returncode,(result.stdout+result.stderr).decode());self.assertEqual("preview",json.loads(result.stdout)["classification"])
 
@@ -2455,7 +2455,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.assertEqual(read_work(self.target,"work-a")["state"],"completed")
         with self.assertRaises(ContractError):
             WorkStore(self.target).prepare("work-a",action="accept",actor="owner",reason="cannot revive",request_id="after-detach",observed_at=self.TIME)
-        self.call(["rollback","--profile","planning-1","--target",self.target,"--operation-id","after-detach","--observed-at",self.TIME],expected=65)
+        self.call(["rollback","--profile","checkout-1","--target",self.target,"--operation-id","after-detach","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
 
@@ -2467,22 +2467,22 @@ class InventoryDeclarationTests(unittest.TestCase):
         return _launcher_inventory_window(value, allow_legacy=legacy)
 
     def test_worker_literal_and_legacy_absence(self):
-        self.assertEqual(self.read_window(b'WORKSPACE_INVENTORY_ID = "planning-1"\n'), "planning-1")
+        self.assertEqual(self.read_window(b'WORKSPACE_INVENTORY_ID = "checkout-1"\n'), "checkout-1")
         self.assertEqual(self.read_window(b'print("legacy")\n', legacy=True), "human-1")
         with self.assertRaises(ContractError):
             self.read_window(b'print("legacy")\n')
 
     def test_candidate_code_is_not_executed(self):
-        data = b'WORKSPACE_INVENTORY_ID = "planning-1"\nraise RuntimeError("must not execute")\n'
-        self.assertEqual(self.read_window(data), "planning-1")
+        data = b'WORKSPACE_INVENTORY_ID = "checkout-1"\nraise RuntimeError("must not execute")\n'
+        self.assertEqual(self.read_window(data), "checkout-1")
 
     def test_unknown_dynamic_duplicate_and_nested_declarations_refused(self):
         cases = [
             'WORKSPACE_INVENTORY_ID = "human-1"',
             'WORKSPACE_INVENTORY_ID = "worker-2"',
-            'WORKSPACE_INVENTORY_ID = str("planning-1")',
-            'if True:\n    WORKSPACE_INVENTORY_ID = "planning-1"',
-            'WORKSPACE_INVENTORY_ID = "planning-1"\nWORKSPACE_INVENTORY_ID = "planning-1"',
+            'WORKSPACE_INVENTORY_ID = str("checkout-1")',
+            'if True:\n    WORKSPACE_INVENTORY_ID = "checkout-1"',
+            'WORKSPACE_INVENTORY_ID = "checkout-1"\nWORKSPACE_INVENTORY_ID = "checkout-1"',
         ]
         for case in cases:
             with self.subTest(case=case), self.assertRaises(ContractError):
@@ -2491,10 +2491,10 @@ class InventoryDeclarationTests(unittest.TestCase):
     def test_other_binding_forms_refused(self):
         name = "WORKSPACE_INVENTORY_ID"
         forms = [
-            f'{name}, other = ("planning-1", 1)', f'{name}: str = "planning-1"',
+            f'{name}, other = ("checkout-1", 1)', f'{name}: str = "checkout-1"',
             f'{name} += "x"', f'del {name}', f'import os as {name}',
             f'from os import path as {name}', f'def f():\n    global {name}',
-            f'({name} := "planning-1")', f'for {name} in []:\n    pass',
+            f'({name} := "checkout-1")', f'for {name} in []:\n    pass',
             f'with open("x") as {name}:\n    pass',
             f'match value:\n    case {{"x": {name}}}: pass',
             f'match value:\n    case [*{name}]: pass',
@@ -2505,7 +2505,7 @@ class InventoryDeclarationTests(unittest.TestCase):
             f'def f[*{name}](): pass',
         ]
         for form in forms:
-            for prefix in ('', f'{name} = "planning-1"\n'):
+            for prefix in ('', f'{name} = "checkout-1"\n'):
                 with self.subTest(form=form, prefix=bool(prefix)), self.assertRaises(ContractError):
                     self.read_window((prefix + form).encode(), legacy=True)
 
@@ -2550,7 +2550,7 @@ class InventoryDeclarationTests(unittest.TestCase):
     def test_rehashed_mispackaged_release_is_refused_without_writes(self):
         from hv2ref.product import verify_workspace_release
         with tempfile.TemporaryDirectory() as tmp:
-            release = self.write_release(Path(tmp), b'WORKSPACE_INVENTORY_ID = "planning-1"\n')
+            release = self.write_release(Path(tmp), b'WORKSPACE_INVENTORY_ID = "checkout-1"\n')
             before = exact_snapshot(release)
             with self.assertRaisesRegex(ContractError, 'declaration differs'):
                 verify_workspace_release(release)
@@ -2594,12 +2594,12 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
     def test_candidate_declaration_binds_inventory(self):
         from hv2ref.product import workspace_candidate
         candidate = workspace_candidate(self.source)
-        self.assertEqual('planning-1', candidate['inventory']['inventory_id'])
+        self.assertEqual('checkout-1', candidate['inventory']['inventory_id'])
         self.assertEqual(29, len(candidate['inventory']['entries']))
         self.assertEqual(candidate['release_ref']['sha256'], hashlib.sha256(canonical_json_bytes(candidate['inventory'])).hexdigest())
         source = self.changed_source()
         launcher = source / 'hv2'
-        launcher.write_bytes(launcher.read_bytes().replace(b'WORKSPACE_INVENTORY_ID = "planning-1"', b'# missing declaration'))
+        launcher.write_bytes(launcher.read_bytes().replace(b'WORKSPACE_INVENTORY_ID = "checkout-1"', b'# missing declaration'))
         with self.assertRaises(ContractError): workspace_candidate(source)
 
     def test_fresh_init_read_only_status_and_declared_window(self):
@@ -2609,7 +2609,7 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
         result = workspace_status(self.target)
         self.assertEqual('pass', result['classification'])
         binding = load_json(self.target / '.hrn/product/binding.json')
-        self.assertEqual('planning-1', binding['active_release']['inventory_id'])
+        self.assertEqual('checkout-1', binding['active_release']['inventory_id'])
         self.assertEqual(before, exact_snapshot(self.target))
 
     def test_source_profile_is_explicit_and_old_profile_refused(self):
@@ -2617,9 +2617,9 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parser().parse_args(['init', '--profile', 'human-1', '--target', str(self.target)])
         args = parser().parse_args(['init', '--target', str(self.target)])
-        with self.assertRaisesRegex(ContractError, 'explicit planning-1'):
+        with self.assertRaisesRegex(ContractError, 'explicit checkout-1'):
             run(args)
-        self.assertEqual('planning-1', parser().parse_args(['init', '--profile', 'planning-1', '--target', str(self.target)]).profile)
+        self.assertEqual('checkout-1', parser().parse_args(['init', '--profile', 'checkout-1', '--target', str(self.target)]).profile)
         self.assertEqual([], list(self.target.iterdir()))
 
     def test_worker_window_round_trip_and_replay(self):
@@ -2643,7 +2643,7 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
         plan['candidate_release']['inventory_id'] = 'human-1'
         plan['action'] = 'rollback'
         before = exact_snapshot(self.target)
-        with self.assertRaisesRegex(ContractError, 'switches only to planning-1'):
+        with self.assertRaisesRegex(ContractError, 'switches only to checkout-1'):
             workspace_switch_apply(self.target, plan, confirm_token=hashlib.sha256(canonical_json_bytes(plan)).hexdigest()[:16])
         self.assertEqual(before, exact_snapshot(self.target))
 
@@ -2651,7 +2651,7 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
         from hv2ref.product import _switch_binding_receipt
         from hv2ref.work import record_ref
         prior = {'record_type':'product-binding','schema_version':1,'authority_home_id':'home-a',
-                 'active_release':{'id':'product-release-'+'a'*24,'sha256':'a'*64,'inventory_id':'planning-1'},
+                 'active_release':{'id':'product-release-'+'a'*24,'sha256':'a'*64,'inventory_id':'checkout-1'},
                  'prior_release':None,'operation_id':'prior-a'}
         plan = {'expected_binding_ref':record_ref(prior,'operation_id'),
                 'candidate_release':{'id':'product-release-'+'b'*24,'sha256':'b'*64,'inventory_id':'human-1'},
@@ -2673,7 +2673,7 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
                 result = workspace_switch_apply(target, preview['request'], source=self.changed_source(), confirm_token=preview['confirm_token'], recover=True)
                 self.assertIn(result['classification'], ('updated','replayed'))
                 self.assertEqual(truth, (target / '.hrn/format.json').read_bytes())
-                self.assertEqual('planning-1', verify_workspace_product(target)['inventory']['inventory_id'])
+                self.assertEqual('checkout-1', verify_workspace_product(target)['inventory']['inventory_id'])
 
     def test_exact_repair_and_detach(self):
         from hv2ref.product import workspace_repair_preview, workspace_repair_apply, workspace_detach_preview, workspace_detach_apply, workspace_detached_status

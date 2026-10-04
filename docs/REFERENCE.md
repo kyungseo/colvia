@@ -4,17 +4,17 @@ Document authority and currentness: [Documentation Index](README.md).
 
 ## Single-Home Development Commands
 
-The current development profile is `planning-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./hv2`. An independent contribution source uses `./hv2 --source-checkout` explicitly.
+The current development profile is `checkout-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./hv2`. An independent contribution source uses `./hv2 --source-checkout` explicitly.
 A source path or a successful test suite is not permission to modify an adopter.
 
 | Entry | Command | Input and effect |
 | --- | --- | --- |
-| Independent source | `init --profile planning-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
+| Independent source | `init --profile checkout-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
 | Installed or independent source | `status`, `doctor` | Read-only product and complete record-graph diagnostics. Source accepts `--target PATH`. Healthy product output derives `documentation_root` and its README entry from the verified active release. |
 | Installed | `update --source PATH --operation-id ID --observed-at TIME` | Preview a candidate; `--apply --input FILE --confirm TOKEN` applies the exact request. |
 | Installed | `rollback [--to RELEASE] --operation-id ID --observed-at TIME` | Preview a receipt-backed release; apply the exact request and token. |
 | Installed | `detach --operation-id ID --observed-at TIME` | Preview exact managed removal; apply the exact request and token. Project truth remains. |
-| Independent source | `update`, `rollback`, `detach` with `--profile planning-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
+| Independent source | `update`, `rollback`, `detach` with `--profile checkout-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
 | Independent source | `repair --target PATH --source PATH --backup NEW_EXTERNAL_PATH --operation-id ID --observed-at TIME` | Preview restoration of the exact active product. Apply its request/token; interrupted repair uses `--recover`. Installed repair is not exposed. |
 | Installed | `intent draft`, `intent prepare`, `intent apply` | Canonical JSON from `--input FILE` or stdin. Apply additionally needs `--confirm TOKEN`. |
 | Installed | `work publish [--worker PATH]`, `work prepare`, `work apply` | Canonical JSON from `--input FILE` or stdin. Worker result publish requires the registered linked worker path; start/baseline rebind omit it. Apply additionally needs `--confirm TOKEN`. Worker accept records the decision before exact file application and selects completion only after whole-result checks; human baseline rebind is separate. |
@@ -90,7 +90,13 @@ recovery path for previously oversized receipts.
 
 `classify-intent-entry --consequence consequential|non-consequential [--input FILE]` classifies provided gaps without publishing records. An input file has exactly one `gaps` field. `durability-probe --root PATH` writes disposable diagnostic files to an explicitly chosen scratch directory; it refuses a workspace root or descendant. It is not a read-only status command.
 
-Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile planning-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
+Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile checkout-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
+
+### Checkout Compatibility Limits
+
+Only planning-1 and checkout-1 targets admit the new source's update. A durable checkout-1 receipt prevents older-window downgrade; recovery requires the exact new source and original request. Old worker manifests need an explicitly approved new control baseline, same-intent rebind and resubmission. New detach uses paired plan/receipt schema 2; legacy schema 1 reading is retained, but its recovery belongs to the retained old source. See [transition instructions](GETTING-STARTED.md#transition-to-checkout-1).
+
+Retained older source applies only while that older window is active or for its recorded legacy recovery. It is not a rollback path after a checkout-1 receipt.
 
 ## Human Review
 
@@ -102,7 +108,7 @@ Confirmation consumes canonical ticket bytes, not the prepare response envelope.
 
 Document bodies remain project Markdown. The view displays role, path, recorded digest and current observation; open those documents or have your agent explain them. Advisory reads reject links, special/unstable inputs and files over 4 MiB. A Core-readable large file can therefore be unavailable in the view. Worker-observed evidence is not reverified on control.
 
-The planning-1 runtime rejects serial-1 and unknown windows. Independent-source reading retains valid human-1, worker-1 and umbrella-1 history; candidate creation and execution require planning-1. The installed launcher refuses old bindings before loading managed code. Old source profiles are parser errors. Transition uses the qualified independent new source; see [Transition To Planning-1](GETTING-STARTED.md#transition-to-planning-1).
+The checkout-1 runtime rejects serial-1 and unknown windows. Independent-source reading retains valid human-1, worker-1, umbrella-1 and planning-1 history; candidate creation and execution require checkout-1. The installed launcher refuses old bindings before loading managed code. Old source profiles are parser errors. Transition uses the qualified independent new source; see [Transition To Checkout-1](GETTING-STARTED.md#transition-to-checkout-1).
 
 Command syntax/argument errors retain argparse stderr and exit2; the GFM error contract begins after argument parsing. The default human view omits the managed file inventory; status/doctor retain machine diagnostics.
 
@@ -142,7 +148,7 @@ snapshot or a performance guarantee.
 
 Candidate planning records ideas before they become execution work. Ask the agent naturally; the installed adapter prepares machine input. `./hv2 view candidates` is read-only and shows the recorded choice, reasons, conditions and actual linked Work state. The root `./hv2 view` includes the same section. A recommendation writes nothing; selection is not intent acceptance or execution approval.
 
-Only an explicitly installed planning-1 runtime writes candidates. `./hv2 candidate ACTION --input FILE` (or `-` for stdin) accepts one canonical JSON object. Source mode has no candidate writer. Supported actions are `add`, `amend`, `select`, `defer`, `resume`, `link`, `disposition`, `reopen`. Success returns `saved` or exact-retry `unchanged`, the resulting store and digest. Before writing, tell the human any outstanding lifecycle preview will need preparation again.
+Only an explicitly installed checkout-1 runtime writes candidates. `./hv2 candidate ACTION --input FILE` (or `-` for stdin) accepts one canonical JSON object. Source mode has no candidate writer. Supported actions are `add`, `amend`, `select`, `defer`, `resume`, `link`, `disposition`, `reopen`. Success returns `saved` or exact-retry `unchanged`, the resulting store and digest. Before writing, tell the human any outstanding lifecycle preview will need preparation again.
 
 The request has exactly these fields: `record_type: "candidate-request"`, integer `schema_version: 1`, `authority_home_id`, unique `request_id`, `candidate_id`, `action`, `expected_sha256` (null only for the first absent store), `writer`, `owner_statement`, `reason`, `observed_at`, and `payload`. IDs use the existing 1–96-character ASCII ID grammar; request IDs and candidate IDs reject case aliases. Narrative fields are nonempty strings up to 2,000 characters, except an unspecified resume condition may be empty. Writer and short Owner statement are declarations, not authentication; never save secrets or the full conversation.
 
