@@ -15,15 +15,15 @@
       "status": "development-typed-artifacts"
     },
     {
-      "boundary": "planning-1 development candidate; exact human-1/worker-1/umbrella-1 history read; older-window downgrade, generation compatibility and attach unsupported",
+      "boundary": "checkout-1 development candidate; exact human-1/worker-1/umbrella-1/planning-1 history read; older-window downgrade, generation compatibility and attach unsupported",
       "evidence": "prior N4 qualification belongs to worker-1; umbrella-1 focused synthetic checks are recorded separately and do not replace exact-candidate full qualification",
       "fallback": "independent trusted exact source and retained project truth",
       "id": "project-local-product-lifecycle",
       "status": "development-bounded-synthetic"
     },
     {
-      "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified",
-      "evidence": "recorded N4 synthetic worker integration, process interruption/contention and whole regression; bounded private worker document continuation, including an existing-file follow-up, observed separately; exact candidate receipt required",
+      "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified; verified checkout-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
+      "evidence": "recorded N4 synthetic worker integration, process interruption/contention and whole regression; bounded private worker document continuation, including an existing-file follow-up, observed separately; exact candidate receipt required; unchanged CRLF candidate qualification is external to this declaration",
       "fallback": "one editing Work in control checkout",
       "id": "same-repository-parallel-integration",
       "status": "development-bounded-synthetic"
@@ -45,7 +45,7 @@
     {
       "id": "candidate-planning",
       "status": "development-in-progress",
-      "boundary": "branch-local tracked planning-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
+      "boundary": "branch-local tracked candidates on checkout-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
       "evidence": "candidate contract and installed synthetic qualification are recorded with the exact development change; real fresh-session use remains separate",
       "fallback": "preserve planning bytes and inspect from trusted independent source; no silent history compaction"
     }

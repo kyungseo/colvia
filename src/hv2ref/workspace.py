@@ -319,7 +319,7 @@ def _validate_plan_shape(plan: Any) -> None:
     if plan["expected_binding_ref"] is not None or any(plan[k] != [] for k in ("truth_refs", "remove", "preserve")):
         raise _error("invalid fresh init claims")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1"}):
+    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1"}):
         raise _error("invalid init release")
 
 
@@ -365,7 +365,7 @@ def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[
     if plan["expected_binding_ref"] is not None or plan["truth_refs"] != [] or plan["remove"] != [] or plan["preserve"] != []:
         raise _error("fresh init plan cannot claim existing truth")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1"}):
+    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1"}):
         raise _error("init plan candidate")
     if release["id"] != "product-release-" + release["sha256"][:24]:
         raise _error("init plan release identity")

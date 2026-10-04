@@ -141,7 +141,7 @@ def _worker_inspection(target, manifest, product):
     result = {"manifest": manifest, "sources": {}, "source_error": None, "content": None, "content_error": None}
     try:
         _require(product is not None, "no verified active product")
-        result["sources"] = verify_worker_sources(target, manifest, verified_launcher_sha256=product["launcher_sha256"])
+        result["sources"] = verify_worker_sources(target, manifest, verified_launcher_sha256=product["launcher_sha256"], verified_inventory_id=product["inventory"]["inventory_id"])
     except (ContractError, OSError, ValueError) as exc:
         result["source_error"] = getattr(exc, "message", str(exc))
     try:

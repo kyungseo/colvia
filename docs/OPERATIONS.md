@@ -1,6 +1,6 @@
 # Operations
 
-Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKSPACE-CONTRACT.md) for exact lifecycle rules. Installed commands use the bound product. Independent source commands require `--source-checkout`; init/update/rollback/detach additionally require `--profile planning-1`.
+Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKSPACE-CONTRACT.md) for exact lifecycle rules. Installed commands use the bound product. Independent source commands require `--source-checkout`; init/update/rollback/detach additionally require `--profile checkout-1`.
 
 ## Observe Before Acting
 
@@ -10,7 +10,7 @@ Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKS
 
 `hv2 update --source PATH --operation-id ID --observed-at TIME` previews a new release. `hv2 rollback [--to RELEASE] --operation-id ID --observed-at TIME` previews a receipt-backed prior release. Save the exact preview `request` outside the target and apply it with `--apply --input FILE --confirm TOKEN`. Pending Work/intent publication blocks a new switch.
 
-For an older-window transition, use the qualified independent planning-1 source and explicit profile. See [Transition To Planning-1](GETTING-STARTED.md#transition-to-planning-1). After the first durable planning-1 receipt, only exact forward recovery and same-window rollback are supported. Use retained old sources for old-window repair; never package new code with an old installed launcher.
+For an older-window transition, use the qualified independent checkout-1 source and explicit profile. See [Transition To Checkout-1](GETTING-STARTED.md#transition-to-checkout-1). After the first durable checkout-1 receipt, only exact forward recovery and same-window rollback are supported. Use retained old sources for old-window repair; never package new code with an old installed launcher.
 
 A switch preserves project truth and results but changes the product binding and may replace the launcher. Existing confirmation tickets become stale. Re-prepare them against the new binding. Release digest verification does not establish arbitrary candidate compatibility; qualify the new release before use.
 

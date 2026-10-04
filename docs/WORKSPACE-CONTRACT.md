@@ -47,7 +47,7 @@ Bounded synthetic process interruption/contention is recorded for the N4 source;
 
 ## Initial Installed Runtime Verification (Development Checkpoint)
 
-The exact `planning-1` inventory contains 29 managed paths, including `candidates.py`, `umbrella.py` and existing `workspace.py`
+The exact `checkout-1` inventory contains 29 managed paths, including `candidates.py`, `umbrella.py` and existing `workspace.py`
 and `work.py` and excluding retired generation modules. `workspace_candidate`
 reads that subset without publishing it. `verify_workspace_release` checks the
 inventory encoding, ordered exact set, release ID and full digest, every payload
@@ -79,10 +79,10 @@ Python object mutation or undetectable outside edits between observations.
 
 ## Actual Init And Recovery (Development)
 
-From the trusted source checkout, `hv2 --source-checkout init --profile planning-1 --target PATH
+From the trusted source checkout, `hv2 --source-checkout init --profile checkout-1 --target PATH
 --authority-home-id ID --operation-id ID --observed-at UTC` emits a preview with
 `request` (format plus lifecycle plan) and its `confirm_token`. It writes nothing.
-Apply uses `hv2 --source-checkout init --profile planning-1 --target PATH --apply --input -
+Apply uses `hv2 --source-checkout init --profile checkout-1 --target PATH --apply --input -
 --confirm TOKEN`, with the exact request on stdin; `--source PATH` selects the
 candidate in both calls. A changed source, target, format, or confirmation fails.
 This machine interface does not replace the future human-facing onboarding.
@@ -106,7 +106,7 @@ importing package code it checks the bound inventory digest, all eleven module
 bytes and its own bytes. The import root must contain only `hv2ref`, whose members are exactly the eleven managed modules.
 With `.hrn` absent the installed launcher fails closed; it never automatically imports project `src`
 or an old home. Trusted developer invocation explicitly uses `--source-checkout` before the command.
-Generation runtime/readers and `--legacy-baseline` are removed. Source init/update/rollback/detach require `--profile planning-1`. Repair has no profile option and requires the exact active planning-1 release. Valid human-1/worker-1 history remains readable with each window's original 27-path membership. Retained umbrella-1 history has 28 paths. New candidates declare planning-1 and ship 29 paths. After the first durable planning-1 receipt, older-window downgrade is refused. See [Transition To Planning-1](GETTING-STARTED.md#transition-to-planning-1).
+Generation runtime/readers and `--legacy-baseline` are removed. Source init/update/rollback/detach require `--profile checkout-1`. Repair has no profile option and requires the exact active checkout-1 release. Valid human-1/worker-1 history remains readable with each window's original 27-path membership. Retained umbrella-1 history has 28 paths. Planning-1 history retains 29 paths. New candidates declare checkout-1 and ship 29 paths. After the first durable checkout-1 receipt, older-window downgrade is refused. See [Transition To Checkout-1](GETTING-STARTED.md#transition-to-checkout-1).
 Explicit source mode does not override a present `.hrn`. These operator choices are not an authentication boundary.
 Loaded-module provenance and full product checks still run at writer entry and
 before publication. This is a trusted-local guard, not a signature/trust service.
@@ -124,7 +124,7 @@ a LifecyclePlan and token. Apply takes the exact plan on stdin with `--apply
 --input - --confirm TOKEN` and the same source. `rollback` uses the recorded
 previous active release; optional `--to ID` must name that release. It needs no
 source candidate. Source recovery uses an independent trusted launcher with
-`--source-checkout update|rollback --profile planning-1 --target PATH ... --recover`.
+`--source-checkout update|rollback --profile checkout-1 --target PATH ... --recover`.
 The command must match the plan action. Same-active updates and reused operation
 IDs with different bytes are refused. These are machine interfaces, not human approval.
 
@@ -163,7 +163,7 @@ releases and is not yet measured as a production-scale claim. Tests cover cooper
 serial process interruptions, not power-loss atomicity or a malicious outside writer.
 Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed; the human view has bounded private narrative-review evidence on the earlier human-1 runtime, with subsequent bounded private worker installation and document-continuation evidence. These observations do not qualify general adoption or later modified release bytes.
 
-Rollback selects the current binding's previous release when permitted by the inventory window (older windows are refused after a durable planning-1 receipt): a second rollback
+Rollback selects the current binding's previous release when permitted by the inventory window (planning-1 and earlier windows are refused after a durable checkout-1 receipt): a second rollback
 can therefore reselect the release just left. Each switch still requires a new exact
 plan/token. Binding replacement preserves existing ordinary permission bits; launcher
 replacement explicitly sets executable mode 0755.
@@ -262,4 +262,12 @@ preserved by excluding them from the entire removal surface.
 
 ## Planning Preservation
 
-`planning` is an optional root directory containing only `candidates.json`. It is project-owned planning, not execution authority. An applied planning-1 binding is required while product is present. Init does not create an empty planning directory. Candidate bytes join lifecycle truth refs and detach preservation; changing them invalidates an earlier preview. Candidate temporary files stay in ignored staging. Detached source view can inspect retained planning; the independent plain auditor verifies its receipt/digest/bytes, not the full planning state machine. See [Candidate Planning](REFERENCE.md#candidate-planning).
+`planning` is an optional root directory containing only `candidates.json`. It is project-owned planning, not execution authority. A planning-1 or checkout-1 binding admits historical planning while product is present; current writers require checkout-1. Init does not create an empty planning directory. Candidate bytes join lifecycle truth refs and detach preservation; changing them invalidates an earlier preview. Candidate temporary files stay in ignored staging. Detached source view can inspect retained planning; the independent plain auditor verifies its receipt/digest/bytes, not the full planning state machine. See [Candidate Planning](REFERENCE.md#candidate-planning).
+
+## Checkout-1 Transition And Detach Schema
+
+The new source admits only planning-1 or checkout-1 as an update predecessor, in both preview and apply preflight. Older supported history is read-only here. The first durable checkout-1 receipt requires exact forward recovery; direct acceptance of old worker manifests requires a separately authorized new baseline/rebind/resubmission as described in Getting Started.
+
+Detach plan and receipt schema 2 retain the existing field sets and `candidate_release: null`. Both versions must match and be integers. Readers accept paired 1 or 2; current apply/recover accepts only 2. Legacy schema 1 bytes remain readable and must be resumed with their retained old source. Partial schema 2 detach is resumed only by the new independent source with the original request/token. Completed detach does not permit init over preserved authority or a supported attach operation.
+
+A schema-1-only plain auditor copied from an older source cannot verify schema 2 detach receipts and reports them as degraded without writing. Use an auditor from the qualified checkout-1 source for paired schema 2; this does not expand its receipt/inventory/selected-reference scope into full Work or candidate semantic validation.
