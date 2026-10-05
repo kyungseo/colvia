@@ -206,6 +206,50 @@ An explicit, sufficiently clear request to record the decision authorizes that n
 When the checks permit the requested write, make the smallest narrative change, preserve unrelated content and check direct links and the project's rendering requirements. Report what was recorded, what remains Draft/open, and which decision or validation is still needed. Project Markdown survives runtime replacement/removal; preserving it is not acceptance of its claims.
 
 
+## Repository-Owned Rules
+
+Use repository rules for project-specific documentation, validation or domain procedures. Core continues to own typed state, exact acceptance and integrity checks; a repository rule cannot override them. The Product supplies the application guidance below. The project owns the adopted rule, its local choices and the evidence that it was followed. Rules are instructions to agents and maintainers, not a runtime enforcement engine or a new authority record.
+
+### Locate And Describe A Rule
+
+Reuse the project's existing shared instructions or maintainer document. Keep one canonical rule and a short pointer from the relevant agent entry; retain tool-specific instructions where they are needed. No rule directory, manifest, package format, STATUS file or registry is required. Load a rule when its scope or trigger applies, not as a demand to audit every document at session start.
+
+A short section or table should let the next maintainer find:
+
+| Information | What to record |
+| --- | --- |
+| Purpose and owner | The behavior it governs and the role responsible for maintaining it |
+| Origin and local authority | The source rule/section and adopted release or revision, the project canonical location, and any explicit local choice or exception |
+| Scope and trigger | Which files, changes or task situations require it |
+| Action and check | What the agent/maintainer does and what observation supports completion |
+| Update and removal | Where to compare a later source change, which local content must survive, and who decides conflicts or retirement |
+
+Use an existing release/revision reference or a content digest when needed to identify the adopted input. Record that identity and the source section without pinning an installed managed-directory link as the current entry or update source; obtain the current managed path from `./hv2 view`. A current Harness installation does not prove project rules were updated with it. If origin, applicable version or ownership is unknown, report it as unknown and establish a human-reviewed comparison basis before replacing content. This comparison basis is not a typed Work baseline or a rebind. Do not invent provenance or precedence from a filename.
+
+### Apply To A New Or Existing Project
+
+For a new project, select only the rules needed for its actual work and put them in its chosen instruction/document structure. Explain their purpose and proposed entry pointers within the authorized adoption scope. Do not generate an empty framework of rule files.
+
+For an existing project, inventory only the affected shared entries, tool-specific rules, hooks and related project documents. Compare the proposed rule with their current behavior. Preserve unique instructions, intentional local overrides and useful procedures; expose duplicates and contradictions before changing them. Present the exact project diff and any missing behavior. The human resolves a material policy conflict; an agent must not silently choose whichever rule is newer. Do not delete tool directories merely because their content originated with an older workflow.
+
+Apply an authorized project edit only after [Check Before Writing](#check-before-writing) permits its content/reference impact. Include rule and pointer changes in the appropriate project scope. An adoption request is not permission to alter a pending result, rewrite immutable records, edit the managed payload or bypass a required acceptance. Core init/update/rollback/detach do not write, refresh or remove these project-owned rules.
+
+### Update, Verify And Retire
+
+When a relevant Product or project behavior changes, compare the adopted source, incoming guidance and local rule. Keep local changes visible. If the old basis cannot be recovered, explain the uncertain comparison and prepare an explicit replacement proposal instead of calling it a clean upgrade. After an authorized update, record the new source reference and retained exception in the existing rule/narrative, and check its pointers and the affected behavior. Source guidance is not proof that a particular agent loaded or followed it; report unexecuted tool paths and real-user observations separately.
+
+If a rule is no longer needed, identify the exact section and pointers it owns, preserve still-valid project requirements and required historical/reference bytes, and propose its removal or replacement. An obsolete rule does not authorize deleting its containing directory. Use Git or the project's existing recovery practice to preserve unique changes; do not keep a full source copy or permanent validation archive just to prove that a check ran. A changed or removed rule cannot retrospectively change what an earlier Work accepted.
+
+### First Example: Documentation Currentness
+
+A project may adopt this rule in its existing instructions:
+
+> When changing an API, configuration, architecture or operating procedure, identify its canonical documentation and affected pages during planning. Update the necessary pages within the authorized scope and run the checks warranted by that change. If no update is needed, state the reason. If an update must wait, name the responsible follow-up and its resume condition. Record it in the existing Work or project tracker only when authorized and [Check Before Writing](#check-before-writing) permits; otherwise report it in conversation as unsaved and state when it can be recorded. Candidate records still require an explicit planning request. Do not report the documentation as current while that gap remains.
+
+Map actual change types to actual project documents; do not copy a technology-specific mapping into an unrelated project. At result review, report the affected pages, checks and remaining gaps alongside the code/configuration result. Reuse applicable execution evidence and run only the missing checks. Rendering and link success establish structural properties, not semantic correctness or reader understanding. Paired language versions must preserve behavior, conditions and limits; record any unresolved mismatch rather than treating the older translation as current.
+
+This example is the first application of the rule guidance, not a universal extension API. If a proposed rule needs a common invariant enforced by runtime, identify that requirement for a separate Core change instead of pretending prose enforces it.
+
 ## Session Handoff And Resume
 
 Load this section for a pause, session summary or fresh resume. Start with `./hv2 view`, current accepted intent, selected Work and its referenced project narrative. Resolve multiple plausible targets before acting. Read the current adapter path again; a saved release path or yesterday's next action is not current authority.
