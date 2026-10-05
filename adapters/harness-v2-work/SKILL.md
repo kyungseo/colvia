@@ -89,6 +89,12 @@ For comparisons, human decisions or unresolved project questions, load [Project 
 
 Before any document or index write, follow that section's scope and reference-impact checks. An unrelated file can invalidate whole-project content even when its reference is non-required. Defer in conversation when outside scope or when a submission, worker baseline or pending recovery would be disturbed; never expand scope, publish a checkpoint, save a candidate or upgrade the runtime as an implicit fallback. A human DR decision is not typed intent/result acceptance.
 
+## Project Rules And Supervised Iteration
+
+When planning an authorized change, read the project's applicable rules and identify documentation/verification impact. For requested rule adoption or maintenance, use [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules): preserve local choices, show conflicts and source/version uncertainty, and apply only the authorized project diff after the document checks. Where the applicable project rules require documentation-impact reporting, report affected documents and checks, a reason for no update, or an explicit follow-up owner/condition at result review. Follow [Check Before Writing](../../docs/REFERENCE.md#check-before-writing) for rule, pointer and follow-up edits; a candidate write still requires an explicit request. Do not turn this into a full-repository audit, a second tracker, or an automatic rule upgrade.
+
+For supervised iteration within a Work, use [Supervised Work Iteration](../../docs/GENERAL-WORK.md#supervised-work-iteration). Keep the authorized scope, verifier, budget and stop boundaries; readiness is not submission, acceptance or publication.
+
 For a pause or fresh resume, load [Session Handoff And Resume](../../docs/REFERENCE.md#session-handoff-and-resume); do not publish a handoff-only revision. For missing context or a requested document health check, use [Project Context And Targeted Document Checks](../../docs/REFERENCE.md#project-context-and-targeted-document-checks). Keep these optional and preserve existing project conventions.
 
 ## Candidate Conversation

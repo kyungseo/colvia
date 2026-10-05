@@ -9,7 +9,7 @@ Only explicit source-checkout and installed single-home entry modes remain. Gene
 (including ignored tracked files) and non-ignored untracked files. Missing tracked files are absent from the snapshot and explicit
 in a result diff. Non-Git snapshots include all regular files. The root metadata directories and a caller-verified managed launcher
 are excluded. Symlinks, special files, case aliases, nested repositories/authorities and unresolved index entries fail closed,
-including unsupported objects inside ignored directories. This strict scan can be expensive in large generated trees; cost is not measured yet.
+including unsupported objects inside ignored directories. Bounded synthetic evidence covers selected read timings and lifecycle-output size/refusal cases; they do not establish the cost of arbitrary generated trees, write workloads, lock contention or other platforms. Investigate an observed delay or refusal at its actual scale without weakening whole-content or ignored-path safety checks.
 
 The ignore fingerprint hashes project ignore contents, common-directory info/exclude and effective global ignore contents with stable
 labels, never absolute machine paths. Ignore files inside a parent-excluded directory do not change the fingerprint. Noncanonical `.GITIGNORE` spelling is unsupported.
@@ -109,6 +109,18 @@ applied-lifecycle verifier. Source execution fails that gate. Tests may still pa
 explicit verifier double. The new installed machine CLI calls these writers. Installation-shaped runtime
 fixtures remain narrower evidence than the separate actual init and CLI tests.
 
+
+## Supervised Work Iteration
+
+Within an authorized Work, the agent may continue implementation, fixed verification and in-scope corrections without asking the human to repeat the same execution approval. Before starting, record the goal, file scope, expected result, verification commands and expected failures, execution environment, time/attempt limits and stop conditions in the existing Work narrative. Use limits and stop conditions covered by the existing execution authorization or confirmed by the human before supervised iteration; state whether human waiting time counts toward the budget. A host supervising these limits is not evidence of an enforced runtime budget or an isolated execution environment.
+
+These narrative writes must pass [Check Before Writing](REFERENCE.md#check-before-writing). If writing would disturb scope, a required input, a submitted result or pending recovery, report in conversation that the information is not saved to a project file and name the condition for recording it. On resume, if consumed time or attempts cannot be established, disclose the uncertainty and obtain human direction before further iteration; do not assume a fresh budget.
+
+The agent keeps the agreed acceptance checks and expected outcomes fixed during iteration. If authorized work includes test changes, report those changes separately and assess them against the prior expected outcomes; a change to the acceptance oracle requires human approval. A failure may justify an in-scope correction and another allowed attempt; it does not authorize weakening an oracle, adding dependencies, broadening network or privilege access, or changing the required outcome. Invocation or quoting fixes may use the existing authorization only when their effect stays within those boundaries. Preserve the failure's essential observation and actual command; a later pass does not turn the earlier attempt into a pass.
+
+Stop at a verified candidate, budget exhaustion, material scope/input drift, a required authority decision, an unexplained recurring failure without new evidence, or a need to broaden verification or permissions. Carry consumed time and attempts into a proposed resumption rather than resetting them to hide a failed run. Extending limits, changing stop conditions or resuming after budget exhaustion requires the human's decision. If an authority apply fails, preserve the exact request and current state, inspect the failure, and obtain the applicable recovery authorization before retrying; do not put authority writes in an automatic repair loop.
+
+Candidate readiness, result submission, exact human acceptance/application and Git publication are separate actions. Report changed files, checks and failures, consumed budget and unverified limits when stopping. Ordinary Work iteration introduces no scheduler, background continuation, automatic acceptance or cross-Work authority. Existing hosts can provide supervision, but the Product does not discover agents or supply a separate loop runner. Real multi-worker integration and its cost still require their own evidence.
 
 ## Installed Machine Commands (Development)
 

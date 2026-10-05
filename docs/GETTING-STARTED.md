@@ -45,6 +45,8 @@ For an existing project, preserve its entry files and tool-specific instructions
 
 These are project-owned files prepared by the agent/operator within the approved adoption scope. Core init/update/rollback/detach do not generate or overwrite them. Managed payload entries describe the Harness source and are not substitutes for the project's own entry.
 
+Use [Repository-Owned Rules](REFERENCE.md#repository-owned-rules) to add applicable documentation, validation or domain procedures to that entry. For a new project, select a small set and connect its canonical location. For an existing project, compare affected rules and preserve local instructions before applying an authorized diff. Record the adopted source and any local choice in the existing rule or maintainer document. A runtime update does not update these rules automatically; compare relevant changes explicitly, including their verification and removal impact.
+
 ## Initialize A Fresh Project
 
 From a trusted source checkout:
