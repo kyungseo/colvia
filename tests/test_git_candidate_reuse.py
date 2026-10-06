@@ -12,6 +12,7 @@ import re
 import subprocess
 import unittest
 
+from hv2ref.errors import ContractError
 from hv2ref.jsonio import canonical_json_bytes
 from hv2ref.product import verify_workspace_product
 from hv2ref.work import make_manifest, read_work, snapshot, verify_worker_sources
@@ -217,6 +218,57 @@ class InstalledCandidateReuseTests(unittest.TestCase):
         self.check_reader("work-b")
         self.assertEqual({self.c, self.k, squash, merged, candidate},
                          set(self.git(self.target, "rev-list", "--all").splitlines()))
+
+        # New manifests chose stable tags before publication; the worker branch
+        # can retire after integration without changing exact historical refs.
+        product_before = self.product_files(self.target)
+        index_before = self.index()
+        refs_before = self.refs()
+        control_ref = self.git(self.target, "symbolic-ref", "HEAD")
+        self.git(self.target, "merge-base", "--is-ancestor", merged, candidate)
+        self.git(self.target, "diff", "--cached", "--quiet", merged, "--")
+        self.git(self.target, "reset", "--soft", candidate)
+        self.git(self.target, "restore", "--staged", "--source=" + candidate, "--", "b")
+        self.assertEqual(product_before, self.product_files(self.target))
+        self.assertEqual(after_authority, exact_snapshot(self.target / ".hrn"))
+        self.assertEqual({p: v for p, v in index_before.items() if p != "b"},
+                         {p: v for p, v in self.index().items() if p != "b"})
+        self.git(self.target, "diff", "--cached", "--quiet", candidate, "--")
+        self.assertEqual("", self.git(worker, "status", "--porcelain", "--untracked-files=all"))
+        self.assertEqual("", self.git(worker, "ls-files", "--others", "--ignored", "--exclude-standard"))
+        worker_authority = exact_snapshot(worker / ".hrn")
+        # Git checkout recreates directory/non-executable permission bits;
+        # compare kinds and bytes, while preserving the control's exact modes.
+        self.assertEqual({}, {p: (v[:2], after_authority.get(p, ())[:2])
+                              for p, v in worker_authority.items()
+                              if (v[:1] if v[0] == "directory" else v[:2]) !=
+                              (after_authority.get(p, ())[:1] if v[0] == "directory"
+                               else after_authority.get(p, ())[:2])})
+        self.git(self.target, "worktree", "remove", str(worker))
+        self.git(self.target, "branch", "-d", "worker-b")
+        expected_refs = refs_before | {control_ref: candidate}
+        del expected_refs["refs/heads/worker-b"]
+        self.assertEqual(expected_refs, self.refs())
+        self.assertFalse(worker.exists())
+        verify_worker_sources(self.target, result, verified_launcher_sha256=self.launcher,
+                              verified_inventory_id="checkout-1")
+        self.assertEqual(final, read_work(self.target, "work-b"))
+        self.assertEqual(after_authority, exact_snapshot(self.target / ".hrn"))
+        self.check_reader("work-b")
+
+        # Keeping the commit through another ref does not replace its exact name.
+        self.git(self.target, "tag", "-d", "second-candidate")
+        self.assertEqual(candidate, self.git(self.target, "rev-parse", "HEAD"))
+        with self.assertRaises(ContractError) as missing_ref:
+            verify_worker_sources(self.target, result, verified_launcher_sha256=self.launcher,
+                                  verified_inventory_id="checkout-1")
+        self.assertEqual("HV2-WORK-CONTENT", missing_ref.exception.code)
+        self.assertEqual("Git content probe failed: show-ref", missing_ref.exception.message)
+        self.assertEqual(final, read_work(self.target, "work-b"))
+        self.assertEqual(after_authority, exact_snapshot(self.target / ".hrn"))
+        self.git(self.target, "tag", "second-candidate", candidate)
+        verify_worker_sources(self.target, result, verified_launcher_sha256=self.launcher,
+                              verified_inventory_id="checkout-1")
 
     def test_non_fast_forward_refusal_preserves_acceptance_and_sources(self):
         self.accept_a()

@@ -11,7 +11,7 @@ Verified active status exposes a derived, read-only `documentation_root`. Follow
 | [Getting Started](GETTING-STARTED.md) | Operator setup and first serial work | Bounded private narrative-review evidence; general usability unverified |
 | [Concepts](CONCEPTS.md) | User model and ownership | Explanation; detailed contracts govern schemas |
 | [Operations](OPERATIONS.md) | Operator update/recovery/exit | Current bounded lifecycle procedure |
-| [Reference](REFERENCE.md) | Exact commands, paths and diagnostics | Source and installed interfaces are distinct |
+| [Reference](REFERENCE.md) | Exact commands, paths, diagnostics and [recording/retention rules](REFERENCE.md#records-and-retention) | Source and installed interfaces are distinct; agent recording policy does not change authority |
 | [Guided Intent](GUIDED-INTENT-FORMATION.md) | Intent formation and acceptance | Typed artifacts; natural-language quality unverified |
 | [General Work](GENERAL-WORK.md) | Maintainer and reviewer | Work records/content and bounded worker integration contract |
 | [Workspace Contract](WORKSPACE-CONTRACT.md) | Maintainer and reviewer | Root, product and recovery contract |
