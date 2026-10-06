@@ -120,6 +120,8 @@ Harness records completion under `.hrn/`; it does not commit or push. Ask the ag
 
 Approve commit and remote publication separately if wanted. This tutorial stops before either operation. Keep the durable project and exact source/request files available, then move to [a new session](resume.md).
 
+Follow [Records And Retention](../../docs/REFERENCE.md#records-and-retention): reuse one suitable narrative for checks, material limits, review and decisions, and retain extra raw output or copies only for a named investigation, recovery, reuse or delivery. This local exercise creates no worker checkout; for worker projects, the agent separately verifies cleanup authority and preservation, then retires an eligible unused checkout or reports its remaining use and release condition.
+
 Edition: private development, `checkout-1`; checked 2026-10-05.
 
 ---

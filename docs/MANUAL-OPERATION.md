@@ -16,7 +16,7 @@ This stdlib-only fixture checks receipt inventory, deletion prefix, and selected
 
 ## Recovery Boundary
 
-Keep original requests, tokens, backups, and candidate source on durable storage. Use only the supported exact recovery paths in [Operations](OPERATIONS.md). If required bytes are unavailable, record that limitation and preserve the target for human disposition. There is no general manual rewrite procedure, Gen1/2 compatibility reader, or automatic attach operation.
+Keep original requests, tokens, backups and candidate source on durable storage while their exact operation, replay or recovery depends on them. A completed repair still has contract-bound original bytes; do not treat its backup as disposable. Use [Records And Retention](REFERENCE.md#records-and-retention) to distinguish caller-side duplicates and temporary checks from authority and required recovery material; a healthy view or empty pending list alone is not permission to remove them. Use only the supported exact recovery paths in [Operations](OPERATIONS.md). If required bytes are unavailable, record that limitation and preserve the target for human disposition. There is no general manual rewrite procedure, Gen1/2 compatibility reader, or automatic attach operation.
 
 ## Retained Candidate Planning
 

@@ -120,10 +120,12 @@ Harness는 `.hrn/`에 완료를 기록하며 commit이나 push를 수행하지 �
 
 원한다면 commit과 원격 게시를 별도로 승인합니다. 이 실습은 그 전에 멈춥니다. 프로젝트와 정확한 source·request 파일을 보관한 채 [새 세션](resume.md)으로 이동하세요.
 
+[Records And Retention](../../docs/REFERENCE.md#records-and-retention)에 따라 검사·중요 한계·리뷰·결정은 알맞은 기존 문서 한 곳에 모으고, 원본 출력이나 사본은 구체적인 조사·복구·재사용·전달에 필요할 때만 추가로 보존합니다. 이 local 실습에는 worker checkout이 없으며, worker를 사용하는 프로젝트에서는 agent가 정리 권한과 보존 상태를 별도로 확인한 뒤 사용이 끝난 적격 checkout을 정리하거나 남은 사용처와 정리 조건을 설명합니다.
+
 판본: private 개발판, `checkout-1`; 확인일 2026-10-05.
 
 ---
 
 [이전: 준비](getting-started.md) · [목차](README.md) · [다음: 재개](resume.md)
 
-<!-- en_content_sha256: 7c0f06fcc4a0af5cf46e05763ae3f20d4dc297f82bd1c99b37ad2a580e859ba7 -->
+<!-- en_content_sha256: 5769e2632cfad0425b8dda1b821fcb539e1bcc6713049e2f9f52ecc29450e2c4 -->
