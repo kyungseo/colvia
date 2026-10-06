@@ -77,6 +77,8 @@ See [General Work](GENERAL-WORK.md) for exact input fields and [Guided Intent](G
 
 Do not use a pending proposal, a successful command, a review verdict, or an agent's statement as human acceptance. Use [Operations](OPERATIONS.md) when an exact operation is interrupted.
 
+Accepting a worker result applies its exact changes on control but leaves Git HEAD, index and refs unchanged. Before starting the next worker, follow your project's Git policy and [Git Integration And Candidate Reuse](GENERAL-WORK.md#git-integration-and-candidate-reuse). The next baseline needs a control commit matching the observed product and verified launcher; an existing candidate may satisfy that requirement. Report Work acceptance and Git integration separately. The detailed example states when candidate reuse is possible and when to stop.
+
 ## Review Without Editing JSON
 
 The manual path shown by `view` belongs to Harness itself. Use it for tool operation; use the project root README and project-owned context, plan, DR, brief and Work documents for project purpose and progress. Do not interpret links inside the managed manual as links to the project root.

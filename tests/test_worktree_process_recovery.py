@@ -17,7 +17,8 @@ import time
 import unittest
 
 from hv2ref.jsonio import canonical_json_bytes
-from hv2ref.work import read_work
+from hv2ref.work import read_work, verify_worker_sources
+from hv2ref.product import verify_workspace_product
 from test_productization_safety import exact_snapshot
 import test_worktree_execution as fixtures
 
@@ -88,7 +89,7 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
     draft=fixtures.InstalledWorkerPublicationTests.draft
     prepare_worker_result=fixtures.InstalledWorkerPublicationTests.prepare_worker_result
 
-    def run_interruption(self,phase):
+    def run_interruption(self,phase,*,remove_worker=False):
         fallback=self.base.parent/('worker-crash-evidence-'+self.base.name)
         evidence=Path(os.environ.get('HV2_PROCESS_EVIDENCE',str(fallback)))/self._testMethodName
         evidence.mkdir(parents=True)
@@ -145,6 +146,37 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
             observations['lock_available_after_death']=True
             self.assertEqual(prefix,read_work(self.target,'work-a'))
             self.assertEqual(contents,{p:(self.target/p).read_bytes() for p in ('a','b')})
+            if remove_worker:
+                # This explicit fault setup changes registration metadata, not
+                # authority. Prove apply/death Git invariance before removal,
+                # then compare resume with the post-removal Git snapshot.
+                self.assertEqual(git_before,exact_snapshot(self.target/'.git'))
+                worker=self.base/'worker'
+                revision=prefix['revisions']['result']
+                manifest=prefix['manifests'][revision['result_refs']['manifest']['id']]
+                product=verify_workspace_product(self.target)
+                def verify_sources():
+                    verify_worker_sources(self.target,manifest,
+                        verified_launcher_sha256=product['launcher_sha256'],
+                        verified_inventory_id=product['inventory']['inventory_id'])
+                self.assertEqual(manifest['candidate_commit'],self.git(worker,'rev-parse','HEAD'))
+                self.assertEqual('',self.git(worker,'status','--porcelain','--untracked-files=all'))
+                self.assertEqual('',self.git(worker,'ls-files','--others','--ignored','--exclude-standard'))
+                verify_sources()
+                refs=self.git(self.target,'for-each-ref','--format=%(refname) %(objectname)')
+                authority=exact_snapshot(self.target/'.hrn')
+                worker_tree=exact_snapshot(worker)
+                self.git(self.target,'worktree','remove',str(worker))
+                self.assertFalse(worker.exists())
+                self.assertNotIn(str(worker),self.git(self.target,'worktree','list','--porcelain'))
+                self.assertEqual(refs,self.git(self.target,'for-each-ref','--format=%(refname) %(objectname)'))
+                self.assertEqual(authority,exact_snapshot(self.target/'.hrn'))
+                self.assertEqual(contents,{p:(self.target/p).read_bytes() for p in ('a','b')})
+                verify_sources()
+                git_before=exact_snapshot(self.target/'.git')
+                observations['worker_removed_before_resume']=True
+                observations['worker_tracked_snapshot_sha256']=hashlib.sha256(canonical_json_bytes(worker_tree)).hexdigest()
+                observations['removal_preserved_refs_and_authority']=True
             if hasattr(self,"after_pending"):self.after_pending(prepared,observations)
             def invoke(label,expected_code=0):
                 result=self.installed(['work','apply','--confirm',token],prepared['ticket'],expected=None)
@@ -163,6 +195,7 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
                 (self.target/'a').write_bytes(contents['a'])  # fixture owner restores observed prefix
             mtimes={p:(self.target/p).stat().st_mtime_ns for p in ('a','b')}
             graph=invoke('resume')
+            if remove_worker:self.assertFalse((self.base/'worker').exists())
             self.assertEqual('completed',graph['state']);self.assertEqual(1,len(graph['decisions']))
             self.assertEqual(1,sum(s['decision_ref'] is not None for s in graph['selections'].values()))
             self.assertEqual([],graph['pending_decisions']);self.assertEqual([],graph['pending_selections'])
@@ -241,6 +274,9 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
 
     def test_kill_after_first_file_preserves_mixed_and_refuses_foreign_edit(self):
         self.run_interruption('after-file')
+
+    def test_kill_after_first_file_resumes_without_worker_checkout(self):
+        self.run_interruption('after-file',remove_worker=True)
 
     def test_kill_after_selection_preserves_current_and_refuses_foreign_edit(self):
         self.run_interruption('after-selection')

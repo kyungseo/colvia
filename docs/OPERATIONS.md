@@ -18,7 +18,9 @@ A switch preserves project truth and results but changes the product binding and
 
 Preserve original input, token, source, and observed bytes. Supported complete-file prefixes can resume from independent source using the same operation, target, profile, `--apply --recover --input FILE --confirm TOKEN`. Do not invent a replacement request or delete a receipt to clear a pending operation. Torn bytes, unknown members, wrong file kinds, and missing prerequisites require preservation and investigation.
 
-For pending intent/Work records, restore the exact prerequisites and replay the original publish request or accepted ticket. The limited Work cancellation contract is described in [General Work](GENERAL-WORK.md); there is no generic reset command.
+For pending intent/Work records, preserve the exact prerequisites and original publish request or accepted ticket. A pending worker acceptance can resume with the original `work apply --input FILE --confirm TOKEN`; product lifecycle `--recover` is not a Work option. After the decision is durable, retained control Git objects can supply the remaining pre-images even when the worker folder is unavailable. A mixed pre/post result is not eligible for cancellation. Recover only within the authorized action and verified prerequisites; do not prepare a replacement acceptance merely to finish the same pending decision. See [General Work](GENERAL-WORK.md#worker-publication-development-checkpoint) for the full recovery and cancellation contract.
+
+Git integration failure after completed acceptance is a separate condition. Preserve the accepted history and candidate, report integration as incomplete, and use the project's authorized Git recovery path. Completed decision replay does not restore project content. See [Git Integration And Candidate Reuse](GENERAL-WORK.md#git-integration-and-candidate-reuse) before changing the baseline or submitting a changed result.
 
 ## Broken Launcher Or Payload
 
