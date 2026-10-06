@@ -37,6 +37,7 @@ AI와 진행하던 프로젝트를 다시 열면, 지난 대화만으로는 어�
 
 ## 함께 볼 문서
 
+- [프로젝트 규칙 확장과 Harness 제거](rules-and-removal.md): 자체 지침, runtime 갱신과 detach 후 진입 지침 정리.
 - [설치 절차](../../docs/GETTING-STARTED.md): 설치와 프로젝트 준비.
 - [명령 참조](../../docs/REFERENCE.md): 정확한 명령, 입력 계약, 진단.
 - [운영 안내](../../docs/OPERATIONS.md): 갱신, 복구, 수리, 제거.
@@ -57,4 +58,4 @@ Source revision은 이 안내를 검증할 때 사용한 Harness 기준이며, �
 
 [실습 시작](getting-started.md) · [핵심 개념](concepts.md)
 
-<!-- en_content_sha256: 42d4726708a5d818e04e5f3d4afa0aaca3a7b5e993b0e94f3f1d679b272cd8fb -->
+<!-- en_content_sha256: 0bf68eefd79dcbf27735dca2e640b7988f5929941ebe962c4d83f37da6930a7e -->

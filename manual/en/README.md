@@ -37,6 +37,7 @@ This is a repository-only review edition. It is not copied into an installed pro
 
 ## Keep These References Nearby
 
+- [Extend project rules and remove Harness](rules-and-removal.md): local instructions, runtime updates and entry cleanup after detach.
 - [Installed setup procedure](../../docs/GETTING-STARTED.md): installation and project preparation.
 - [Command reference](../../docs/REFERENCE.md): exact commands, input contracts and diagnostics.
 - [Operations](../../docs/OPERATIONS.md): update, recovery, repair and removal.

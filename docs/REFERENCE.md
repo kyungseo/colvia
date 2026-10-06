@@ -240,6 +240,14 @@ When a relevant Product or project behavior changes, compare the adopted source,
 
 If a rule is no longer needed, identify the exact section and pointers it owns, preserve still-valid project requirements and required historical/reference bytes, and propose its removal or replacement. An obsolete rule does not authorize deleting its containing directory. Use Git or the project's existing recovery practice to preserve unique changes; do not keep a full source copy or permanent validation archive just to prove that a check ran. A changed or removed rule cannot retrospectively change what an earlier Work accepted.
 
+### Project-Owned Adapter Additions
+
+A local adapter may be a short section in an existing project rule or, when useful, a project-owned document. It tells an agent which applicable rule to read and what to explain. Connect it from the relevant project entry; do not edit or duplicate the installed adapter. For example, a CLI project can ask the agent to read its documentation rule before an authorized option change and explain affected usage examples, executed checks and remaining limits in the existing Work narrative. The project selects the actual paths and checks.
+
+Record the same purpose, owner, source basis and update/removal information as for other repository rules. Follow the current managed adapter and preserve Core authority boundaries. Show conflicts before acting; a local instruction cannot waive acceptance or integrity checks. Verify the entry pointer and report whether a fresh agent session actually read the rule. This is an instruction pattern, not a native extension API or automatic discovery/installation guarantee; tool-specific packaging needs its own setup and verification.
+
+When retiring Harness, separate installed guidance from these project-owned additions. Exact detach removes the managed manual/adapter with the product, while project entries, rules and user/global tool configuration remain outside its removal surface. Plan the relevant pointer replacements, retain valid local requirements and required reference bytes, and use [Detach](OPERATIONS.md#detach) for the runtime operation and post-detach entry check. An unexpected missing launcher remains an installation problem until the documented checks establish detached state.
+
 ### First Example: Documentation Currentness
 
 A project may adopt this rule in its existing instructions:

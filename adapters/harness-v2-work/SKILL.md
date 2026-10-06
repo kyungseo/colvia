@@ -96,6 +96,8 @@ For supervised iteration within a Work, use [Supervised Work Iteration](../../do
 
 For a pause or fresh resume, load [Session Handoff And Resume](../../docs/REFERENCE.md#session-handoff-and-resume); do not publish a handoff-only revision. For missing context or a requested document health check, use [Project Context And Targeted Document Checks](../../docs/REFERENCE.md#project-context-and-targeted-document-checks). Keep these optional and preserve existing project conventions.
 
+For a requested local adapter addition, follow [Project-Owned Adapter Additions](../../docs/REFERENCE.md#project-owned-adapter-additions) and keep its instructions outside the managed payload. Do not claim native automatic loading without evidence. For a requested removal, explain exact runtime detach separately from project-entry cleanup and apply only the authorized actions in [Operations](../../docs/OPERATIONS.md#detach). A removed launcher alone is not verified detach, and detach alone does not finish local entry cleanup.
+
 ## Candidate Conversation
 
 Use the human's language. Start with `./hv2 view` and `./hv2 view candidates`; read the current planning digest and actual intent/Work graphs. Candidate notes live only in this control checkout/branch. Absence here does not prove another branch has no ideas. Do not create a second backlog, report or hidden queue.
