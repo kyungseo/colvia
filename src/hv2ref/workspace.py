@@ -142,10 +142,13 @@ def _topology_probe(target: Path, env: dict[str, str]) -> tuple[int, bytes, byte
 
 class _TopologyObservation:
     """Share only validated primary raw probes within one status Work sweep."""
+    _kinds = frozenset({"primary"})
+
     def __init__(self, target: Path):
         self.target = safe_target(target)
         self._environment = None
         self._raw = None
+        self._kind = None
         self._reused = 0
         self._finishing = False
         self._closed = False
@@ -160,15 +163,22 @@ class _TopologyObservation:
         self._reused += 1
         return self._raw
 
+    def _probe_identity(self, raw):
+        return raw
+
     def _accept(self, env: dict[str, str], raw: tuple[int, bytes, bytes], kind: str):
-        if kind != "primary":
+        if kind not in self._kinds:
             raise ContractError("HV2-WORKSPACE-TARGET", "topology observation is not primary")
         if self._finishing:
-            if raw != self._raw:
+            if self._probe_identity(raw) != self._probe_identity(self._raw) or kind != self._kind:
                 raise ContractError("HV2-WORKSPACE-TARGET", "unstable topology observation")
         elif self._raw is None:
             self._raw = raw
+            self._kind = kind
             self._environment = dict(env)
+
+    def _unavailable_git(self) -> None:
+        raise ContractError("HV2-WORKSPACE-TARGET", "Git unavailable during topology observation")
 
     def finish(self) -> None:
         if self._closed:
@@ -183,7 +193,27 @@ class _TopologyObservation:
     def close(self) -> None:
         self._closed = True
         self._raw = None
+        self._kind = None
         self._environment = None
+
+
+class _DetachTopologyObservation(_TopologyObservation):
+    """Read-only probes for one detach observation, never across removals.
+
+    Preserve all readable topology kinds. Mutation admission stays independent.
+    With no Git binary there is no raw probe to share; every read checks again.
+    """
+    _kinds = frozenset({"primary", "non-git", "subdirectory", "submodule",
+                        "linked-worktree", "separate-git-dir", "nested-repository"})
+
+    def _probe_identity(self, raw):
+        # Classification has validated stderr for non-Git. Diagnostic text is
+        # not topology identity (platform shims may print varying cache paths).
+        return raw[:2]
+
+    def _unavailable_git(self) -> None:
+        if self._raw is not None:
+            super()._unavailable_git()
 
 
 def _classify_target(target: Path, *, mutation: bool = False, _topology_observation=None) -> dict[str, str]:
@@ -197,7 +227,7 @@ def _classify_target(target: Path, *, mutation: bool = False, _topology_observat
         returncode, stdout, stderr = raw
     except FileNotFoundError:
         if _topology_observation is not None:
-            raise ContractError("HV2-WORKSPACE-TARGET", "Git unavailable during topology observation") from None
+            _topology_observation._unavailable_git()
         # No Git binary is sufficient only for a tree with no ancestral Git metadata.
         if any(_exists(p / ".git") for p in (target, *target.parents)):
             raise ContractError("HV2-WORKSPACE-TARGET", "Git unavailable for repository target") from None
@@ -205,7 +235,7 @@ def _classify_target(target: Path, *, mutation: bool = False, _topology_observat
     if returncode:
         if b"not a git repository" in stderr.lower() and not any(_exists(p / ".git") for p in (target, *target.parents)):
             if _topology_observation is not None:
-                raise ContractError("HV2-WORKSPACE-TARGET", "topology observation is not primary")
+                _topology_observation._accept(env, raw, "non-git")
             return {"kind": "non-git", "target": str(target)}
         raise ContractError("HV2-WORKSPACE-TARGET", "Git classification failed")
     lines = os.fsdecode(stdout).splitlines()
