@@ -669,14 +669,21 @@ def _workspace_observe(target: Path, *, allow_pending: bool = False, repair_cand
         raise ContractError("HV2-WORKSPACE-PRODUCT", "product unavailable, malformed or unstable") from exc
 
 
-def _lifecycle_truth(target: Path, *, allow_pending: bool = False) -> list[dict[str, str]]:
+def _lifecycle_truth(target: Path, *, allow_pending: bool = False, _topology_observation=None) -> list[dict[str, str]]:
     from .workspace import _exists, _require_kind
     from .work import WorkStore, _visible_truth
     from .intent import workspace_intents
     root = target / ".hrn"
     for kind in ("intents", "work"):
         if _exists(root/kind): _require_kind(root/kind, True)
-    works = WorkStore(target)._all(); intents = workspace_intents(target)
+    if _topology_observation is None:
+        works = WorkStore(target)._all(); intents = workspace_intents(target)
+    else:
+        from .intent import read_workspace_intent_graph
+        def read_intent(intent_id):
+            return read_workspace_intent_graph(target, intent_id, _topology_observation=_topology_observation)
+        works = WorkStore(target)._all(_intent_graph_reader=read_intent, _topology_observation=_topology_observation)
+        intents = workspace_intents(target, _graph_reader=read_intent)
     _serial_require(allow_pending or not any(g["pending_decisions"] or g["pending_selections"] for g in works.values()), "pending Work blocks lifecycle")
     _serial_require(allow_pending or not any(g["pending_acceptances"] or g["pending_selections"] for g in intents.values()), "pending intent blocks lifecycle")
     result = []
@@ -692,7 +699,10 @@ def _lifecycle_truth(target: Path, *, allow_pending: bool = False) -> list[dict[
     planning = read_candidates(target)
     if planning["present"]: result.append({"path": "planning/candidates.json", "sha256": planning["sha256"]})
     result.sort(key=lambda r:r["path"].encode())
-    _visible_truth(target, [".hrn/"+r["path"] for r in result])
+    if _topology_observation is None:
+        _visible_truth(target, [".hrn/"+r["path"] for r in result])
+    else:
+        _visible_truth(target, [".hrn/"+r["path"] for r in result], _topology_observation=_topology_observation)
     return result
 
 
@@ -1141,6 +1151,17 @@ def workspace_detach_preview(target: Path, *, operation_id: str, created_at: str
 
 
 def _detach_observe_once(target: Path) -> dict[str, Any]:
+    from .workspace import _DetachTopologyObservation
+    observation = _DetachTopologyObservation(target)
+    try:
+        result = _detach_observe_records(target, observation)
+        observation.finish()
+        return result
+    finally:
+        observation.close()
+
+
+def _detach_observe_records(target: Path, observation) -> dict[str, Any]:
     from .workspace import inspect_root, _file_json, _exists, _require_kind
     from .work import _visible_truth
     _serial_require(inspect_root(target)["classification"]=="detach-candidate", "no valid detach candidate")
@@ -1148,7 +1169,7 @@ def _detach_observe_once(target: Path) -> dict[str, Any]:
     receipt=_exact_dict(receipt,{"record_type","schema_version","operation_id","plan","prior_binding_ref","result_binding_ref"},"HV2-WORKSPACE-DETACH")
     plan=_detach_plan_shape(receipt["plan"],fmt)
     _serial_require(_serial_file(root/"detached.json")==canonical_json_bytes(_detach_receipt(plan)), "detach receipt does not bind plan")
-    _serial_require(_lifecycle_truth(target)==plan["truth_refs"], "detached truth differs from preserved plan")
+    _serial_require(_lifecycle_truth(target, _topology_observation=observation)==plan["truth_refs"], "detached truth differs from preserved plan")
     for entry in plan["preserve"]:
         data=_serial_file(target/entry["path"])
         _serial_require(len(data)==entry["size_bytes"] and sha256_bytes(data)==entry["sha256"], "detached preserved bytes changed")
@@ -1172,7 +1193,7 @@ def _detach_observe_once(target: Path) -> dict[str, Any]:
     _serial_require(remaining==order[len(order)-len(remaining):], "not an exact detach file-removal prefix")
     if remaining:_serial_require(dirs==set(dir_order), "directory removed before planned files")
     else:_serial_require([n for n in dir_order if n in dirs]==dir_order[len(dir_order)-len(dirs):], "not an exact detach directory-removal prefix")
-    _visible_truth(target,[".hrn/detached.json"]+list(files)+[e["path"] for e in plan["preserve"]])
+    _visible_truth(target,[".hrn/detached.json"]+list(files)+[e["path"] for e in plan["preserve"]], _topology_observation=observation)
     return {"classification":"partial" if remaining or dirs else "detached", "authority_home_id":fmt["authority_home_id"],
             "receipt":receipt,"remaining_files":remaining,"remaining_directories":[n for n in dir_order if n in dirs],
             "record_verification":"verified", "truth_files":len(plan["truth_refs"])}
