@@ -25,7 +25,7 @@ The human authority of a Work must agree with its referenced intent. A stale int
 
 ## Collaboration Boundary
 
-The shared guard serializes cooperating record writers. It does not authenticate role names or prevent unrelated processes from editing files. Serial use requires one editing Work by procedure. Bounded synthetic multi-worker integration and recovery have recorded qualification, and private worker document continuation has been observed. General multi-worker efficiency, revalidation cost and usefulness still need project-specific evidence.
+The shared guard serializes cooperating record writers. It does not authenticate role names or prevent unrelated processes from editing files. Serial use requires one editing Work by procedure. General multi-worker efficiency, revalidation cost and usefulness still need project-specific evidence. See [Security and Support](SECURITY-AND-SUPPORT.md) for current limits and historical observations.
 
 ## Candidate Before Work
 

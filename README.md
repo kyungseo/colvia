@@ -1,6 +1,6 @@
 # Harness v2
 
-Harness v2 records human intent, proposed work, exact acceptance, and recovery evidence in one project-owned `.hrn/` directory. The development candidate provides local Work records and bounded linked-worker submission, human acceptance and sequential application in one control checkout. A manual natural-language adapter connects project narratives with read-only review. Two private document Works were accepted on the earlier human-1 runtime. Later private evidence records worker-1 installation and bounded document continuation, including an existing-file follow-up; general usability and real-project multi-worker efficiency remain unverified.
+Harness v2 records human intent, proposed work, exact acceptance, and recovery evidence in one project-owned `.hrn/` directory. The development candidate provides local Work records and bounded linked-worker submission, human acceptance and sequential application in one control checkout. A manual natural-language adapter connects project narratives with read-only review. General usability and real-project multi-worker efficiency remain unverified. See [Security and Support](docs/SECURITY-AND-SUPPORT.md) for the limits of the available evidence.
 
 An installed project starts human review with `./hv2 view` and machine diagnostics with `./hv2 status`. A fresh project must first be initialized from an independent trusted source with the explicit `checkout-1` development profile. See [Getting Started](docs/GETTING-STARTED.md).
 

@@ -1,36 +1,36 @@
 {
   "capabilities": [
     {
-      "boundary": "trusted local account; serial edits by procedure; private two-document-Work human-1 use does not qualify current worker-1 adoption",
-      "evidence": "recorded local content/recovery fixtures and earlier bounded private document pilot",
+      "boundary": "trusted local account; serial edits by procedure; historical private use does not qualify this candidate",
+      "evidence": "source contains local content/recovery fixtures; exact-candidate execution and qualification require a separately identified result",
       "fallback": "preserve project-owned records and inspect from trusted independent source",
       "id": "single-home-serial-work",
       "status": "development-bounded-local"
     },
     {
-      "boundary": "exact typed acceptance; bounded private narrative review, not general intent quality or onboarding acceptance",
-      "evidence": "draft/acceptance/selection and recovery fixtures",
+      "boundary": "exact typed acceptance; general intent quality and onboarding acceptance require separate evidence",
+      "evidence": "source contains draft/acceptance/selection and recovery fixtures; fixture presence is not an execution result",
       "fallback": "human-authored draft via machine interface",
       "id": "guided-intent-formation",
       "status": "development-typed-artifacts"
     },
     {
       "boundary": "checkout-1 development candidate; exact human-1/worker-1/umbrella-1/planning-1 history read; older-window downgrade, generation compatibility and attach unsupported",
-      "evidence": "prior N4 qualification belongs to worker-1; umbrella-1 focused synthetic checks are recorded separately and do not replace exact-candidate full qualification",
+      "evidence": "source contains lifecycle and inventory-window fixtures; historical results do not qualify this artifact",
       "fallback": "independent trusted exact source and retained project truth",
       "id": "project-local-product-lifecycle",
       "status": "development-bounded-synthetic"
     },
     {
       "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified; verified checkout-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
-      "evidence": "recorded N4 synthetic worker integration, process interruption/contention and whole regression; bounded private worker document continuation, including an existing-file follow-up, observed separately; exact candidate receipt required; unchanged CRLF candidate qualification is external to this declaration",
+      "evidence": "source contains worker integration, process interruption/contention and checkout-byte fixtures; exact-candidate qualification and actual multi-worker use require separately identified evidence",
       "fallback": "one editing Work in control checkout",
       "id": "same-repository-parallel-integration",
       "status": "development-bounded-synthetic"
     },
     {
-      "boundary": "read-only GFM plus manual narrative adapter; bounded earlier private use; no automatic report or independent human authorization",
-      "evidence": "view/adapter fixtures and earlier two-document-Work narrative review; no general usability qualification",
+      "boundary": "read-only GFM plus manual narrative adapter; no automatic report or independent human authorization",
+      "evidence": "source contains view/adapter fixtures; general usability remains unverified",
       "fallback": "machine interface and project-authored documents",
       "id": "human-readable-view-and-entry",
       "status": "development-bounded-local"
@@ -39,18 +39,18 @@
       "id": "same-home-direct-child-umbrella",
       "status": "development-in-progress",
       "boundary": "direct same-home children; human parent acceptance; no nested umbrella, scheduler, automatic completion or cross-home support",
-      "evidence": "focused schema2 writer/local recovery and installed same-window lifecycle checks; full fixed-candidate qualification and actual adoption pending",
+      "evidence": "source contains schema2 writer/local recovery and installed same-window lifecycle fixtures; fixture presence does not establish full qualification or actual adoption",
       "fallback": "retain exact history and review the parent plan and child evidence without automatic acceptance"
     },
     {
       "id": "candidate-planning",
       "status": "development-in-progress",
       "boundary": "branch-local tracked candidates on checkout-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
-      "evidence": "candidate contract and installed synthetic qualification are recorded with the exact development change; real fresh-session use remains separate",
+      "evidence": "source contains candidate contract and installed synthetic fixtures; exact-candidate execution and real fresh-session use require separately identified evidence",
       "fallback": "preserve planning bytes and inspect from trusted independent source; no silent history compaction"
     }
   ],
-  "evidence_as_of": "2026-10-03",
+  "evidence_as_of": "2026-10-07",
   "internal_lineage": "Harness v2",
   "public_version": null,
   "record_type": "product-capability-declaration",
