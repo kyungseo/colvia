@@ -75,7 +75,7 @@ Run `/path/to/project/hv2 status` after installation. A verified active product 
 3. The agent publishes a Work baseline referencing the accepted intent, edits within the declared scope, and submits the full result manifest for review using `hv2 work publish`.
 4. `hv2 work prepare` binds the exact result and current prerequisites. The human decides acceptance; `hv2 work apply --confirm TOKEN` records that decision and selection. A selected accepted result derives completed state.
 
-See [General Work](GENERAL-WORK.md) for exact input fields and [Guided Intent](GUIDED-INTENT-FORMATION.md) for acceptance semantics. Machine inputs are canonical JSON from `--input FILE` or stdin. The agent prepares these machine inputs; use the review flow below to review without editing JSON. Private human-1 use covered two accepted document Works and bounded fresh-session reading, not general onboarding or worker-1 adoption. For serial use, keep one editing Work at a time; the tool cannot stop arbitrary processes editing ordinary files.
+See [General Work](GENERAL-WORK.md) for exact input fields and [Guided Intent](GUIDED-INTENT-FORMATION.md) for acceptance semantics. Machine inputs are canonical JSON from `--input FILE` or stdin. The agent prepares these machine inputs; use the review flow below to review without editing JSON. General onboarding and actual use of the installed candidate require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md). For serial use, keep one editing Work at a time; the tool cannot stop arbitrary processes editing ordinary files.
 
 Do not use a pending proposal, a successful command, a review verdict, or an agent's statement as human acceptance. Use [Operations](OPERATIONS.md) when an exact operation is interrupted.
 

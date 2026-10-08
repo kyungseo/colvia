@@ -1,6 +1,6 @@
 # Workspace Contract
 
-Status: single-home development contract with bounded worker integration. Synthetic qualification is recorded; bounded private worker installation and document continuation have been observed. General adoption and public release remain unqualified.
+Status: single-home development contract with bounded worker integration. General adoption and public release remain unqualified. Historical observations in [Security and Support](SECURITY-AND-SUPPORT.md) do not qualify these exact bytes.
 
 The format uses one `.hrn/` authority. Installed machine commands and the lifecycle layer build on the root primitives below.
 Root-layer success alone does not verify records or product binding.
@@ -28,6 +28,29 @@ Version 1 uses record_type `workspace-format`; boolean versions are invalid. Unk
 members are degraded/non-writable. The root's exact ignore bytes are `staging/\nlocks/\n`; project authority and product files remain
 tracked. The record/content and lifecycle layers verify effective Git ignore policy before mutation.
 
+## Record Encoding And Shape Boundaries
+
+Persisted authority and planning JSON is UTF-8 without a BOM or CR bytes, with sorted keys, two-space indentation, unescaped Unicode and exactly one final LF. Digests bind the stored raw bytes using lowercase SHA-256. Stored authority and planning records must match canonical emission; invalid input is not normalized into accepted history. Duplicate keys, nonfinite numbers, malformed UTF-8 and oversized/deep input are refused. A field requiring an integer rejects a boolean.
+
+The common JSON reader allows at most 4 MiB, depth 128 and 1,024 integer digits. Depth counts the root value as 1 and each contained value as one deeper. These are reader limits, not a promise that every document at the limit can pass its record-specific or lifecycle checks. Candidate planning additionally has its lower 1 MiB/100-candidate/1,000-decision limits. The advisory document reader's 4 MiB limit is a separate observation boundary.
+
+Typed record IDs use ASCII `[a-zA-Z0-9][a-zA-Z0-9_-]{0,95}`. A digest reference is `{id, sha256}`; a qualified object is `{authority_home_id, kind, id}`. Field meaning fixes the referenced record kind. Persisted record and confirmation-ticket keys are exact; their required nullable fields remain explicit nulls rather than omitted keys. This does not require every CLI convenience input to spell every field: documented defaults and optional CLI fields remain unchanged. Root format, record schemas and inventory windows are independent versions. Ordinary intent drafts and Work revisions use schema 1; parent drafts/revisions use schema 2 with their additional composition/evidence fields. Identity, confirmation, decision, selection, current and manifest do not inherit that version change. Detach's paired plan/receipt versions follow Checkout-1 Transition And Detach Schema below.
+
+Project document/content paths are literal relative NFC paths with POSIX separators, no empty/dot/parent components, backslashes, NUL or components equal to `.hrn` or `.git` under casefold comparison. Casefold/NFC aliases and file/ancestor collisions are refused; the reader does not silently rewrite spelling. Object identity, path and a digest are different concepts. Timestamps are provenance, never a selector or an authority grant.
+
+The detailed structural checks remain in the source families below. These locators help inspect exact field sets and refusal cases; implementation or test output does not override the documented authority, state-transition or preservation rules. Report a disagreement and preserve affected state before changing either side.
+
+| Record family | Structural and graph checks |
+| --- | --- |
+| Root format and init plan | `workspace.py` |
+| Work identity/revision/decision/selection/current; manifest and ticket | `work.py` |
+| Persisted intent identity/draft/acceptance/selection/current | `intent.py`; persisted typed ID checks are distinct from the standalone entry-classifier utility |
+| Parent composition and evidence | `umbrella.py` |
+| Candidate request and store | `candidates.py` |
+| Product inventory, binding, lifecycle and detach | `product.py`; [Update And Rollback](#update-and-rollback-development) and [Receipt-Bound Detach](#receipt-bound-detach) govern their meaning |
+
+These modules are under `src/hv2ref/` in the source and retained managed payload. [Guided Intent](GUIDED-INTENT-FORMATION.md), [General Work](GENERAL-WORK.md) and [Candidate Planning](REFERENCE.md#candidate-planning) define the corresponding authority and transition rules. Unknown versions/members and damaged records remain preserved and non-writable under their existing diagnostic classifications.
+
 ## Layer Responsibilities
 
 The writer guard serializes cooperating calls only. It neither authenticates the caller nor makes several files or Git operations
@@ -41,8 +64,8 @@ Ancestor or descendant workspace authorities are unsupported, including non-Git 
 path spelling; case/normalization aliases are not promised equivalent. Pending operations cannot resume after path relocation.
 
 Integrated layers verify accepted-intent binding, Work currentness and bounded pending cancellation, full-project content manifests,
-actual loaded-release checks, and product lifecycle. Exact worker diff application and recovery are implemented with bounded synthetic qualification; human view is a development projection.
-Bounded synthetic process interruption/contention is recorded for the N4 source; real-project multi-worker use and measured benefit require later evidence.
+actual loaded-release checks, and product lifecycle. Exact worker diff application and recovery are implemented; human view is a development projection.
+Exact-candidate process/recovery checks, real-project multi-worker use and measured benefit require their own evidence.
 
 
 ## Initial Installed Runtime Verification (Development Checkpoint)
@@ -72,7 +95,7 @@ doubles remain available only as a Python testing seam; they are not CLI options
 
 The original runtime tests use installation-shaped fixtures. A subsequent actual
 init test suite uses the unmodified managed launcher and CLI. Update/rollback now has a separate actual lifecycle checkpoint;
-exact active repair now has an independent-source path; receipt-bound detach is implemented. Separately, bounded private worker installation and document continuation have been observed; this does not establish general adoption qualification. Path/digest
+exact active repair now has an independent-source path; receipt-bound detach is implemented. General adoption qualification requires separate evidence. Path/digest
 checks operate within the trusted local process boundary, not against malicious
 Python object mutation or undetectable outside edits between observations.
 
@@ -161,7 +184,7 @@ previous release. Same-filesystem staging is ignored and may retain interrupted 
 History inspection checks the full retained release chain; cost grows with retained
 releases and is not yet measured as a production-scale claim. Tests cover cooperative
 serial process interruptions, not power-loss atomicity or a malicious outside writer.
-Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed; the human view has bounded private narrative-review evidence on the earlier human-1 runtime, with subsequent bounded private worker installation and document-continuation evidence. These observations do not qualify general adoption or later modified release bytes.
+Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed. Historical observations summarized in [Security and Support](SECURITY-AND-SUPPORT.md) do not qualify general adoption or later modified release bytes.
 
 Rollback selects the current binding's previous release when permitted by the inventory window (planning-1 and earlier windows are refused after a durable checkout-1 receipt): a second rollback
 can therefore reselect the release just left. Each switch still requires a new exact

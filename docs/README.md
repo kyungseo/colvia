@@ -1,6 +1,6 @@
 # Documentation Index
 
-This index identifies current single-home development instructions. The `checkout-1` development profile has installed machine commands, local record writers, init/update/rollback, exact repair and receipt-bound detach. Bounded worker execution and recovery have recorded synthetic qualification. Two private document Works were accepted on the earlier human-1 runtime. Subsequent private evidence records worker-1 installation and bounded worker document continuation, including an existing-file follow-up; this does not establish general usability or real-project multi-worker efficiency.
+This index identifies current single-home development instructions. The `checkout-1` development profile has installed machine commands, local record writers, init/update/rollback, exact repair and receipt-bound detach. General usability and real-project multi-worker efficiency remain unverified. [Security and Support](SECURITY-AND-SUPPORT.md) distinguishes current limits from historical observations.
 
 Verified active status exposes a derived, read-only `documentation_root`. Follow that release's index rather than guessing a newer document path. Project-authored DR, brief and Work documents remain project-owned Markdown referenced by path and digest; the product does not impose their repository layout.
 
@@ -8,7 +8,7 @@ Verified active status exposes a derived, read-only `documentation_root`. Follow
 | --- | --- | --- |
 | [Product Entry](../README.md) | User orientation | Current development entry; no adoption claim |
 | [Agent Entry](../AGENTS.md) and [Claude Entry](../CLAUDE.md) | Agent behavior and tool projection | AGENTS is canonical; Claude is a pointer |
-| [Getting Started](GETTING-STARTED.md) | Operator setup and first serial work | Bounded private narrative-review evidence; general usability unverified |
+| [Getting Started](GETTING-STARTED.md) | Operator setup and first serial work | Current setup procedure; general usability unverified |
 | [Concepts](CONCEPTS.md) | User model and ownership | Explanation; detailed contracts govern schemas |
 | [Operations](OPERATIONS.md) | Operator update/recovery/exit | Current bounded lifecycle procedure |
 | [Reference](REFERENCE.md) | Exact commands, paths, diagnostics and [recording/retention rules](REFERENCE.md#records-and-retention) | Source and installed interfaces are distinct; agent recording policy does not change authority |
@@ -29,7 +29,7 @@ Human entry: run `./hv2 view` in the project and read the current managed adapte
 
 ## Current Candidate
 
-Umbrella-1 adds optional direct-child composition and parent acceptance checks. The development result has received review, Driver disposition and Owner acceptance with recorded limitations. Qualification of the exact release candidate remains required. Earlier worker-1 evidence below and in historical receipts does not qualify these bytes. See [Direct-Child Umbrella](GENERAL-WORK.md#direct-child-umbrella) and [Transition To Checkout-1](GETTING-STARTED.md#transition-to-checkout-1).
+The current window includes optional direct-child composition and parent acceptance checks. Qualification of the exact release candidate remains required; historical observations do not qualify these bytes. See [Direct-Child Umbrella](GENERAL-WORK.md#direct-child-umbrella) and [Transition To Checkout-1](GETTING-STARTED.md#transition-to-checkout-1).
 
 Planning-1 introduced project-owned candidate notes, one recorded Owner selection, deferral and explicit resumption. Begin with [Candidate Planning](REFERENCE.md#candidate-planning).
 
