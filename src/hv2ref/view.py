@@ -146,9 +146,9 @@ def _worker_inspection(target, manifest, product):
         result["source_error"] = getattr(exc, "message", str(exc))
     try:
         _require(product is not None, "no verified active product")
-        current = snapshot(target, verified_launcher_sha256=product["launcher_sha256"])
+        current = snapshot(target, verified_launcher_sha256=product["launcher_sha256"], verified_inventory_id=product["inventory"]["inventory_id"])
         observed = observe_recovery(manifest, current)
-        physical = preflight_changed_paths(target, manifest, verified_launcher_sha256=product["launcher_sha256"])
+        physical = preflight_changed_paths(target, manifest, verified_launcher_sha256=product["launcher_sha256"], verified_inventory_id=product["inventory"]["inventory_id"])
         _require(physical == observed["changed_paths"], "physical occupants differ from visible snapshot")
         result["content"] = {**observed, "whole_base_matches": current == manifest["base"]}
     except (ContractError, OSError, ValueError) as exc:
@@ -229,7 +229,7 @@ def _product(target):
 def _live(target, manifest, product):
     if product is None: return "unavailable: no verified active product"
     try:
-        observed = snapshot(target, verified_launcher_sha256=product["launcher_sha256"])
+        observed = snapshot(target, verified_launcher_sha256=product["launcher_sha256"], verified_inventory_id=product["inventory"]["inventory_id"])
         return "matches stored result" if observed == manifest["result"] else "stale: current files differ from stored result"
     except (ContractError, OSError, ValueError): return "unavailable: current content observation failed"
 
@@ -562,12 +562,13 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
             status, works, intents = before = _observe(target)
             classification = status["classification"]
             lines = ["# Harness v2 — project review", "", "Read-only observation; human acceptance and exact application remain separate.", ""]
-            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "next_action", "error_code", "reason"}}})
+            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "next_action", "error_code", "reason", "lifecycle_ready", "retired_entry_collision"}}})
             if "runtime" in status: lines += fields({"runtime_supported": status["runtime"].get("supported", "unavailable")})
             product = _product(target)
             if product:
+                from .product import WINDOW_ADAPTERS
                 root = str(Path(product["release_path"]).relative_to(target) / "payload")
-                lines += ["", "## Next entry", ""] + fields({"manual": root + "/docs/README.md", "natural_language_adapter": root + "/adapters/harness-v2-work/SKILL.md"})
+                lines += ["", "## Next entry", ""] + fields({"manual": root + "/docs/README.md", "natural_language_adapter": root + "/" + WINDOW_ADAPTERS[product["inventory"]["inventory_id"]]})
             if classification not in ("degraded", "uninitialized", "incompatible", "unstable"):
                 if status.get("planning", {}).get("available") is False and kind not in (None, "candidates"):
                     candidate_lines, _ = render_candidates(target, works=works, intents=intents)

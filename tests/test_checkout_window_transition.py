@@ -17,7 +17,7 @@ import unittest
 
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.jsonio import canonical_json_bytes
-from hv2ref.product import (SERIAL_MANAGED_PATHS, source_root, workspace_candidate,
+from hv2ref.product import (ENTRY_MANAGED_PATHS, SERIAL_MANAGED_PATHS, source_root, workspace_candidate,
                            workspace_switch_preview, workspace_switch_apply,
                            verify_workspace_product, workspace_detach_preview,
                            workspace_detach_apply)
@@ -31,15 +31,15 @@ PREFIXES = ('after-receipt', 'after-staged-inventory', 'after-staged-payload',
 
 
 class CheckoutWindowTests(unittest.TestCase):
-    def test_current_source_declares_checkout_window_with_same_membership(self):
+    def test_current_source_declares_entry_window_with_mapped_membership(self):
         candidate = workspace_candidate(source_root())
-        self.assertEqual('checkout-1', candidate['inventory']['inventory_id'])
+        self.assertEqual('entry-1', candidate['inventory']['inventory_id'])
         self.assertEqual(29, len(candidate['inventory']['entries']))
-        self.assertEqual(list(SERIAL_MANAGED_PATHS), [e['path'] for e in candidate['inventory']['entries']])
+        self.assertEqual(list(ENTRY_MANAGED_PATHS), [e['path'] for e in candidate['inventory']['entries']])
 
     def test_old_and_unknown_source_declarations_are_not_current_candidates(self):
         from hv2ref.product import _launcher_inventory_window
-        for window in ('human-1', 'worker-1', 'umbrella-1', 'planning-1', 'unknown'):
+        for window in ('human-1', 'worker-1', 'umbrella-1', 'planning-1', 'checkout-1', 'unknown'):
             with self.subTest(window=window), self.assertRaises(ContractError):
                 _launcher_inventory_window(('WORKSPACE_INVENTORY_ID = '+repr(window)+'\n').encode())
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -I -B
 from __future__ import annotations
 
-WORKSPACE_INVENTORY_ID = "checkout-1"
+WORKSPACE_INVENTORY_ID = "entry-1"
 
 import hashlib
 import json
@@ -77,12 +77,12 @@ def workspace_source(root: Path) -> Path:
         raise ValueError("unexpected import root member")
     if {p.name for p in package.iterdir()} != {name + ".py" for name in modules}:
         raise ValueError("unexpected importable package member")
-    for name in sorted(expected | {"hv2"}):
+    for name in sorted(expected | {"colvia"}):
         entry = entries[name]
         data = regular_bytes(release / "payload" / name)
         if type(entry["size_bytes"]) is not int or entry["size_bytes"] != len(data) or entry["sha256"] != hashlib.sha256(data).hexdigest():
             raise ValueError("bootstrap payload mismatch")
-        if name == "hv2" and data != regular_bytes(root / "hv2"):
+        if name == "colvia" and data != regular_bytes(root / "colvia"):
             raise ValueError("launcher differs from bound release")
     return release / "payload/src"
 

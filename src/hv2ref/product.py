@@ -45,26 +45,186 @@ def _write_exact(path: Path, data: bytes) -> None:
 
 # Single-home runtime verification. Lifecycle publication is deliberately separate
 # from these read-only checks; lifecycle receipts bind the installed history.
-SERIAL_MANAGED_PATHS = tuple(sorted({
-    ".gitignore", "AGENTS.md", "CLAUDE.md", "PRODUCT-CAPABILITIES.json", "README.md",
-    "docs/CONCEPTS.md", "docs/GENERAL-WORK.md", "docs/GETTING-STARTED.md",
-    "docs/GUIDED-INTENT-FORMATION.md", "docs/MAINTAINING.md", "docs/MANUAL-OPERATION.md",
-    "docs/OPERATIONS.md", "docs/README.md", "docs/REFERENCE.md",
-    "docs/SECURITY-AND-SUPPORT.md", "docs/WORKSPACE-CONTRACT.md", "hv2",
-    "src/hv2ref/__init__.py", "src/hv2ref/cli.py", "src/hv2ref/errors.py",
-    "src/hv2ref/intent.py", "src/hv2ref/jsonio.py", "src/hv2ref/product.py",
-    "src/hv2ref/work.py", "src/hv2ref/workspace.py",
-    "src/hv2ref/view.py", "src/hv2ref/umbrella.py", "src/hv2ref/candidates.py", "adapters/harness-v2-work/SKILL.md",
-}, key=lambda path: path.encode("utf-8")))
+SERIAL_MANAGED_PATHS = (
+    '.gitignore',
+    'AGENTS.md',
+    'CLAUDE.md',
+    'PRODUCT-CAPABILITIES.json',
+    'README.md',
+    'adapters/harness-v2-work/SKILL.md',
+    'docs/CONCEPTS.md',
+    'docs/GENERAL-WORK.md',
+    'docs/GETTING-STARTED.md',
+    'docs/GUIDED-INTENT-FORMATION.md',
+    'docs/MAINTAINING.md',
+    'docs/MANUAL-OPERATION.md',
+    'docs/OPERATIONS.md',
+    'docs/README.md',
+    'docs/REFERENCE.md',
+    'docs/SECURITY-AND-SUPPORT.md',
+    'docs/WORKSPACE-CONTRACT.md',
+    'hv2',
+    'src/hv2ref/__init__.py',
+    'src/hv2ref/candidates.py',
+    'src/hv2ref/cli.py',
+    'src/hv2ref/errors.py',
+    'src/hv2ref/intent.py',
+    'src/hv2ref/jsonio.py',
+    'src/hv2ref/product.py',
+    'src/hv2ref/umbrella.py',
+    'src/hv2ref/view.py',
+    'src/hv2ref/work.py',
+    'src/hv2ref/workspace.py',
+)
+
+UMBRELLA_MANAGED_PATHS = (
+    '.gitignore',
+    'AGENTS.md',
+    'CLAUDE.md',
+    'PRODUCT-CAPABILITIES.json',
+    'README.md',
+    'adapters/harness-v2-work/SKILL.md',
+    'docs/CONCEPTS.md',
+    'docs/GENERAL-WORK.md',
+    'docs/GETTING-STARTED.md',
+    'docs/GUIDED-INTENT-FORMATION.md',
+    'docs/MAINTAINING.md',
+    'docs/MANUAL-OPERATION.md',
+    'docs/OPERATIONS.md',
+    'docs/README.md',
+    'docs/REFERENCE.md',
+    'docs/SECURITY-AND-SUPPORT.md',
+    'docs/WORKSPACE-CONTRACT.md',
+    'hv2',
+    'src/hv2ref/__init__.py',
+    'src/hv2ref/cli.py',
+    'src/hv2ref/errors.py',
+    'src/hv2ref/intent.py',
+    'src/hv2ref/jsonio.py',
+    'src/hv2ref/product.py',
+    'src/hv2ref/umbrella.py',
+    'src/hv2ref/view.py',
+    'src/hv2ref/work.py',
+    'src/hv2ref/workspace.py',
+)
+
+LEGACY_MANAGED_PATHS = (
+    '.gitignore',
+    'AGENTS.md',
+    'CLAUDE.md',
+    'PRODUCT-CAPABILITIES.json',
+    'README.md',
+    'adapters/harness-v2-work/SKILL.md',
+    'docs/CONCEPTS.md',
+    'docs/GENERAL-WORK.md',
+    'docs/GETTING-STARTED.md',
+    'docs/GUIDED-INTENT-FORMATION.md',
+    'docs/MAINTAINING.md',
+    'docs/MANUAL-OPERATION.md',
+    'docs/OPERATIONS.md',
+    'docs/README.md',
+    'docs/REFERENCE.md',
+    'docs/SECURITY-AND-SUPPORT.md',
+    'docs/WORKSPACE-CONTRACT.md',
+    'hv2',
+    'src/hv2ref/__init__.py',
+    'src/hv2ref/cli.py',
+    'src/hv2ref/errors.py',
+    'src/hv2ref/intent.py',
+    'src/hv2ref/jsonio.py',
+    'src/hv2ref/product.py',
+    'src/hv2ref/view.py',
+    'src/hv2ref/work.py',
+    'src/hv2ref/workspace.py',
+)
+
+ENTRY_MANAGED_PATHS = (
+    '.gitignore',
+    'AGENTS.md',
+    'CLAUDE.md',
+    'PRODUCT-CAPABILITIES.json',
+    'README.md',
+    'adapters/colvia-work/SKILL.md',
+    'colvia',
+    'docs/CONCEPTS.md',
+    'docs/GENERAL-WORK.md',
+    'docs/GETTING-STARTED.md',
+    'docs/GUIDED-INTENT-FORMATION.md',
+    'docs/MAINTAINING.md',
+    'docs/MANUAL-OPERATION.md',
+    'docs/OPERATIONS.md',
+    'docs/README.md',
+    'docs/REFERENCE.md',
+    'docs/SECURITY-AND-SUPPORT.md',
+    'docs/WORKSPACE-CONTRACT.md',
+    'src/hv2ref/__init__.py',
+    'src/hv2ref/candidates.py',
+    'src/hv2ref/cli.py',
+    'src/hv2ref/errors.py',
+    'src/hv2ref/intent.py',
+    'src/hv2ref/jsonio.py',
+    'src/hv2ref/product.py',
+    'src/hv2ref/umbrella.py',
+    'src/hv2ref/view.py',
+    'src/hv2ref/work.py',
+    'src/hv2ref/workspace.py',
+)
 
 
-UMBRELLA_MANAGED_PATHS = tuple(p for p in SERIAL_MANAGED_PATHS if p != "src/hv2ref/candidates.py")
-LEGACY_MANAGED_PATHS = tuple(p for p in UMBRELLA_MANAGED_PATHS if p != "src/hv2ref/umbrella.py")
+WINDOW_PATHS = {"human-1": LEGACY_MANAGED_PATHS, "worker-1": LEGACY_MANAGED_PATHS,
+                "umbrella-1": UMBRELLA_MANAGED_PATHS, "planning-1": SERIAL_MANAGED_PATHS,
+                "checkout-1": SERIAL_MANAGED_PATHS, "entry-1": ENTRY_MANAGED_PATHS}
+WINDOW_LAUNCHERS = {"human-1": "hv2", "worker-1": "hv2", "umbrella-1": "hv2",
+                    "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia"}
+WINDOW_ADAPTERS = {"human-1": "adapters/harness-v2-work/SKILL.md",
+                   "worker-1": "adapters/harness-v2-work/SKILL.md",
+                   "umbrella-1": "adapters/harness-v2-work/SKILL.md",
+                   "planning-1": "adapters/harness-v2-work/SKILL.md",
+                   "checkout-1": "adapters/harness-v2-work/SKILL.md",
+                   "entry-1": "adapters/colvia-work/SKILL.md"}
 
 
 def _managed_paths(window: str) -> tuple[str, ...]:
-    _serial_require(window in ("human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1"), "unsupported inventory window")
-    return SERIAL_MANAGED_PATHS if window in ("planning-1", "checkout-1") else UMBRELLA_MANAGED_PATHS if window == "umbrella-1" else LEGACY_MANAGED_PATHS
+    _serial_require(isinstance(window, str) and window in WINDOW_PATHS, "unsupported inventory window")
+    return WINDOW_PATHS[window]
+
+
+def _launcher_path(window: str) -> str:
+    _managed_paths(window)
+    return WINDOW_LAUNCHERS[window]
+
+
+def _retired_entry_collision(target: Path) -> dict[str, Any] | None:
+    # Names only: never follow or open a retired occupant, including dangling links.
+    import unicodedata
+    names = sorted((p.name for p in target.iterdir()
+                    if unicodedata.normalize("NFC", p.name).casefold() == "hv2"), key=lambda n:n.encode("utf-8"))
+    return ({"path": "hv2", "observed_names": names, "ownership": "project", "preserved": True}
+            if names else None)
+
+
+def _refuse_retired_entry(target: Path, operation: str) -> None:
+    collision = _retired_entry_collision(target)
+    _serial_require(collision is None, operation + ": retired entry collision; preserve project occupants: "
+                    + repr(collision["observed_names"] if collision else []))
+
+
+def _entry_absence_admission(target: Path, *, owned_prefix: bool = False) -> None:
+    from .work import _git, _visible_truth
+    from .workspace import classify_target
+    import unicodedata
+    fold = lambda p: unicodedata.normalize("NFC", p).casefold()
+    _serial_require(not any(fold(p.name) == "colvia" and not (owned_prefix and p.name == "colvia") for p in target.iterdir()),
+                    "preexisting launcher or alias is not owned")
+    if classify_target(target)["kind"] != "non-git":
+        tracked = _git(target, "ls-files", "-z").stdout
+        try:
+            names = [p.decode("utf-8", "strict") for p in tracked.split(b"\0") if p]
+        except UnicodeDecodeError as exc:
+            raise ContractError("HV2-WORKSPACE-PRODUCT", "tracked path encoding unavailable; preserve") from exc
+        _serial_require(not any(fold(n) == "colvia" or fold(n).startswith("colvia/") for n in names),
+                        "new launcher or alias/descendant is tracked")
+    _visible_truth(target, ["colvia"])
 
 
 def _serial_require(condition: bool, detail: str) -> None:
@@ -84,7 +244,7 @@ def _launcher_inventory_window(data: bytes, *, allow_legacy: bool = False) -> st
     declarations = [node for node in module.body
                     if isinstance(node, ast.Assign) and len(node.targets) == 1
                     and isinstance(node.targets[0], ast.Name) and node.targets[0].id == name
-                    and isinstance(node.value, ast.Constant) and node.value.value in (("worker-1", "umbrella-1", "planning-1", "checkout-1") if allow_legacy else ("checkout-1",))]
+                    and isinstance(node.value, ast.Constant) and node.value.value in (("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1") if allow_legacy else ("entry-1",))]
     target = declarations[0].targets[0] if len(declarations) == 1 else None
     bindings = []
     try:
@@ -158,7 +318,7 @@ def _serial_inventory(value: Any) -> dict[str, Any]:
     _serial_require(value["record_type"] == "release-inventory"
                     and type(value["schema_version"]) is int and value["schema_version"] == 1,
                     "unsupported release inventory schema")
-    _serial_require(isinstance(value["inventory_id"], str) and value["inventory_id"] in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1"}, "unsupported inventory window")
+    _serial_require(isinstance(value["inventory_id"], str) and value["inventory_id"] in WINDOW_PATHS, "unsupported inventory window")
     _serial_require(isinstance(value["entries"], list), "inventory entries must be an array")
     paths = []
     for item in value["entries"]:
@@ -174,25 +334,28 @@ def _serial_inventory(value: Any) -> dict[str, Any]:
 
 def workspace_candidate(source: Path) -> dict[str, Any]:
     """Read the exact managed subset; unrelated source/test files are not shipped."""
-    from .workspace import safe_target, _require_kind
-    source = safe_target(source)
-    payload: dict[str, bytes] = {}
-    for name in SERIAL_MANAGED_PATHS:
-        path = source / name
-        for parent in reversed(path.relative_to(source).parents):
-            _require_kind(source / parent, True)
-        _require_kind(path, False)
-        payload[name] = _serial_file(path)
-    window = _launcher_inventory_window(payload["hv2"])
-    inventory = {"record_type": "release-inventory", "schema_version": 1, "inventory_id": window,
-                 "entries": [{"path": name, "sha256": sha256_bytes(data), "size_bytes": len(data)}
-                             for name, data in payload.items()]}
-    digest = sha256_bytes(canonical_json_bytes(inventory))
-    # Repeat after reading the complete set; do not silently combine two sources.
-    for name, data in payload.items():
-        _serial_require(_serial_file(source / name) == data, "candidate changed while reading")
-    return {"inventory": inventory, "payload": payload,
-            "release_ref": {"id": "product-release-" + digest[:24], "sha256": digest, "inventory_id": window}}
+    try:
+        from .workspace import safe_target, _require_kind
+        source = safe_target(source)
+        payload: dict[str, bytes] = {}
+        for name in ENTRY_MANAGED_PATHS:
+            path = source / name
+            for parent in reversed(path.relative_to(source).parents):
+                _require_kind(source / parent, True)
+            _require_kind(path, False)
+            payload[name] = _serial_file(path)
+        window = _launcher_inventory_window(payload["colvia"])
+        inventory = {"record_type": "release-inventory", "schema_version": 1, "inventory_id": window,
+                     "entries": [{"path": name, "sha256": sha256_bytes(data), "size_bytes": len(data)}
+                                 for name, data in payload.items()]}
+        digest = sha256_bytes(canonical_json_bytes(inventory))
+        # Repeat after reading the complete set; do not silently combine two sources.
+        for name, data in payload.items():
+            _serial_require(_serial_file(source / name) == data, "candidate changed while reading")
+        return {"inventory": inventory, "payload": payload,
+                "release_ref": {"id": "product-release-" + digest[:24], "sha256": digest, "inventory_id": window}}
+    except OSError as exc:
+        raise ContractError("HV2-WORKSPACE-PRODUCT", "candidate managed bytes unavailable; preserve source and target") from exc
 
 
 def verify_workspace_release(path: Path) -> dict[str, Any]:
@@ -211,11 +374,381 @@ def verify_workspace_release(path: Path) -> dict[str, Any]:
         data = files["payload/" + entry["path"]]
         _serial_require(len(data) == entry["size_bytes"] and sha256_bytes(data) == entry["sha256"],
                         "payload digest mismatch: " + entry["path"])
-    _serial_require(_launcher_inventory_window(files["payload/hv2"], allow_legacy=True)
+    _serial_require(_launcher_inventory_window(files["payload/" + _launcher_path(inventory["inventory_id"])], allow_legacy=True)
                     == inventory["inventory_id"], "launcher declaration differs from inventory window")
     _serial_require(files == _serial_tree(path, set(files)), "release changed while reading")
     return {"release_ref": {"id": path.name, "sha256": digest, "inventory_id": inventory["inventory_id"]},
             "inventory": inventory}
+
+
+# Only this audited predecessor is admitted across the one-way entry boundary.
+ENTRY_PREDECESSOR = {
+    "id": "product-release-8bd0eeac55fb0af92b61a7a3",
+    "sha256": "8bd0eeac55fb0af92b61a7a36a98adb9957b880c791b957b20c319a51c5577f3",
+    "inventory_id": "checkout-1",
+}
+
+
+def _entry_retirement(plan: dict[str, Any], prior: dict[str, Any], inventory: dict[str, Any]) -> None:
+    if plan["schema_version"] != 2:
+        return
+    if prior["active_release"]["inventory_id"] == "checkout-1":
+        _serial_require(prior["active_release"] == ENTRY_PREDECESSOR,
+                        "entry transition predecessor is not the audited release")
+        entry = next(e for e in inventory["entries"] if e["path"] == "hv2")
+        _serial_require(plan["action"] == "update" and plan["remove"] == [entry],
+                        "entry retirement differs from the verified predecessor launcher")
+    else:
+        _serial_require(prior["active_release"]["inventory_id"] == "entry-1" and plan["remove"] == [],
+                        "same-entry switch cannot retire project paths")
+
+
+def _entry_umask() -> None:
+    # Inspect without creating a probe file; restore even a rejected process mask.
+    mask = os.umask(0o777)
+    os.umask(mask)
+    _serial_require(0o600 & ~mask == 0o600, "unsupported umask for atomic entry mode 0600")
+
+
+def _entry_file_prefix(path: Path, data: bytes, *, executable: bool) -> dict[str, Any] | None:
+    from .workspace import _exists, _require_kind
+    if not _exists(path):
+        return None
+    _require_kind(path, False)
+    raw = _serial_file(path)
+    mode = stat.S_IMODE(path.lstat().st_mode)
+    _serial_require((mode == 0o600 and data.startswith(raw)) or
+                    (executable and mode == 0o755 and raw == data),
+                    "unexpected entry bytes/mode; preserve: " + str(path))
+    return {"sha256": sha256_bytes(raw), "size_bytes": len(raw), "mode": mode}
+
+
+def _entry_binding_stage(target: Path, plan: dict[str, Any], data: bytes, *, allowed: bool) -> dict[str, Any] | None:
+    from .workspace import _exists, _require_kind
+    staging = target / ".hrn/staging"
+    if not _exists(staging):
+        return None
+    _require_kind(staging, True)
+    operation = staging / ("entry-" + plan["operation_id"])
+    if not _exists(operation):
+        return None
+    _require_kind(operation, True)
+    names = {p.name for p in operation.iterdir()}
+    _serial_require(names <= {"binding.next"}, "unknown entry staging member; preserve")
+    _serial_require(allowed or not names, "binding staging is not an expected physical prefix")
+    observed = _entry_file_prefix(operation / "binding.next", data, executable=False) if names else None
+    return {"directory": True, "binding_next": observed}
+
+
+def _entry_transition_prefix(target: Path, plan: dict[str, Any], old: bytes, new: bytes | None,
+                             binding_bytes: bytes) -> dict[str, Any]:
+    from .workspace import _exists, _require_kind
+    import unicodedata
+    fold = lambda name: unicodedata.normalize("NFC", name).casefold()
+    names = {p.name for p in target.iterdir()}
+    _serial_require(not any(fold(n) in {"hv2", "colvia"} and n not in {"hv2", "colvia"} for n in names),
+                    "entry transition root alias; preserve")
+    old_path = target / "hv2"
+    old_present = _exists(old_path)
+    if old_present:
+        _require_kind(old_path, False)
+        _serial_require(_serial_file(old_path) == old and stat.S_IMODE(old_path.lstat().st_mode) == 0o755,
+                        "transition old launcher bytes/mode changed; preserve")
+    if new is None:
+        _serial_require(old_present and not _exists(target / "colvia"), "launcher without complete entry release")
+        new_observation = None
+        prefix = "receipt-or-staging"
+    else:
+        new_observation = _entry_file_prefix(target / "colvia", new, executable=True)
+        ready = new_observation is not None and new_observation["mode"] == 0o755
+        _serial_require(old_present or ready, "missing old launcher before executable new entry; preserve")
+        prefix = "S5" if not old_present else "S4" if ready else "S3-prefix" if new_observation else "S3"
+    stage = _entry_binding_stage(target, plan, binding_bytes, allowed=prefix == "S5")
+    return {"prefix": prefix, "old_present": old_present, "new": new_observation, "staging": stage}
+
+
+def _entry_local_baselines(target: Path) -> dict[str, dict[str, Any]]:
+    """Reload immutable selected local/parent manifests; workers stay untouched."""
+    from .work import WorkStore, _resolve
+    from .intent import read_workspace_intent_graph, _resolve_workspace_intent
+    import unicodedata
+    baselines = {}
+    def depends(name):
+        name = unicodedata.normalize("NFC", name).casefold()
+        return any(name == entry or name.startswith(entry + "/") or entry.startswith(name + "/")
+                   for entry in ("hv2", "colvia"))
+    for work_id, graph in WorkStore(target)._all().items():
+        if graph["current"] is None or graph["state"] == "completed":
+            continue
+        selected = graph["selections"][graph["current"]["selection_ref"]["id"]]
+        revision = graph["revisions"][selected["revision_ref"]["id"]]
+        if revision["execution_context"]["mode"] != "local":
+            continue
+        intent_graph = read_workspace_intent_graph(target, revision["intent_ref"]["id"])
+        _, bound = _resolve_workspace_intent(intent_graph, revision["intent_ref"]["id"],
+                                              revision["intent_ref"], require_current=False)
+        intent = _resolve(intent_graph["acceptances"], bound["acceptance_ref"])["confirmation"]
+        paths = list(revision["scope"])
+        for record in (revision, intent):
+            for kind in ("document_refs", "evidence_refs"):
+                paths.extend(ref["path"] for ref in record.get(kind, []) if ref["required"])
+        _serial_require(not any(depends(name) for name in paths), "entry path dependency in selected local Work: " + work_id)
+        baselines[work_id] = graph["manifests"][revision["result_refs"]["manifest"]["id"]]["result"]
+    return baselines
+
+
+def _entry_compare_local(target: Path, *, launcher_sha256: str, window: str) -> dict[str, Any]:
+    from .work import snapshot
+    baselines = _entry_local_baselines(target)
+    if not baselines:
+        return {"classification": "not-applicable", "work_ids": [], "reason": "no unfinished selected local Work"}
+    actual = snapshot(target, verified_launcher_sha256=launcher_sha256, verified_inventory_id=window)
+    mismatches = sorted(work_id for work_id, expected in baselines.items() if expected != actual)
+    _serial_require(not mismatches, "entry transition selected local baseline differs: " + repr(mismatches) +
+                    ("; B1 remains current and verified; product cutover is complete; preserve project content"
+                     if window == "entry-1" else "; no transition receipt has been published"))
+    return {"classification": "verified", "work_ids": sorted(baselines), "observation": "actual project snapshot"}
+
+
+def _entry_admission(target: Path, state: dict[str, Any]) -> None:
+    _serial_require(state["binding"]["active_release"] == ENTRY_PREDECESSOR,
+                    "entry transition predecessor is not the audited release")
+    _serial_require(state["pending"] is None, "old pending lifecycle requires the retained old source")
+    _entry_umask()
+    _entry_absence_admission(target)
+    _serial_require(_retired_entry_collision(target) ==
+                    {"path": "hv2", "observed_names": ["hv2"], "ownership": "project", "preserved": True},
+                    "transition predecessor launcher missing or aliased")
+    _serial_require(stat.S_IMODE((target / "hv2").lstat().st_mode) == 0o755, "transition predecessor launcher mode")
+    from .workspace import _exists, _require_kind
+    staging = target / ".hrn/staging"
+    if _exists(staging):
+        _require_kind(staging, True)
+        for member in staging.iterdir():
+            _require_kind(member, True)
+            _serial_require(not any(member.iterdir()), "unresolved staging; retain old source and preserve")
+    _entry_compare_local(target, launcher_sha256=state["launcher_sha256"], window="checkout-1")
+
+
+def _entry_sync(target: Path, path: Path, *, phase: str, role: str, b1: bool = False) -> None:
+    """D3 applies only to the admitted transition, never shared helper policy."""
+    failure = None
+    try:
+        result = sync_directory(path)
+    except OSError as exc:
+        failure = "oserror:" + str(exc.errno)
+    else:
+        if result != "pass":
+            failure = str(result)
+    if failure is None:
+        return
+    verification = "not-requested"
+    if b1:
+        try:
+            verify_workspace_product(target)
+        except (ContractError, OSError):
+            verification = "unavailable"
+        else:
+            verification = "verified"
+    raise ContractError("HV2-WORKSPACE-PRODUCT",
+                        f"d3-sync:{phase}:{role}; directory synchronization {failure}; "
+                        f"B1 publication observed={'yes' if b1 else 'no'}; current product verification={verification}; "
+                        "preserve receipt, prefix and binding; use the exact admitted retry or separately authorized disposition")
+
+
+def _entry_durable_directory(target: Path, path: Path, *, role: str) -> None:
+    from .workspace import _exists, _require_kind
+    phase = "recovery" if _exists(path) else "publication"
+    try:
+        path.mkdir()
+    except FileExistsError:
+        _require_kind(path, True)
+    _entry_sync(target, path.parent, phase=phase, role=role + "-parent")
+    _entry_sync(target, path, phase=phase, role=role + "-self")
+
+
+def _entry_write_exact(target: Path, path: Path, data: bytes, *, role: str) -> None:
+    from .workspace import _exists, _require_kind, _error
+    from .jsonio import _sync_fd
+    # Every caller has explicitly prepared its parent. No hidden parent creation.
+    _require_kind(path.parent, True)
+    if _exists(path):
+        _require_kind(path, False)
+        if path.read_bytes() != data:
+            raise _error(f"immutable mismatch: {path.name}; preserve torn/modified bytes for explicit manual disposition")
+        with path.open("rb") as handle:
+            os.fsync(handle.fileno())
+        phase = "recovery"
+    else:
+        try:
+            with path.open("xb") as handle:
+                handle.write(data); handle.flush(); _sync_fd(handle.fileno())
+        except FileExistsError as exc:
+            raise ContractError("HV2-IMMUTABLE-EXISTS", str(path)) from exc
+        phase = "publication"
+    _entry_sync(target, path.parent, phase=phase, role=role)
+
+
+def _entry_inventory_directories(release: Path, inventory: dict[str, Any]) -> set[Path]:
+    return {release} | {release / parent for item in inventory["entries"]
+                        for parent in (Path("payload") / item["path"]).parents if str(parent) != "."}
+
+
+def _entry_sync_paths(target: Path, plan: dict[str, Any], inventory: dict[str, Any], *,
+                      candidate: dict[str, Any] | None = None, replay: bool = False) -> dict[Path, str]:
+    """Finite inventory-derived set, qualified before any D3 probe. No history walk."""
+    from .workspace import _exists, _require_kind
+    root = target / ".hrn"; product = root / "product"
+    paths = {target: "target", root: "home", product: "product", product / "receipts": "receipts",
+             product / "releases": "releases", root / "locks": "locks"}
+    for path in paths:
+        _require_kind(path, True)
+    rid = plan["candidate_release"]["id"]; release = product / "releases" / rid
+    if _exists(release):
+        _serial_require(verify_workspace_release(release)["release_ref"] == plan["candidate_release"], "published candidate mismatch")
+        for path in _entry_inventory_directories(release, inventory):
+            _require_kind(path, True)
+            paths[path] = "release-directory" if path == release else "release-member-directory"
+    else:
+        _serial_require(not replay, "current transition release missing; preserve")
+    staging = root / "staging"
+    if _exists(staging):
+        _require_kind(staging, True); paths[staging] = "staging"
+        operation = staging / ("switch-" + plan["operation_id"])
+        if _exists(operation):
+            _require_kind(operation, True); paths[operation] = "switch-operation"
+            names = {p.name for p in operation.iterdir()}
+            _serial_require(names <= ({rid} if not _exists(release) else set()), "unknown switch staging member; preserve")
+            staged = operation / rid
+            if _exists(staged):
+                _serial_require(candidate is not None and not replay, "candidate staging without exact source; preserve")
+                expected = {"inventory.json": canonical_json_bytes(candidate["inventory"])} | {
+                    "payload/" + p: data for p, data in candidate["payload"].items()}
+                _init_partial_tree(staged, expected)
+                for path in _entry_inventory_directories(staged, inventory):
+                    if _exists(path):
+                        _require_kind(path, True)
+                        paths[path] = "candidate-directory"
+        operation = staging / ("entry-" + plan["operation_id"])
+        if _exists(operation):
+            # The preflight has already admitted the exact binding prefix.
+            _require_kind(operation, True)
+            names = {p.name for p in operation.iterdir()}
+            _serial_require(names <= ({"binding.next"} if not replay else set()), "binding staging is not an expected physical prefix")
+            paths[operation] = "binding-operation"
+    return paths
+
+
+def _entry_sync_admission(target: Path, plan: dict[str, Any], candidate: dict[str, Any]) -> None:
+    paths = _entry_sync_paths(target, plan, candidate["inventory"], candidate=candidate)
+    first = [target, target / ".hrn", target / ".hrn/product", target / ".hrn/product/receipts",
+             target / ".hrn/product/releases", target / ".hrn/locks", target / ".hrn/staging"]
+    ordered = [p for p in first if p in paths]
+    ordered += sorted(paths.keys() - set(first), key=lambda p: (len(p.relative_to(target).parts), p.relative_to(target).as_posix().encode("utf-8")))
+    for path in ordered:
+        _entry_sync(target, path, phase="admission", role=paths[path])
+
+
+def _entry_resync_release(target: Path, plan: dict[str, Any], inventory: dict[str, Any]) -> None:
+    from .workspace import _exists, _require_kind
+    release = target / ".hrn/product/releases" / plan["candidate_release"]["id"]
+    paths = {path: "release-directory" for path in _entry_inventory_directories(release, inventory)}
+    paths[release.parent] = "release-parent"
+    operation = target / ".hrn/staging" / ("switch-" + plan["operation_id"])
+    # A permitted empty-directory retirement still leaves a parent to sync.
+    operation = next(path for path in (operation, operation.parent, target / ".hrn") if _exists(path))
+    paths[operation] = "release-operation-parent"
+    for path in sorted(paths, key=lambda p: (-len(p.relative_to(target).parts), p.relative_to(target).as_posix().encode("utf-8"))):
+        _require_kind(path, True)
+        _entry_sync(target, path, phase="recovery", role=paths[path])
+
+
+def _entry_append_file(path: Path, data: bytes, *, target: Path, executable: bool, recover: bool, checkpoint) -> None:
+    """Exclusive named publication; only the receipt-bound 0600 prefix may grow."""
+    from .workspace import _exists
+    from .jsonio import _sync_fd
+    checkpoint()
+    exists = _exists(path)
+    _serial_require(recover or not exists, "new entry occupant appeared; preserve")
+    before = _entry_file_prefix(path, data, executable=executable) if exists else None
+    flags = os.O_RDWR | os.O_NOFOLLOW
+    if not exists:
+        flags |= os.O_CREAT | os.O_EXCL
+    fd = os.open(path, flags, 0o600)
+    try:
+        def identity():
+            opened = os.fstat(fd); current = path.lstat()
+            _serial_require(stat.S_ISREG(opened.st_mode) and opened.st_nlink == current.st_nlink == 1
+                            and (opened.st_dev, opened.st_ino) == (current.st_dev, current.st_ino),
+                            "entry descriptor/path identity changed; preserve")
+            return opened
+        st = identity()
+        wanted_mode = before["mode"] if before else 0o600
+        _serial_require(stat.S_IMODE(st.st_mode) == wanted_mode, "entry atomic initial mode differs")
+        observed = b""
+        while chunk := os.read(fd, 1024 * 1024):
+            observed += chunk
+            _serial_require(len(observed) <= len(data), "entry prefix grew unexpectedly")
+        _serial_require(data.startswith(observed) and (before is None or
+                        before == {"sha256": sha256_bytes(observed), "size_bytes": len(observed), "mode": wanted_mode}),
+                        "entry prefix changed while reopening")
+        _serial_require(wanted_mode == 0o600 or (executable and wanted_mode == 0o755 and observed == data),
+                        "unexpected executable prefix")
+        while len(observed) < len(data):
+            checkpoint(); identity()
+            count = os.write(fd, data[len(observed):])
+            _serial_require(count > 0, "entry write made no progress; preserve prefix")
+            observed += data[len(observed):len(observed) + count]
+        checkpoint(); identity(); _sync_fd(fd)
+        if executable and wanted_mode == 0o600:
+            checkpoint(); identity(); os.fchmod(fd, 0o755)
+            checkpoint(); identity(); _sync_fd(fd)
+        _serial_require(_serial_file(path) == data and stat.S_IMODE(identity().st_mode) == (0o755 if executable else 0o600),
+                        "entry publication changed before directory sync")
+    finally:
+        os.close(fd)
+    checkpoint()
+    _entry_sync(target, path.parent, phase="recovery" if exists else "publication",
+                role="new-entry-parent" if executable else "binding-member-parent")
+
+
+def _entry_replay_result(target: Path, plan: dict[str, Any], *, classification: str) -> dict[str, Any]:
+    from .jsonio import _sync_fd
+    product = verify_workspace_product(target)
+    _refuse_retired_entry(target, "entry lifecycle completion/replay; preserve historical result")
+    if plan["remove"] and product["binding_ref"]["id"] == plan["operation_id"]:
+        paths = _entry_sync_paths(target, plan, product["inventory"], replay=True)
+        # Caller holds the shared writer guard. An observed B1 can precede the
+        # last directory sync, so exact current replay finishes durability only.
+        _serial_require(stat.S_IMODE((target / "colvia").lstat().st_mode) == 0o755,
+                        "completed transition entry mode differs; preserve B1")
+        for path in (target / "colvia", target / ".hrn/product/binding.json"):
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+            try:
+                opened = os.fstat(fd); observed = path.lstat()
+                _serial_require(stat.S_ISREG(opened.st_mode) and opened.st_nlink == observed.st_nlink == 1
+                                and (opened.st_dev, opened.st_ino) == (observed.st_dev, observed.st_ino),
+                                "completed transition descriptor changed; preserve B1")
+                _sync_fd(fd)
+            finally:
+                os.close(fd)
+        for directory in sorted(paths, key=lambda p: (-len(p.relative_to(target).parts), p.relative_to(target).as_posix().encode("utf-8"))):
+            _entry_sync(target, directory, phase="replay", role=paths[directory], b1=True)
+        _serial_require(product == verify_workspace_product(target), "completed transition changed during sync")
+    result = {"classification": classification, "operation_id": plan["operation_id"], "product": product}
+    if plan["remove"]:
+        truth = _lifecycle_truth(target, allow_pending=True)
+        if truth != plan["truth_refs"]:
+            result.update(classification="degraded", historical_operation_result=classification)
+            result["transition_content_verification"] = {
+                "classification": "unavailable",
+                "reason": "truth changed after transition; current binding remains verified; use current Work content/ref checks"}
+        else:
+            result["transition_content_verification"] = _entry_compare_local(
+                target, launcher_sha256=product["launcher_sha256"], window="entry-1")
+            _serial_require(truth == _lifecycle_truth(target, allow_pending=True),
+                            "truth changed during completed transition comparison; preserve B1")
+    return result
 
 
 def _switch_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
@@ -223,15 +756,24 @@ def _switch_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
     from .work import validate_ref
     plan = _exact_dict(plan, set(PLAN_KEYS), "HV2-WORKSPACE-PLAN")
     _serial_require(plan["record_type"] == "lifecycle-plan" and type(plan["schema_version"]) is int
-                    and plan["schema_version"] == 1 and plan["action"] in ("update", "rollback"), "unsupported switch plan")
+                    and plan["schema_version"] in (1, 2) and plan["action"] in ("update", "rollback"), "unsupported switch plan")
     _serial_require(_id(plan["operation_id"]) and plan["authority_home_id"] == fmt["authority_home_id"]
                     and _text(plan["created_at"]) and _sha(plan["target_fingerprint"])
                     and plan["format_sha256"] == sha256_bytes(canonical_json_bytes(fmt)), "switch plan identity/format")
     validate_ref(plan["expected_binding_ref"])
     ref = _exact_dict(plan["candidate_release"], {"id", "sha256", "inventory_id"}, "HV2-WORKSPACE-RELEASE")
     _serial_require(_sha(ref["sha256"]) and ref["id"] == "product-release-" + ref["sha256"][:24]
-                    and isinstance(ref["inventory_id"], str) and ref["inventory_id"] in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1"}, "invalid switch release")
-    _serial_require(plan["remove"] == [] and plan["preserve"] == [] and isinstance(plan["truth_refs"], list), "switch cannot remove truth")
+                    and isinstance(ref["inventory_id"], str) and ref["inventory_id"] in WINDOW_PATHS, "invalid switch release")
+    _serial_require((plan["schema_version"] == 2) == (ref["inventory_id"] == "entry-1"), "switch schema/window pair")
+    if plan["schema_version"] == 1:
+        _serial_require(plan["remove"] == [], "historical switch cannot remove")
+    else:
+        _serial_require(isinstance(plan["remove"], list) and len(plan["remove"]) <= 1, "entry retirement shape")
+        if plan["remove"]:
+            retired = _exact_dict(plan["remove"][0], {"path", "sha256", "size_bytes"}, "HV2-WORKSPACE-PLAN")
+            _serial_require(retired["path"] == "hv2" and _sha(retired["sha256"])
+                            and type(retired["size_bytes"]) is int and retired["size_bytes"] >= 0, "entry retirement identity")
+    _serial_require(plan["preserve"] == [] and isinstance(plan["truth_refs"], list), "switch cannot remove truth")
     names = []
     for ref in plan["truth_refs"]:
         ref = _exact_dict(ref, {"path", "sha256"}, "HV2-WORKSPACE-TRUTH")
@@ -247,15 +789,22 @@ def _switch_binding_receipt(plan: dict[str, Any], prior: dict[str, Any]) -> tupl
     from .work import record_ref
     _serial_require(plan["expected_binding_ref"] == record_ref(prior, "operation_id"), "switch predecessor mismatch")
     _serial_require(plan["candidate_release"] != prior["active_release"], "switch to active release is not an operation")
-    rank = {"human-1": 0, "worker-1": 1, "umbrella-1": 2, "planning-1": 3, "checkout-1": 4}
+    rank = {"human-1": 0, "worker-1": 1, "umbrella-1": 2, "planning-1": 3, "checkout-1": 4, "entry-1": 5}
     _serial_require(plan["candidate_release"]["inventory_id"] in rank and prior["active_release"]["inventory_id"] in rank, "unsupported inventory window")
     _serial_require(rank[plan["candidate_release"]["inventory_id"]] >= rank[prior["active_release"]["inventory_id"]],
                     "inventory history cannot downgrade to an older semantic window")
+    if plan["schema_version"] == 2:
+        window = prior["active_release"]["inventory_id"]
+        _serial_require(window in ("checkout-1", "entry-1"), "entry switch predecessor")
+        _serial_require((window == "checkout-1") == bool(plan["remove"]), "entry retirement/predecessor mismatch")
+        _serial_require(window == "entry-1" or plan["action"] == "update", "entry transition requires update")
+        if window == "checkout-1":
+            _serial_require(prior["active_release"] == ENTRY_PREDECESSOR, "entry transition predecessor is not the audited release")
     if plan["action"] == "rollback":
         _serial_require(plan["candidate_release"] == prior["prior_release"], "rollback must select the recorded previous release")
     binding = {"record_type":"product-binding", "schema_version":1, "authority_home_id":plan["authority_home_id"],
                "active_release":plan["candidate_release"], "prior_release":prior["active_release"], "operation_id":plan["operation_id"]}
-    receipt = {"record_type":"lifecycle-receipt", "schema_version":1, "operation_id":plan["operation_id"],
+    receipt = {"record_type":"lifecycle-receipt", "schema_version":plan["schema_version"], "operation_id":plan["operation_id"],
                "plan":plan, "prior_binding_ref":record_ref(prior,"operation_id"), "result_binding_ref":record_ref(binding,"operation_id")}
     return binding, receipt
 
@@ -276,7 +825,7 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
                              {"record_type","schema_version","operation_id","plan","prior_binding_ref","result_binding_ref"}, "HV2-WORKSPACE-RECEIPT")
         op = receipt["operation_id"]
         _serial_require(_id(op) and path.name == op + ".json" and receipt["record_type"] == "lifecycle-receipt"
-                        and type(receipt["schema_version"]) is int and receipt["schema_version"] == 1, "invalid receipt identity/schema")
+                        and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2), "invalid receipt identity/schema")
         _serial_require(op not in receipts, "duplicate receipt")
         receipts[op] = receipt; raw_receipts[op] = data
     _serial_require(len({op.casefold() for op in receipts}) == len(receipts), "receipt case alias")
@@ -304,10 +853,10 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
     matches = [i for i,b in enumerate(bindings) if canonical_json_bytes(b) == raw_binding]
     _serial_require(len(matches) == 1 and matches[0] >= len(bindings)-2, "binding is not the current or single pending predecessor")
     index = matches[0]; binding = bindings[index]; pending = chain[-1] if index != len(bindings)-1 else None
-    _serial_require(not _exists(root / "planning") or binding["active_release"]["inventory_id"] in ("planning-1", "checkout-1"), "planning records require an applied planning-capable binding")
+    _serial_require(not _exists(root / "planning") or binding["active_release"]["inventory_id"] in ("planning-1", "checkout-1", "entry-1"), "planning records require an applied planning-capable binding")
     _serial_require(allow_pending or pending is None, "pending lifecycle blocks product use; recover exact plan from independent source")
     if repair_candidate is not None:
-        _serial_require(binding["active_release"]["inventory_id"] == "checkout-1",
+        _serial_require(binding["active_release"]["inventory_id"] == "entry-1",
                         "older-window repair requires the exact retained old source")
         _serial_require(pending is None and repair_candidate["release_ref"] == binding["active_release"],
                         "repair requires the exact active release and no pending lifecycle")
@@ -328,30 +877,57 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
             verified = verify_workspace_release(path)
         _serial_require(verified["release_ref"] == ref, "binding/release mismatch")
         releases[rid] = verified
+    for position, receipt in enumerate(chain[1:], 1):
+        previous = bindings[position - 1]
+        _entry_retirement(receipt["plan"], previous, releases[previous["active_release"]["id"]]["inventory"])
+        if position <= index and receipt["plan"]["remove"]:
+            _entry_binding_stage(target, receipt["plan"], canonical_json_bytes(bindings[position]), allowed=False)
+            if position == index:
+                _serial_require(stat.S_IMODE((product / "binding.json").lstat().st_mode) == 0o600,
+                                "entry transition B1 mode is not 0600")
     expected = {"init-plan.json", "binding.json"} | {"receipts/"+op+".json" for op in receipts}
     for rid in releases:
         expected |= {"releases/"+rid+"/inventory.json"} | {"releases/"+rid+"/payload/"+p for p in _managed_paths(releases[rid]["inventory"]["inventory_id"])}
     files = _serial_tree(product, expected, optional_files=repair_paths)
     _serial_require(files["binding.json"] == raw_binding and files["init-plan.json"] == canonical_json_bytes(initial)
                     and all(files["receipts/"+op+".json"] == data for op,data in raw_receipts.items()), "product changed while reading")
-    active = binding["active_release"]["id"]; launcher = target / "hv2"
+    active = binding["active_release"]["id"]
+    launcher_name = _launcher_path(binding["active_release"]["inventory_id"])
+    launcher = target / launcher_name
+    entry_transition = None
+    crossing = pending is not None and bool(pending["plan"]["remove"])
     if repair_candidate is not None:
-        actual = {".hrn/product/"+p: _repair_file_observation(product/p) for p in sorted(repair_paths)}
-        actual["hv2"] = _repair_file_observation(launcher)
+        _refuse_retired_entry(target, "entry-1 repair observation")
+        actual = {".hrn/product/" + p: _repair_file_observation(product / p) for p in sorted(repair_paths)}
+        actual[launcher_name] = _repair_file_observation(launcher)
         launcher_bytes = _serial_file(launcher) if _exists(launcher) else b""
+    elif crossing:
+        actual = None
+        old_bytes = files["releases/" + active + "/payload/hv2"]
+        pending_id = pending["plan"]["candidate_release"]["id"]
+        new_bytes = files["releases/" + pending_id + "/payload/colvia"] if pending_id in releases else None
+        entry_transition = _entry_transition_prefix(target, pending["plan"], old_bytes, new_bytes,
+                                                     canonical_json_bytes(bindings[-1]))
+        launcher_bytes = old_bytes if entry_transition["old_present"] else None
     else:
         actual = None
         _require_kind(launcher, False); launcher_bytes = _serial_file(launcher)
-    permitted = [repair_candidate["payload"]["hv2"] if repair_candidate is not None else files["releases/"+active+"/payload/hv2"]]
-    if pending and pending["plan"]["candidate_release"]["id"] in releases:
-        permitted.append(files["releases/"+pending["plan"]["candidate_release"]["id"]+"/payload/hv2"])
-    if repair_candidate is None:
-        _serial_require(launcher_bytes in permitted and bool(launcher.stat().st_mode & stat.S_IXUSR), "launcher differs from permitted release or is not executable")
-    _visible_truth(target, [".hrn/format.json", ".hrn/.gitignore", "hv2"] + [".hrn/product/"+p for p in files])
-    return {"binding_ref":record_ref(binding,"operation_id"), "binding":binding, "launcher_sha256":sha256_bytes(launcher_bytes),
-            "release_path":str(product/"releases"/active), "inventory":releases[active]["inventory"],
-            "pending":pending, "history":chain, "bindings":bindings,
-            "observation":{p:sha256_bytes(data) for p,data in files.items()}, "repair_files":actual}
+        permitted = [files["releases/" + active + "/payload/" + launcher_name]]
+        if pending and pending["plan"]["candidate_release"]["id"] in releases:
+            permitted.append(files["releases/" + pending["plan"]["candidate_release"]["id"] + "/payload/" + launcher_name])
+        _serial_require(launcher_bytes in permitted and bool(launcher.stat().st_mode & stat.S_IXUSR),
+                        "launcher differs from permitted release or is not executable")
+        if chain[index]["plan"]["remove"]:
+            _serial_require(stat.S_IMODE(launcher.lstat().st_mode) == 0o755,
+                            "completed transition entry mode differs; preserve B1")
+    _visible_truth(target, [".hrn/format.json", ".hrn/.gitignore", launcher_name] +
+                   (["colvia"] if crossing else []) + [".hrn/product/" + p for p in files])
+    return {"binding_ref": record_ref(binding, "operation_id"), "binding": binding,
+            "launcher_sha256": sha256_bytes(launcher_bytes) if launcher_bytes is not None else None,
+            "release_path": str(product / "releases" / active), "inventory": releases[active]["inventory"],
+            "pending": pending, "history": chain, "bindings": bindings,
+            "observation": {p: sha256_bytes(data) for p, data in files.items()}, "repair_files": actual,
+            "entry_transition": entry_transition}
 
 
 def verify_workspace_product(target: Path) -> dict[str, Any]:
@@ -370,13 +946,13 @@ process modifying Python objects or undetectable manual edits between observatio
     require_supported_runtime()
     target = Path(classify_target(target, mutation=True)["target"])
     observed = verify_workspace_product(target)
-    _serial_require(observed["inventory"]["inventory_id"] == "checkout-1", "new installed runtime requires checkout-1")
+    _serial_require(observed["inventory"]["inventory_id"] == "entry-1", "new installed runtime requires entry-1")
     _serial_require(sys.flags.isolated == 1 and sys.dont_write_bytecode,
                     "writer must use isolated Python startup without bytecode writes")
     main = sys.modules.get("__main__")
     main_path = getattr(main, "__file__", None)
-    _serial_require(isinstance(main_path, str) and Path(main_path).absolute() == target / "hv2"
-                    and Path(main_path).resolve() == target / "hv2", "executing launcher is not the control launcher")
+    _serial_require(isinstance(main_path, str) and Path(main_path).absolute() == target / "colvia"
+                    and Path(main_path).resolve() == target / "colvia", "executing launcher is not the control launcher")
     payload = Path(observed["release_path"]) / "payload"
     package = payload / "src/hv2ref"
     entries = {entry["path"]: entry for entry in observed["inventory"]["entries"]}
@@ -452,11 +1028,13 @@ def _init_partial_tree(root: Path, expected: dict[str, bytes]) -> set[str]:
 def _workspace_init_preflight(target: Path, request: dict[str, Any], candidate: dict[str, Any], *, recover: bool) -> str:
     from .workspace import _exists, _require_kind, _root_aliases, _file_json, inspect_root
     root = target / ".hrn"
+    _serial_require(candidate["release_ref"]["inventory_id"] == "entry-1", "new init requires entry-1")
     _serial_require(not _root_aliases(target), "workspace root alias")
     _serial_require(not any(p.name.casefold().startswith(".harness-v2") for p in target.iterdir()), "old homes require a fresh target")
     if not _exists(root):
         _serial_require(not recover, "cannot recover an absent root")
-        _serial_require(not _exists(target / "hv2"), "preexisting launcher is not owned")
+        _refuse_retired_entry(target, "fresh entry-1 init")
+        _entry_absence_admission(target)
         return "fresh"
     _require_kind(root, True)
     _serial_require(_exists(root / "product"), "no durable ownership plan; preserve existing root")
@@ -467,11 +1045,14 @@ def _workspace_init_preflight(target: Path, request: dict[str, Any], candidate: 
     fmt = root / "format.json"
     if _exists(fmt): _serial_require(_serial_file(fmt) == canonical_json_bytes(request["format"]), "different format bytes")
     if _exists(root / "product/binding.json"):
-        verify_workspace_product(target)
+        observed = verify_workspace_product(target)
+        _serial_require(observed["inventory"]["inventory_id"] == "entry-1", "completed init is not live entry-1")
+        _refuse_retired_entry(target, "exact completed-init replay; historical completion preserved")
         return "complete"
     _serial_require(recover, "partial init requires explicit exact recovery")
     state = inspect_root(target)["classification"]
     _serial_require(state in {"root-ready", "partial-candidate"}, "root is not an exact initialization prefix")
+    _entry_absence_admission(target, owned_prefix=True)
     for category in ("intents", "work", "planning"):
         path = root / category
         if _exists(path):
@@ -490,11 +1071,12 @@ def _workspace_init_preflight(target: Path, request: dict[str, Any], candidate: 
         _serial_require(verify_workspace_release(release)["release_ref"] == candidate["release_ref"], "published release is incomplete")
     receipt_path = root / "product/receipts" / (request["plan"]["operation_id"] + ".json")
     if _exists(receipt_path): _serial_require(_exists(release), "receipt before immutable release")
-    if _exists(target / "hv2"):
+    if _exists(target / "colvia"):
         _serial_require(_exists(receipt_path), "launcher without durable init receipt")
-        _serial_require(_serial_file(target / "hv2") == candidate["payload"]["hv2"], "changed launcher; preserve")
+        _serial_require(_serial_file(target / "colvia") == candidate["payload"]["colvia"], "changed launcher; preserve")
     if state == "partial-candidate":
-        _serial_require(seen == {"init-plan.json"} and not _exists(target / "hv2"), "product published before root completion")
+        _serial_require(seen == {"init-plan.json"} and not _exists(target / "colvia"), "product published before root completion")
+    _refuse_retired_entry(target, "exact entry-1 init recovery")
     return state
 
 
@@ -514,9 +1096,9 @@ def workspace_init_apply(source: Path, target: Path, request: dict[str, Any], *,
     candidate = workspace_candidate(source)
     _serial_require(candidate["release_ref"] == request["plan"]["candidate_release"], "source changed since init preview")
     root = target / ".hrn"; plan = request["plan"]; rid = candidate["release_ref"]["id"]
-    planned = [".hrn/format.json", ".hrn/.gitignore", ".hrn/product/init-plan.json", ".hrn/product/binding.json", "hv2",
+    planned = [".hrn/format.json", ".hrn/.gitignore", ".hrn/product/init-plan.json", ".hrn/product/binding.json", "colvia",
                ".hrn/product/receipts/" + plan["operation_id"] + ".json", ".hrn/product/releases/" + rid + "/inventory.json"]
-    planned += [".hrn/product/releases/" + rid + "/payload/" + p for p in SERIAL_MANAGED_PATHS]
+    planned += [".hrn/product/releases/" + rid + "/payload/" + p for p in ENTRY_MANAGED_PATHS]
     _visible_truth(target, planned)
     state = _workspace_init_preflight(target, request, candidate, recover=recover)
     if state == "complete": return {"classification": "initialized", "replayed": True, "product": verify_workspace_product(target)}
@@ -550,10 +1132,10 @@ def workspace_init_apply(source: Path, target: Path, request: dict[str, Any], *,
         _durable_directory(product / "receipts")
         _write_exact(product / "receipts" / (plan["operation_id"] + ".json"), canonical_json_bytes(receipt))
         if inject_at == "after-receipt": raise InjectedCrash(inject_at)
-        _write_exact(target / "hv2", candidate["payload"]["hv2"])
+        _write_exact(target / "colvia", candidate["payload"]["colvia"])
         if inject_at == "after-launcher-bytes": raise InjectedCrash(inject_at)
-        (target / "hv2").chmod(0o755)
-        with (target / "hv2").open("rb") as file: os.fsync(file.fileno())
+        (target / "colvia").chmod(0o755)
+        with (target / "colvia").open("rb") as file: os.fsync(file.fileno())
         sync_directory(target)
         if inject_at == "after-launcher": raise InjectedCrash(inject_at)
         _write_exact(product / "binding.json", canonical_json_bytes(binding))
@@ -650,6 +1232,12 @@ def _workspace_status_observation(target: Path, *, _share_intents: bool = True) 
                 "planning": planning,
                 "runtime": {"implementation": sys.implementation.name, "python": ".".join(map(str, sys.version_info[:3])), "supported_baseline": SUPPORTED_PYTHON_STRINGS[0], "supported_versions": list(SUPPORTED_PYTHON_STRINGS), "required_releaselevel": "final", "free_threaded_supported": False,
                             "supported": supported}}
+        if status["classification"] == "pass" and product["inventory"]["inventory_id"] == "entry-1":
+            collision = _retired_entry_collision(target)
+            if collision is not None:
+                status.update(classification="conflict", lifecycle_ready=False, retired_entry_collision=collision,
+                              next_action="preserve retired entry occupants " + repr(collision["observed_names"]) +
+                                          "; a separate operator decision is required before lifecycle mutation; " + next_action)
         if _share_intents and status["classification"] != "pass":
             return _workspace_status_observation(target, _share_intents=False)
         return status, (works, intents) if status["classification"] == "pass" else None
@@ -712,7 +1300,14 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
     target = Path(classify_target(target, mutation=True)["target"])
     if installed: require_workspace_runtime(target)
     state = _workspace_observe(target); binding = state["binding"]
-    _serial_require(action in ("update","rollback"), "unsupported lifecycle action")
+    _serial_require(action in ("update", "rollback"), "unsupported lifecycle action")
+    previous_window = binding["active_release"]["inventory_id"]
+    _serial_require(previous_window in ("checkout-1", "entry-1"), "entry-1 switch requires an admitted predecessor")
+    if previous_window == "entry-1":
+        _refuse_retired_entry(target, "entry-1 switch preview")
+    else:
+        _serial_require(action == "update", "old-window rollback requires the retained old source")
+        _entry_admission(target, state)
     if action == "update":
         _serial_require(source is not None and to_release_id is None, "update requires source only")
         candidate = workspace_candidate(source)["release_ref"]
@@ -720,41 +1315,54 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
         _serial_require(source is None and binding["prior_release"] is not None, "no recorded rollback release")
         candidate = binding["prior_release"]
         _serial_require(to_release_id is None or to_release_id == candidate["id"], "rollback target is not previous release")
-    _serial_require(candidate["inventory_id"] == "checkout-1", "new source switches only to checkout-1; retain old source for older-window operations")
-    _serial_require(binding["active_release"]["inventory_id"] in ("planning-1", "checkout-1"), "checkout-1 transition requires planning-1 or checkout-1 predecessor")
-    fmt = _file_json(target/".hrn/format.json"); truth = _lifecycle_truth(target)
-    plan = {"record_type":"lifecycle-plan","schema_version":1,"operation_id":operation_id,"action":action,
-            "authority_home_id":fmt["authority_home_id"],"expected_binding_ref":state["binding_ref"],"candidate_release":candidate,
-            "format_sha256":sha256_bytes(canonical_json_bytes(fmt)),"truth_refs":truth,"remove":[],"preserve":[],
-            "created_at":created_at,"target_fingerprint":target_fingerprint(target)}
-    _switch_plan_shape(plan,fmt)
-    result_binding, receipt = _switch_binding_receipt(plan,binding)
-    _lifecycle_output_bytes(plan, "plan")
-    _lifecycle_output_bytes(result_binding, "binding")
-    _lifecycle_output_bytes(receipt, "receipt")
+    _serial_require(candidate["inventory_id"] == "entry-1", "new source switches only to entry-1; first transition cannot roll back to checkout-1")
+    fmt = _file_json(target / ".hrn/format.json"); truth = _lifecycle_truth(target)
+    remove = ([next(e for e in state["inventory"]["entries"] if e["path"] == "hv2")]
+              if previous_window == "checkout-1" else [])
+    plan = {"record_type": "lifecycle-plan", "schema_version": 2, "operation_id": operation_id, "action": action,
+            "authority_home_id": fmt["authority_home_id"], "expected_binding_ref": state["binding_ref"], "candidate_release": candidate,
+            "format_sha256": sha256_bytes(canonical_json_bytes(fmt)), "truth_refs": truth, "remove": remove, "preserve": [],
+            "created_at": created_at, "target_fingerprint": target_fingerprint(target)}
+    _switch_plan_shape(plan, fmt); _entry_retirement(plan, binding, state["inventory"])
+    result_binding, receipt = _switch_binding_receipt(plan, binding)
+    _lifecycle_output_bytes(plan, "plan"); _lifecycle_output_bytes(result_binding, "binding"); _lifecycle_output_bytes(receipt, "receipt")
     _serial_require(all(r["operation_id"].casefold() != operation_id.casefold() for r in state["history"]), "operation id already used")
     _serial_require(state == _workspace_observe(target) and truth == _lifecycle_truth(target), "preview changed while reading")
-    return {"classification":"preview","request":plan,"confirm_token":sha256_bytes(canonical_json_bytes(plan))[:16],
-            "transition_notice": "checkout-1 lifecycle: after the first checkout-1 receipt, older-window downgrade is unavailable even without new Work or candidates. Preserve the exact Q recovery source and original request; their loss has no guaranteed supported recovery. When transitioning from planning-1 the initial prior release is planning-1, so that rollback is refused; a qualified checkout-1 forward update requires separate approval. Existing worker continuation needs an explicitly preserved Q control commit, same-intent baseline rebind and resubmission. Core performs none of these Git or acceptance actions. A note request alone does not authorize update."}
+    if previous_window == "checkout-1": _entry_admission(target, state)
+    else: _refuse_retired_entry(target, "entry-1 switch preview")
+    return {"classification": "preview", "request": plan, "confirm_token": sha256_bytes(canonical_json_bytes(plan))[:16],
+            "transition_notice": "entry-1 transition is one-way after its schema-2 receipt; the first prior checkout-1 release cannot be rolled back. Retain the exact recovery source/request and separately authorized whole-target recovery material. Receipt or staging tears may require external disposition. Local baseline preservation is conditional; worker rebind and Git retention remain explicit human actions."}
 
 
 def _switch_preflight(target: Path, plan: dict[str, Any], *, recover: bool) -> tuple[dict[str, Any], bool]:
-    _serial_require(plan["candidate_release"]["inventory_id"] == "checkout-1", "new source switches only to checkout-1")
+    _serial_require(plan["schema_version"] == 2 and plan["candidate_release"]["inventory_id"] == "entry-1",
+                    "new source switches only schema-2 entry-1; use retained old source for old pending operations")
     state = _workspace_observe(target, allow_pending=True)
-    _serial_require(state["binding"]["active_release"]["inventory_id"] in ("planning-1", "checkout-1"), "checkout-1 transition requires planning-1 or checkout-1 predecessor")
+    window = state["binding"]["active_release"]["inventory_id"]
+    _serial_require(window in ("checkout-1", "entry-1"), "entry-1 switch requires an admitted predecessor")
     matching = [r for r in state["history"] if r["operation_id"] == plan["operation_id"]]
     _serial_require(not any(r["operation_id"] != plan["operation_id"] and r["operation_id"].casefold() == plan["operation_id"].casefold() for r in state["history"]), "operation id case alias")
     if matching:
         _serial_require(canonical_json_bytes(matching[0]["plan"]) == canonical_json_bytes(plan), "operation id reused with another plan")
         if matching[0] != state["pending"]:
             _serial_require(state["pending"] is None, "another lifecycle is pending")
-            return state, True  # Historical replay observes current; never rewinds it.
+            _refuse_retired_entry(target, "completed entry-1 lifecycle replay; preserve historical result")
+            return state, True
     if state["pending"]:
         _serial_require(recover and state["pending"]["plan"] == plan, "pending lifecycle requires same explicit recovery")
     else:
         _serial_require(not recover, "no pending lifecycle to recover")
     _serial_require(state["binding_ref"] == plan["expected_binding_ref"], "binding changed since preview")
+    _entry_retirement(plan, state["binding"], state["inventory"])
     _serial_require(_lifecycle_truth(target) == plan["truth_refs"], "truth changed since lifecycle preview")
+    if window == "entry-1":
+        _refuse_retired_entry(target, "entry-1 lifecycle/recovery")
+    elif state["pending"] is None:
+        _entry_admission(target, state)
+    else:
+        _entry_umask()
+        _entry_absence_admission(target, owned_prefix=True)
+        _entry_local_baselines(target)  # Baselines are immutable; compare actual S6 after publication.
     return state, False
 
 
@@ -779,13 +1387,13 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
     from .workspace import classify_target, _file_json, target_fingerprint, writer_guard, _exists, _durable_directory, _write_exact, require_supported_runtime, _require_kind
     from .work import _visible_truth
     require_supported_runtime()
-    points = {None,"after-receipt","after-staged-inventory","after-staged-payload","after-release","after-launcher","after-binding"}
+    points = {None, "after-receipt", "after-staged-inventory", "after-staged-payload", "after-release", "after-launcher", "after-binding"}
     _serial_require(inject_at in points, "unknown lifecycle crash point")
-    raw = canonical_json_bytes(plan); decode_json_bytes(raw,require_canonical=True)
-    _serial_require(isinstance(confirm_token,str) and confirm_token == sha256_bytes(raw)[:16], "lifecycle confirmation mismatch")
-    target = Path(classify_target(target,mutation=True)["target"])
-    _require_kind(target/".hrn", True)
-    _switch_plan_shape(plan,_file_json(target/".hrn/format.json"))
+    raw = canonical_json_bytes(plan); decode_json_bytes(raw, require_canonical=True)
+    _serial_require(isinstance(confirm_token, str) and confirm_token == sha256_bytes(raw)[:16], "lifecycle confirmation mismatch")
+    target = Path(classify_target(target, mutation=True)["target"])
+    _require_kind(target / ".hrn", True)
+    _switch_plan_shape(plan, _file_json(target / ".hrn/format.json"))
     _serial_require(plan["target_fingerprint"] == target_fingerprint(target), "lifecycle target changed")
     if installed:
         _serial_require(not recover, "lifecycle recovery requires independent source")
@@ -793,53 +1401,112 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
     candidate = workspace_candidate(source) if source is not None else None
     _serial_require((plan["action"] == "update") == (candidate is not None), "update requires exact source; rollback uses retained release")
     if candidate: _serial_require(candidate["release_ref"] == plan["candidate_release"], "candidate changed since preview")
-    state,done = _switch_preflight(target,plan,recover=recover)
-    if done: return {"classification":"replayed","operation_id":plan["operation_id"],"product":verify_workspace_product(target)}
-    rid = plan["candidate_release"]["id"]; root=target/".hrn"; product=root/"product"
-    planned = ["hv2",".hrn/product/binding.json",".hrn/product/receipts/"+plan["operation_id"]+".json",
-               ".hrn/product/releases/"+rid+"/inventory.json"] + [".hrn/product/releases/"+rid+"/payload/"+p for p in SERIAL_MANAGED_PATHS]
-    _visible_truth(target,planned)
+    state, done = _switch_preflight(target, plan, recover=recover)
+    if done:
+        with writer_guard(target):
+            if installed: require_workspace_runtime(target)
+            state, done = _switch_preflight(target, plan, recover=recover)
+            _serial_require(done, "completed lifecycle changed before replay")
+            return _entry_replay_result(target, plan, classification="replayed")
+    rid = plan["candidate_release"]["id"]; root = target / ".hrn"; product = root / "product"
+    planned = ["colvia", ".hrn/product/binding.json", ".hrn/product/receipts/" + plan["operation_id"] + ".json",
+               ".hrn/product/releases/" + rid + "/inventory.json"] + [".hrn/product/releases/" + rid + "/payload/" + p for p in ENTRY_MANAGED_PATHS]
+    _visible_truth(target, planned)
     with writer_guard(target):
         if installed: require_workspace_runtime(target)
-        state,done = _switch_preflight(target,plan,recover=recover)
-        if done: return {"classification":"replayed","operation_id":plan["operation_id"],"product":verify_workspace_product(target)}
-        binding,receipt = _switch_binding_receipt(plan,state["binding"])
+        state, done = _switch_preflight(target, plan, recover=recover)
+        if done: return _entry_replay_result(target, plan, classification="replayed")
+        binding, receipt = _switch_binding_receipt(plan, state["binding"])
         binding_bytes = _lifecycle_output_bytes(binding, "binding")
         receipt_bytes = _lifecycle_output_bytes(receipt, "receipt")
-        _visible_truth(target,planned)
-        _write_exact(product/"receipts"/(plan["operation_id"]+".json"),receipt_bytes)
+        _visible_truth(target, planned)
+        transition = bool(plan["remove"])
+        if transition:
+            _serial_require(candidate is not None, "entry transition requires exact candidate")
+            _entry_sync_admission(target, plan, candidate)
+        def durable(path, role):
+            if transition: _entry_durable_directory(target, path, role=role)
+            else: _durable_directory(path)
+        def exact(path, data, role):
+            if transition: _entry_write_exact(target, path, data, role=role)
+            else: _write_exact(path, data)
+        exact(product / "receipts" / (plan["operation_id"] + ".json"), receipt_bytes, "receipt-parent")
         if inject_at == "after-receipt": raise InjectedCrash(inject_at)
-        release=product/"releases"/rid
+        def checkpoint():
+            current, finished = _switch_preflight(target, plan, recover=True)
+            _serial_require(not finished and current["binding_ref"] == state["binding_ref"], "binding changed during switch")
+            if candidate: _serial_require(candidate == workspace_candidate(source), "switch source changed")
+            return current
+        release = product / "releases" / rid
         if not _exists(release):
             _serial_require(candidate is not None, "rollback release is unavailable")
-            staging=root/"staging"; _durable_directory(staging)
-            operation=staging/("switch-"+plan["operation_id"]); _durable_directory(operation)
-            staged=operation/rid; _durable_directory(staged)
-            expected={"inventory.json":canonical_json_bytes(candidate["inventory"])} | {"payload/"+p:b for p,b in candidate["payload"].items()}
-            _init_partial_tree(staged,expected)
-            for name,data in expected.items():
-                path=staged/name
-                for parent in reversed(path.relative_to(staged).parents): _durable_directory(staged/parent)
-                _write_exact(path,data)
+            checkpoint()
+            staging = root / "staging"; durable(staging, "staging-directory")
+            operation = staging / ("switch-" + plan["operation_id"]); durable(operation, "switch-directory")
+            _serial_require({p.name for p in operation.iterdir()} <= {rid}, "unknown switch staging member; preserve")
+            staged = operation / rid; durable(staged, "candidate-directory")
+            expected = {"inventory.json": canonical_json_bytes(candidate["inventory"])} | {"payload/" + p: b for p, b in candidate["payload"].items()}
+            _init_partial_tree(staged, expected)
+            for name, data in expected.items():
+                checkpoint()
+                path = staged / name
+                for parent in reversed(path.relative_to(staged).parents): durable(staged / parent, "candidate-directory")
+                exact(path, data, "candidate-member-parent")
                 if name == "inventory.json" and inject_at == "after-staged-inventory": raise InjectedCrash(inject_at)
             if inject_at == "after-staged-payload": raise InjectedCrash(inject_at)
             _serial_require(verify_workspace_release(staged)["release_ref"] == plan["candidate_release"], "staged candidate mismatch")
-            os.rename(staged,release); sync_directory(release.parent); sync_directory(operation)
+            checkpoint(); os.rename(staged, release)
+            if transition:
+                _entry_sync(target, release.parent, phase="publication", role="release-parent")
+                _entry_sync(target, operation, phase="publication", role="release-operation-parent")
+            else:
+                sync_directory(release.parent); sync_directory(operation)
+        elif transition:
+            _entry_resync_release(target, plan, candidate["inventory"])
         _serial_require(verify_workspace_release(release)["release_ref"] == plan["candidate_release"], "published candidate mismatch")
+        operation = root / "staging" / ("switch-" + plan["operation_id"])
+        if _exists(operation):
+            _require_kind(operation, True)
+            _serial_require(not any(operation.iterdir()), "unknown staging remains beside published release")
         if inject_at == "after-release": raise InjectedCrash(inject_at)
-        # Re-observe the exact pending plan, complete candidate and truth before swaps.
-        current,_ = _switch_preflight(target,plan,recover=True)
-        _serial_require(current["binding_ref"] == state["binding_ref"], "binding changed during switch")
-        launcher_bytes = _serial_file(release/"payload/hv2")
-        if _serial_file(target/"hv2") != launcher_bytes:
-            _replace_product_file(target,target/"hv2",launcher_bytes,executable=True)
-        if inject_at == "after-launcher": raise InjectedCrash(inject_at)
-        current,_ = _switch_preflight(target,plan,recover=True)
-        _serial_require(current["binding_ref"] == state["binding_ref"], "binding changed before publication")
-        _replace_product_file(target,product/"binding.json",binding_bytes,executable=False)
+        checkpoint()
+        launcher_bytes = _serial_file(release / "payload/colvia")
+        if plan["remove"]:
+            # No replacement helper for the new root pathname. An initial apply
+            # cannot claim an intervening occupant; exact recovery uses the table.
+            _entry_append_file(target / "colvia", launcher_bytes, target=target, executable=True, recover=recover, checkpoint=checkpoint)
+            checkpoint()
+            old = target / "hv2"
+            if _exists(old):
+                recorded = plan["remove"][0]; data = _serial_file(old)
+                _serial_require(sha256_bytes(data) == recorded["sha256"] and len(data) == recorded["size_bytes"]
+                                and stat.S_IMODE(old.lstat().st_mode) == 0o755, "old entry changed before retirement")
+                checkpoint(); old.unlink()
+                retirement_phase = "publication"
+            else:
+                retirement_phase = "recovery"
+            _entry_sync(target, target, phase=retirement_phase, role="old-retirement-parent")
+            if inject_at == "after-launcher": raise InjectedCrash(inject_at)
+            checkpoint()
+            staging = root / "staging"; durable(staging, "staging-directory")
+            binding_stage = staging / ("entry-" + plan["operation_id"]); durable(binding_stage, "binding-directory")
+            _entry_binding_stage(target, plan, binding_bytes, allowed=True)
+            next_binding = binding_stage / "binding.next"
+            _entry_append_file(next_binding, binding_bytes, target=target, executable=False, recover=recover, checkpoint=checkpoint)
+            checkpoint()
+            _serial_require(_serial_file(next_binding) == binding_bytes and
+                            stat.S_IMODE(next_binding.lstat().st_mode) == 0o600, "binding stage changed")
+            _serial_require(_serial_file(product / "binding.json") == canonical_json_bytes(state["binding"]), "expected B0 changed")
+            os.replace(next_binding, product / "binding.json")
+            _entry_sync(target, product, phase="publication", role="binding-product-parent", b1=True)
+            _entry_sync(target, binding_stage, phase="publication", role="binding-operation-parent", b1=True)
+        else:
+            if _serial_file(target / "colvia") != launcher_bytes:
+                checkpoint(); _replace_product_file(target, target / "colvia", launcher_bytes, executable=True)
+            if inject_at == "after-launcher": raise InjectedCrash(inject_at)
+            checkpoint(); _replace_product_file(target, product / "binding.json", binding_bytes, executable=False)
         if inject_at == "after-binding": raise InjectedCrash(inject_at)
-        return {"classification":"updated" if plan["action"] == "update" else "rolled-back",
-                "operation_id":plan["operation_id"],"product":verify_workspace_product(target)}
+        return _entry_replay_result(target, plan, classification="updated" if plan["action"] == "update" else "rolled-back")
 
 
 # Repair is an independent-source operation. Its backup/receipt is external
@@ -853,7 +1520,7 @@ def _repair_file_observation(path: Path) -> dict[str, Any] | None:
 
 def _repair_expected(candidate: dict[str, Any]) -> dict[str, bytes]:
     prefix = ".hrn/product/releases/"+candidate["release_ref"]["id"]+"/"
-    return {"hv2":candidate["payload"]["hv2"], prefix+"inventory.json":canonical_json_bytes(candidate["inventory"])} | {
+    return {"colvia":candidate["payload"]["colvia"], prefix+"inventory.json":canonical_json_bytes(candidate["inventory"])} | {
         prefix+"payload/"+p:b for p,b in candidate["payload"].items()}
 
 
@@ -897,7 +1564,7 @@ def workspace_repair_preview(source: Path, target: Path, backup: Path, *, operat
     for path, data in sorted(_repair_expected(candidate).items()):
         before = state["repair_files"][path]
         after = {"sha256":sha256_bytes(data), "size_bytes":len(data),
-                 "mode":0o755 if path == "hv2" else (before["mode"] & 0o777 if before else 0o644)}
+                 "mode":0o755 if path == "colvia" else (before["mode"] & 0o777 if before else 0o644)}
         if before != after: files.append({"path":path, "before":before, "after":after})
     _serial_require(bool(files), "active release needs no repair")
     preserve = [{"path":f["path"], "sha256":f["before"]["sha256"], "size_bytes":f["before"]["size_bytes"]}
@@ -945,7 +1612,7 @@ def _repair_preflight(target: Path, request: dict[str, Any], candidate: dict[str
             _serial_require(_sha(value["sha256"]) and type(value["size_bytes"]) is int and value["size_bytes"] >= 0
                             and type(value["mode"]) is int and 0 <= value["mode"] <= 0o7777, "repair observation shape")
         before=f["before"]; data=expected[name]
-        after={"sha256":sha256_bytes(data), "size_bytes":len(data), "mode":0o755 if name=="hv2" else (before["mode"] & 0o777 if before else 0o644)}
+        after={"sha256":sha256_bytes(data), "size_bytes":len(data), "mode":0o755 if name=="colvia" else (before["mode"] & 0o777 if before else 0o644)}
         _serial_require(f["after"] == after and before != after, "repair replacement must be exact active bytes/mode")
         actual=state["repair_files"][name]
         _serial_require(actual == before or (recover and actual == after), "repair target drift")
@@ -957,14 +1624,14 @@ def _repair_preflight(target: Path, request: dict[str, Any], candidate: dict[str
         if name not in names:
             actual=state["repair_files"][name]
             _serial_require(actual is not None and actual["sha256"] == sha256_bytes(data)
-                            and (name != "hv2" or actual["mode"] == 0o755), "unplanned damage remains")
+                            and (name != "colvia" or actual["mode"] == 0o755), "unplanned damage remains")
     observation=request["product_observation"]
     _serial_require(isinstance(observation,dict), "repair product observation shape")
     skipped={n[len(".hrn/product/"):] for n in names if n.startswith(".hrn/product/")}
     _serial_require({p:h for p,h in state["observation"].items() if p not in skipped}
                     == {p:h for p,h in observation.items() if p not in skipped}, "repair metadata/retained release changed")
     for f in files:
-        if f["path"] == "hv2": continue
+        if f["path"] == "colvia": continue
         p=f["path"][len(".hrn/product/"):]
         _serial_require(observation.get(p) == (f["before"]["sha256"] if f["before"] else None), "repair initial observation mismatch")
     return state
@@ -1064,13 +1731,14 @@ def _detach_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
     from .work import validate_ref
     import re
     plan=_exact_dict(plan,set(PLAN_KEYS),"HV2-WORKSPACE-DETACH")
-    _serial_require(plan["record_type"]=="lifecycle-plan" and type(plan["schema_version"]) is int and plan["schema_version"] in (1, 2)
+    _serial_require(plan["record_type"]=="lifecycle-plan" and type(plan["schema_version"]) is int and plan["schema_version"] in (1, 2, 3)
                     and plan["action"]=="detach" and _id(plan["operation_id"]) and _text(plan["created_at"])
                     and plan["authority_home_id"]==fmt["authority_home_id"] and plan["format_sha256"]==sha256_bytes(canonical_json_bytes(fmt))
                     and _sha(plan["target_fingerprint"]) and plan["candidate_release"] is None, "detach plan identity/format")
     validate_ref(plan["expected_binding_ref"])
     remove=_detach_entries(plan["remove"]);preserve=_detach_entries(plan["preserve"])
-    required={"hv2",".hrn/product/init-plan.json",".hrn/product/binding.json"};releases=set();receipts=set()
+    launcher = "colvia" if plan["schema_version"] == 3 else "hv2"
+    required={launcher,".hrn/product/init-plan.json",".hrn/product/binding.json"};releases=set();receipts=set()
     for name in set(remove)-required:
         if name.startswith(".hrn/product/receipts/"):
             tail=name[len(".hrn/product/receipts/"):]
@@ -1086,14 +1754,18 @@ def _detach_plan_shape(plan: Any, fmt: dict[str, Any]) -> dict[str, Any]:
         prefix=".hrn/product/releases/"+rid+"/"
         # Resumption can occur after inventory bytes have been removed. Only the
         # three exact shipped memberships are allowed; preflight bound their bytes.
-        paths = SERIAL_MANAGED_PATHS if prefix+"payload/src/hv2ref/candidates.py" in remove else UMBRELLA_MANAGED_PATHS if prefix+"payload/src/hv2ref/umbrella.py" in remove else LEGACY_MANAGED_PATHS
+        if prefix+"payload/colvia" in remove:
+            _serial_require(plan["schema_version"] == 3, "old detach schema cannot contain entry-1 payload")
+            paths = ENTRY_MANAGED_PATHS
+        else:
+            paths = SERIAL_MANAGED_PATHS if prefix+"payload/src/hv2ref/candidates.py" in remove else UMBRELLA_MANAGED_PATHS if prefix+"payload/src/hv2ref/umbrella.py" in remove else LEGACY_MANAGED_PATHS
         required |= {prefix+"inventory.json"} | {prefix+"payload/"+p for p in paths}
         _serial_require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24], "detach release/inventory mismatch")
     _serial_require(set(remove)==required and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"], "detach incomplete removal/binding set")
-    _serial_require(any((remove["hv2"]["sha256"], remove["hv2"]["size_bytes"]) ==
-                        (remove[".hrn/product/releases/"+rid+"/payload/hv2"]["sha256"],
-                         remove[".hrn/product/releases/"+rid+"/payload/hv2"]["size_bytes"])
-                        for rid in releases), "detach launcher is not bound to a removed release")
+    _serial_require(any((remove[launcher]["sha256"], remove[launcher]["size_bytes"]) ==
+                        (remove[".hrn/product/releases/"+rid+"/payload/"+launcher]["sha256"],
+                         remove[".hrn/product/releases/"+rid+"/payload/"+launcher]["size_bytes"])
+                        for rid in releases if ".hrn/product/releases/"+rid+"/payload/"+launcher in remove), "detach launcher is not bound to a removed release")
     _serial_require(isinstance(plan["truth_refs"],list), "detach truth refs shape")
     truth=[]
     for ref in plan["truth_refs"]:
@@ -1116,22 +1788,24 @@ def _detach_receipt(plan: dict[str, Any]) -> dict[str, Any]:
 
 
 def _detach_order(plan: dict[str, Any]) -> tuple[list[str],list[str]]:
-    files=["hv2"]+[e["path"] for e in plan["remove"] if e["path"]!="hv2"]
-    dirs={p.as_posix() for name in files if name!="hv2" for p in Path(name).parents if p.as_posix().startswith(".hrn/product")}
+    launcher = "colvia" if plan["schema_version"] == 3 else "hv2"
+    files=[launcher]+[e["path"] for e in plan["remove"] if e["path"]!=launcher]
+    dirs={p.as_posix() for name in files if name!=launcher for p in Path(name).parents if p.as_posix().startswith(".hrn/product")}
     return files,sorted(dirs,key=lambda n:(-len(n.split("/")),n.encode()))
 
 
 def _detach_preview_plan(target: Path, operation_id: str, created_at: str) -> dict[str, Any]:
     from .workspace import _file_json, target_fingerprint
     state=_workspace_observe(target)
-    _serial_require(state["binding"]["active_release"]["inventory_id"] == "checkout-1", "older-window detach requires retained old source")
+    _serial_require(state["binding"]["active_release"]["inventory_id"] == "entry-1", "older-window detach requires retained old source")
+    _refuse_retired_entry(target, "entry-1 detach preview")
     truth=_lifecycle_truth(target);fmt=_file_json(target/".hrn/format.json")
     def entry(name):
         data=_serial_file(target/name)
         return {"path":name,"sha256":sha256_bytes(data),"size_bytes":len(data)}
-    remove=[entry(n) for n in sorted(["hv2"]+[".hrn/product/"+p for p in state["observation"]],key=lambda n:n.encode())]
+    remove=[entry(n) for n in sorted(["colvia"]+[".hrn/product/"+p for p in state["observation"]],key=lambda n:n.encode())]
     preserve=[entry(n) for n in sorted([".hrn/format.json",".hrn/.gitignore"]+[".hrn/"+r["path"] for r in truth],key=lambda n:n.encode())]
-    plan={"record_type":"lifecycle-plan","schema_version":2,"operation_id":operation_id,"action":"detach",
+    plan={"record_type":"lifecycle-plan","schema_version":3,"operation_id":operation_id,"action":"detach",
           "authority_home_id":fmt["authority_home_id"],"expected_binding_ref":state["binding_ref"],"candidate_release":None,
           "format_sha256":sha256_bytes(canonical_json_bytes(fmt)),"truth_refs":truth,"remove":remove,"preserve":preserve,
           "created_at":created_at,"target_fingerprint":target_fingerprint(target)}
@@ -1175,7 +1849,8 @@ def _detach_observe_records(target: Path, observation) -> dict[str, Any]:
         _serial_require(len(data)==entry["size_bytes"] and sha256_bytes(data)==entry["sha256"], "detached preserved bytes changed")
     planned=_detach_entries(plan["remove"]);order,dir_order=_detach_order(plan)
     files={};dirs=set();product=root/"product"
-    if _exists(target/"hv2"):files["hv2"]=_serial_file(target/"hv2")
+    launcher = "colvia" if plan["schema_version"] == 3 else "hv2"
+    if _exists(target/launcher):files[launcher]=_serial_file(target/launcher)
     stack=[product] if _exists(product) else []
     while stack:
         directory=stack.pop();_require_kind(directory,True);name=directory.relative_to(target).as_posix()
@@ -1193,6 +1868,8 @@ def _detach_observe_records(target: Path, observation) -> dict[str, Any]:
     _serial_require(remaining==order[len(order)-len(remaining):], "not an exact detach file-removal prefix")
     if remaining:_serial_require(dirs==set(dir_order), "directory removed before planned files")
     else:_serial_require([n for n in dir_order if n in dirs]==dir_order[len(dir_order)-len(dirs):], "not an exact detach directory-removal prefix")
+    if plan["schema_version"] == 3:
+        _refuse_retired_entry(target, "schema-3 detach or completed-detach replay")
     _visible_truth(target,[".hrn/detached.json"]+list(files)+[e["path"] for e in plan["preserve"]], _topology_observation=observation)
     return {"classification":"partial" if remaining or dirs else "detached", "authority_home_id":fmt["authority_home_id"],
             "receipt":receipt,"remaining_files":remaining,"remaining_directories":[n for n in dir_order if n in dirs],
@@ -1221,7 +1898,7 @@ def workspace_detach_apply(target: Path, plan: dict[str, Any], *, confirm_token:
     target=Path(classify_target(target,mutation=True)["target"])
     _require_kind(target/".hrn", True)
     _detach_plan_shape(plan,_file_json(target/".hrn/format.json"))
-    _serial_require(plan["schema_version"] == 2, "legacy detach writes require retained old source")
+    _serial_require(plan["schema_version"] == 3, "legacy detach writes require retained old source")
     _serial_require(plan["target_fingerprint"]==target_fingerprint(target), "detach target changed")
     if installed:
         _serial_require(not recover, "detach recovery requires independent source")
@@ -1255,7 +1932,7 @@ def workspace_detach_apply(target: Path, plan: dict[str, Any], *, confirm_token:
                 (target/name).unlink();sync_directory((target/name).parent)
             except OSError as exc:
                 raise ContractError("HV2-WORKSPACE-DETACH", "detach removal interrupted; preserve and inspect remaining paths") from exc
-            if inject_at==("after-launcher" if name=="hv2" else "after-file"):raise InjectedCrash(inject_at)
+            if inject_at==("after-launcher" if name=="colvia" else "after-file"):raise InjectedCrash(inject_at)
         if inject_at=="after-files":raise InjectedCrash(inject_at)
         for name in workspace_detached_status(target)["remaining_directories"]:
             current=workspace_detached_status(target)

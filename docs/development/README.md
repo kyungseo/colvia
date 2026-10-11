@@ -192,3 +192,9 @@ None recorded in this preparation. Under the Owner planning authorization define
 ## Task Records
 
 None created by this proposal. Allocate a plain development record ID only when a bounded task is selected and its plan approved. Before that, use the preliminary review location defined in Contributing without allocating a task ID. The selected record references the exact intake/criteria revision and owns detailed progress, reviews, result and remaining work; this index adds only navigation under the applicable Owner authorization. DR-0001 owns its contract choices. Neither editing this sentence nor accepting a contract Draft starts a development task or creates a runtime Work/intent.
+
+## Authorized Development Records
+
+- [CHORE-20261009-001: Colvia Entry Contract](CHORE-20261009-001-colvia-entry-contract.md) — authorization, progress and review record.
+
+- [CHORE-20261009-002: Colvia Verification Controls](CHORE-20261009-002-colvia-verification-controls.md) — authorization, controls preparation and review record.

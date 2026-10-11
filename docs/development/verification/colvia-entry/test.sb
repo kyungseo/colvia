@@ -1,0 +1,31 @@
+(version 1)
+; Authoring draft: compilation/effective isolation still requires approved execution.
+(deny default)
+(allow process-exec process-fork)
+(allow signal (target same-sandbox))
+(allow sysctl-read)
+(allow process-info* (target self))
+(allow file-ioctl (subpath (param "WORK")))
+; Host metadata is intentionally visible. This is not whole-host confidentiality.
+(allow file-read-metadata)
+(allow file-read* (subpath "/System") (subpath "/usr") (subpath "/bin") (subpath "/sbin")
+  (subpath "/Library/Developer/CommandLineTools") (subpath "/Library/Apple")
+  (subpath "/opt/homebrew/Cellar") (subpath "/opt/homebrew/opt")
+  (subpath "/private/var/db/dyld") (subpath "/private/var/db/timezone"))
+(allow file-read* (subpath (param "SOURCE")) (subpath (param "OLD"))
+  (subpath (param "CONTROLS")) (subpath (param "WORK"))
+  (literal (param "INPUT")) (literal (param "BOUNDARY")))
+; Owner-approved names-only enumeration at nine fixed ancestor directories.
+; Literal directory grants do not permit reading their descendant file contents.
+(allow file-read-data
+  (literal (param "ANCESTOR_0")) (literal (param "ANCESTOR_1"))
+  (literal (param "ANCESTOR_2")) (literal (param "ANCESTOR_3"))
+  (literal (param "ANCESTOR_4")) (literal (param "ANCESTOR_5"))
+  (literal (param "ANCESTOR_6")) (literal (param "ANCESTOR_7"))
+  (literal (param "ANCESTOR_8")))
+(allow file-read-data (literal "/dev/fd") (literal "/dev/null")
+  (literal "/dev/random") (literal "/dev/urandom"))
+(allow file-write* (subpath (param "WORK")) (literal "/dev/null"))
+; Pre-opened stdout is untrusted child diagnostics; no parent gate uses it.
+(allow file-write-data (literal (param "LOG")))
+; No parent evidence writes, network/keychain lookup or user config.
