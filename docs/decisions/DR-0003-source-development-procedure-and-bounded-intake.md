@@ -142,3 +142,10 @@ On 2026-10-08 the Codex Driver, acting under the Owner's explicit delegated tran
 The retained exact originals and acceptance records are under the named preservation label, outside the active source checkout; the custodian is the Owner/designated maintainer. Retain them until equivalent authorized Git or immutable preservation is verified and every actual recovery/reference consumer is dispositioned. The final complete decision file, including this record, has its own retained-file identity in that preservation manifest; its decision-body range above avoids a self-referential hash.
 
 Remaining scope is explicit: four-location historical wording and other candidate requirements are unselected; full current-candidate qualification, unsupported attach/Windows, public identity/seed/cutover, actual human fresh-use and actual adopter application are not completed. The old pilot's historical document-responsibility fulfillment remains unverified and is neither waived nor newly certified. These limits do not restore a hidden private prerequisite for the accepted current source-development scope. Source Git integration remains separate and is not authorized or performed by this acceptance.
+
+
+## Entry-1 Amendment Activation — 2026-10-14
+
+Current state: Accepted (Amended), effective 2026-10-14 for the named entry-1 clauses. Owner의 P4 결과 수락과 규범 활성화 승인을 [DR-0004](DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14)에 기록했다. 해당 절의 exact11개 successor hash·조항별 범위와 근거/한계를 적용한다. 기존 본문·frontmatter·M3 표는 원래 수락 revision의 역사 기록으로 그대로 유지한다. 이 문서 전체를 superseded 처리하지 않는다.
+
+Decision 및 Current-Scope Authority Closure의 unchanged-M3 current-set 참조는 DR-0004가 발효한 exact successor set을 가리킨다. Public Preview의 managed launcher 보존만 hv2에서 colvia로 바꾸고 HV2-, .hrn, 다른 intake/개발 절차와 권한은 유지한다. 최초 수락25338 bytes와 이후 기존 acceptance 기록은 수정하지 않았다.

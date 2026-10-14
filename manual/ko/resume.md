@@ -1,5 +1,7 @@
 # 이전 대화 없이 새 세션에서 재개하기
 
+이 문서는 활성화 전 `entry-1` 후보를 설명합니다. 사용하려면 정확한 artifact의 별도 qualification과 설치 승인이 필요하며, 아래의 과거 checkout-1 실습은 현재 명령의 검증 근거가 아닙니다.
+
 [이전: 첫 Work](first-work.md) · [목차](README.md)
 
 [English](../en/resume.md)
@@ -10,15 +12,15 @@
 
 새 대화에 요청합니다.
 
-> 이 프로젝트의 AGENTS.md, README.md, docs/plan.md를 읽어 줘. ./hv2 view를 실행하고 거기서 안내하는 현재 adapter를 따라 줘. docs/first-work.md를 읽고 관련 작업 요청서·Work view와 내용을 대조해 줘. 무엇을 수락했는지, 무엇이 바뀌었는지, 미확인 사항과 pending 작업이 있는지, 내가 다음으로 결정할 일을 설명해 줘. 파일 수정, 기록 publish, 새 Work 시작은 하지 마.
+> 이 프로젝트의 AGENTS.md, README.md, docs/plan.md를 읽어 줘. ./colvia view를 실행하고 거기서 안내하는 현재 adapter를 따라 줘. docs/first-work.md를 읽고 관련 작업 요청서·Work view와 내용을 대조해 줘. 무엇을 수락했는지, 무엇이 바뀌었는지, 미확인 사항과 pending 작업이 있는지, 내가 다음으로 결정할 일을 설명해 줘. 파일 수정, 기록 publish, 새 Work 시작은 하지 마.
 
 agent는 `view`에서 실제 ID를 읽고 확인합니다.
 
 ```sh
-./hv2 view
-./hv2 view intent INTENT_ID
-./hv2 view work WORK_ID
-./hv2 status
+./colvia view
+./colvia view intent INTENT_ID
+./colvia view work WORK_ID
+./colvia status
 ```
 
 `INTENT_ID`와 `WORK_ID`는 실제 값으로 바꿉니다. 이 실습의 기대 결과는 첫 Work 완료, 현재 수락된 작업 요청서와의 유효한 연결, pending 작업 없음, 현재 파일과 저장된 결과의 일치입니다. 이 명령들은 상태를 읽으며, 그 자체로 쓰기를 재개하지 않습니다.
@@ -42,7 +44,7 @@ agent는 선택된 저장 상태와 오늘의 파일 관측을 구분해야 합�
 
 > 할 일 삭제 기능과 잘못된 데이터 처리 중 다음으로 할 일을 비교해 줘. 각각의 예상 범위와 검사를 설명하고 하나를 추천하되, 아직 후보를 저장하거나 Work를 시작하지는 마.
 
-agent는 먼저 `./hv2 view candidates`를 읽습니다. 추천은 읽기 전용입니다. 후보 기록이나 선택을 명시적으로 요청하면 해당 계획 변경을 수행할 수 있지만, 작업 요청서 수락이나 구현 승인까지 허용되는 것은 아닙니다. [Candidate Planning](../../docs/REFERENCE.md#candidate-planning)을 참고하세요.
+agent는 먼저 `./colvia view candidates`를 읽습니다. 추천은 읽기 전용입니다. 후보 기록이나 선택을 명시적으로 요청하면 해당 계획 변경을 수행할 수 있지만, 작업 요청서 수락이나 구현 승인까지 허용되는 것은 아닙니다. [Candidate Planning](../../docs/REFERENCE.md#candidate-planning)을 참고하세요.
 
 미완료·pending Work가 있다면 같은 Work를 지원되는 절차로 이어가거나 복구합니다. 그 상태를 피하려고 중복 Work를 만들지 마세요. 이미 사용한 실행 시간이나 시도 횟수를 확인할 수 없다면 불확실성을 알리고, 추가 실행 전에 사람의 판단을 받습니다.
 
@@ -50,10 +52,10 @@ agent는 먼저 `./hv2 view candidates`를 읽습니다. 추천은 읽기 전용
 
 이 안내의 합성 검증에서는 새 CLI 프로세스를 실행해 완료 기록을 변경 없이 읽었습니다. 독립된 새 agent 세션을 실행하거나 사람이 이 문서를 따라가는 과정은 관찰하지 않았습니다. 그 시험을 진행한다면 질문과 실수를 따로 기록하세요. 명령 실행 성공만으로 설명을 이해했다고 판단할 수는 없습니다.
 
-판본: private 개발판, `checkout-1`; 확인일 2026-10-05.
+과거 실습 — 판본: private 개발판, `checkout-1`; 확인일 2026-10-05.
 
 ---
 
 [이전: 첫 Work](first-work.md) · [목차](README.md)
 
-<!-- en_content_sha256: 7cdd627f0fd36466e4c0b41839523187fa3bfbb201a268d59a3ed652176af178 -->
+<!-- en_content_sha256: 47c8df39e47c876c899e26b5e8862f05bb60f5fa96b883270e0dcb4780c9a026 -->

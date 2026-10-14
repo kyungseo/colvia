@@ -8,7 +8,7 @@ import shutil
 import unittest
 
 from hv2ref.jsonio import canonical_json_bytes
-from hv2ref.product import SERIAL_MANAGED_PATHS, verify_workspace_product
+from hv2ref.product import ENTRY_MANAGED_PATHS, verify_workspace_product
 from hv2ref.work import read_work
 from test_productization_safety import exact_snapshot
 import test_worktree_execution as fixtures
@@ -56,7 +56,7 @@ class InstalledPendingLifecycleTests(unittest.TestCase):
     def apply_init(self,preview):
         result=fixtures.InstalledWorkerPublicationTests.apply_init(self,preview)
         self.qsource=self.base/'source-q'
-        for name in SERIAL_MANAGED_PATHS:
+        for name in ENTRY_MANAGED_PATHS:
             dest=self.qsource/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(self.source/name,dest)
         with (self.qsource/'docs/REFERENCE.md').open('a') as f:f.write('\nFixture Q documentation marker.\n')
         preview=json.loads(self.installed(['update','--source',self.qsource,'--operation-id','install-q','--observed-at',self.TIME]).stdout)

@@ -4,6 +4,7 @@ This is NOT an uninstrumented CLI observation or a product recovery feature.
 The future reviewed factory supplies a fixed-shape scenario and verifies events.
 """
 import fcntl
+import io
 import json
 import os
 from pathlib import Path
@@ -57,15 +58,16 @@ def main():
         require(s["entry"] == "primitive-canary" or c["phase"] == "entry" and s["entry"] in {"new-source", "installed-new", "lock-prefix-canary"}, "no old-code fault substitution")
         require(set(fault) == {"event", "path", "occurrence", "write_bytes"}, "fault keys")
         require(fault["event"] in {operation + "-" + edge for operation in
-                ("open", "write", "fsync", "fchmod", "unlink", "replace", "mkdir", "rename", "rmdir", "chmod")
-                for edge in ("before", "after")}, "fault event")
+                ("open", "write", "fsync", "fchmod", "unlink", "replace", "mkdir", "rename", "rmdir", "chmod",
+                 "create", "raw-write", "buffered-write", "buffered-flush", "buffered-close", "fullfsync")
+                for edge in ("before", "after")} | {"mkdir-exists"}, "fault event")
         if fault["path"] == ".":
             require(fault["event"] in {"fsync-before", "fsync-after"}, "root fault requires fsync")
         else:
             relative(fault["path"])
         require(type(fault["occurrence"]) is int and fault["occurrence"] > 0, "fault occurrence")
         require(fault["write_bytes"] is None or type(fault["write_bytes"]) is int and fault["write_bytes"] > 0, "short write length")
-        require(fault["write_bytes"] is None or fault["event"] == "write-after", "short-write event")
+        require(fault["write_bytes"] is None or fault["event"] in {"write-after", "raw-write-after"}, "short-write event")
     pause = s.get("pause")
     if "pause" in s:
         require(c["phase"] == "entry" and s["entry"] in
@@ -95,6 +97,42 @@ def main():
     pause_complete = False
     original = {n: getattr(os, n) for n in ("open", "write", "fsync", "fchmod", "unlink", "replace", "mkdir", "rename", "rmdir", "chmod", "read", "close")}
     original_flock = fcntl.flock
+    original_fcntl = fcntl.fcntl
+    original_io_open = io.open
+    def log_row(row, *, stage, state=None):
+        try:
+            log.write(json.dumps(row) + "\n")
+            log.flush(); original["fsync"](log.fileno())
+        except OSError as exc:
+            reason = "observer log unavailable: " + type(exc).__name__ + ":" + str(exc.errno)
+            if state is not None:
+                state["refusal"] = reason
+            # The log itself is unavailable; do not recurse or classify as product refusal.
+            raise RuntimeError(reason + "; stage=" + stage) from exc
+    def refuse(reason, *, site, stage="pre-delegation", state=None):
+        # This channel must not perform path lookup: path lookup may be the failure.
+        nonlocal active, sequence
+        if state is not None:
+            state["refusal"] = reason
+        was_active = active; active = True
+        try:
+            sequence += 1
+            log_row({"seq": sequence, "event": "observer-refusal", "path": ".",
+                "detail": {"site": site, "reason": reason, "stage": stage},
+                "pid": os.getpid(), "pgid": os.getpgrp(), "monotonic_ns": time.monotonic_ns()},
+                stage=stage, state=state)
+        finally:
+            active = was_active
+        require(False, reason)
+    def observed_require(condition, reason, *, site="observer", stage="pre-delegation", state=None):
+        if not condition:
+            refuse(reason, site=site, stage=stage, state=state)
+    def witness(call, *args, site, stage="pre-delegation", state=None, **kwargs):
+        try:
+            return call(*args, **kwargs)
+        except OSError as exc:
+            refuse("witness unavailable: " + type(exc).__name__ + ":" + str(exc.errno),
+                   site=site, stage=stage, state=state)
     def same_inode(info, path):
         now = unlinked_path(path).lstat()
         require(stat.S_ISREG(now.st_mode) and now.st_nlink == 1 and
@@ -168,35 +206,36 @@ def main():
                 return
             time.sleep(0.02)
         raise RuntimeError("pause release timeout")
-    def path_of(value):
+    def path_of(value, *, stage="pre-delegation", state=None):
         if isinstance(value, int):
-            if stat.S_ISFIFO(os.fstat(value).st_mode):
+            if stat.S_ISFIFO(witness(os.fstat, value, site="path-of-fstat", stage=stage, state=state).st_mode):
                 return None
-            require(hasattr(fcntl, "F_GETPATH"), "fd path observation unavailable")
-            value = fcntl.fcntl(value, fcntl.F_GETPATH, b"\0" * 1024).split(b"\0", 1)[0]
+            observed_require(hasattr(fcntl, "F_GETPATH"), "fd path observation unavailable", site="path-of-fcntl", stage=stage, state=state)
+            value = witness(original_fcntl, value, fcntl.F_GETPATH, b"\0" * 1024, site="path-of-fcntl", stage=stage, state=state).split(b"\0", 1)[0]
         if isinstance(value, bytes):
             value = os.fsdecode(value)
         if not isinstance(value, (str, os.PathLike)):
             return None
         q = Path(os.path.abspath(value))
         return q.relative_to(target).as_posix() if q.is_relative_to(target) else None
-    def emit(event, value, extra=None):
+    def emit(event, value, extra=None, *, state=None):
         nonlocal active, sequence, matches, pause_matches
         if active:
             return
-        name = path_of(value)
+        stage = "post-delegation" if event.endswith("-after") or event in {"lock-acquired", "mkdir-exists"} else "pre-delegation"
+        name = path_of(value, stage=stage, state=state)
         if name is None:
             return
         active = True
         try:
             sequence += 1
-            log.write(json.dumps({"seq": sequence, "event": event, "path": name, "detail": extra,
-                "pid": os.getpid(), "pgid": os.getpgrp(), "monotonic_ns": time.monotonic_ns()}) + "\n")
-            log.flush(); original["fsync"](log.fileno())
+            log_row({"seq": sequence, "event": event, "path": name, "detail": extra,
+                "pid": os.getpid(), "pgid": os.getpgrp(), "monotonic_ns": time.monotonic_ns()},
+                stage=stage, state=state)
             if pause and event == pause["event"] and name == pause["path"]:
                 pause_matches += 1
                 if pause_matches == pause["occurrence"]:
-                    pause_after_lock(value)
+                    witness(pause_after_lock, value, site="pause-after-lock", stage=stage, state=state)
             if fault and event == fault["event"] and name == fault["path"]:
                 require(pause is None or pause_complete, "fault occurred before matching pause release")
                 matches += 1
@@ -217,18 +256,18 @@ def main():
             # Preserve the product's descriptor-relative no-follow read. Resolve
             # only the witness; the original syscall still receives dir_fd.
             allowed = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0)
-            require(type(flags) is int and flags & ~allowed == 0 and flags & os.O_NOFOLLOW,
+            observed_require(type(flags) is int and flags & ~allowed == 0 and flags & os.O_NOFOLLOW,
                     "relative-fd read flags unsupported")
             component = os.fsdecode(os.fspath(path))
-            require(component not in {"", ".", ".."} and "/" not in component,
+            observed_require(component not in {"", ".", ".."} and "/" not in component,
                     "relative-fd read component unsupported")
-            require(type(dir_fd) is int and stat.S_ISDIR(os.fstat(dir_fd).st_mode),
+            observed_require(type(dir_fd) is int and stat.S_ISDIR(witness(os.fstat, dir_fd, site="relative-parent-fstat").st_mode),
                     "relative-fd read requires directory descriptor")
-            require(hasattr(fcntl, "F_GETPATH"), "fd path observation unavailable")
-            parent = Path(os.fsdecode(fcntl.fcntl(dir_fd, fcntl.F_GETPATH, b"\0" * 1024).split(b"\0", 1)[0]))
-            require(parent.is_absolute(), "relative-fd parent path unavailable")
-            parent_info = os.fstat(dir_fd); named_parent = parent.stat(follow_symlinks=False)
-            require((parent_info.st_dev, parent_info.st_ino) == (named_parent.st_dev, named_parent.st_ino),
+            observed_require(hasattr(fcntl, "F_GETPATH"), "fd path observation unavailable")
+            parent = Path(os.fsdecode(witness(original_fcntl, dir_fd, fcntl.F_GETPATH, b"\0" * 1024, site="relative-parent-path").split(b"\0", 1)[0]))
+            observed_require(parent.is_absolute(), "relative-fd parent path unavailable")
+            parent_info = witness(os.fstat, dir_fd, site="relative-parent-fstat"); named_parent = witness(parent.stat, follow_symlinks=False, site="relative-parent-stat")
+            observed_require((parent_info.st_dev, parent_info.st_ino) == (named_parent.st_dev, named_parent.st_ino),
                     "relative-fd parent identity changed")
             observed = parent / component
             detail = {"flags": flags, "mode": mode, "dir_fd": dir_fd}
@@ -239,10 +278,10 @@ def main():
             finally:
                 relative_open_path = previous
             try:
-                opened = os.fstat(fd); named = observed.stat(follow_symlinks=False)
-                actual = Path(os.fsdecode(fcntl.fcntl(fd, fcntl.F_GETPATH, b"\0" * 1024).split(b"\0", 1)[0]))
-                require(actual == observed and (opened.st_dev, opened.st_ino) == (named.st_dev, named.st_ino),
-                        "relative-fd opened identity changed")
+                opened = witness(os.fstat, fd, site="relative-open-fstat", stage="post-delegation"); named = witness(observed.stat, follow_symlinks=False, site="relative-open-stat", stage="post-delegation")
+                actual = Path(os.fsdecode(witness(original_fcntl, fd, fcntl.F_GETPATH, b"\0" * 1024, site="relative-open-path", stage="post-delegation").split(b"\0", 1)[0]))
+                observed_require(actual == observed and (opened.st_dev, opened.st_ino) == (named.st_dev, named.st_ino),
+                        "relative-fd opened identity changed", stage="post-delegation")
                 emit("open-after", fd, detail)
             except BaseException:
                 original["close"](fd)
@@ -256,7 +295,7 @@ def main():
         emit("write-before", fd, {"requested": len(data)})
         selected = fault and fault["event"] == "write-after" and path_of(fd) == fault["path"] and matches + 1 == fault["occurrence"]
         if selected and fault["write_bytes"] is not None:
-            require(fault["write_bytes"] <= len(data), "requested fault byte count unavailable")
+            observed_require(fault["write_bytes"] <= len(data), "requested fault byte count unavailable", site="write-length")
             data = data[:fault["write_bytes"]]
         count = original["write"](fd, data)
         emit("write-after", fd, {"written": count})
@@ -268,45 +307,148 @@ def main():
         emit("fchmod-before", fd, {"mode": mode})
         result = original["fchmod"](fd, mode); emit("fchmod-after", fd, {"mode": mode}); return result
     def observed_unlink(path, *, dir_fd=None):
-        require(dir_fd is None, "relative-fd unlink observation unsupported")
+        observed_require(dir_fd is None, "relative-fd unlink observation unsupported")
         emit("unlink-before", path)
         result = original["unlink"](path); emit("unlink-after", path); return result
     def observed_replace(src, dst, *, src_dir_fd=None, dst_dir_fd=None):
-        require(src_dir_fd is None and dst_dir_fd is None, "relative-fd replace observation unsupported")
+        observed_require(src_dir_fd is None and dst_dir_fd is None, "relative-fd replace observation unsupported")
         emit("replace-before", dst, {"from": path_of(src)})
         result = original["replace"](src, dst); emit("replace-after", dst, {"from": path_of(src)}); return result
     def observed_mkdir(path, mode=0o777, *, dir_fd=None):
-        require(dir_fd is None, "relative-fd mkdir observation unsupported")
+        observed_require(dir_fd is None, "relative-fd mkdir observation unsupported")
         emit("mkdir-before", path, {"mode": mode})
-        result = original["mkdir"](path, mode); emit("mkdir-after", path, {"mode": mode}); return result
+        try:
+            result = original["mkdir"](path, mode)
+        except FileExistsError:
+            emit("mkdir-exists", path, {"mode": mode})
+            raise
+        emit("mkdir-after", path, {"mode": mode}); return result
     def observed_rename(src, dst, *, src_dir_fd=None, dst_dir_fd=None):
-        require(src_dir_fd is None and dst_dir_fd is None, "relative-fd rename observation unsupported")
+        observed_require(src_dir_fd is None and dst_dir_fd is None, "relative-fd rename observation unsupported")
         emit("rename-before", dst, {"from": path_of(src)})
         result = original["rename"](src, dst); emit("rename-after", dst, {"from": path_of(src)}); return result
     def observed_rmdir(path, *, dir_fd=None):
-        require(dir_fd is None, "relative-fd rmdir observation unsupported")
+        observed_require(dir_fd is None, "relative-fd rmdir observation unsupported")
         emit("rmdir-before", path)
         result = original["rmdir"](path); emit("rmdir-after", path); return result
     def observed_chmod(path, mode, *, dir_fd=None, follow_symlinks=True):
-        require(dir_fd is None, "relative-fd chmod observation unsupported")
+        observed_require(dir_fd is None, "relative-fd chmod observation unsupported")
         emit("chmod-before", path, {"mode": mode})
         result = original["chmod"](path, mode, follow_symlinks=follow_symlinks)
         emit("chmod-after", path, {"mode": mode}); return result
+    def observed_fullfsync(fd, command, *args, **kwargs):
+        # Filter before any lookup; observer F_GETPATH uses the captured original.
+        if command != getattr(fcntl, "F_FULLFSYNC", None):
+            return original_fcntl(fd, command, *args, **kwargs)
+        emit("fullfsync-before", fd)
+        result = original_fcntl(fd, command, *args, **kwargs)
+        emit("fullfsync-after", fd)
+        return result
+    def observed_io_open(file, *args, **kwargs):
+        # Preserve the original open call, returned objects, buffering and opener.
+        mode = args[0] if args else kwargs.get("mode", "r")
+        name = path_of(file)
+        selected = name is not None and mode in ("xb", "bx")
+        if selected:
+            emit("create-before", file, {"mode": mode})
+        handle = original_io_open(file, *args, **kwargs)
+        if not selected:
+            if name is not None and isinstance(mode, str) and any(c in mode for c in "wax+"):
+                emit("unobserved-open-after", file, {"mode": mode})
+            return handle
+        raw = getattr(handle, "raw", None)
+        state = {"refusal": None, "within": []}
+        try:
+            observed_require(type(handle) is io.BufferedWriter and type(raw) is io.FileIO,
+                "exclusive binary handle type unsupported", site="buffered-create", stage="post-delegation", state=state)
+            fd = raw.fileno()
+            info = witness(os.fstat, fd, site="buffered-create-fstat", stage="post-delegation", state=state)
+            named = witness(os.stat, file, follow_symlinks=False, site="buffered-create-stat", stage="post-delegation", state=state)
+            observed_require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and
+                (info.st_dev, info.st_ino) == (named.st_dev, named.st_ino),
+                "exclusive binary identity unavailable", site="buffered-create", stage="post-delegation", state=state)
+            saved_path = target / name
+            identity = {"fd": fd, "dev": info.st_dev, "ino": info.st_ino}
+            original_raw_write = raw.write
+            originals = {method: getattr(handle, method) for method in ("write", "flush", "close")}
+            def check_identity(site):
+                if state["refusal"] is not None:
+                    require(False, state["refusal"])
+                current = witness(os.fstat, fd, site=site, state=state)
+                named = witness(os.stat, saved_path, follow_symlinks=False, site=site, state=state)
+                observed_require(stat.S_ISREG(current.st_mode) and current.st_nlink == 1 and
+                    (current.st_dev, current.st_ino) == (info.st_dev, info.st_ino) == (named.st_dev, named.st_ino),
+                    "exclusive binary identity changed", site=site, state=state)
+            def raw_write(data):
+                # Never call a buffered method while its C lock may be held.
+                check_identity("raw-write")
+                detail = {**identity, "requested": len(data), "within": list(state["within"])}
+                emit("raw-write-before", saved_path, detail, state=state)
+                selected_fault = fault and fault["event"] == "raw-write-after" and name == fault["path"] and matches + 1 == fault["occurrence"]
+                if selected_fault and fault["write_bytes"] is not None:
+                    observed_require(fault["write_bytes"] <= len(data), "requested fault byte count unavailable",
+                                     site="raw-write-length", state=state)
+                    data = data[:fault["write_bytes"]]
+                count = original_raw_write(data)
+                emit("raw-write-after", saved_path, {**detail, "written": count}, state=state)
+                return count
+            def release_seams():
+                for method in ("write", "flush", "close"):
+                    if method in handle.__dict__:
+                        delattr(handle, method)
+                if "write" in raw.__dict__:
+                    delattr(raw, "write")
+            def wrap(method):
+                delegate = originals[method]
+                def observed(*values, **options):
+                    if method == "close" and handle.closed:
+                        return delegate(*values, **options)
+                    detail = {**identity, "within": list(state["within"])}
+                    state["within"].append(method)
+                    try:
+                        check_identity("buffered-" + method)
+                        emit("buffered-" + method + "-before", saved_path, detail, state=state)
+                        result = delegate(*values, **options)
+                        # close-after deliberately uses the saved path, never fd lookup.
+                        emit("buffered-" + method + "-after", saved_path, detail, state=state)
+                        return result
+                    finally:
+                        state["within"].pop()
+                        if method == "close":
+                            if state["refusal"] is not None and not raw.closed:
+                                raw.close()  # Discard observer-refused buffered data; do not flush it.
+                            if raw.closed:
+                                release_seams()
+                return observed
+            raw.write = raw_write
+            for method in ("write", "flush", "close"):
+                setattr(handle, method, wrap(method))
+            emit("create-after", saved_path, {**identity, "mode": mode}, state=state)
+        except BaseException:
+            # No product data was supplied yet. Avoid buffered flush on setup refusal.
+            if raw is not None:
+                raw.close()
+            else:
+                handle.close()
+            raise
+        return handle
     def observed_flock(fd, operation):
-        observed_fd = fd if isinstance(fd, int) else fd.fileno()
-        require(isinstance(observed_fd, int), "flock descriptor unavailable")
+        observed_fd = fd if isinstance(fd, int) else witness(fd.fileno, site="flock-fileno")
+        observed_require(isinstance(observed_fd, int), "flock descriptor unavailable", site="flock-fileno")
         if operation == fcntl.LOCK_EX:
-            info = os.fstat(observed_fd)
+            info = witness(os.fstat, observed_fd, site="flock-fstat")
             emit("lock-attempt", observed_fd, {"fd": observed_fd, "dev": info.st_dev, "ino": info.st_ino})
         result = original_flock(fd, operation)  # Preserve original object/operation semantics.
         if operation == fcntl.LOCK_EX:
-            info = os.fstat(observed_fd)
+            info = witness(os.fstat, observed_fd, site="flock-fstat", stage="post-delegation")
             emit("lock-acquired", observed_fd, {"fd": observed_fd, "dev": info.st_dev, "ino": info.st_ino})
         return result
     # Old-source late-lock runs change only flock delegation/logging, not byte writers.
     fcntl.flock = observed_flock
     if s["entry"] in {"new-source", "installed-new", "primitive-canary", "lock-prefix-canary"}:
         sys.addaudithook(audit)
+        io.open = observed_io_open
+        fcntl.fcntl = observed_fullfsync
         os.open, os.write, os.fsync, os.fchmod = observed_open, observed_write, observed_fsync, observed_fchmod
         os.unlink, os.replace, os.mkdir = observed_unlink, observed_replace, observed_mkdir
         os.rename, os.rmdir, os.chmod = observed_rename, observed_rmdir, observed_chmod
@@ -368,7 +510,10 @@ def main():
         require(pause is None or pause_complete, "requested pause was not observed")
         require(fault is None, "requested fault was not observed")
     finally:
-        log.close()
+        try:
+            log.close()
+        except OSError as exc:
+            raise RuntimeError("observer log close unavailable: " + type(exc).__name__ + ":" + str(exc.errno)) from exc
 
 
 if __name__ == "__main__":

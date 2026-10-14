@@ -59,8 +59,8 @@ class DetachVersionTests(unittest.TestCase):
     def test_paired_version_reader_and_independent_auditor_reject_invalid_versions(self):
         from hv2ref.product import workspace_detached_status
         preview=self.seed();path=self.target/'.hrn/detached.json';raw=path.read_bytes();receipt=json.loads(raw)
-        self.assertEqual(2,receipt['schema_version']);self.assertEqual(2,receipt['plan']['schema_version'])
-        for outer,inner in ((1,2),(2,1),(3,3),(True,True),(None,None),(2,True)):
+        self.assertEqual(3,receipt['schema_version']);self.assertEqual(3,receipt['plan']['schema_version'])
+        for outer,inner in ((1,3),(3,1),(2,3),(3,2),(4,4),(True,True),(None,None),(3,True)):
             bad=copy.deepcopy(receipt);bad['schema_version']=outer;bad['plan']['schema_version']=inner
             path.write_bytes(canonical_json_bytes(bad));before=fixtures.exact_snapshot(self.target)
             with self.subTest(outer=outer,inner=inner):
@@ -81,7 +81,7 @@ class DetachVersionTests(unittest.TestCase):
         product.workspace_init_apply(self.source,self.target,preview['request'],confirm_token=preview['confirm_token'])
         state=product._workspace_observe(self.target)
         counterpart=self.base/'counterpart'
-        for name in SERIAL_MANAGED_PATHS:
+        for name in ENTRY_MANAGED_PATHS:
             dest=counterpart/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(self.source/name,dest)
         with (counterpart/'README.md').open('a') as handle:handle.write('\nSynthetic counterpart.\n')
         plan=workspace_switch_preview(self.target,action='update',source=counterpart,operation_id='next-a',created_at=self.TIME)
@@ -98,16 +98,48 @@ class DetachVersionTests(unittest.TestCase):
             self.assertEqual(before,fixtures.exact_snapshot(self.target))
 
     def test_legacy_version_is_read_only_for_new_source(self):
+        # Literal legacy detach evidence; never claim an OLD lifecycle executable ran.
         from hv2ref.product import workspace_detached_status
-        preview=self.seed();path=self.target/'.hrn/detached.json';receipt=json.loads(path.read_bytes())
-        receipt['schema_version']=receipt['plan']['schema_version']=1;path.write_bytes(canonical_json_bytes(receipt))
-        plan=receipt['plan'];token=hashlib.sha256(canonical_json_bytes(plan)).hexdigest()[:16]
-        before=fixtures.exact_snapshot(self.target)
-        self.assertEqual('partial',workspace_detached_status(self.target)['classification'])
-        for recover in (False,True):
-            with self.assertRaisesRegex(ContractError,'legacy detach writes'):
-                workspace_detach_apply(self.target,plan,confirm_token=token,recover=recover)
-        self.assertEqual(before,fixtures.exact_snapshot(self.target))
+        from hv2ref.workspace import target_fingerprint
+        preview=self.seed()
+        workspace_detach_apply(self.target,preview['request'],confirm_token=preview['confirm_token'],recover=True)
+        fmt=json.loads((self.target/'.hrn/format.json').read_bytes())
+        placeholder=b'synthetic legacy read-only member\n'
+        sha=lambda data:hashlib.sha256(data).hexdigest()
+        inventory={'record_type':'release-inventory','schema_version':1,'inventory_id':'checkout-1',
+            'entries':[{'path':name,'sha256':sha(placeholder),'size_bytes':len(placeholder)} for name in SERIAL_MANAGED_PATHS]}
+        raw=canonical_json_bytes(inventory);rid='product-release-'+sha(raw)[:24]
+        prefix='.hrn/product/releases/'+rid+'/'
+        data={prefix+'payload/'+name:placeholder for name in SERIAL_MANAGED_PATHS}
+        data.update({'hv2':placeholder,prefix+'inventory.json':raw,'.hrn/product/binding.json':placeholder,
+            '.hrn/product/init-plan.json':placeholder,'.hrn/product/receipts/legacy-init.json':placeholder})
+        remove=[{'path':name,'sha256':sha(value),'size_bytes':len(value)} for name,value in sorted(data.items())]
+        preserve=[{'path':name,'sha256':sha((self.target/name).read_bytes()),'size_bytes':len((self.target/name).read_bytes())}
+            for name in ('.hrn/.gitignore','.hrn/format.json')]
+        plan={'record_type':'lifecycle-plan','schema_version':1,'operation_id':'legacy-detach','action':'detach',
+            'authority_home_id':'home-a','expected_binding_ref':{'id':'legacy-init','sha256':sha(placeholder)},
+            'candidate_release':None,'format_sha256':sha(canonical_json_bytes(fmt)),'truth_refs':[],
+            'remove':remove,'preserve':preserve,'created_at':self.TIME,'target_fingerprint':target_fingerprint(self.target)}
+        # One exact final file and all planned directories form a valid partial suffix.
+        directories={'.hrn/product'}
+        for name in data:
+            if name.startswith('.hrn/product/'):
+                directories.update(str(parent) for parent in Path(name).parents if str(parent).startswith('.hrn/product'))
+        for name in sorted(directories,key=lambda n:(n.count('/'),n)):(self.target/name).mkdir(exist_ok=True)
+        last=sorted(name for name in data if name!='hv2')[-1];(self.target/last).write_bytes(data[last])
+        for version in (1,2):
+            plan['schema_version']=version
+            receipt={'record_type':'lifecycle-receipt','schema_version':version,'operation_id':'legacy-detach',
+                'plan':plan,'prior_binding_ref':plan['expected_binding_ref'],'result_binding_ref':None}
+            (self.target/'.hrn/detached.json').write_bytes(canonical_json_bytes(receipt))
+            token=sha(canonical_json_bytes(plan))[:16];before=fixtures.exact_snapshot(self.target)
+            observed=workspace_detached_status(self.target);self.assertEqual('partial',observed['classification']);self.assertEqual([last],observed['remaining_files'])
+            audit=subprocess.run([sys.executable,'-I','-B',str(self.source/'tests/fixtures/product_plain_auditor.py'),str(self.target)],capture_output=True,timeout=30)
+            self.assertEqual(14,audit.returncode,audit.stdout+audit.stderr);self.assertEqual([last],json.loads(audit.stdout)['remaining_files'])
+            for recover in (False,True):
+                with self.assertRaisesRegex(ContractError,'legacy detach writes'):
+                    workspace_detach_apply(self.target,plan,confirm_token=token,recover=recover)
+            self.assertEqual(before,fixtures.exact_snapshot(self.target))
 
 
 def make_exact_suite(old_source: Path, new_source: Path, old_sha256: str, *, phase: str):

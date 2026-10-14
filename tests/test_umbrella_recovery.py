@@ -181,6 +181,12 @@ class UmbrellaWriterTests(unittest.TestCase):
         with self.assertRaises(ContractError):self.publish(value)
         self.assertEqual(before,self.bytes())
 
+    def test_entry_window_parent_capability_keeps_schema2_completion(self):
+        # Capability double only; native entry execution has independent factory cases.
+        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':'entry-1'}
+        self.store.runtime_check=runtime;self.intents.work_store.runtime_check=runtime
+        self.test_schema2_parent_completes_with_v1_selector_and_ticket()
+
 
 class UmbrellaWorkerRecoveryTests(unittest.TestCase):
     """Real Git worker content/prefixes; runtime verifier is a fixture double."""

@@ -1,5 +1,6 @@
 """Planning behavior/authority/refusal tests. Runtime doubles are labelled; installed tests are separate."""
 from __future__ import annotations
+from test_productization_safety import verified_inventory_id
 import copy
 import json
 import os
@@ -46,7 +47,7 @@ class CandidateContractTests(unittest.TestCase):
     bytes=serial.SerialWriterTests.bytes
     def setUp(self):
         serial.SerialWriterTests.setUp(self)
-        self.candidates=CandidateStore(self.target, lambda target:{'inventory_id':'checkout-1','binding_ref':self.binding,'launcher_sha256':None})
+        self.candidates=CandidateStore(self.target, lambda target:{'inventory_id':'entry-1','binding_ref':self.binding,'launcher_sha256':None})
     def act(self,action='add',cid='idea-a',**kw):
         return self.candidates.mutate(proposal(self.target,action,cid,**kw))
     def lines(self):
@@ -222,6 +223,23 @@ class CandidateContractTests(unittest.TestCase):
         with self.assertRaises(ContractError):self.act('resume',payload={'condition_observation':'requested'})
         self.assertEqual(before,self.bytes())
 
+    def test_old_checkout_candidate_writer_refuses_without_publication(self):
+        self.candidates.runtime=lambda target:{'inventory_id':'checkout-1','binding_ref':self.binding,'launcher_sha256':None}
+        before=self.bytes();shape=fixtures.exact_snapshot(self.target)
+        with self.assertRaises(ContractError) as error:self.act()
+        self.assertEqual('HV2-CANDIDATE-WINDOW',error.exception.code)
+        # This runtime double can create only the shared guard's exact scratch anchors.
+        self.assertEqual({**before,'.hrn/locks/writer.lock':b''},self.bytes())
+        after=fixtures.exact_snapshot(self.target)
+        self.assertEqual(shape,{path:value for path,value in after.items() if path in shape})
+        self.assertEqual({'.hrn/locks','.hrn/locks/writer.lock'},set(after)-set(shape))
+        self.assertEqual(('directory',0o755),after['.hrn/locks'])
+        lock=self.target/'.hrn/locks/writer.lock'
+        self.assertFalse(lock.is_symlink());self.assertTrue(lock.is_file())
+        self.assertEqual(0o600,lock.lstat().st_mode&0o777)
+        self.assertEqual(1,lock.lstat().st_nlink)
+        self.assertFalse((self.target/'.hrn/planning').exists())
+
 
 class InstalledCandidateTests(unittest.TestCase):
     """Unmodified current managed launcher; separate from the unit runtime doubles."""
@@ -362,11 +380,11 @@ class InstalledCandidateNoninterferenceTests(unittest.TestCase):
         for point in ('after-temporary','after-directory','before-replace','after-replace'):
             with self.subTest(point=point):
                 self.setUp();self.note_while_editing=(point=='after-temporary');args,ticket=self.submitted_local()
-                sha=verify_workspace_product(self.target)['launcher_sha256'];content=snapshot(self.target,verified_launcher_sha256=sha);truth=truth_bytes(self.target)
+                sha=verify_workspace_product(self.target)['launcher_sha256'];content=snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target));truth=truth_bytes(self.target)
                 self.act();self.act('select');self.act('defer',payload={'resume_condition':'later'})
                 req=proposal(self.target,cid='interrupted')
                 self.installed(['candidate','add','--inject-at',point],req,expected=75)
-                self.assertEqual(truth,truth_bytes(self.target));self.assertEqual(content,snapshot(self.target,verified_launcher_sha256=sha))
+                self.assertEqual(truth,truth_bytes(self.target));self.assertEqual(content,snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target)))
                 self.git(self.target,'add','.hrn');self.git(self.target,'commit','-qm','fixture: planning records\n\nCo-authored-by: Codex <noreply@openai.com>')
                 self.assertEqual('completed',json.loads(self.installed(args,ticket).stdout)['state'])
                 self.installed(['candidate','add'],req)
@@ -377,11 +395,11 @@ class InstalledCandidateNoninterferenceTests(unittest.TestCase):
         for point in ('after-temporary','after-directory','before-replace','after-replace'):
             with self.subTest(point=point):
                 self.setUp();self.note_while_editing=(point=='after-temporary');prepared=self.prepare_worker_result();sha=verify_workspace_product(self.target)['launcher_sha256']
-                truth=truth_bytes(self.target);content=snapshot(self.target,verified_launcher_sha256=sha)
+                truth=truth_bytes(self.target);content=snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target))
                 self.act();self.act('select');self.act('defer',payload={'resume_condition':'later'})
                 req=proposal(self.target,cid='interrupted')
                 self.installed(['candidate','add','--inject-at',point],req,expected=75)
-                self.assertEqual(truth,truth_bytes(self.target));self.assertEqual(content,snapshot(self.target,verified_launcher_sha256=sha))
+                self.assertEqual(truth,truth_bytes(self.target));self.assertEqual(content,snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target)))
                 plan=(self.target/'.hrn/planning/candidates.json').read_bytes()
                 self.git(self.target,'add','.hrn');self.git(self.target,'commit','-qm','fixture: planning records\n\nCo-authored-by: Codex <noreply@openai.com>')
                 args=['work','apply','--confirm',prepared['confirm_token']]
@@ -392,14 +410,14 @@ class InstalledCandidateNoninterferenceTests(unittest.TestCase):
                 self.assertEqual(plan,(self.target/'.hrn/planning/candidates.json').read_bytes());self.assertEqual(b'installed worker result\n',(self.target/'a').read_bytes())
                 self.installed(['candidate','add'],req)
                 before=fixtures.exact_snapshot(self.target)
-                self.call(['candidate','add','--target',self.target],proposal(self.target,cid='worker-idea'),launcher=self.base/'worker/hv2',expected=65)
+                self.call(['candidate','add','--target',self.target],proposal(self.target,cid='worker-idea'),launcher=self.base/'worker/colvia',expected=65)
                 self.assertEqual(before,fixtures.exact_snapshot(self.target))
 
     def test_installed_two_processes_same_digest_one_wins_one_stale(self):
         self.apply_init(self.preview());requests=[proposal(self.target,cid=k) for k in ('a','b')];children=[]
         try:
             for request in requests:
-                p=subprocess.Popen([sys.executable,'-I','-B',str(self.target/'hv2'),'candidate','add'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=self.target)
+                p=subprocess.Popen([sys.executable,'-I','-B',str(self.target/'colvia'),'candidate','add'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=self.target)
                 p.stdin.write(canonical_json_bytes(request));p.stdin.close();p.stdin=None;children.append(p)
             results=[(p.returncode,out,err) for p in children for out,err in [p.communicate(timeout=60)]]
             self.assertEqual([0,65],sorted(code for code,_,_ in results),results)
@@ -453,7 +471,7 @@ class CandidateLifecycleTests(unittest.TestCase):
         self.assertEqual(initial['inventory'],verify_workspace_product(self.target)['inventory']);self.assertEqual(plan,(self.target/'.hrn/planning/candidates.json').read_bytes())
         self.assertIn('기록된 Owner 선택',self.installed(['view','candidates']).stdout.decode())
         # Exact active source repair after deliberately damaged launcher.
-        (self.target/'hv2').write_text('damaged launcher\n')
+        (self.target/'colvia').write_text('damaged launcher\n')
         p=json.loads(self.call(['repair','--target',self.target,'--source',self.source,'--backup',self.base/'backup','--operation-id','repair-candidate','--observed-at',TIME]).stdout)
         self.call(['repair','--target',self.target,'--source',self.source,'--apply','--input','-','--confirm',p['confirm_token']],p['request'])
         self.assertEqual(plan,(self.target/'.hrn/planning/candidates.json').read_bytes());self.installed(['view','candidates'])

@@ -309,3 +309,10 @@ The Owner's approval covered the applied eleven-file candidate and stated verifi
 The exact eleven documentation revisions and the pending record remain under `m3-candidate-20261007-8bd0eeac`; the pending record is historical, not this acceptance. This amended record and current Contributing navigation are preserved separately under the same label and verified by readback. The original M2 candidate and acceptance captures remain unchanged. Retention ends only after equivalent final Git or immutable preservation and disposition of dependent review/recovery references. A digest alone does not preserve content. The verified preservation completes activation of this amendment on 2026-10-07.
 
 Development-task transfer, remaining source-independence review and DR-0001 are outside this amendment. Git publication and actual adopter updates retain their separate authorization boundaries. The current artifact remains the reviewed checkout-1/29 release `8bd0eeac55fb0af92b61a7a36a98adb9957b880c791b957b20c319a51c5577f3`.
+
+
+## Entry-1 Amendment Activation — 2026-10-14
+
+Current state: Accepted (Amended), effective 2026-10-14 for the named entry-1 clauses. Owner의 P4 결과 수락과 규범 활성화 승인을 [DR-0004](DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14)에 기록했다. 해당 절의 exact11개 successor hash·조항별 범위와 근거/한계를 적용한다. 기존 본문·frontmatter·M3 표는 원래 수락 revision의 역사 기록으로 그대로 유지한다. 이 문서 전체를 superseded 처리하지 않는다.
+
+Current writer/reader-window·checkout/detach·worker integration 절과 managed adapter member를 entry-1 successor로 대체한다. Current writer는 colvia이며 adapter member는 adapters/colvia-work/SKILL.md다. Literal old-history reader, authority/encoding/pending, unrelated meaning은 유지한다.

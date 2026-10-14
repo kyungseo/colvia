@@ -1,5 +1,7 @@
 # Resume Without The Old Conversation
 
+This page describes the unactivated `entry-1` candidate. Use requires separate exact-artifact qualification and installation approval; the historical checkout-1 exercise below does not qualify these commands.
+
 [Previous: first Work](first-work.md) · [Contents](README.md)
 
 [한국어](../ko/resume.md)
@@ -10,15 +12,15 @@ Keep the project and its records, then begin a new Codex conversation with acces
 
 Give the new conversation this request:
 
-> Read this project's AGENTS.md, README.md and docs/plan.md. Run ./hv2 view and follow the current adapter it identifies. Read docs/first-work.md and compare its claims with the relevant intent and Work views. Explain what was accepted, what changed, what is unverified, whether anything is pending, and the next decision I need to make. Do not edit files, publish records or start another Work.
+> Read this project's AGENTS.md, README.md and docs/plan.md. Run ./colvia view and follow the current adapter it identifies. Read docs/first-work.md and compare its claims with the relevant intent and Work views. Explain what was accepted, what changed, what is unverified, whether anything is pending, and the next decision I need to make. Do not edit files, publish records or start another Work.
 
 The agent reads the actual IDs from `view` and then inspects:
 
 ```sh
-./hv2 view
-./hv2 view intent INTENT_ID
-./hv2 view work WORK_ID
-./hv2 status
+./colvia view
+./colvia view intent INTENT_ID
+./colvia view work WORK_ID
+./colvia status
 ```
 
 `INTENT_ID` and `WORK_ID` are placeholders. For this exercise the expected observation is a completed first Work, a current accepted-intent binding, no pending operation and current files matching the stored result. These commands observe state; they do not resume writes by themselves.
@@ -42,7 +44,7 @@ If the previous Work is complete and the project is understood, ask for a recomm
 
 > Compare adding task deletion with handling malformed task data. Explain the likely scope and checks, and recommend one next step. Do not save a candidate or start a Work yet.
 
-The agent first reads `./hv2 view candidates`. A recommendation is read-only. An explicit request to record or select a candidate permits that named planning action; it does not accept an intent or authorize implementation. See [Candidate Planning](../../docs/REFERENCE.md#candidate-planning).
+The agent first reads `./colvia view candidates`. A recommendation is read-only. An explicit request to record or select a candidate permits that named planning action; it does not accept an intent or authorize implementation. See [Candidate Planning](../../docs/REFERENCE.md#candidate-planning).
 
 If there is an unfinished or pending Work, continue or recover that same Work through its supported procedure. Do not create a duplicate to escape its state. If the recorded execution budget or attempts cannot be established, disclose that uncertainty and obtain direction before further iteration.
 
@@ -50,7 +52,7 @@ If there is an unfinished or pending Work, continue or recover that same Work th
 
 This guide's synthetic validation started new CLI processes and read the completed records without changing them. It did not run an independent fresh agent session or observe a person using this page. If trying that exercise, record the questions and mistakes separately; successful command execution is not proof that the explanation was understood.
 
-Edition: private development, `checkout-1`; checked 2026-10-05.
+Historical exercise — Edition: private development, `checkout-1`; checked 2026-10-05.
 
 ---
 

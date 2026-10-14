@@ -1,5 +1,6 @@
 """Human projection tests: actual installed CLI plus explicitly labeled graph fixtures."""
 from __future__ import annotations
+from test_productization_safety import verified_inventory_id
 import ast
 import copy
 import hashlib
@@ -54,7 +55,7 @@ class HumanViewInstalledTests(unittest.TestCase):
         a=self.screen([]);b=self.screen([],source=True)
         self.assertIn('No Work',a);self.assertIn('natural_language_adapter',a);self.assertNotIn('inventory:',a);self.assertNotIn('src/hv2ref/view.py',a)
         self.assertIn('not the bound release',b)
-        self.assertEqual('checkout-1',workspace_candidate(self.source)['inventory']['inventory_id'])
+        self.assertEqual('entry-1',workspace_candidate(self.source)['inventory']['inventory_id'])
         self.assertEqual(29,len(workspace_candidate(self.source)['inventory']['entries']))
 
     def test_draft_is_not_acceptance_and_hostile_facets_are_escaped(self):
@@ -129,12 +130,12 @@ class HumanViewInstalledTests(unittest.TestCase):
         intent_graph=json.loads(self.installed(['intent','apply','--confirm',ticket['confirm_token']],ticket['ticket']).stdout)
         selected=intent_graph['selections'][intent_graph['current']['selection_ref']['id']]
         intent={'authority_home_id':'home-a','kind':'intent','id':'intent-a','revision_ref':selected['revision_ref'],'acceptance_ref':selected['acceptance_ref'],'selection_ref':intent_graph['current']['selection_ref']}
-        launcher=verify_workspace_product(self.target)['launcher_sha256'];base=snapshot(self.target,verified_launcher_sha256=launcher)
+        launcher=verify_workspace_product(self.target)['launcher_sha256'];base=snapshot(self.target,verified_launcher_sha256=launcher, verified_inventory_id=verified_inventory_id(self.target))
         identity={'record_type':'work-identity','schema_version':1,'authority_home_id':'home-a','work_id':'work-a','work_type':'change','created_at':self.TIME,'acceptance_authority':'owner','lineage':None}
         prior=None;unavailable=['optional external platform probe not performed']
         for number,operation in [(1,'start'),(2,'submit-result')]:
             if number==2:(self.target/'a').write_bytes(b'after\n')
-            manifest=make_manifest(base,snapshot(self.target,verified_launcher_sha256=launcher),scope=['a']);digest=hashlib.sha256(canonical_json_bytes(manifest)).hexdigest()
+            manifest=make_manifest(base,snapshot(self.target,verified_launcher_sha256=launcher, verified_inventory_id=verified_inventory_id(self.target)),scope=['a']);digest=hashlib.sha256(canonical_json_bytes(manifest)).hexdigest()
             revision={'record_type':'work-revision','schema_version':1,'authority_home_id':'home-a','work_id':'work-a','record_id':f'revision-{number}','observed_at':self.TIME,'observed_scope':['fixture content'],'unavailable_scope':unavailable,'author':'agent','operation':operation,'expected_prior_selection':prior,'intent_ref':intent,'scope':['a'],'document_refs':[],'evidence_refs':[],'result_refs':{'manifest':{'id':digest,'sha256':digest}},'progress':'review' if number==2 else 'active','next_action':'owner review','relations':[],'rebind_from':None,'execution_context':{'mode':'local','attempt_id':f'attempt-{number}'}}
             graph=json.loads(self.installed(['work','publish'],{'identity':identity,'revision':revision,'manifest':manifest,'selection_id':f'selection-{number}','operation_id':f'publish-{number}'}).stdout);prior=graph['current']['selection_ref']
         prepared=json.loads(self.installed(['work','prepare'],{'work_id':'work-a','action':'accept','actor':'owner','reason':'synthetic nonessential observation decision','request_id':'accept-policy','observed_at':self.TIME,'revision_ref':None,'supersedes':None}).stdout)
@@ -184,7 +185,7 @@ class HumanViewInstalledTests(unittest.TestCase):
         subprocess.run(['git','-c','maintenance.auto=false','-c','gc.auto=0','-C',str(self.target),'commit','-qm','fixture'],check=True)
         worker=self.base/'worker';subprocess.run(['git','-C',str(self.target),'worktree','add','--detach',str(worker)],check=True,capture_output=True)
         before=exact_snapshot(self.base)
-        result=self.call(['view'],launcher=worker/'hv2')
+        result=self.call(['view'],launcher=worker/'colvia')
         after=exact_snapshot(self.base)
         changed=sorted(name for name in before.keys()|after.keys() if before.get(name)!=after.get(name))
         self.assertEqual(before,after,'Changed paths: '+repr(changed))
@@ -257,7 +258,7 @@ class HumanWorkerViewTests(unittest.TestCase):
         from hv2ref import view
         from hv2ref.intent import workspace_intents
         f=self.f;before=f.bytes();works=f.store._all();intents=workspace_intents(f.target)
-        # An unverified runtime double keeps exact-blob proof; it does not enable checkout-1.
+        # An unverified runtime double keeps exact-blob proof; it does not enable entry-1.
         product={"binding_ref":f.binding,"launcher_sha256":None,"inventory":{"inventory_id":None}}
         with patch.object(view.WorkStore,'prepare',side_effect=AssertionError('view called prepare')),patch.object(view.WorkStore,'apply',side_effect=AssertionError('view called apply')),patch.object(view.WorkStore,'publish',side_effect=AssertionError('view called publish')):
             lines=view._confirmation(f.target,ticket,works,intents,product) if ticket else view._work(f.target,works['work-a'],revision,product,intents,works)

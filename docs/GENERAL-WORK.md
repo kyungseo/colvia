@@ -1,5 +1,7 @@
 # General Work Development Slice
 
+Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+
 Status: development machine CLI with local record writing, worker publication, human baseline refresh and exact worker result application. Exact-candidate qualification and actual adoption require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md).
 The default writer verifies an isolated installed applied binding. Tests may explicitly supply a verifier double. Actual source init and
 installed launcher tests exercise intent and Work commands plus update/rollback round trips; exact active repair is available from independent source. Receipt-bound detach and a bounded independent auditor are implemented; their presence does not establish general adoption or qualification of these exact bytes.
@@ -53,7 +55,7 @@ this exception. A source change is not same-window rollback qualification;
 validate exact old/new artifacts and resulting records before an adopter switch.
 This bounded path is not Windows qualification or general Git filter support.
 
-The unchanged CRLF exception requires verified active checkout-1 inventory. Older/unknown or omitted inventory values keep strict blob matching, including in read-only worker inspection. A planning-1 worker's retained launcher is not silently accepted after transition: preserve its result/refs and follow the explicit baseline rebind/resubmission procedure in [Getting Started](GETTING-STARTED.md#transition-to-checkout-1). Attribute/capability drift after a decision can refuse resume; restore the original environment for exact recovery or use cancellation only where its existing conditions permit. Completed replay remains historical, while view observations can become unavailable.
+The unchanged CRLF exception requires verified active checkout-1 or entry-1 inventory. Older/unknown or omitted inventory values keep strict blob matching, including in read-only worker inspection. An older-window worker's retained launcher is not silently accepted after transition: preserve its result/refs and follow the explicit baseline rebind/resubmission procedure in [Getting Started](GETTING-STARTED.md#transition-to-entry-1). Attribute/capability drift after a decision can refuse resume; restore the original environment for exact recovery or use cancellation only where its existing conditions permit. Completed replay remains historical, while view observations can become unavailable.
 
 Recovery observation distinguishes full result, mixed pre/post, unknown changed content and outside drift. The content-only
 `all_changed_paths_pre` observation cannot authorize cancellation: actual ignored occupants and safe ancestors must also pass
@@ -143,8 +145,8 @@ Candidate readiness, result submission, exact human acceptance/application and G
 
 ## Installed Machine Commands (Development)
 
-The isolated installed launcher exposes `hv2 intent draft|prepare|apply` and
-`hv2 work publish|prepare|apply`. Each accepts canonical JSON from `--input PATH`
+The isolated installed launcher exposes `colvia intent draft|prepare|apply` and
+`colvia work publish|prepare|apply`. Each accepts canonical JSON from `--input PATH`
 or stdin (the default). `apply` also requires `--confirm TOKEN`. Prepare returns
 `ticket` and `confirm_token`; apply consumes only that exact ticket object.
 This is an agent/programmatic interface, separate from the read-only human view/adapter.
@@ -165,7 +167,7 @@ inspection; the installed entry cannot repair its own missing binding.
 
 Installed startup never guesses source-checkout mode when `.hrn` is missing. Invoke an independent
 trusted source launcher with `--source-checkout` for init or diagnostic commands. Source init/update/rollback/detach
-commands require the explicit `checkout-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
+commands require the explicit `entry-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
 there is no legacy fallback mode.
 Confirmation tokens bind request bytes; they are not independent evidence of human authorization.
 
@@ -180,10 +182,10 @@ Only exact independent-source recovery can finish a partially published lifecycl
 If the launcher or active payload is damaged, invoke a trusted independent source:
 
 ```sh
-/path/to/exact-source/hv2 --source-checkout repair --target /path/to/project \
+/path/to/exact-source/colvia --source-checkout repair --target /path/to/project \
   --source /path/to/exact-source --backup /path/to/new-external-backup \
   --operation-id repair-1 --observed-at 2026-01-01T00:00:00Z
-/path/to/exact-source/hv2 --source-checkout repair --target /path/to/project \
+/path/to/exact-source/colvia --source-checkout repair --target /path/to/project \
   --source /path/to/exact-source --apply --input request.json --confirm TOKEN
 ```
 
@@ -204,10 +206,10 @@ backup bytes are refused. The installed launcher cannot invoke this operation.
 
 ## Detach Without Removing Project Truth
 
-Use the installed `hv2 detach --operation-id detach-1 --observed-at TIME` to
-preview. Save its `request` object, then run `hv2 detach --apply --input request.json
+Use the installed `colvia detach --operation-id detach-1 --observed-at TIME` to
+preview. Save its `request` object, then run `colvia detach --apply --input request.json
 --confirm TOKEN`. An independent source can use the same command with explicit
-`--source-checkout`, `--profile checkout-1`, and `--target /path/to/project`.
+`--source-checkout`, `--profile entry-1`, and `--target /path/to/project`.
 
 Detach writes `.hrn/detached.json` before removing anything. It removes the verified
 launcher and managed product files, then their empty directories. Format, ignore
@@ -245,7 +247,7 @@ The current confirmation view does not directly list these observation arrays. B
 
 ## Worker Publication Development Checkpoint
 
-Run the control project's installed `./hv2 work publish --worker /path/to/linked-worker --input REQUEST` for an isolated-worktree submit-result. The locator is command input, not a stored registry. The unchanged request fields bind identity, revision, manifest, selection_id and operation_id. The worker must be registered in the same Git common directory, its HEAD must be the retained candidate commit, and its complete observed content must match the committed result. Its copied launcher must match the control-verified bytes. The worker's own launcher cannot mutate control authority.
+Run the control project's installed `./colvia work publish --worker /path/to/linked-worker --input REQUEST` for an isolated-worktree submit-result. The locator is command input, not a stored registry. The unchanged request fields bind identity, revision, manifest, selection_id and operation_id. The worker must be registered in the same Git common directory, its HEAD must be the retained candidate commit, and its complete observed content must match the committed result. Its copied launcher must match the control-verified bytes. The worker's own launcher cannot mutate control authority.
 
 Start and baseline rebind run on control without --worker. Their manifest base and result are equal, with one current control commit retained by existing refs. A new same-intent worker rebind preserves scope/ignore policy, remains an unselected proposal, and needs the Work acceptance authority's separate rebind prepare/apply. This selects an active baseline and does not accept a result. Local same-intent rebind remains unsupported. A record-only commit does not invalidate an already proposed baseline if content, refs, intent and product remain current.
 
@@ -307,3 +309,9 @@ Historical chain validation is separate from today's readiness. A later child re
 A parent worker result must not rewrite a required document or evidence input bound to a captured child intent. The same preflight protection already applies to the parent intent. Overlap is refused before result publication or content application; use a separate output, or have the human revise the affected intent and refresh the Work baseline. Required child current/live checks remain in force through publication. This restriction does not prevent children from successively modifying the same output file when it is not such a required intent input.
 
 Writer validation is fail-closed for the authority home: existing Work relation and pending-intent checks already read across that home, and umbrella records add historical child-reference validation. A damaged unrelated authority record can therefore block an ordinary writer. This is not a per-Work isolation guarantee, and no new index or separate synchronization document is required.
+
+## Entry-1 Transition And Existing Work
+
+Entry-1 adds no Work, parent or candidate operation. Transition admission preserves selected/orphan worker records but blocks pending durable operations. Non-completed selected local Work and local parents require the exact stored-manifest equality and renamed-path dependency checks in [Entry-1 admission](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication). A parent's required references include its sealed direct captured child revisions/intent confirmations, not the child's current state, scope, optional references or deeper descendants. Completed or worker-mode captured children can therefore intentionally block a local parent. Ordinary parent acceptance rules are unchanged.
+
+After cutover, old worker result bytes/refs remain historical evidence; direct acceptance under old launcher proof is refused. A new runtime control commit needs separate Git authorization, followed by explicit same-intent worker baseline rebind and resubmission. No automatic acceptance, cancellation, baseline refresh or Git action occurs. Current source repair is exact active entry-1 only; old pending operations require matching OLD source. Current detach uses schema 3; historical schema 1/2 writes use retained old sources. Historical transition-content unavailability is distinct from current Work content/ref checks; see [diagnostic context](REFERENCE.md#entry-1-diagnostic-context).

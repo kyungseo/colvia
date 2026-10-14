@@ -3,10 +3,12 @@ id: DR-0004
 status: Accepted
 date: 2026-10-09
 accepted: 2026-10-09
-activation: pending
+activation: 2026-10-14
 ---
 
 # DR-0004: Colvia Managed Entry And One-Way Transition
+
+Current source activation: [Entry-1 Amendment Activation](#entry-1-amendment-activation--2026-10-14). Earlier pending/design labels below retain their dated historical meaning.
 
 ## Question
 
@@ -350,3 +352,75 @@ The quotation preserves every original input line. Removing one leading `> `, or
 > Exact Owner design acceptance must identify these revision1.1 bytes, the historical exit10/65 distinction, the transition-specific mandatory-sync/non-pass65 rule across S1–S6, the mandatory pre-S1 environmental admission check, the exact-current replay/guard/same-entry boundaries, and the unsupported-composite limit including zero-byte binding.next. Acceptance includes the possibility of preserved post-S1 failure and separately authorized external recovery; it does not imply power-loss qualification. Record acceptance only after the Owner accepts the exact reviewed or otherwise explicitly chosen bytes. Preserve earlier DR text and explain that the original header identifies its historical acceptance. This design decision does not accept the current source as implementing D3-S-A: it currently ignores some sync returns, including reused helper paths.
 >
 > Before implementation/execution, prepare a finite plan for all affected call sites, scoped error translation, preservation and recovery tests. It must retain prior31/31 as historical evidence rather than qualifying changed bytes. Future directory-sync fault verification must distinguish unavailable return, OSError, pre-S1, post-S1/pre-B1, post-B1, complete-prefix retry and exact-current replay, while keeping the unsupported composite (including a zero-byte member) byte-preserved. Existing pre-check success must not bypass a later failure; direct and reused-helper paths, the explicit scope guard, stable diagnostic reasons and preservation require coverage. Any needed change to the fixed physical oracle or execution controls requires its own approval; this amendment changes neither by implication. D3-R-A keeps changed-truth and normal current-operation checks distinct. Full19-prefix, Git transition, all executor/writer cells, parent/worker, mixed-history lifecycle, stronger diagnostic oracles, default fixture migration and P3/P4 remain separate required gaps. Neither no-tool review nor these selected tests constitute Owner result acceptance or technical activation.
+
+## Named Amendment Acceptance — C0-L-A Direct Captured-Child Required-Reference Extension Revision 1.1 (2026-10-11)
+
+Status: Accepted (Amended), limited to the named extension below. Track: product. Technical activation remains pending.
+
+The Owner explicitly stated: “D2 revision 1.1과 M1 적용을 수락해. 기존 범위·잔여 예산·중단 조건 안에서 P2 작성과 검증을 재개하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.” This accepts the exact 2,768-byte UTF-8 design text below, including its final LF, with SHA-256 `cbb81a9bc1dca0bf73359b0ce48bab2e50ef92a8b038b0e2d4bc046762e58484`. The retained Proposed heading identifies the reviewed input; this record accepts that exact revision. All earlier accepted bytes and unaffected meaning are preserved.
+
+The scope is a currently selected, non-completed schema-2 local parent's direct captured child Work/intent required references. A completed or worker-mode child's captured reference may intentionally block that parent. Own-scope/own-required-reference refusal retains priority and its existing diagnostic. This is distinct from the fresh-init D2-A amendment. It does not activate the runtime contract or accept implementation, P2 completion, release qualification or adopter application. The separately authorized M1 implementation and bounded P2 resumption are recorded in the existing development Work; Git actions remain separately authorized.
+
+### Exact Accepted Input
+
+```text
+C0-L-A Direct Captured-Child Required-Reference Extension — Proposed Revision 1.1
+
+This amendment extends only C0-L-A's renamed-entry path-dependency predicate for a currently selected, non-completed, schema-2 local parent Work. In addition to that parent's own scope and required Work/intent references, enumerate required document_refs and evidence_refs from each direct child revision and its bound intent confirmation identified by the sealed umbrella_evidence.children references of that parent's currently selected revision. Resolve the recorded revision_ref and intent_ref against verified historical graphs; do not select the child's current revision or intent. Include a captured child regardless of its current completion state or local/isolated-worktree execution mode. Do not include child scope, optional references, declared-but-uncaptured children, descendants beyond a direct capture, or a worker-mode parent through this extension.
+
+Apply the existing hv2/colvia path-dependency rule to these additional required paths whenever the existing C0-L-A predicate is evaluated, including its admission/recovery and S6 comparison call sites. The existing refusal for a Work's own scope and required Work/intent references is evaluated first and keeps its existing diagnostic; it need not enumerate captured children. Otherwise a matching captured-child path refuses with the existing HV2-WORKSPACE-PRODUCT diagnostic and identifies the refusing selected parent Work and each of that parent's offending captured child Works. This extension does not change how many refusing Works a single response reports. This is an intentional additional refusal that may block a parent because of an immutable historical child reference. It does not verify current child reference bytes, refresh captured evidence, rewrite history, update a baseline, rebind, cancel, complete, or accept any Work or intent. Existing graph validity, snapshot equality, truth-drift handling and post-B1 preservation/reporting rules remain in force.
+
+All other accepted DR-0004 behavior remains unchanged, including the rest of C0-L-A, C0-W-A, C0-T-A, D1-A/D2-A revision 2.1 and D3-A revision 1.1. This extension is distinct from the fresh-init D2-A amendment. This amendment does not alter ordinary parent/child publication or acceptance, same-entry lifecycle behavior, record schemas, the admitted predecessor, writer guards or shared helpers. It neither weakens nor replaces existing P2 verification criteria; evidence for this added refusal is a separate verification-plan obligation. Design acceptance requires explicit Owner acceptance of these identified bytes; it neither activates the runtime contract nor accepts implementation, P2 completion, adopter application or Git actions.
+```
+
+
+## Entry-1 Amendment Activation — 2026-10-14
+
+Status: Accepted (Amended); effective 2026-10-14 for the exact source-development contract below.
+
+Owner는 “최적화 테스트는 아까 얘기한대로 스킵해도 되겠어? 그렇다면 제안한 다음 진행하자.”라고 지시했다. Driver는 제품 소스의 assert/__debug__ 분기 부재와 완료된 normal 검증을 다시 확인했다. 이 지시는 앞서 제안한 P4 최종 개발 결과 수락, 정확한 규범11개 발효와 종료 정리, 커밋안 준비를 승인한 것으로 기록한다. Commit/push/PR/merge, 실제 adopter 적용, 공개 전환은 포함하지 않는다. 이는 기록된 인간 결정이며 신원 인증을 뜻하지 않는다.
+
+### Exact Activated Contract
+
+이 표의11개 원문은 P3 수락 revision과 SHA-256이 모두 같으며 이번 발효에서 수정하지 않았다. P3의 조항별 정렬·R22 처분과 P4/R24 및 ordinary 보완 결과는 [기존 Work](../development/CHORE-20261009-002-colvia-verification-controls.md#owner-result-acceptance-and-contract-activation--2026-10-14)에 연결한다. C2의 비교 기준은 M3 source commit `a17f35cf323ffde7a8642a85501fddbec858b6de`이고, P3 successor와의 실제 diff는 기존 p3-alignment-36의 corrected diff 및 accepted-before-activation.patch로 복원 가능하다. Hash만을 보존 근거로 삼지 않는다.
+
+| Normative member | Activated SHA-256 |
+| --- | --- |
+| `docs/WORKSPACE-CONTRACT.md` | `3796f658d304e726a337f9b06040b488ae17561195fd02c516cec746a6490e3a` |
+| `docs/GENERAL-WORK.md` | `0e81c6a62b6a5e33d29d163662c1b1feb9be5626b65e6d04d6353747bf176074` |
+| `docs/GUIDED-INTENT-FORMATION.md` | `b86b713b265379712b08216db07253f938e59db39fafd8d39c13a25eb4163001` |
+| `docs/REFERENCE.md` | `ee4ce947e5c10ce7de18ab770e1b47f1fb96310e54463561a155903896f6fda4` |
+| `docs/OPERATIONS.md` | `1ee6ee7045d1570fff3a5f6cae14322d89d0509f312a76460822818ece3e1350` |
+| `docs/MANUAL-OPERATION.md` | `3341bb934dca5244ca12c449587c094b50ef4fdc32b8f454843991743d6d5f3c` |
+| `docs/SECURITY-AND-SUPPORT.md` | `0da19e169b0c1eedcd01e594ba242e9c9ea55b64f72252fe692eb9e3db436f84` |
+| `docs/MAINTAINING.md` | `cc0268ca3859405ad0ecf6640e729c232c1adba7d3d9afe2266fc491901410f2` |
+| `docs/GETTING-STARTED.md` | `9d9e38128e459c890361d5a6e3bcbd83f6d3765b478eafde4fe0208dfac62e94` |
+| `adapters/colvia-work/SKILL.md` | `df7db5f79613164de946e17bca732686f94715546c67158d63effd0105adf3df` |
+| `docs/development/CHECKOUT-1-STRUCTURE.md` | `fd4019d4093fbd64ef5dcda8c36ba41cfc319a6e4feb0d84fd048c8d8dd81fe7` |
+
+| Contract member | Activated successor clauses |
+| --- | --- |
+| WORKSPACE-CONTRACT | Entry-1 inventory/launcher, exact predecessor, S0–S6 one-way switch, paired switch2/detach3, C0-L-A/W-A/T-A and accepted D1/D2/D3 boundaries |
+| GENERAL-WORK | Current entry path; preserved local/worker/parent acceptance, pending/proof and explicit human rebind boundaries |
+| GUIDED-INTENT-FORMATION | Current entry commands; unchanged intent/confirmation authority and canonical encoding |
+| REFERENCE | Colvia commands, transition and retired-entry diagnostics, preserved exit/refusal precedence |
+| OPERATIONS | Approved source/target operations, first-entry no rollback, retained OLD recovery and external restoration boundary |
+| MANUAL-OPERATION | Literal retained history, paired schema reader and exact-source recovery limits |
+| SECURITY-AND-SUPPORT | Entry-1 trust/support scope, retained historical observations and unverified platform/adopter claims |
+| MAINTAINING | Entry-1 inventory/consumer paths; evidence selection and task-specific qualification exception remain distinct |
+| GETTING-STARTED | Exact predecessor transition, independent source, recovery material and explicit worker rebind |
+| adapters/colvia-work/SKILL.md | New adapter member/path and entry instructions; unchanged human scope/result authority |
+| CHECKOUT-1-STRUCTURE | Exact switch2/detach3 fields, entry inventory and literal historical schemas |
+
+
+DR-0002의 M3 current writer/reader-window·checkout/detach·worker-integration 절과 adapter membership, DR-0003의 unchanged-M3 current-set 참조 및 Public Preview의 managed launcher 보존 절만 위 successor와 DR-0004의 수락된 amendment로 대체한다. `.hrn`, `HV2-`, 내부 hv2ref, 기록 정체성·authority, 관계없는 intake/개발 절차는 유지한다. DR-0001과 공개·다른 platform·실제 adopter 권한은 채택하지 않는다.
+
+### Frozen Preparation Labels
+
+정확한 검증 원문과 managed29 payload를 유지한다. 위11개와 당시 entry/index에 남은 “candidate”, “activation pending”, “unactivated” 및 M3가 아직 current라는 상태 문구는 발효 전 준비 상태를 기록한 것이다. 이 절의 실제 Owner 수락과 exact11개 표가 소스 개발의 현재 효력을 정한다. 이는 DR-0002가 원래 structural supplement의 Draft 원문을 유지하며 발효한 방식과 같다. 보존된 준비 문구가 새 기술 동작이나 추가 승인 조건을 만들지 않으며, 설치 위치/파일 복사만으로 발효한 것도 아니다. 소스의 Contributing과 Development Index는 이 발효 기록으로 안내한다. 설치본 문구를 편집하거나 새 release를 만들지 않는다.
+
+### Accepted Evidence And Limits
+
+수락 대상은 recovery source102 digest `6e2b54d1ad9604b2ff84bd5de8d6ad4caf428e5523cae4314657250bde4aaa39`, managed29 inventory SHA `596946e9370c7de83313417b7e23362a8ce19c5f25a5b8ce72e8dc422b9c49ea`의 개발 결과다. 현재 선택143 PASS, ordinary616 재사용+163 보완=779 normal PASS, 기록된 P2/P3 한정 재사용 및 R24 필수 지적 처분을 함께 수락한다. 이번 소스 전용 수락/안내 기록은 runtime/test/managed payload를 바꾸지 않는다. 과거 source102 digest를 이 추가 기록까지 포함한 새 전체 source digest라고 부르지 않는다.
+
+Parent-O는 이번 task에서 생략한다. Source AST 확인은 실행 증거가 아니며 tests 전체 assert 부재도 주장하지 않는다. 전체6663×두 모드 PASS, 생략한 factory 조합, C4 원인 미확정·C5 관측 제한, 다른 OS/runtime·실제 adopter·public qualification을 새로 주장하지 않는다. 승인된 축소 완료 조건의 수락이며 Maintaining의 일반 lifecycle 검증 정책을 바꾸지 않는다. 향후 최적화에 의존하는 코드, 해당 모드의 장애 또는 새 runtime 지원 필요가 생기면 그 변경 범위에서 재검토한다.

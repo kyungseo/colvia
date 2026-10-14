@@ -60,8 +60,8 @@ def instrument(name, globals=None, locals=None, fromlist=(), level=0):
         workspace.writer_guard=observed_guard
     return module
 builtins.__import__=instrument
-sys.argv=[str(target/'hv2'),'work','apply','--input','-','--confirm',token]
-runpy.run_path(str(target/'hv2'),run_name='__main__')
+sys.argv=[str(target/'colvia'),'work','apply','--input','-','--confirm',token]
+runpy.run_path(str(target/'colvia'),run_name='__main__')
 """
 
 

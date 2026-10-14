@@ -36,7 +36,7 @@ class RuntimeAdmissionTests(unittest.TestCase):
         t=helpers.ActualWorkspaceInitTests();t.setUp();self.addCleanup(t.doCleanups);return t
 
     def installed(self,t,mode,args,value=None):
-        return subprocess.run([sys.executable,"-I","-B","-c",WRAPPER,mode,str(t.target/"hv2"),*args],
+        return subprocess.run([sys.executable,"-I","-B","-c",WRAPPER,mode,str(t.target/"colvia"),*args],
                               input=canonical_json_bytes(value) if value is not None else None,
                               capture_output=True,cwd=t.target,timeout=45)
 

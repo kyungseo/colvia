@@ -1,9 +1,10 @@
 # CHORE-20261009-002: Colvia Verification Controls
 
 Date: 2026-10-09
-Disposition: Owner accepted bounded P1a result; actual-result R1 found no blocker and controls11 are frozen. Authorized C1 P1b/P2 implementation is active; no product result acceptance, activation or Git actions.
+Disposition: Completed — Owner accepted the bounded P2/P3/P4 and ordinary779 development result and activated exact entry-1 normative11 on 2026-10-14. Commit preparation only; Git/adopter/public actions remain separate.
 Owner: Human Owner
 Driver: Codex
+Actual end: 2026-10-14
 Reviewer: Claude only through separately authorized review
 
 ## Scope And Authorization
@@ -7093,3 +7094,8773 @@ Owner의 “계속하자” 및 “참고로 Claude도 리셋되었어. 계속�
 이번 B 복구의 한정된 검증 범위는 통과한 checkpoint 후보이므로33 path의 현재 소스·테스트·필요 기록과 메시지를 commit 승인용으로 준비한다. 전체 P2/전체 suite/external review 완료를 주장하지 않는다. [정확한 파일·메시지·검증과 미검증 범위](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-04/COMMIT-PREPARATION.md)와 [누적 리뷰 입력](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-04/CUMULATIVE-REVIEW.md)을 참조한다. 이전 실패 상태 예외 commit 제안 대신 이번 복구 결과와 남은 P2를 명시한다. 실제 stage/commit/push/PR/merge는 없다.
 
 고정 입력과 이전 오류·보존 사본은 변경하지 않았다. Source 및 baseline/실행 경계는 예정된 누적 리뷰와 남은 P2에서 사용할 입력이 있어 유지한다. Work의 새 append bytes와 누적 untracked 입력도 durable bundle에 보존한다. 임시 실행 산출물은 Git 대상에 넣지 않는다. 소비 의존성이 끝나면 중복 산출물·실행 환경의 cleanup 적격성을 다시 판단한다. Work Done·STATUS·DR 상태·HEAD·index는 유지한다.
+
+
+## Cumulative Direct Claude Review And Driver Disposition — 2026-10-11
+
+### Actual Owner Authorization And Scope
+
+Owner 요청: “이제 a17f35c까지의 누적 변경과 검증 결과를 대상으로 Claude 외부 리뷰를 진행해. 기존 구독 인증 경로를 확인하고, 리뷰 결과와 Driver 처분을 정리해. 수정·추가 테스트·push·PR·merge는 별도 승인으로 남겨둬.” 이어서 “acrelay 말고 claude cli를 직접 호출해서 검토 진행해. 계속해”라고 지정했다. 이에 acRelay를 호출하지 않고 Claude CLI를 직접 사용했다. Driver는 Codex이며 reviewer 응답과 Driver 처분, Owner 결정을 아래에서 분리한다.
+
+첫 호출은 누적 runtime diff와 현재 복구 근거를 검토했다. 테스트 대부분·통제·raw 미열람을 명시했으므로 동일 변경 없는 입력에 대해 보완 호출1회를 실행했다. 보완 호출은 그 미열람 테스트/controls와 기존 synthetic raw만 다뤘다. 두 호출 모두 Read/Glob/Grep 정적 검토이며 제품 수정·테스트 실행·import·새 재현·추가 Git 작업을 수행하지 않았다. 이번 append만 승인된 리뷰 기록 변경이다. P2·Work Done·STATUS·DR 활성화 상태는 변경하지 않는다.
+
+### Input, Authentication And Execution Identity
+
+- Source base: `238514686078ce1564010a7b69013f48a635c57c` → review HEAD: `a17f35cf323ffde7a8642a85501fddbec858b6de`. Commit parent가 이 base이며 누적33 경로(이름 변경을 합치면31개)를 대상으로 한다. Source branch는 `codex/colvia-brand-transition`이다.
+- Source 누적 binary diff SHA-256: `90801cc23ae118ad8b758ade93f2c2a4b1cb7ee54d60460ae3cae3d36cfbb12e`. 시작 시 clean; 두 호출 뒤 기록 append 직전까지 source119 파일 및 선언된 보조 입력90개(결과/진입점7, 기존 raw83) bytes 불변을 Driver가 대조했다. SHA는 drift 확인이며 실행 재현이 아니다.
+- Sandbox 내부 auth는 Keychain을 읽지 못해 `loggedIn=false/authMethod=none`이었다. 외부의 비밀값 없는 재확인 및 각 CLI 호출 직전 확인에서 `loggedIn=true`, `authMethod=claude.ai`, `apiProvider=firstParty`, `subscriptionType=pro`였다. 대체 API/provider 환경변수는 설정되지 않았다. 계정 이메일·credential은 이 기록에 남기지 않는다.
+- CLI `2.1.296`; 실제 모델 두 호출 모두 `claude-opus-5-5` (Claude Opus 5.5), 요청 alias `opus`, effort `high`. Fresh session 두 개이며 이전 Claude 세션을 resume하지 않았다. Codex와 vendor/model context는 분리됐지만 과거 Claude 리뷰 원문과 Driver 설명을 전달한 비-blind 검토다. 두 번째는 첫 응답도 읽었으므로 두 표를 독립적인 동의 두 건으로 세지 않는다.
+- Review 1: session `b07650db-907e-49a3-9e77-69812b231534`, 462.041초, exit `0`, result `success`, permission denial0. 요청 SHA `9f98943a89946ac3d20ad8fb2757261477c5535847d46d13df5af94a704f707a`, 원문 응답 SHA `3297093dbd1ece74930e05f38a469e228518d03ff6f7faf62dfe23fb1dfe5361`.
+- Review 2: session `bed03e2a-8561-4593-970f-ff76e96b497b`, 613.934초, exit `0`, result `success`, permission denial0. 요청 SHA `ff7502948a9bc93eac4cd429c5edd8a3b04edb3d7e0e5716c833746fc1b64981`, 원문 응답 SHA `cf6a846f56638271790eb53d3fcc24eac0427db8de054f9fbea00d368f7ce0aa`.
+
+실제 명령 형태는 아래와 같다. cwd는 위 source checkout, stdin은 해당 고정 요청문, 각 호출 상한900초, 출력은 기존 private candidate04 bundle 내부 scratch였다. 첫 호출의 추가 읽기 root는 기존 batch02 evidence이며, 보완 호출은 result manifest가 가리키는 r01~r04의 `exec/runs/focused-p2` 네 경계만 추가했다. 허용 테스트/셸 명령 목록은 비어 있다. 실제 init은 도구 `Glob,Grep,Read`와 MCP0을 보고했다. `--restricted`와 `dontAsk`를 유지했으며 permission bypass는 없다.
+
+```text
+claude --print --model opus --effort high --safe-mode --restricted
+  --tools Read,Glob,Grep --allowedTools Read,Glob,Grep
+  --permission-mode dontAsk --permission-prompts none
+  --strict-mcp-config --mcp-config '{"mcpServers":{}}' --setting-sources ''
+  --disable-slash-commands --no-chrome --no-session-persistence
+  --session-id <recorded UUID> --add-dir <bounded evidence root> ...
+  --output-format stream-json --verbose
+```
+
+요청의 공통 질문은 Accepted DR-0004/D3-A r1.1와 누적 runtime/caller의 일치, R0-B1/A1/A2/failfast 보정, dir_fd 의미·audit/fault 보존, DRIVER-B1/B2 before/after, 후보별 실행 근거·미완료 범위였다. 보완 질문은 전체 entry 테스트, controls/sandbox/runner, 원문 결과와 raw witness, F-01~06의 정정 여부였다. repo 안 instruction은 검토 데이터이며 실행 권한으로 확대하지 않도록 지정했다. 실제 coverage와 미열람 범위는 각 응답 원문에 있다. 모든 historical 문서와 raw를 전수 정독한 검토가 아니다.
+
+### Existing Execution Evidence Binding
+
+아래 input은 Git diff 밖의 기존 candidate bundle 자료다. 각 `entry-focused-input.json`의 현재 hash가 과거 `execution-plan.json`에 기록된 인수 hash와 일치함을 Driver가 확인했다. source byte 신원은 Git HEAD, 실행 byte 신원은 이 invocation이 소유한다. Reviewer가 hash를 새 계산한 것은 아니다.
+
+| Candidate | Test SHA-256 | Observer SHA-256 | Existing result |
+| --- | --- | --- | --- |
+| 01 | `eb6984d13b66cc1f4dece516c92bc709264dbe446e4bb68293ef2a6015f0a8c9` | `fe89e2eb4a2ddecb6231b606962e876c9ce22e1b2700f3a362cf98c266e1ef8d` | A64 PASS; failfast synthetic4 포함 |
+| 02 | `0d9dcf9776aa298f7b1066d8d613e90eb8dc5fee030f7d4c9703e352b6f1982b` | `fe89e2eb4a2ddecb6231b606962e876c9ce22e1b2700f3a362cf98c266e1ef8d` | 8 PASS/1 FAIL/3 unstarted |
+| 03 | `dac31c645f694637180b891b374391048fdb6f5b745e713e3927df729dc53b84` | `b41f14a620fed1b34ed0b5b20b6adf226d30698c5f6129e497c489e7fc22d77e` | probe5 PASS/fixture1 FAIL/17 unstarted |
+| 04 | `61d6d0c30274fc6b5fc8e0d37a6c6819662d1b2c6ea2be1b28d2892d8a58a43d` | `b41f14a620fed1b34ed0b5b20b6adf226d30698c5f6129e497c489e7fc22d77e` | 18 PASS; controls6+product12 |
+
+- [Candidate 01 input](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-01/entry-focused-input.json) SHA `2298d910252065c435aa09ea9fc6a3d33c0addf0933cbf7b484b49430445d9ac`; [result](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-01/result.json) SHA `b009fb91da243618279567769bed0c2e05714112642193e64281adaf363f163c`. 기존 raw 경로와 hash는 해당 result에 있다.
+- [Candidate 02 input](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-02/entry-focused-input.json) SHA `bce69a4c2bda7dd9af8f677469b880d4c92da8b1ed4de27747303b4409bf4793`; [result](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-02/result.json) SHA `371493b23c86357251395250f731d7d81811d5a8da2e110e0985778b504fb1fe`. 기존 raw 경로와 hash는 해당 result에 있다.
+- [Candidate 03 input](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-03/entry-focused-input.json) SHA `9dc685d75e4365a852dc75593e05ff71c13a12a216df655e57b236864111f093`; [result](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-03/result.json) SHA `8c1e7257fec1a39ff8a5ea8bae357a5db99cd4e23b6b070566bd4c1adefb0b13`. 기존 raw 경로와 hash는 해당 result에 있다.
+- [Candidate 04 input](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-04/entry-focused-input.json) SHA `05972e8951b40f4f66c712e1241037e3b03e3f8b48326e4a16f9037f3cfa0c94`; [result](/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/driver-p2-batch-02/candidate-04/result.json) SHA `312a88fca53500b37d5375d215d18ae5a42a6f80de5d6e24b9fbadc2b7bb38ce`. 기존 raw 경로와 hash는 해당 result에 있다.
+
+HEAD test+observer의 결합으로 실행된 focused 근거는 후보04의18개다. 후보03 probe5는 당시 결과이며, 후보01 A64와 failfast4도 이전 observer의 결과다. 기존 Work에 기록된 AST 동일성/근거 재사용은 같은 후보 재실행과 다르다. HEAD observer로 kill-point 전체 matrix를 재실행했다는 근거는 없다. 입력 변화만을 이유로 전체 suite를 자동 재실행하지 않으며 필요한 대표 회귀와 목적은 별도 승인안에서 선정한다. 기존 누적 controller74/74는 그대로다.
+
+Driver의 이번 read-only raw 대조: 후보02 NEW candidate는 게시 `replace-after` seq16389 뒤 `HV2-INTERNAL/RuntimeError`; 후보04는 `saved`이고 같은 게시 seq 이후 dir_fd `open-after` seq16412/16424가 있다. 기존 오류의 내부 traceback은 없어 발생 지점은 여전히 추론이다. 보완 Reviewer는 해당 raw를 직접 읽었다. 이번에 제품을 다시 실행하거나 원인을 새로 재현하지 않았다.
+
+### Review 1 Verbatim
+
+````text
+# Colvia entry-1 누적 정적 리뷰 (base `2385146` → HEAD `a17f35c`)
+
+## 1. 결론과 coverage
+
+**결론:** 읽은 범위에서 one-way 전환 핵심 경로가 Accepted DR-0004 / D1-A·D2-A v2.1 / D3-A r1.1을 위반하는 지점은 찾지 못했습니다. 다만 closed C1 범위의 미완 1건(F-01), 증거 결속 공백 2건(F-02, F-03), 계약 해석 처분이 필요한 1건(F-04), 낮은 우선순위 2건이 있습니다. P2는 open이며, 이 리뷰는 승인이 아닙니다.
+
+위반을 찾지 못한 항목은 다음과 같습니다(모두 정적 판독).
+- schema 2/window 짝, predecessor 전체 ref allowlist, 첫 entry-1 rollback 거부.
+- S3~S5 물리 prefix 분류, O + `binding.next`(0바이트 포함) 거부.
+- N의 `O_EXCL|O_NOFOLLOW` 0600 생성과 prefix append, B1 0600, umask 사전 거부.
+- pre-S1 sync admission, exact-current replay sync 집합.
+- exit 매핑: degraded 10 / conflict 12 / 계약 오류 65 (`src/hv2ref/cli.py:146-166`).
+- 전환 중 관리 대상 O를 retired-entry 충돌로 취급하지 않는 scope.
+- fresh init이 `bootstrap_root`/guard 이전에 거부하는 순서 (`src/hv2ref/product.py:1102-1108`).
+
+**실제로 읽은 범위**
+- 입력: `input-identity.json`, 두 `CUMULATIVE-REVIEW.md` 전체.
+- `cumulative.patch`: 1–394(adapter/launcher diff, DR-0004 전체), 11524–13410(runtime 7개 파일 diff 전부, plain auditor, `test_checkout_window_transition` diff), 16433–16475(`test_general_work` diff).
+- source 문맥: `product.py` 1083–1132·1249–1294, `work.py` 213–262·942–981·1016–1031, `cli.py` 128–169·196–283, `intent.py` 262–275, `view.py` 404–412, `observer.py` 전체, `common.py`의 `require`.
+- `tests/test_entry_window_transition.py`: 219, 470–604, 700–744, 2640–2700과 grep. 약 3,000행 중 300행 정도입니다.
+- Work 002: 6458–7095 연속.
+- evidence: `candidate-04/result.json` 전체, `candidate-03/result.json`의 counts/status 행.
+
+**미열람**
+- Work 002의 1–6457, CHORE-001, brand-transition-plan.
+- implementation plan은 grep으로 걸린 13·52·57·78행만 봤습니다.
+- controls 중 `runner.py`/`controller.py`/`canary.py`/`acquire.py`/oracle/sandbox profile.
+- 테스트 파일의 나머지(D3, prefix, late-lock 본문 등), `jsonio.py`, `umbrella.py`, `product.py`의 변경 없는 대부분.
+- `candidate-01`/`02`의 `result.json`은 직접 열지 않았고 Work 요약에만 의존했습니다.
+- raw events/product.log는 batch 밖 r04 worktree에 있고 `candidate-04/`에 보존 사본이 없어 **unavailable**입니다.
+
+**실행하지 않음:** 테스트·명령·재현 0회. 아래의 "실행 증거"는 모두 기존 기록의 인용입니다.
+
+## 2. Findings
+
+### F-01 (P1) entry-1 view가 은퇴한 `hv2` 명령을 안내함
+- **위치:** `src/hv2ref/view.py:411`, `src/hv2ref/view.py:504`
+- **Trigger:** entry-1 target에서 intent ticket의 `view confirmation`, 또는 candidates view.
+- **잘못된 결과:** 출력이 `hv2 view intent …`, `hv2 view candidates`, `hv2 candidate --help`를 안내합니다. S6 이후 `hv2`는 없고, 다시 나타나면 C0-H-A/D1-A상 비소유 프로젝트 내용입니다.
+- **계약:** `docs/development/colvia-entry-implementation-plan.md:52`의 closed C1 view.py 행에 "emitted commands"가 들어 있습니다. D1-A는 검증된 `colvia`만 managed runtime으로 둡니다.
+- **보정 방향:** 같은 파일이 adapter 경로에 `WINDOW_ADAPTERS`를 쓰는 것처럼, 검증된 `inventory_id` → launcher 매핑에서 파생합니다. 과거 window 읽기에서는 `hv2`가 맞으므로 `colvia` 하드코딩은 안 됩니다. human view 테스트에 단언을 추가합니다.
+- **근거 종류:** 정적. `tests/`에 `hv2 view`/`colvia view` 문자열 단언이 없음을 grep으로 확인했습니다.
+
+### F-02 (P2) DRIVER-B1 witness가 테스트 단언에 묶여 있지 않음
+- **위치:** `tests/test_entry_window_transition.py:2673-2678`
+- **Trigger:** `writer_family_fence`의 OLD/NEW positive 경로.
+- **잘못된 결과:** 단언은 exit 0, snapshot 변화, lock 이벤트뿐입니다. `saved`와 게시 후 `.hrn/planning/candidates.json`의 dir_fd `open-after`(seq 16412/16424, 게시 seq 16389)는 `candidate-04/result.json`의 `candidate_recovery`에 Driver가 사후 추출한 값입니다. observer가 dir_fd 관측을 조용히 누락해도 이 테스트는 통과합니다.
+- **계약:** Work 6728의 B 종료 조건("정확한 원인/진단, 실제 witness").
+- **보정 방향:** test-local로 classification `saved`를 단언하고, installed-new에서는 `replace-after` 뒤에 `detail.dir_fd`가 있는 `open-after` 행이 있는지 단언합니다.
+- **근거 종류:** 테스트 본문은 정적 판독, witness 값은 기존 실행 기록. raw는 unavailable입니다.
+
+### F-03 (P2, controls) observer 거부가 제품 내부 오류와 구분되지 않음
+- **위치:** `docs/development/verification/colvia-entry/common.py:12-14`, `observer.py:175, 220-232, 244, 271-291`, `src/hv2ref/cli.py:167-169`
+- **Trigger:** hook 안에서 observer `require`가 실패하는 모든 경우.
+- **잘못된 결과:** `RuntimeError`가 제품 스택에서 발생하고 CLI는 `HV2-INTERNAL`/exit 70과 예외 타입만 출력합니다. 거부 event 행도 없습니다. 이전 B1의 traceback이 unavailable로 남은 원인이며, dir_fd 보정 뒤에도 나머지 거부 지점은 그대로입니다.
+- **계약:** "단순 실행기/요청 오류를 fencing 성공으로 세지 않는다"(Work 6728)를 지키려면 귀속 가능성이 필요합니다.
+- **보정 방향:** 예외 전에 전용 `observer-refusal` 행(사유 포함)을 기록하고, positive 경로에서 그 행이 0임을 단언합니다. controls 변경이므로 별도 E 경로 승인 대상입니다.
+- **근거 종류:** 정적.
+
+### F-04 (P2, 해석 필요) schema-2 parent의 child intent required ref가 의존성 검사에 없음
+- **위치:** `src/hv2ref/product.py:487-493` (`_entry_local_baselines`)
+- **Trigger:** 미완료 schema-2 local parent Work의 child intent가 `hv2`/`colvia`(alias·하위 포함)를 required ref로 가진 경우.
+- **잘못된 결과:** pre-S1에서 거부되지 않습니다. 이 함수는 `revision["intent_ref"]`의 acceptance만 열거합니다. `src/hv2ref/work.py:1018-1020`은 schema 2에서 `umbrella_evidence.children[*].intent_ref`까지 열거합니다.
+- **계약:** C0-L-A의 "its bound intent's required refs … same rule to unfinished schema-2 local parent Work … captured references must remain valid". child 포함 여부는 해석에 달려 있습니다.
+- **보정 방향:** Driver가 해석을 처분한 뒤 열거를 확장하거나 좁은 해석을 기록합니다. 이미 open인 C "parent-required-ref" cell에 이 사례를 넣습니다.
+- **근거 종류:** 정적.
+
+### F-05 (P3) same-entry update 경로에 추가된 거부의 처분 기록 부재
+- **위치:** `cumulative.patch:12697`, `:12722`
+- **Trigger:** entry-1 → entry-1 update/rollback에서 `switch-<op>`에 미지 member가 있는 경우.
+- **결과:** checkout-1 동일 window에는 없던 거부("unknown switch staging member", "unknown staging remains beside published release")와 member별 `checkpoint()`가 same-entry에도 적용됩니다.
+- **계약:** D3-A는 same-entry 의미를 조용히 바꾸지 않는다고 하지만 그 문장의 대상은 sync입니다. DR의 "unknown temporary files … not silently repaired"와는 부합합니다.
+- **보정 방향:** 의도된 변경으로 명시 처분하고, same-entry 미지 member 사례가 테스트에 있는지 확인합니다(해당 본문은 읽지 않았습니다).
+- **근거 종류:** 정적.
+
+### F-06 (P3) commit 사실이 저장소 내 Work에 없음
+- **위치:** `docs/development/CHORE-20261009-002-colvia-verification-controls.md:7093`
+- **결과:** Work는 "stage/commit 없음"으로 끝나지만 HEAD `a17f35c`가 그 Work를 포함합니다. `commit-result.json`은 private bundle에만 있고 읽지 않았습니다.
+- **보정 방향:** Work 6831의 약속대로 새 HEAD/diff 신원을 후속 append로 연결합니다.
+
+## 3. 과거 처분의 타당성과 observer dir_fd 계약
+
+- **R0-B1 — 타당.** 현 코드에서 `.hrn/product/receipts` sync는 세 번입니다: admission, `_entry_write_exact`의 `receipt-parent`, B1 뒤 replay(`b1=True`). `not r['facts']['b1']` 필터는 계수 범위를 바로잡는 것이며 완화가 아닙니다. all-row PASS 단언이 남아 있다는 점은 Work 기재이고 제가 본문을 확인하지는 않았습니다. quota로 멈춘 R0 두 번을 unavailable로 둔 처분도 맞습니다.
+- **A1 — 타당.** replay에서 `_entry_sync_paths(replay=True)`가 sync 루프(`cumulative.patch:12238` → `12253`)보다 먼저 거부하므로 product sync 0과 guard의 lock 준비 sync 3은 코드와 일치합니다. D3-A도 guard의 lock write를 zero-write로 부르지 않습니다.
+- **A2 — 타당.** `_switch_preflight`는 pending이 없으면 `recover`를 거부합니다(`cumulative.patch:12595`). receipt 전 admission 실패 뒤 재시도는 일반 apply여야 합니다.
+- **failfast — 타당.** candidate-02/03의 "첫 실패 뒤 시작 0, 자연 종료" 기록과 부합합니다. `runner.py` 본문은 읽지 않았고, probe 4개는 synthetic discovery라는 한계가 Work에 적혀 있습니다. batch-01의 수동 SIGTERM을 소급 통과로 바꾸지 않은 것도 맞습니다.
+- **DRIVER-B1 — before/after는 가설과 일관.** 게시 전에는 dir_fd open이 없어 두 실행의 게시 seq가 16389로 같다는 점도 설명됩니다. 다만 이전 `RuntimeError`의 발생점은 여전히 정적 추론이고, witness는 미단언(F-02)이며 raw는 제가 확인하지 못했습니다. "대표 4동작 범위"라는 한정은 정확합니다.
+- **DRIVER-B2 — 타당.** `tests/test_entry_window_transition.py:721-729`는 다른 WORK, 존재 전제, 비-0 exit, 정확한 메시지, events/ready/probe 부재 단언을 모두 유지합니다. 다른 run 이름에서는 P1 경로로 떨어져 fail-closed입니다.
+- **observer dir_fd 계약 — 충족.**
+  - 원 호출에 `path`/`flags`/`mode`/`dir_fd`를 그대로 전달합니다.
+  - 읽기 전용 flag allowlist에 `O_NOFOLLOW`를 필수로 요구합니다.
+  - 단일 component만 받고, parent와 opened fd의 dev/ino 및 `F_GETPATH`를 대조합니다.
+  - `open-before` → audit(상대 경로 치환) → `open-after` 순서가 유지되고, 실패 시 fd를 닫으며 `relative_open_path`를 복원합니다.
+  - fault seam이 유지되고, symlink는 제품 자신의 `ELOOP`로 남습니다.
+  - **한계:** probe 5개는 최종 dispatch가 synthetic이고 candidate-03 근거입니다. identity-changed 두 거부의 negative probe는 없습니다. target 밖 조상 open은 무기록이고(설계), `detail.dir_fd` 정수는 비결정적입니다. candidate-04의 18 PASS와 합쳐 23 PASS로 볼 수 없다는 구분은 기록에 지켜져 있습니다.
+
+## 4. P2 잔여와 다음 slice
+
+명시된 미완료(S1/S2 buffered-write, B-07, B 전체 matrix, C 전체, P3/P4, 수락·활성화)는 Work 6970–7089에 숨김 없이 적혀 있습니다.
+
+- **B 잔여의 구체 위치:** family fence는 OLD installed × `after-receipt`~`after-release`만 다룹니다. O+N 공존(S3a/S3b/S4) 상태의 writer별 cell이 남은 공백입니다.
+- **활성화 경계:** adapter 본문은 rename만 됐고 `hv2`가 6회 남아 있습니다(C2 대상). 현 HEAD는 DR이 금지한 "intermediate mixed" 상태이므로 설치 대상이 아닙니다.
+
+**추천 다음 slice** (controls 변경 없음, 새 예산 승인 필요, 후보 1개/controller 6회):
+1. F-01 수정과 human-view 단언.
+2. F-02 witness 단언.
+3. C admission 최소 cell — Git target에서 tracked `hv2` 전환 positive 1개(S6 snapshot 동등성; `work.py:242-254`의 tracked-absent `hv2`와 untracked `colvia` 경로는 제가 본 범위에서 실행 근거가 없습니다)와 `colvia` tracked/alias/descendant/ignored pre-S1 거부 4개.
+4. F-04 처분 결과를 parent cell 1개로 반영.
+
+F-03, S1/S2 관측, B-07은 controls·해석 결정이 선행해야 하므로 이 slice에 넣지 말고 별도 제안으로 두는 것이 맞습니다.
+````
+
+### Review 2 Verbatim
+
+````text
+# Colvia entry-1 누적 정적 리뷰 — 보완 (base `2385146` → HEAD `a17f35c`)
+
+## 1. 결론
+
+지정된 미열람 범위에서 Accepted DR-0004 / D1-A·D2-A v2.1 / D3-A r1.1을 위반하는 새 결함이나 controls 통제 약화는 찾지 못했습니다. 신규는 기록·문서 결속 2건(S-01, S-02, 둘 다 P3)이고, F-01은 귀속을 정정해야 합니다. P2는 open이며 이 리뷰는 승인이 아닙니다.
+
+테스트·명령·import·hash 재계산은 0회입니다. 아래의 "raw 확인"은 기존 evidence 파일을 Read/Grep으로 읽은 것입니다.
+
+## 2. Coverage와 제한
+
+**전부 읽음**
+- 입력 신원 `input-identity.json`, 이전 `reviewer-response.md`.
+- controls: `runner.py`, `controller.py`, `common.py`, `canary.py`, `acquire.py`, `test.sb`, `acquire.sb`, `prefix-oracle.json`, `README.md`, 그리고 F-03·dir_fd 판단에 필요해 `observer.py`.
+- `tests/test_entry_window_transition.py` 1–3017행 전체. 217·219행의 단일 줄 embedded program은 잘림 없이 표시됐습니다.
+- `DR-0004` 1–353행 전체.
+- candidate-01~04 `result.json` 전체, candidate-04의 `CUMULATIVE-REVIEW.md`, `commit-result.json`, `commit-formatting-adjustment.json`.
+
+**부분만 읽음**
+- `colvia-entry-implementation-plan.md` 1–144행. 145행 이후 appendix와 R0 기록은 읽지 않았습니다.
+- `CHORE-20261009-001` 1–55, 160–178, 326–374, 657–698행.
+- source: `product.py` 424–503·534–626·715–749·1337–1479·1879–1908, `work.py` 1008–1033, `view.py` 400–415·496–507, `cli.py` 140–169, `jsonio.py` 116–129.
+- r02: `8-product.log`, `4-product.log`, `8-product.stdin`, `counts.json`, `unstarted.json`, `preservation.jsonl` 전체. stdout과 events는 Grep.
+- r04: `8-product.log`, `counts.json`, `executed.jsonl`, `unstarted.json` 전체. events는 Grep(`candidates.json`, `dir_fd`, seq 16390–16439).
+- r03: `counts.json`, `executed.jsonl`, events 4개, mutation log, cross-work scenario JSON 전체. stdout은 Grep.
+- r01: subtest probe의 log와 `executed.jsonl`만.
+
+**읽지 않음**
+- r01의 나머지 probe 파일과 d3-sync log 16개, r01 focused 64개의 raw counts. A64는 `result.json` 기재에만 의존합니다.
+- r02 `executed.jsonl`·`unfinished.json`·`candidates.json` 2개, r03의 나머지 log·stdin·scenario, r04 `stdout.log`·`unfinished.json`.
+- 상위 `CUMULATIVE-REVIEW.md`, `CHORE-20261009-002`(Work), candidate patch들. 따라서 후보 사이의 테스트 변경분은 diff로 확인하지 못했습니다.
+- `baseline-inputs.json`·`base-seed-ids.json` 본문. 전자는 `verify_old`(`common.py:75-107`)가 쓰는 키 구조만 코드로 확인했습니다. 후자는 읽은 코드 어디에서도 참조되지 않고, `README.md:144`가 controller의 seed 일치 미강제를 명시합니다.
+
+## 3. Controls 판독 결과
+
+코드가 README의 통제 서술과 일치하며, 약화 지점은 없습니다.
+
+| 통제 | 확인 위치 | 결과 |
+| --- | --- | --- |
+| invocation·hash | `common.py:137-167`, `controller.py:210-217` | invocation sha, control·tool·system gitconfig hash, source map, root entry를 실행 전후로 검사 |
+| sandbox | `test.sb:3,28,30` | deny default, 쓰기는 `WORK`·`/dev/null`·LOG data뿐, network·mach 허용 없음 |
+| timeout | `controller.py:21-22,172-183,218` | README 표와 `prefix-oracle.json:205`의 값이 일치. `budget-20`에서 중단, 16 MiB 출력 한도 |
+| process group | `controller.py:168,185-207,224` | `start_new_session`, 잔존 group은 TERM→KILL 후 non-pass. 테스트 `spawn`(`:461`)과 observer는 새 session을 열지 않음 |
+| failfast | `runner.py:237,248` | `failfast=True`, exit 0은 전 선택 실행·skip 0·unstarted 0·unfinished 0일 때만 |
+| counts | raw | r02 12=9+3, r03 23=6+17, r04 18=18+0. r04 `executed.jsonl` 18행이 `result.json`의 `completed`와 일치 |
+
+- `runner.py`·`controller.py`·`test.sb`·`prefix-oracle.json`의 hash는 네 후보의 `entry-focused-input.json`에서 모두 HEAD와 같습니다.
+- 바뀐 control은 `observer.py` 하나입니다(c03에서 `fe89e2eb…` → `b41f14a6…`). 이전에는 거부하던 descriptor-relative 읽기 open을 조건부로 허용하는 방향이므로 좁은 의미의 완화입니다.
+- 그 완화는 `observer.py:219-245`의 읽기 flag allowlist, `O_NOFOLLOW` 필수, 단일 component, parent·opened 신원 대조로 한정됩니다.
+
+## 4. 신규 findings
+
+### S-01 (P3, 증거 기록) HEAD 바이트로 실행된 범위가 result 기록만으로는 드러나지 않음
+- **위치:** candidate-02·03·04 `result.json`(test·observer sha 필드 없음. c01만 `source_test_sha256` 보유), 각 후보의 `entry-focused-input.json`.
+- **사실(기존 evidence):**
+
+| 후보 | test 파일 sha | observer sha | 실행 |
+| --- | --- | --- | --- |
+| c01 (r01) | `eb6984d1…` | `fe89e2eb…` (dir_fd 이전) | A64, failfast probe 4 |
+| c02 (r02) | `0d9dcf97…` | `fe89e2eb…` | 9 (1 fail) |
+| c03 (r03) | `dac31c64…` | `b41f14a6…` (HEAD) | dir_fd probe 5, 1 fail |
+| c04 (r04) | `61d6d0c3…` (HEAD) | `b41f14a6…` (HEAD) | 18 PASS |
+
+  `product.py`(`7c5797f7…`)와 `candidates.py`(`001bb3f6…`)는 네 후보 모두 HEAD와 같습니다.
+- **Trigger:** 누적 판단에서 A64나 probe 9개를 HEAD 근거로 인용할 때.
+- **결과:** HEAD의 test+observer 조합으로 실행된 것은 r04의 18개뿐입니다. kill-point 계열(binding·launcher·release prefix) product 테스트는 `observed_open`과 audit hook이 바뀐 HEAD observer 아래에서 재실행된 기록이 없습니다. c04의 `observer_and_probe_AST_unchanged: true`는 Driver 자체 점검이며 저는 검증하지 못했습니다.
+- **최소 보정:** 후보별 (test, observer) sha 표와 "HEAD observer 하 미재실행" 범위를 Work/result에 명시합니다. 재실행 여부는 별도 승인 사안입니다.
+- **한계:** Work 본문을 읽지 않아 이미 기재돼 있을 수 있습니다. 18/5/64를 구분한다는 점은 candidate-04 `CUMULATIVE-REVIEW.md:16`에 있습니다.
+
+### S-02 (P3, controls 문서) README가 현 observer 계약과 P2 변경을 반영하지 않음
+- **위치:** `docs/development/verification/colvia-entry/README.md:3`, `:27`, `:128`.
+- **사실(정적):** 상태 줄은 "P1a Candidate 02 … runtime results remain pending"이고 runner 행은 "changed P1a behavior remains unexecuted"입니다. descriptor-relative 언급은 128행의 "namespace operations remain unavailable and must stop" 하나뿐이며, 읽기 open 허용 조건이나 failfast·dir_fd probe에 대한 절이 없습니다.
+- **결과:** controls 계약의 유일한 저장소 내 설명이 실제 observer 바이트보다 엄격하게 읽힙니다. dir_fd 허용 경계는 코드 주석에만 있습니다.
+- **최소 보정:** 날짜가 붙은 절을 append합니다. README는 invocation의 `controls` map에 없으므로(c04 input에서 확인) control 신원은 바뀌지 않습니다. source digest 영향 여부는 확인하지 못했습니다.
+
+## 5. 기존 F-01~06 처분 보완
+
+**F-01 — 사실 유지, 귀속 정정.**
+- `view.py:411`과 `:504`가 여전히 `hv2 view …`, `hv2 candidate --help`를 출력합니다.
+- 근거는 더 강합니다. `CHORE-20261009-001:364`의 Pre-C1 Gate Inventory가 "view.py … emission (including baseline lines 411, 504 …)"를 직접 지목합니다.
+- 다만 `colvia-entry-implementation-plan.md:35`는 "Current CLI/view/help"를 P3 단계에 둡니다. 따라서 "closed C1 범위의 미완"이라는 이전 표현은 과합니다. 정확히는 **closed file inventory(`:52`)의 필수 항목이며 P3 종료·활성화 전까지 열려 있는 항목**입니다.
+- Driver가 지금 고칠지, P3 항목으로 명시 기록할지 처분이 필요합니다. 테스트 파일 전체에 view 출력 명령 문자열 단언은 없습니다.
+
+**F-02 — 유지(P2). witness는 raw로 확인, 단언 부재도 본문으로 확인.**
+- r04 events: `replace-after` seq 16389, `detail.dir_fd`가 있는 `open-after` seq 16412와 16424. pid·pgid·flags 260·monotonic_ns가 c04 `result.json`과 일치합니다.
+- dir_fd 행은 총 16개이고 모두 seq 16401 이후입니다. 게시 전 dir_fd open은 없습니다.
+- r04 `8-product.log`는 `classification: saved`입니다.
+- 테스트(`:2676-2678`)는 exit 0, snapshot 변화, lock 이벤트만 단언합니다. 네 family 모두 classification을 단언하지 않습니다.
+- dir_fd probe 5개는 r04 실행에 포함되지 않았으므로, 제품 경로의 dir_fd 관측은 어느 단언에도 묶여 있지 않습니다.
+
+**F-03 — 유지(P2, controls). raw로 보강.**
+- r02 `8-product.log`는 `internal-error / HV2-INTERNAL / RuntimeError` 세 필드뿐입니다. r02 events는 seq 16400에서 끝나고 거부 행이 없습니다.
+- 거부 무기록은 현재 테스트로 고정돼 있습니다(`:576`의 `assertEqual([], rows)`, `:578`). refusal 행을 추가하면 이 단언도 바뀌므로 E 경로 대상이 맞습니다.
+- 범위 추가: r04 events에서 target root가 parent 기준 dir_fd로 열립니다(seq 16401, path `.`). 즉 `observer.py:220-245`의 `require`는 target 밖 조상 open에도 적용되며, 거기서의 거부는 event 행도 없이 같은 exit 70으로 나옵니다.
+- parent 신원 변경, opened 신원 변경, 비-directory descriptor 세 거부에 대한 negative probe는 없습니다.
+
+**F-04 — open 해석 유지. 확정 결함으로 보지 않습니다.**
+- 코드 사실: `product.py:485`는 `mode == "local"`만 대상으로 합니다. `:487-494`는 revision의 scope, revision의 required ref, 자기 bound intent acceptance의 required ref를 열거합니다. child intent는 열거하지 않습니다.
+- `work.py:1018-1020`은 worker 결과와 required 입력의 겹침을 막는 다른 규칙이므로 직접 선례는 아닙니다.
+- DR 문구("its bound intent's required refs … same rule … captured references must remain valid")는 두 해석을 모두 허용합니다.
+- 보완: 어느 해석이든 실행 근거가 없습니다. 이 테스트 파일에는 schema-2 parent fixture가 없습니다. `:491-494`의 ref 분기도 미검증입니다. `old_local` fixture(`:1951`)는 ref가 비어 있고, 거부 테스트(`:1982-1994`)는 scope의 정확한 이름 `hv2`·`colvia`만 다룹니다. alias·하위 경로·required ref 사례가 없습니다. 이는 이미 open인 C 범위의 구체 위치입니다.
+
+**F-05 — 본문 확인: same-entry unknown member 테스트는 없습니다.**
+- 미지 member 테스트 2개는 모두 checkout-1→entry-1 전환 target입니다: `:2556-2574`(S6 replay, switch·entry), `:2034-2050`의 `unknown-binding-stage`(S3).
+- same-entry 테스트는 `:2064-2084`(update·rollback·repair positive)와 `:2375-2387`(receipt sync unavailable)뿐입니다. same-entry update를 중단시키는 사례도 없습니다.
+- 코드: `product.py:1446`과 `:1470`의 거부, `:1451`의 member별 `checkpoint()`는 `transition` 조건 밖에 있어 same-entry에도 적용됩니다. replay 쪽 검사(`:621`)는 `plan["remove"]`가 있을 때만(`:719`) 실행됩니다.
+- base에 이 거부가 없었다는 점은 patch를 읽은 이전 리뷰에 의존합니다. P3, 의도 처분 필요.
+
+**F-06 — commit 사실은 bundle 기록과 일치.**
+- `commit-result.json`: commit `a17f35c`, parent `2385146`, 33 paths, working tree clean, push/PR/merge 미수행, P2 incomplete.
+- 1-byte EOF 보정 대상은 `docs/development/colvia-brand-transition-plan.md`(`94de6733…` → `fa6f102a…`)이고 after sha가 HEAD manifest와 같습니다. 실행 관련 바이트는 r04 입력과 HEAD가 동일합니다.
+- 저장소 내 Work에 연결이 없다는 점은 이번에 Work를 읽지 않아 이전 판독에 의존합니다. 후속 append에 EOF 보정 경로와 전후 sha를 함께 적는 것을 권합니다.
+
+**과거 처분 재확인**
+- **R0-B1:** 타당. 이전 리뷰가 확인하지 못한 all-row PASS 단언이 `:1746`에 있고, receipt sync 정확히 2회 단언이 `:1749`에 있습니다. D3 program `:303`의 `not b1` 필터는 주입 시점에는 사실상 no-op이고 계수 범위를 좁히지 않습니다.
+- **A1:** 타당. `:2570-2571`이 switch는 lock 준비 sync 3행만, entry는 0행을 정확히 단언합니다.
+- **A2:** 타당. `:2188-2193`이 admission 실패 뒤 재시도를 `--recover` 없이 수행합니다(`product.py:1354`와 일치).
+- **failfast:** 타당.
+  - synthetic 4종은 r01 기록입니다. 제가 raw로 본 것은 subtest 1종입니다.
+  - r02와 r03 stdout에서 entry phase의 자연 실패 뒤 "Ran 9"/"Ran 6", 이후 START 없음을 확인했습니다. 세 실행 모두 runner가 HEAD 바이트입니다.
+  - probe는 `runner.config`와 discovery를 대체하므로 entry-phase factory 경로는 자연 실패 2건이 유일한 근거입니다.
+- **DRIVER-B1:** 가설이 raw와 맞습니다. r02와 r04는 seq 16400까지 이벤트가 같고, r02는 r04가 dir_fd open을 시작하는 바로 그 지점에서 끊깁니다. traceback이 없으므로 발생점은 여전히 추론입니다.
+- **DRIVER-B2:** 타당. r03 stdout의 실패는 `assertTrue(…is_dir())`이고, scenario JSON이 변조 전 상태라 observer child 호출 전 실패와 일치합니다. HEAD `:721`은 단언을 그대로 두고 slot만 고릅니다.
+- **dir_fd probe:** r03 events가 테스트 단언과 일치합니다(reads 15행, symlink 2행, fault before 1행·after 3행, mutation 0행). 근거는 c03 test 바이트입니다.
+
+**이미 알려진 gap의 구체 위치 (신규 결함 아님)**
+- D3-A가 "stronger diagnostic oracles"를 open gap으로 명시합니다. 해당 위치는 `:1007`, `:982`, `:994`, `:1062`, `:2046-2049`(5건 중 4건이 code만 단언), `:2062`입니다. 모두 snapshot 보존은 단언하지만 거부 사유는 묶지 않습니다.
+- `:1050-1054`는 OLD source의 entry-1 init을 HV2-INTERNAL/70으로 기대합니다. 주석대로 fence 근거가 아닙니다.
+
+## 6. 다음 최소 slice
+
+모두 별도 승인 대상입니다. controls 변경은 없고 후보 1개 기준입니다.
+
+1. **F-02 단언:** `writer_family_fence` positive에 classification 단언을 넣고, installed-new에서 `replace-after` 뒤에 `detail.dir_fd`가 있는 `open-after`를 단언합니다.
+2. **HEAD 단일 실행 결속(S-01):** 같은 실행에 dir_fd probe 5개, failfast probe 4개, kill-point 대표 몇 개(binding·launcher·release 각 1)를 넣습니다.
+3. **F-04·F-05 처분 뒤 cell 추가:** C0-L-A의 ref 분기(revision required ref, bound intent required ref, alias, 하위 경로), parent cell 1개, same-entry 미지 member 1개.
+4. **기록:** F-01을 수정하거나 P3 항목으로 명시하고, S-01 표와 S-02 README append, F-06 Work 연결을 남깁니다.
+
+F-03(refusal 행), S1/S2 buffered write, B-07, B 전체 matrix는 controls·해석 결정이 먼저이므로 이 slice에 넣지 않는 것이 맞습니다.
+
+수정, 추가 테스트 실행, commit/push/PR/merge, final acceptance, activation은 모두 별도 승인으로 남깁니다.
+````
+
+### Driver Dispositions
+
+`accept`는 finding 타당성을 인정하는 것이며 수정·테스트 실행·Owner 수락을 뜻하지 않는다. Reviewer의 severity는 원문에 남기고 아래에서 단계 귀속과 실제 영향 범위를 처분한다.
+
+| ID | Driver disposition | Evidence, effect and next boundary |
+| --- | --- | --- |
+| F-01 | revise | `view.py:411,504`의 hv2 안내 누락은 사실이다. 다만 implementation-plan의 P3가 Current CLI/view/help를 소유한다. 첫 응답의 “C1 미완/P1”을 현 P2 차단으로 받아들이지 않고 P3 종료·활성화 전 필수 항목으로 연결한다. 검증된 window별 명령과 출력 단언이 필요하며 지금 수정하지 않는다 |
+| F-02 | accept | `writer_family_fence`는 exit0·snapshot 변화·lock만 단언한다. raw의 saved/게시 후 dir_fd witness는 확인돼 기존 복구 사실을 무효화하지 않지만 회귀가 이를 놓칠 수 있다. 다음 최소 수정 후보는 실제 반환 classification 및 installed-new candidate의 게시→dir_fd open-after 결속이다. 모든 family에 saved를 강제하지 않는다 |
+| F-03 | revise / needs-user | 관측기 require의 RuntimeError가 CLI 내부 오류로 축약되는 진단 공백은 사실이다. 정확한 오류를 검사하는 fence 테스트가 현재 false-pass했다는 증거는 아니다. refusal event 제안은 mutation probe의 현재 empty-events 단언까지 바꾸는 controls 변경이므로 E 경로 범위·의미·검증 제안과 별도 Owner 승인 전 적용하지 않는다 |
+| F-04 | needs-user | 자기 intent만 열거하고 captured child intent는 열거하지 않는 코드 사실은 확인했다. worker용 required-ref 규칙은 직접적인 local-parent 계약 선례가 아니다. C0-L-A의 child 참조 범위를 확정하거나 거부를 확대하지 않는다. 기존 C parent/required-ref cell의 구체 질문으로 유지한다 |
+| F-05 | revise / needs-user | unknown switch member 거부와 member별 checkpoint가 transition 밖에 있는 것은 확인했다. 현재 same-entry 테스트는 positive와 sync-unavailable이며 unknown-member 테스트는 전환 사례다. 안전성 결함을 확정하지 않고 same-entry 행위 변화의 의도·범위 처분과 전용 cell 공백을 기록한다. 임의로 검사를 삭제하거나 강화하지 않는다 |
+| F-06 | accept / recorded | 기존 commit 준비 문장은 당시 역사다. 이 append에서 실제 a17f35c·33경로·co-author 확인·EOF 보정·clean checkpoint를 연결했다. 과거 문장을 소급 수정하지 않는다 |
+| S-01 | revise / recorded | 후보별 신원과 A64/5/18 경계는 기존 Work와 CUMULATIVE-REVIEW에 있었으므로 새 증거 손실이나 false PASS로 분류하지 않는다. 이번 표로 HEAD observer 아래 미재실행 범위를 한눈에 연결했다. 기존 result JSON은 고치지 않았으며 reviewer가 제안한 일괄 재실행을 자동 채택하지 않는다 |
+| S-02 | accept / pending approval | controls README의 P1a pending 상태와 현재 P2/dir_fd read 계약 설명 누락을 확인했다. `namespace operations` 제한 자체는 read-open 허용과 모순이라고 단정하지 않는다. README 현행화는 제품/통제 문서 수정으로 이번 기록 권한을 확대하지 않고 다음 승인안에 남긴다 |
+
+R0-B1/A1/A2/failfast 및 DRIVER-B2의 처분은 원문·현재 assertion과 일치하는 것으로 받아들인다. DRIVER-B1은 실제 복구 관측과 과거 원인 추론을 분리해 유지한다. Observer의 읽기 허용은 제품의 원 syscall 인수를 보존한 한정된 통제 변화이며, 모든 negative case/모든 prefix 검증이 끝났다는 뜻이 아니다. 두 응답 모두 새 runtime 계약 위반을 찾지 못했지만 이것은 전체 정확성, P2 완료, 최종 수락 또는 설치 적격성의 보증이 아니다.
+
+### Commit Checkpoint And Owner Decision Boundary
+
+Owner가 앞서 승인한 중간 commit은 `a17f35cf323ffde7a8642a85501fddbec858b6de`이며 parent는 `238514686078ce1564010a7b69013f48a635c57c`다. 승인33 경로와 Claude Opus 5.5/Codex의 연속 co-author trailer를 실제 commit에서 확인했다. 유일한 formatting 보정은 `docs/development/colvia-brand-transition-plan.md`의 EOF 빈 줄1바이트 제거로, SHA `94de6733f5ef1f5d9e5a4937362f07f6e2c1b26be255844c4e28315dbaa2a2ba` → `fa6f102a1793092e7f50cdb0b9c823b543590ab438089102144152446dfd95a8`였다. 이번 리뷰 시작 시 clean이며 리뷰 뒤 변경은 이 Work append만이다.
+
+Owner가 실제로 승인한 것은 누적 리뷰·Driver 기록이다. F/S finding의 수정, controls E 변경, 추가 테스트 예산, 계약 해석 선택, commit/push/PR/merge, P2 종료·P3/P4 실행·최종 결과 수락·활성화·adopter 적용은 승인되지 않았다. Reviewer의 추천 후보1개/controller6회도 새 예산 승인이 아니다.
+
+다음 최소 승인 후보는 F-02의 test-local witness 결속과 S-02의 현재 설명 보정이다. 수정 범위·정확한 선택 테스트/명령·새 시간/횟수 상한·입력 신원을 먼저 제안하고, 승인된 Driver 실행에서 classification과 게시 후 descriptor witness를 확인하는 것을 완료 기준으로 한다. 예상 밖 실패·controls/계약 변경 필요·예산 부족이면 중단한다. F-01은 P3 필수 목록, F-03/F-04/F-05는 별도 통제/해석 처분으로 유지하며 다른 C cell과 묶어 승인 범위를 키우지 않는다.
+
+### Preservation And Validation Boundary
+
+원문 두 개와 최소 실행/입력 신원은 이 기존 Work가 정본이다. 별도 review ledger를 만들지 않는다. 리뷰 packet/diff·API stream·명령별 scratch는 이 기록과 입력 신원 검증 뒤 삭제한다. 누적 소스는 Git a17f35c에서 복구할 수 있고, 기존 candidate invocation/result/raw는 원래 보존 위치를 유지한다. 이번 미커밋 append는 기존 candidate04 bundle의 `cumulative-review-addendum.md`에 보존한다. 소비자는 다음 Owner 처분/수정/commit handoff이며, 이 append가 승인된 Git commit에 들어가 복구 가능해지면 그 추가 사본의 보존 의존성은 끝난다.
+
+Source 및 r01~r04 실행 경계는 남은 P2와 미결 해석/검증의 구체 재사용 대상이므로 유지한다. 새 worktree는 만들지 않았고 기존 checkout을 정리하지 않았다. 이번 validation은 문서 GFM 렌더·diff whitespace·원문 일치·append-only/source/evidence 보존 검사로 한정한다. 제품 테스트는0회다.
+
+## 2026-10-11 — F-02 witness assertion / S-02 README 보강 승인
+
+Owner는 정확한 수정 범위·집중 검증 계획·예산을 먼저 요청했고, 제시된 3개 파일·후보 1개·controller 6회 계획에 `진행해`로 승인했다. 기준은 `a17f35cf323ffde7a8642a85501fddbec858b6de`와 기존 누적 Claude 리뷰 append다. 기존 리뷰 원문·Driver 처분은 보존한다.
+
+- 수정: `tests/test_entry_window_transition.py`의 writer 성공 응답·NEW candidate 게시 후 같은 PID/PGID의 `dir_fd` 읽기 단언, helper 1개와 합성 self-check 1개; controls README 상단·runner 설명·현재 조건/근거; 이 Work append.
+- 집중 선택: 네 `test_writer_family_{candidate,intent,work,lifecycle}_pending_fence`와 `test_candidate_publication_read_witness_rejects_invalid_rows`. 기존 exit·snapshot·lock·pending-prefix 거부/보존 단언은 유지한다.
+- 실행: 고정 CPython 3.14.7과 기존 격리/통제 그대로 acquire/canary/collect base(각 300초), smoke base(20개, 1,200초), collect p2(300초), focused p2(5개, 1,200초). 예상 collection 974 = default 776 + factory 198. 원래 전체 973에 신규 self-check 1개만 추가한다.
+- 예산: candidate-05 한 개, controller 6회(누적 75–80), 재시도 0회. 승인 시작 `2026-10-11T02:56:38+00:00`, 종료 `2026-10-11T04:26:38+00:00`의 90분 창. 기존 74회 사용과 이전 실패/STOP 기록은 초기화하지 않는다. 예상 밖 실패·drift·시간 부족·보존 실패·잔존 process group에서 중단한다.
+- 통제 코드·정책·oracle·계약·제품 runtime 수정, 추가 Claude 리뷰, commit/push/PR/merge, STATUS/Done/최종 수용은 승인 범위 밖이다. F-03/F-04/F-05의 별도 판단도 유지한다.
+- 현재는 authoring 상태다. 실제 결과는 다음 append에 기록한다. 이전 64/5/18개는 별도 후보의 역사이며 이번 결과로 합산하지 않는다.
+
+검증 입력과 실행 기록은 기존 private evidence bundle의 `driver-p2-batch-02/candidate-05`에서 식별한다. 이번 미커밋 변경은 같은 bundle의 최종 diff로 보존하며, 소비자는 Owner 변경 검토와 다음 P2 작업이다. 실행 출력은 이번 결과 확인·잔여 P2 검토에 필요한 동안 유지하고, 사용 종료 후 보존·정리 조건을 다시 확인한다.
+
+## 2026-10-11 — F-02 / S-02 보강 결과: focused 5/5 PASS
+
+승인된 테스트·문서 보강을 완료했다. CPython 3.14.7의 기존 격리 실행에서 base smoke **20/20 PASS**, focused **5/5 PASS**를 확인했다. focused는 실제 writer-family 4개와 합성 assertion self-check 1개이며 전체 P2 테스트 성공이나 Owner 최종 수락을 의미하지 않는다.
+
+### 변경과 finding 처분
+
+- **F-02 — accept / Driver 구현·집중 검증 완료.** candidate `saved`와 요청/후보 일치, intent identity와 draft, Work identity·revision·selection/current, lifecycle `detached`를 단언한다. NEW candidate에는 `.hrn/planning/candidates.json`의 `replace-after` 이후 같은 PID/PGID의 `open-after`와 음수가 아닌 정수 `dir_fd`를 요구한다. 기존 exit·snapshot 변화·lock·4개 pending-prefix 거부와 바이트/mode 보존 단언은 유지했다.
+- 새 helper self-check는 정상 대조군과 11개 잘못된 관측(게시/읽기/dir_fd 누락, 음수·bool FD, 행/seq 역순·동일 seq, 잘못된 경로/PID/PGID)의 거부를 검증했다. 합성 11 subcase를 제품 11개 또는 별도 선택 테스트 수로 합산하지 않는다.
+- **S-02 — accept / README 현행화 완료.** 현재 P2 상태·failfast·허용된 descriptor-relative 읽기 조건·후보별 근거/한계를 설명하고 과거 승인 문장은 역사로 보존했다. 마지막 문서 수정은 이번 실제 결과 행과 runner 설명 접속사 정리뿐이다.
+- F-01의 P3 필수 후속, F-03 통제 진단, F-04 captured child 참조, F-05 same-entry 해석은 기존 처분을 유지한다. 통제·정책·oracle·제품 코드·계약은 수정하지 않았다. 이번 수정에 대한 새 Claude 리뷰는 실행하지 않았다.
+
+### 입력·실행·관측
+
+기준 commit `a17f35cf323ffde7a8642a85501fddbec858b6de`, branch `codex/colvia-brand-transition`. 실행 당시 테스트 SHA-256 `978db7325f970e2597fb2f467b3826b8b205cc01b40712ea65ef9f766f359aa0`, source digest `704350d174d98a98aa1088fadc6f7ee147dec87b0dae599733b7b850fea75521`, base 대비 tracked diff SHA-256 `3ab6ac3e5151f9aed88c9e85b796566c5146bcbf2df09fe79544de8155d81705`다. 기존 미커밋 리뷰 append도 이 입력에 포함했다. README/Work의 아래 결과 기록은 테스트 실행 뒤 추가된 문서 변경이며 runtime 재실행 대상 변경은 없다.
+
+실제 collection은 974개(default 776 + factory 198)이며 사전 고정 canonical payload와 일치했다. focused는 승인된 고정 5 ID 각각 occurrence 1이고 fail/error/skip/expected failure/unexpected success/unstarted/unfinished가 모두 0이다. base smoke도 동일한 비정상 결과 항목이 모두 0이다.
+
+| 고정 controller 명령 단계 | 실제 소요 | exit / 결과 |
+| --- | ---: | --- |
+| `acquire base` | 0.656초 | 0 / PASS |
+| `canary base` | 0.665초 | 0 / PASS |
+| `collect base` | 0.466초 | 0 / PASS |
+| `smoke base` | 62.564초 | 0 / PASS |
+| `collect p2` | 0.469초 | 0 / PASS |
+| `focused p2` | 120.056초 | 0 / PASS |
+
+명령 형태는 고정 Python `-I -S -B -c <isolated-bootstrap> CONTROLS controller.py INPUT INPUT_SHA MODE SLOT`이며 단계별 정확한 argv·cwd·allowlist 환경·input hash·timeout은 기존 bundle의 `candidate-05/execution-plan.json`과 6개 start/finish 기록에서 확인한다. Runtime은 `/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14`다. 모든 단계는 자연 종료했고 입력 보존·process group 부재를 확인했다. coordinator 180초/child 150초, focused 1,200초와 출력/보존 한도를 유지했다.
+
+실제 NEW candidate 응답은 `saved`였다. 게시 seq `16389` 뒤 같은 PID `9098` / PGID `8223`의 descriptor-relative `open-after` seq `16412, 16424`를 확인했다. 이 숫자는 이번 관측값이며 테스트에 고정하지 않았다. `result.json`은 최소 관측 행과 원본 event/log의 hash를 연결한다. 현재 result SHA-256은 `13b4850b3474ad02ac2cd9f730a6ccfbf5d226cdfb51f4a0aa92e4f850208f95`다.
+
+후보 1/1·controller 6/6 사용, 누적 **80/80**이며 자동 재시도는0회다. 창은 승인한 `02:56:38–04:26:38 UTC` 그대로다. 성공 후 예산 소진을 STOP 기록에 명시했으며 남은 시간은 추가 실행 권한이 아니다. 이전 candidate01 A64, candidate03 probes5, candidate04 focused18은 각자의 입력/관측 기록으로 남기고 이번 결과와 합산하거나 현재 전체 suite PASS로 표시하지 않는다.
+
+### 미결 범위와 보존
+
+P2는 계속 open이다. S1/S2 buffered-write 관측, B-07, 전체 writer action/state matrix, C와 이후 P3/P4·최종 Owner 수락·활성화·실제 adopter 실행은 남아 있다. 이번 구현과 기록에는 commit/stage/push/PR/merge가 없다.
+
+수정은 승인한 3개 파일뿐이다. 새 GFM 렌더·README 로컬 링크·`git diff --check`·AST 범위·기존 기록/통제/입력 보존 검사를 수행한다. 미커밋 3파일 전체 diff와 최종 hash를 같은 `candidate-05` bundle에 보존한다. 소비자는 Owner의 이번 결과 확인과 다음 P2 수정 검토이며, 승인된 commit으로 복구할 수 있게 되면 diff 사본의 추가 보존 의존성이 끝난다.
+
+새 r05는 Git worktree가 아닌 제한된 검증 실행 경계다. 이번 F-02 결과 확인에서 사용한 원본 writer 응답/event가 있어 Owner 결과 확인까지 유지한다. 실행 환경 자체를 영구 deliverable로 삼지 않으며, 해당 확인 후 필요한 최소 근거와 기존 P2 의존성을 확인해 정리한다. source와 이전 r01–r04는 잔여 P2/미결 해석에 사용 중이므로 유지한다.
+
+### 최종 문서 검증 중단 및 완료 기록 정정
+
+제품 focused 5/5·base smoke 20/20과 6단계 정상 종료는 그대로 유효하다. 그러나 결과 문서 GFM 렌더에서 이번 append의 `**974개(default 776 + factory 198)**이며`가 literal 강조 기호로 남았다. README 렌더는 PASS였고 Work 렌더는 FAIL(exit 1)이므로 테스트·문서 전체 완료를 선언하지 않는다. 이는 Driver가 새로 쓴 결과 문장의 표기 결함이며 제품/통제 실패가 아니다.
+
+후속 custody 스크립트는 앞선 렌더 실패를 전달받지 못한 채 실행되어 `completion.json`에 GFM PASS를 잘못 기록했다. 그 원본은 `completion-before-gfm-correction.json`으로 보존하고 현재 `completion.json`을 문서 검증 실패·중단으로 정정한다. 실행 결과 `result.json`의 테스트 수/관측은 유지하되, 그 안의 assertion/docs scope complete 문구와 직전 본문의 전체 완료 표현은 이 정정으로 대체한다. 더 이상의 테스트·GFM 재시도나 문장 수정은 하지 않았다.
+
+승인된 예상 밖 실패 시 중단 조건에 따라 현재 문장과 실패 증거를 보존한다. 제안하는 복구는 해당 한 문장의 강조 delimiters만 제거하고 GFM·문서 링크·diff whitespace를 확인하는 것이다. 제품/통제 변경이나 controller 추가 호출은 필요하지 않으며 복구 적용은 Owner 승인 대기다. 완료 기준은 Work와 README의 GFM 렌더 성공, literal 강조 기호 없음, 기존 제품 테스트 입력·결과 보존이다.
+
+이번 기록 정정은 실제 실패를 보고하기 위한 append다. 기존 리뷰 원문과 그 이전 결과는 변경하지 않는다. 세 파일 미커밋 diff는 최신 `final-changes.patch`로 보존하며, 소비자는 이 문서 복구와 Owner 결과 확인이다.
+
+## P2 Consolidated Exit Assessment And Full Remaining Plan — 2026-10-11
+
+### Owner Acceptance And Current Decision
+
+Owner actual request: “이번 테스트·문서 보강 결과를 수락한다. P3에 들어가기 전에 P2 종료 판정표를 하나로 정리해줘. 각 잔여 항목을 기존 근거로 충족된 것, 추가 구현·검증이 필수인 것, Owner의 해석·범위 결정이 필요한 것으로 구분해. 이미 통과한 검증은 재사용 근거를 평가하고, P2를 닫기 위한 남은 작업 전체를 묶어 완료 기준·예산과 함께 제안해줘. P3로 이관할 항목은 원래 P3 범위인 문서·안내 정렬로 한정하고, P2 미완료를 옮겨서 완료 처리하지 마. 아직 추가 실행은 하지 마.”
+
+Owner는 candidate-05의 F-02 witness assertion 보강, S-02 README 현행화와 이어진 한 문장 GFM 보정을 수락했다. focused 5/5는 writer 제품 사례 4개와 합성 assertion self-check 1개이며, base smoke는 20/20이다. 이전 문서 실패와 잘못된 GFM 완료 기록은 역사로 보존하고 실제 보정·문서 검사 PASS 및 이번 수락을 현재 판정으로 연결한다. 이는 P2 전체 수락, commit 또는 P3 착수 승인이 아니다.
+
+현재 결론은 **P2 open**이다. 아래 판정표가 이 Work의 현재 P2 잔여 범위를 한곳에서 읽는 기준이다. 앞선 Remaining P2 표는 당시 상태의 역사로 남기며, 이번 표는 성공한 부분을 다시 미착수로 돌리거나 미완료를 P3로 넘기지 않는다. `충족`은 행에 적은 한정된 의무의 근거가 있다는 뜻이다. 변경 영향이 생기면 해당 행의 재사용 판단을 다시 확인한다.
+
+이번 작업은 L2 계획·근거 정리이며, 향후 controls 및 해석 결정의 구현은 L3 경계를 포함한다. 기존 CHORE-20261009-002의 Standard Work / PLAN 단계로 진행한다. 신규 Work·backlog·STATUS 장부를 만들지 않는다. 구현·제품/test import·discovery·controller·Claude/auth 호출은 하지 않는다. Source의 별도 path rule은 없고 기존 Contributing 및 이 Work의 승인·근거 경계를 따른다. DR-007의 한국어 본문·영문 section 관례를 적용한다. PLAN 방향·accepted DR·STATUS·Work Done 상태는 변경하지 않는다.
+
+### Fixed Assessment Inputs
+
+- Source branch `codex/colvia-brand-transition`, HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`. 기존 미커밋 파일은 테스트·controls README·이 Work 3개다. 이번에는 이 Work에만 append한다.
+- 수락한 test SHA-256 `978db7325f970e2597fb2f467b3826b8b205cc01b40712ea65ef9f766f359aa0`, controls README `c3318f6434726481afec9f73aa5043f42e385cacabcde3b4de0d0dcd7181d3f6`, 이 append 전 Work `8208f140ee127e74bc74a52800feca221e92ac1e62b6e5f927d9e70f5c9fb878`.
+- 기준 계약: [DR-0004](../decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md)의 Accepted A와 이 Work의 Owner-accepted D1-A/D2-A v2.1, D3-A revision 1.1. 단계 귀속은 [Implementation Plan](colvia-entry-implementation-plan.md#scope-and-implementation-order)의 P2/P3/P4를 따른다.
+- 근거 재확인은 기존 JSON·raw 결과·정적 AST/바이트 비교다. 새 시험 결과가 아니다. 실행 횟수는 누적 controller **80회** 그대로이며 추가 사용은 0회다.
+
+### One P2 Exit Matrix
+
+분류는 `① 기존 근거로 충족`, `② 추가 구현·검증 필수`, `③ Owner 해석·범위 결정 필요`다. ③은 결정을 받았다는 이유만으로 PASS가 되지 않는다. 결정 뒤 필요한 ② 검증까지 끝나야 닫힌다. 행끼리 겹치는 테스트는 한 번 실행해 여러 의무에 연결할 수 있지만 서로 다른 의무를 삭제하지 않는다.
+
+| ID / 의무 | 분류 | 현재 근거와 남은 종료 조건 |
+| --- | --- | --- |
+| E1. N-01~05 / O-01~02 / B-01~06의 이미 검증한 publication 경계 | ① | N/O 신규19+회귀9, binding 신규28+회귀9의 수락 결과가 있다. exclusive create, short write, mode/fsync, O retirement, B1 replace/parent sync의 해당 selector 결과를 재사용한다. 제품 바이트는 당시와 같고 임의 전수 재실행은 요구하지 않는다. 새 controls가 이 연산을 건드리면 영향받은 selector만 E 경로 회귀로 선택한다. B-07과 S1/S2는 이 행에 포함하지 않는다 |
+| E2. S3 정상 publication 및 두 parent sync 오류 복구 | ① | 정상 rename·두 parent sync before/after 6개, sync 오류4개와 동일 요청 복구가 실행됐고 A64에서도 관련 사례가 통과했다. R0-B1의 pre-B1 receipt sync2회 / post-B1 replay1회 보정도 runtime 및 누적 리뷰에서 확인했다. 전체 S1/S2와 모든 resync 경계로 확대하지 않는다 |
+| E3. 기존 D3 sync·replay·보존의 확인된 부분 | ① | D3 73개와 A64의 보강 사례로 normal/replay 집합·순서, 지정 admission/publication 오류, S5 recovery4지점×오류2종, 오류 후 exact recovery를 확인했다. 행 A2의 미선택 subtree/occurrence 및 verification-unavailable 분기는 별도다 |
+| E4. Synthetic tear와 unknown staging 보존 | ① | receipt·inventory/launcher synthetic tears 및 나머지 payload28×4길이=112 tears, unknown switch/entry staging, B1+binding.next·잘못된 mode 거부 근거가 있다. A1/A2 테스트 기대·요청 구성 오류도 보정 후 통과했다. 이는 합성 손상 후 preserved refusal 근거이며 실제 buffered write 중단 증거가 아니다 |
+| E5. 이미 실행한 executor / writer / late-lock 부분 | ① | candidate04의 controls6+product12, candidate05의 네 writer positive/pending-prefix 및 강화된 응답·witness가 통과했다. OLD installed writer4종의 late-lock, OLD independent detach late-lock, source record-command 비지원·한정 four-executor 진입점도 근거가 있다. 같은 family의 모든 action과 S0~S6 전체를 검증한 것은 아니다 |
+| E6. 기본 local baseline·drift·historical replay | ① | 실제 OLD에서 만든 schema1 local Work의 cutover/S6 비교·replay, dirty/entry-scope 사전 거부, S5 이후 drift의 B1 보존, changed-truth replay unavailable 근거가 있다. local positive는 candidate04에서 다시 통과했다. 나머지 세 테스트 본문은 D3 고정 입력과 현재 AST가 같다. Parent·다중 baseline·required-ref 모든 분기는 C2/C3에 남긴다 |
+| E7. 이번 F-02 / S-02, 기록 지적과 한정 controls 회복 | ① | Owner가 witness·README·GFM 보정을 수락했다. F-06 commit 사실과 S-01 후보별 evidence 구분은 이미 기록됐다. Failfast probe4와 descriptor-read probe5는 각 고정 후보의 성공 근거로 재사용한다. candidate03의 전체 실행은 실패였으며 성공 probe5만 부분 근거다. F-03은 D4에 남는다 |
+| A1. S1-01~02 / S2-01~02 실제 생성·buffered write·sync·directory 경계 | ② | 실제 receipt 및 staging inventory/payload 각 member/dir의 before/after, 실제 짧은 write·중단과 complete-prefix recovery/torn refusal를 연결해야 한다. 현재 os.write hook은 C-buffered writes의 증인이 아니다. 실제 primitive 관측을 가능하게 하는 controls 설계·자기검증이 선행하며, unavailable은 완료가 아니다. 합성 tears를 재명명해서 닫지 않는다 |
+| A2. D3 잔여 resync·오류/진단 분기 | ② | inventory-derived published/staged subtree와 반복 sync의 미주입 위치/occurrence, 기존 release 재진입·부모 fallback, pre/post-B1의 실제 verification-unavailable 분기를 기존 selector와 대조한다. 지정 위치 오류→그 지점 이후 publication 중단→허용 delta·truth 보존→동일 요청 명시 복구를 확인한다. 이미 통과한 named selector를 다시 미완으로 만들지 않으며 누락 위치만 추가한다 |
+| D1. B-07 empty staging: retain / retirement | ③ | DR은 empty operation directory retain/remove를 허용한다. 현재 제품은 retain하며 replay의 retained/수동 empty retirement 및 unknown member/B1+binding.next 거부는 E3/E4에 있다. Owner가 retain을 이 구현의 선택으로 확인하고 oracle의 ‘retirement’를 해당 의미로 정렬하는 처분이 필요하다. 권고: 새 rmdir 기능 없이 retain 선택. 정확한 empty-directory 검사·보존 근거가 충분하면 기존 결과를 재사용하고, oracle 수정의 영향만 확인한다 |
+| B1. 네 executor × 상태 × 지원 operation의 전체 fence | ② | S0, S1/S2/S3, S3a/S3b, S4, S5, S6의 실제 설치 가능성·지원 operation을 먼저 표로 고정한다. OLD init/update/rollback/repair/detach와 installed record writer action별 유효 positive·정확한 거부·bytes/mode 보존을 연결한다. NEW independent는 exact recovery만, NEW installed는 S6 전 미허용임을 확인한다. ‘경로 없음’, source parser 비지원과 under-lock fence 성공은 구분한다 |
+| B2. All-writer late-lock 및 stale operation/ticket | ② | 기존 대표 draft/add/publish/detach 외 실제 writer 진입점을 CLI/guard 호출로 열거한다. 미검증 apply/selection/acceptance/lifecycle action의 동일 요청 S0 positive, NEW의 lock 보유, OLD attempt→획득 순서, prefix 이후 재검사와 정확한 non-pass를 확인한다. 실제 증인이 없는 프로세스 존재나 잘못된 요청은 대신 쓰지 않는다 |
+| C1. Transition admission / Git / quiescence | ② | allowlist 밖 predecessor, OLD pending init/switch/repair/detach, persisted intent/Work pending transactions, root alias/links/mode/collision, tracked colvia·alias·descendant와 effective ignore(외부 입력 포함)의 transition pre-S1 거부를 완성한다. Git-tracked OLD hv2 positive와 실제 S6 content/ignore fingerprint를 확인한다. P1 fresh-init index 테스트는 transition 근거를 대신하지 않는다. 복제된 미게시 ticket·모든 외부 writer 탐지를 주장하지 않고 기존 operational quiescence 한계를 유지한다 |
+| C2. Local/parent baseline·required refs | ② | schema1 local/schema2 parent의 비완료 selected 상태(거부·철회 상태 포함), 서로 다른 baseline·실제 drift, scope 및 Work/intent required refs의 renamed-path/alias/상하위 경로, 재시작 후 실제 S6 비교를 완성한다. Parent는 captured child 관계/refs와 미완 의미를 보존한다. F-04 해석 부분은 D2 결정 후 구현·검증한다. 자동 baseline 갱신/완료/child refresh는 금지한다 |
+| D2. F-04 captured child intent required refs | ③ | 현재 코드는 parent 자신의 bound intent required refs를 열거하고 captured child intent까지는 열거하지 않는다. 권고는 선택 parent가 직접 capture한 child의 required 참조도 C0-L-A의 경로 의존성 검사에 포함하는 것이다. 구체적으로 포함할 Work/intent ref 범위와 직접-child 한계를 Owner가 문장으로 확정해야 하며, 무제한 graph 순회나 worker 규칙의 자동 전용은 하지 않는다. 결정 후 positive·renamed-ref refusal·captured graph 보존 검증이 필수다 |
+| C3. Worker / orphan / old proof·ticket / explicit rebind | ② | C0-W-A에 따른 unfinished selected worker와 orphan 단독 허용, pending durable operation 거부, old committed proof·old ticket 사용 거부, 별도 보존한 synthetic new control baseline과 명시적 human same-intent rebind/resubmit 성공을 검증한다. old 결과·orphan을 삭제·취소·자동 rebind하지 않는다. 기본 worker proof helper의 P1 통과는 실제 cutover matrix를 대신하지 않는다 |
+| C4. Mixed-history lifecycle / collision runtime | ② | 실제 OLD→NEW 이력의 두 NEW candidate update/rollback, 최초 cross-window rollback 거부, exact active repair와 외부 backup 관측 한계, schema3 detach·중단 복구·독립 plain audit를 검증한다. 재등장 hv2의 init replay/update/rollback/repair/detach 거부와 정상 record content proof, status/doctor/view의 수락된 D1 classification·exit·lifecycle_ready도 확인한다. 단순 안내 문구는 P3지만 runtime 판정·거부는 P2다 |
+| D3. F-05 same-entry 거부·checkpoint 범위 | ③ | 추가 unknown staging 거부와 member checkpoint가 전환 밖의 same-entry 경로에도 적용된다. Reviewer의 P3 severity 표기는 phase 이관 근거가 아니다. 권고: 전환 전용 변경 원칙을 유지해 원래 same-entry 계약과 동치인 보호만 공통으로 남기고, 추가 행위는 명시 승인 없이 넓히지 않는다. Owner가 유지/전환 한정 범위를 확정한 후 same-entry positive·unknown-member preserved refusal/허용 경계·checkpoint의 전용 검증으로 닫는다. 검사 삭제도 승인 없이 하지 않는다 |
+| C5. Fresh init 및 source/test proof caller closure | ② | P1b16에는 fresh Git/non-Git init, init recovery/collision, literal history, required-ref/test seam의 통과 근거가 있다. 이후 product.py/view.py가 바뀌었으므로 새 테스트로 중복 작성하지 않고 영향받은 기존 사례만 현재 후보에서 재확인한다. closed C1의 root launcher·product/work/intent/workspace/candidates/view/cli와 관련 test doubles/aliases/default fixtures를 AST 및 의미 대조하고 직접 회귀에 연결한다. 텍스트 검색0건만으로 closure를 선언하지 않는다 |
+| D4. S1/S2 관측 및 F-03 observer 진단의 controls 범위 | ③ | 권고는 제품 I/O·T-A·sandbox를 유지하는 test-only 관측/오류 식별 보강이다. 실제 buffered/하위 write를 관측하는 수단의 동작 보존·짧은 write/kill 위치 증명과 refusal 이유 전달을 R0로 검토한다. 현재 RuntimeError→CLI 내부 오류 축약의 진단 공백을 제품 거부 PASS로 세지 않는다. refusal event를 추가한다면 기존 empty-events 기대는 ‘제품 syscall/쓰기 없음’과 ‘관측기 진단 있음’을 구분하는 승인된 교정이 필요하다. 관측 불가능을 제외/합성 대체하는 기준 완화는 이 제안에 없다 |
+| X1. P2 통합 판정·리뷰·Owner 종료 | ② | 위 모든 ②의 실제 cell 결과와 ③의 Owner 처분/후속 결과, 재사용 사유, 원문 finding·Driver 처분을 한 candidate에 연결한다. 미해결 필수 cell0, failed/error/skip/unstarted/unfinished0, 입력·권위 보존·정상 종료를 확인하고 누적 P2 R1과 Driver 처분 후 Owner가 P2 종료를 판단한다. P3/P4로 미완을 넘기거나 이번 부분 수락을 전체 수락으로 쓰지 않는다 |
+
+### Evidence Reuse Assessment
+
+이번 정적 대조에서 D3, binding, N/O, S3, S3 sync recovery, A64, candidate03/04/05의 invocation에 있는 **tests 이외 source file hash가 모두 현재 파일과 일치했다.** 각 focused parent `result.json`이 가리키는 `inputs.json` hash 및 그 invocation hash도 실제 파일과 일치했다. 이것은 실행 신원을 다시 연결한 것이며 새 runtime 실행은 아니다.
+
+- D373, binding37(신규28+회귀9), N/O28(신규19+회귀9), S3 15(신규6+회귀9), S3 sync11은 당시 observer와 runner를 사용했다. 현재까지 바뀐 controls는 observer의 descriptor-relative read 지원과 runner failfast다. 제품 결과는 해당 assertion 범위에서 재사용할 수 있지만 현재 controls로 이 전체가 실행됐다는 표시는 하지 않는다.
+- A64의 정확한 테스트 바이트를 보존된 patch에서 재구성해 당시 SHA `eb6984d13b66cc1f4dece516c92bc709264dbe446e4bb68293ef2a6015f0a8c9`와 일치시켰다. 기존 class method와 helper AST에서 달라진 것은 A64 선택 밖의 cross-WORK fixture route 한 곳뿐이며 현재 새 method21개가 추가돼 있다. A64의 실행한 assertions는 유지됐다. Observer만 다르므로 전수 반복 대신 새 관측 경로와 겹치는 직접 회귀를 선택한다.
+- Candidate03의 probe5는 동일한 현재 controls를 사용했지만 전체 attempt는 1 FAIL/17 unstarted였다. probe의 성공 행만 재사용한다. 실패한 cross-WORK fixture는 candidate04의 실제 PASS로 해결됐고 역사적 실패를 지우지 않는다.
+- Candidate04의 controls6+product12는 현재 controls와 일치한다. Candidate05는 같은 controls에서 네 writer assertion을 강화해 재실행했고 self-check를 추가했다. 현재 최신 제품 검증 근거는 이 두 후보에 나누어 귀속한다. 단순 18+5 또는 5+18 합계로 같은-run qualification을 만들지 않는다.
+- P1b16은 실제 PASS지만 현재와 비교하면 product.py와 view.py가 바뀌었다. Literal old/new membership·독립 fixture의 증거는 보존하고, fresh init·collision·proof 소비 지점의 영향을 C5에서 확인한다. P1b 전체를 새로 작성하지도, 무검토로 현재 PASS로 이월하지도 않는다.
+- 재사용 불가 조건은 해당 runtime/managed payload/fixture/helper/관측·fault selector/기대 계약의 의미 변화, 입력 신원 불명, native 결과 미완 또는 필요한 witness 부재다. 그때 해당 cell만 다시 선택한다. 정책·runtime 전체 변경처럼 영향이 넓으면 상위 검증 범위와 예산을 재승인받으며 사유 없이 full suite로 확대하지 않는다.
+
+기존 재사용 출처는 이 Work의 Existing Execution Evidence Binding, D3/B1–B6/N/O/S3 Owner acceptance sections 및 private bundle `driver-p2-batch-02/candidate-01`, `03`, `04`, `05`의 식별된 invocation/result다. 이번 수락의 실행 결과는 candidate05 `result.json` SHA `13b4850b3474ad02ac2cd9f730a6ccfbf5d226cdfb51f4a0aa92e4f850208f95`에 그대로 보존돼 있다. 향후 관측기 변경 뒤에는 이 재사용 판단을 새 영향표로 다시 확인한다.
+
+### Owner Decisions Before The Remaining Batch
+
+한 번의 Owner 판단에서 D1~D4를 위 권고대로 확정하거나 수정한다. 이는 각각 B-07 retain 선택·oracle 정렬, captured child required-ref 범위, same-entry 공유 변경의 범위, test-only controls 보강/검토 권한이다. D1~D3의 최종 문장은 기존 accepted 계약의 해석인지 amendment인지 R0에 명시한다. Accepted DR의 의미를 바꾸는 선택이면 구현 전에 정확한 amendment를 별도로 수락받는다. 단순 backlog 메모로 계약을 바꾸지 않는다.
+
+S1/S2는 기준을 낮추는 선택지를 제시하지 않는다. 정적 inventory는 payload29+inventory1=staging 파일30개, staging 내부 고유 directory7개(루트 포함)다. 현재 loop는 앞의 준비3회와 member별 parent 준비를 합쳐 durable-directory 호출97회를 가진다. 각 호출을 mkdir·parent-sync·self-sync의 before/after로 단순 전개하면582개 selector 후보이며, 파일 create·file-sync·parent-sync만 최소180개가 더해진다. 이는 정적 상한 산식이지 실제 syscall 수·독립 테스트 수·검증 결과가 아니다. 기존 directory에 대한 mkdir 예외, 반복 위치, buffered write/flush/close와 fault path는 정확한 trace/selector 설계에서 구분해야 한다. 반복 path/occurrence를 임의 대표1개로 축소하지 않는다. 동등성으로 어떤 obligation을 합칠 필요가 있다면 근거와 범위 결정을 먼저 제시한다.
+
+### One Bounded Completion Bundle — Proposed, Not Authorized
+
+남은 작업 전체를 하나의 P2 완료 묶음으로 관리하되, 고정 입력과 실행 시간 때문에 검증 후보를 나눈다. 아래 슬롯은 실패 후 재시도용이 아니라 서로 다른 필수 coverage 분할이다. 작은 slice를 마칠 때마다 전체 목표를 새로 정의하지 않는다.
+
+| 순서 / 할당 | 포함 범위 | 고정 후보 상한 |
+| --- | --- | ---: |
+| Controls | D4의 관측·진단 설계, bounded 자기검증과 기존 read/failfast 직접 회귀; D1 oracle 정렬의 통제 영향 | 1 |
+| Physical/recovery | A1 전체 member/dir/write 경계와 A2 잔여 D3; D1 retain 의미에 필요한 미충족 근거; E1~E4 중 변경 영향이 있는 회귀 | 9 |
+| Executors/writers | B1/B2 전체 지원 cell 및 기존 positive/witness의 영향 회귀 | 2 |
+| Admission/records/history | C1~C4, D2/D3 결정 후 구현·검증. Git admission, local/parent, worker, mixed-history를 빠짐없이 포함 | 3 |
+| P2 integration | C5 caller/fixture closure와 영향받은 기존 fresh-init/diagnostic 사례, X1의 직접 통합 회귀 | 1 |
+| 합계 | 동일 Work의 전체 잔여 P2 | **16** |
+
+Authoring은 테스트·고정 test-local helper·필요한 observer 및 prefix-oracle·controls README·이 Work가 우선이다. 제품 결함이 확인되면 원래 closed C1 inventory 안에서 accepted behavior를 복원하는 최소 수정만 포함한다. 이 허용을 새 기능·schema·지원 predecessor·새 dependency·일반 API 확장으로 쓰지 않는다. `jsonio.py`, `errors.py`, `umbrella.py`, acquisition/common/controller/runner와 sandbox/network/credential 정책은 기본 수정 제외다. 이 경계를 바꿔야 하면 해당 후보를 실행하지 않고 정확한 추가 범위부터 제시한다. P3 대상의 일반 문구 교체는 이 묶음에 넣지 않는다.
+
+예산은 다음과 같이 제안한다. 현재 80회 사용을 유지하며 승인이 나기 전 어느 예산도 시작하지 않는다.
+
+- Driver authoring·정적 점검: active 작업시간 최대8시간. 전체 obligation→selector→test ID 표, 정확한 mutable file 목록과 Owner 결정 반영을 먼저 고정한다. 미구현 테스트 이름/입력 hash를 지금 만들어 실행 가능한 계획처럼 쓰지 않는다.
+- 고정 후보 최대16개, 후보별 acquire base / canary base / collect base / smoke base20 / collect p2 / focused p2의6호출. **새 controller 최대96회, 누적 상한176회**다. 기존 80회와 실패/STOP 기록은 초기화하지 않는다.
+- 후보별 기존 cap은 300+300+300+1200+300+1200=3,600초다. 총 controller cap57,600초(16시간), outer cleanup 여유는 호출당30초로 최대48분이다. 검증·입력 확인·결과 기록 창은 첫 controller 시작부터 최대20시간으로 제안한다. 남은3시간12분이 준비/확인/기록 여유이며 시간을 초과해 자동 연장하지 않는다. Authoring·Owner 대기와 실제 검증 창은 구분해서 기록한다.
+- R0/R1은 현재 Contributing의 기본 경계를 복원한다. 기존 quota 유예를 새 controls/계약 변경에 자동 연장하지 않는다. Claude 구독 경로의 fresh bounded 정적 R0/R1 합계 최대4호출, 호출당1,200초(총80분) 제안이며 필요한 설명/보완 호출도 이 안에 포함한다. Actual model/session·구독 인증 경로·읽은 범위와 독립성 한계를 기록한다. 실패한 CLI 호출의 자동 재시도0회다. 현재는 리뷰·auth 조회도 하지 않는다.
+- Product coordinator180초·child150초, focused runner child의 기존 상한, stdout16MiB·fixture child1MiB·실패 보존64MiB/시도 및256MiB/실행을 유지한다. 새 셀을 여러 subcase로 묶어 개별 test cap을 숨기지 않는다. 정확한 선택을 확정할 때 과거 실제 timing과 보수적 여유를 적용해 focused 예상치를900초 이하로 분할하고 기존 hard cap을 늘리지 않는다.
+
+16후보는 현재 정적 규모와 큰 미검증 영역에 배분한 계획 상한이며, 아직 없는 controls의 속도를 측정한 예측이나 반드시 완료한다는 보장은 아니다. 첫 실행 전에 전체 obligation 목록이 이 상한 안에 배치되는지 확인한다. 대조/추정 결과 상한을 넘거나 실제 관측 설계가 성립하지 않으면 일부만 실행해 ‘P2 완료’를 약속하지 않고 부족한 셀·추가 비용을 제시한다. 동등성 논증이 성립하지 않은 반복 경계를 빼서 예산에 맞추지 않는다.
+
+실행 방식은 Driver 한 명의 순차 진행이다. SOURCE/OLD는 read-only, 각 새 non-Git execution root는 승인된 agent-worktree root 아래 absent/unregistered 경계로 고정한다. 고정 CPython3.14.7, 기존 `controller.py INPUT SHA MODE SLOT`, allowlist 환경·격리 정책을 사용하고 exact argv/cwd/input/output/hash·선택/collection을 후보 시작 전에 식별한다. 승인된 전체 범위와 상한 안의 기술 gate는 Driver가 확인해 연속 진행할 수 있으나, 기대 밖 실패·drift·미관측 selector·격리/보존 실패·잔존 process group·시간 부족·계약 변경 필요가 나오면 전체 묶음을 보존하고 중단한다. 실패 뒤 자동 보정/재실행0회, unused slot의 실패 우회 사용0회다. 기록의 형식 검사 실패도 실제 실패로 보고하며 뒤 단계가 자동 PASS를 기록하지 않도록 exit 상태를 전달한다.
+
+### Final P2 Done Criteria
+
+1. 하나의 matrix에 DR의 S0~S6,19 physical group, executor/writer, admission/local/parent/worker/history/caller 의무가 모두 연결돼 있다. 지원하지 않는 실행 조합은 계약상 이유와 실제 거부/부재 근거로 분류하고 누락을 N/A로 숨기지 않는다.
+2. D1~D4의 실제 Owner 결정이 있고, 그 결정이 요구하는 구현·테스트·oracle/설명 변화의 결과가 확인됐다. 기존 blocking finding은 accept/revise/defend/needs-user와 근거로 처분돼 있으며 필수 needs-user/unavailable0이다.
+3. 새 필수 cell마다 실제 선택/실행 ID와 intended positive/refusal 원인·주입 위치·허용 delta·truth 보존·필요한 exact recovery가 있다. 각 실행의 fail/error/skip/unstarted/unfinished/expected failure/unexpected success는0이고, 재사용 cell은 입력·변경 영향·한계가 기록됐다. 서로 다른 candidate의 숫자를 합쳐 하나의 complete-run PASS를 만들지 않는다.
+4. 실제 buffered-write 중단, 합성 tear, 예외 주입, 정상 fsync를 구분한다. Process kill은 power-loss persistence 증명이 아니며, 수락된 T-A의 torn receipt/staging unrecoverable refusal를 성공 복구로 바꾸지 않는다. 물리 power-loss/fullfsync 보장은 원래 비주장 경계다.
+5. 자연 종료·process group 부재·source/OLD/controls/기존 evidence 보존·실패 자료의 필요한 복구 가능성을 확인한다. 작업 중 만든 환경은 원본 witness·재사용 소비가 끝났을 때 보존 조건을 확인해 정리하고 환경 자체를 영구 산출물로 삼지 않는다.
+6. 고정 P2 결과에 대한 누적 R1, Driver 처분과 Owner의 P2 종료 수락이 있다. 그 뒤에만 P3 진입을 제안한다. Commit·push·PR·merge·전체 Work Done·계약 활성화·실제 adopter 실행은 각각 별도 승인이다.
+
+### P3 And P4 Boundary
+
+P3로 이어갈 것은 원래 P3의 current CLI/view/help 안내, 현재 adapter, eleven-member normative successor 및 EN/KO 소비 문서의 정렬뿐이다. F-01의 `hv2` 안내를 검증된 window에 맞게 고치고 출력 문구를 단언하는 일은 여기에 속한다. 정확한 amendment diff/table과 역사/current 구분을 준비하되 활성화하지 않는다.
+
+F-05의 same-entry runtime 행위, F-03 controls 진단, B-07 의무, S1/S2·B/C·diagnostic classification/exit 미검증은 P3 문서 작업으로 옮기지 않는다. P3에서 실제 설명하려는 기존 runtime에 새로운 결함이 발견되면 해당 의무를 다시 열며 문구만으로 덮지 않는다.
+
+P4의 고정 최종 candidate complete-normal / complete-parent-O / exact-artifact smoke와 전체 결과 R1은 원래 별도 qualification 단계다. 이를 P2의 집중 검증으로 대체하지도, 반대로 P2 미완의 검사 장소로 쓰지도 않는다. 현재 M3 활성 상태와 activation-pending DR 경계는 유지한다.
+
+### This Turn Validation And Preservation
+
+이번에는 기존 코드/계약/결과를 읽고 비교하고 이 Work에 수락·판정표·제안만 기록한다. 제품/test import·discovery·controller·새 리뷰·Git 게시 실행은0이다. Work append의 GFM·로컬 링크·diff whitespace와 prior-prefix/승인3파일 보존을 확인한다. 테스트·controls README·제품·accepted DR·STATUS·index는 바꾸지 않는다.
+
+미커밋 변경은 기존 private bundle의 `p2-closeout-plan-01`에 현재 3파일 diff 한 개로 보존한다. 소비자는 Owner의 D1~D4/전체 묶음 판단과 후속 exact plan 준비이며, 승인된 commit으로 복구 가능해지면 추가 diff 사본의 보존 의존성이 끝난다. 이전 실행 환경은 이번 재사용 판단에 실제로 사용했다. r05 원본은 제품 witness의 마지막 결과까지 이번 수락에 연결됐으며, 향후 controls 영향·P2 누적 리뷰에 필요한 최소 원본과 실행 환경 정리를 구분한다. 이번 읽기/계획 범위에서는 worktree 또는 실행 환경을 이동·삭제하지 않는다.
+
+## P2 Completion Bundle Authorization And Preflight Stop — 2026-10-11
+
+### Owner Decisions And Authorization
+
+Owner는 2026-10-11 03:47:04 UTC에 “Owner 결정 4건은 권고대로 수락하고 P2 전체 완료 묶음을 제안한 범위·예산 안에서 승인한다. 실행 전 전체 필수 검사 항목과 관측 설계가 상한에 들어가는지 확인한 뒤 진행해. 계약 amendment나 예산 초과, 예상 밖 실패가 필요하면 중단하고 보고해. P2 종료 수락과 commit·push·PR·merge는 별도로 남겨둬.”라고 승인했다.
+
+앞선 통합표의 D1~D4는 이제 미결 제안이 아니라 다음과 같이 수락된 방향이다. D1은 empty staging retain 선택과 oracle 정렬, D2는 선택 parent가 직접 capture한 child의 required Work/intent 참조 포함과 직접-child 한계, D3는 원래 same-entry 계약과 동치인 공통 보호만 유지하고 추가 행위는 전환에 한정, D4는 제품 I/O·T-A·격리를 유지하는 test-only 관측·진단 보강이다. 이것은 관련 테스트 PASS나 계약 amendment의 포괄 수락이 아니다. 정확한 의미 대조에서 amendment가 필요하면 구현 전에 중단한다.
+
+전체 P2 묶음의 기존 16후보/신규96 controller/누적176회, authoring8시간, 검증 창20시간, 리뷰4호출·총80분 상한을 유지한다. 전체 필수 cell과 관측 설계를 이 안에 배치하는 실행 전 gate가 먼저다. P2 종료 수락·P3 진입·Git 게시·실제 adopter 실행은 이번 승인에 포함되지 않는다.
+
+### Read-Only Findings Before The Stop
+
+기준은 HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`와 직전 Work SHA-256 `a305f68f4ced5954b5478b3a5b0de42b333d74d01ce3ea422efd077d4b1fd3f8`이다. 기존 승인 테스트/README는 그대로다. Source 개발 절차와 현재 DR의 qualification 문장을 읽고, 실제 코드와 기존 실행 결과를 정적으로 확인했다. 새 제품/test import·discovery·controller·reviewer/auth 호출은 없다.
+
+`product._entry_write_exact`는 `Path.open("xb")`의 buffered handle에서 write/flush/file-sync를 수행한다. 기존 observer의 `os.open`/`os.write` wrapper만으로 이 C-buffered 하위 쓰기를 관측했다고 주장할 수 없다. 검토할 관측 방향은 한정된 test-only raw I/O 위임과 기존 primitive 호출의 증인·짧은 write·kill 위치를 연결하는 것이지만, transparent delegation·buffer size·예외·close·identity·하위 호출 수를 아직 검증하지 않았다. 관측 설계 확정이나 R0 PASS로 취급하지 않는다.
+
+기존 native `work/executed.jsonl`에서 실행된 사례별 시간을 읽었다. binding-prefix-01의 신규28개는 합286.177초, median10.245초, 범위8.674~11.512초였다. launcher-prefix-01/resume-03의 신규19개는 합183.746초, median9.590초, 범위9.164~10.341초였다. release-publication-01의 신규6개는 합85.332초, median13.3165초, 범위13.183~18.823초였다. D3의 이름이 `test_d3_`로 시작하는42개는 합153.834초, median4.254초였다. 서로 다른 준비·복구 경로의 실제 시간이며, 아직 없는 S1/S2 관측기의 속도나 모든 새 case의 시간으로 단정하지 않는다. 앞선 30파일/97 durable-directory 호출 산식도 실제 syscall 전수 trace가 아니다.
+
+### Failure And Preserved State
+
+읽기 전용 분석 명령 `python3 - <<'PY'`에서 기존 launcher N-01 trace에 staging 생성 구간이 있다고 가정했다. 분석 입력은 `hv2-reference-private-colvia-launcher-verification-20261010-b05/exec/runs/focused-p2/work/entry-scenarios/EntryProductTests-test_launcher_n01_open_before-2.json`과 같은 Work 하위의 대응 `.events`다. 이 root는 승인된 agent-worktree root 아래의 기존 보존 환경이다. Event 파일 SHA-256은 `2a7d73853e462ec455c8991309f1f7dfb0d5fb1a430070746422da7922d4711c`다.
+
+실패한 분석식은 다음과 같다. 제품 코드를 실행하는 식이 아니라 이미 기록된 JSON 행 검색이다.
+
+```python
+i = next(i for i, x in enumerate(rows)
+         if x['event'] == 'mkdir-before' and x['path'] == '.hrn/staging')
+```
+
+실제 종료는 exit1, 마지막 오류는 `StopIteration`이었다. 분석은 시나리오 경로·fault·event hash만 출력했고 staging count나 budget 판정은 출력하지 못했다. 이 명령은 파일을 쓰거나 제품/controls를 import하지 않았다. 자동 재시도는 하지 않았다.
+
+원인은 Driver가 trace의 시작 상태를 잘못 선택한 것이다. 현재 테스트의 `launcher_prefix_case`는 `interrupted_api(..., 'after-release')`로 S3를 먼저 준비하고 그 뒤 N/O만 관측한다. 따라서 해당 trace에 S1/S2 mkdir가 없는 것은 정상이며, 제품 오류·기존 N/O 테스트 실패·근거 유실이 아니다. 원문 trace나 기존 PASS 기록은 수정하지 않는다.
+
+Owner가 정한 예상 밖 실패 시 중단 조건에 따라 실행 전 gate를 미완료로 남기고 전체 묶음을 멈춘다. 현재 판정은 **예산 적합성 미확정**이다. 예산 초과를 입증한 것도, 상한 안에서 완료할 수 있다고 확인한 것도 아니다. 계약 amendment 필요 여부와 전체 selector 배치도 아직 미확정이다. Controller 신규0/누적80, 리뷰 신규0/상한4, 검증20시간 창 미시작이다. 사전 확인과 이 실패 기록에는 authoring 예산10분을 보수적으로 차감하며, 재개 시 잔여 상한은7시간50분이다. 이 차감은 새 runtime 실측값이 아니다.
+
+### Bounded Recovery Proposal — Not Executed
+
+복구 대상은 사전 분석만이다. 먼저 기존 시나리오/테스트 본문에서 starting state·fault·recover 여부를 확인하고, 실제 S0 시작 및 S1/S2 생성 구간을 담은 보존 trace만 선택한다. 없는 구간을 `next()`로 가정하지 않고 필수 event의 존재·유일성·순서를 검사해 명시적인 unavailable 결과로 남긴다. S3 재개 trace를 S1/S2 카운트에 쓰지 않는다. 적합한 기존 전체 trace가 없다면 정적 산식과 관측 필요분을 분리하고, 새 실행이 필요한 이유와 정확한 범위를 실행 전에 제시한다.
+
+그다음 실제 관측과 정적 inventory의 before/after·반복 occurrence·byte-fault 의무를 구분하고 A/B/C 전체 필수 cell을 16후보에 배치한다. 기존 timing의 적용 가능성과 보수적 여유를 밝히고, 각 focused 예상900초 이하 및 전체 상한 적합성을 판단한다. 동등성이 입증되지 않은 반복 경계를 제거하지 않는다. 적합성 확인 후에만 승인된 R0 및 구현·검증 순서로 진행할 수 있다. 관측 불가·amendment·초과 비용이 확인되면 원래 중단 조건을 유지한다.
+
+이 복구는 기존 범위·예산의 재개 제안이며 자동 실행하지 않았다. 사용자 요청에 따른 이번 중단은 source/test/control 수정이나 controller 재시도를 필요로 하는 제품 실패와 구분한다. Source의 기존 Work 한 곳에만 승인·관측·실패·복구 제안을 추가하고, GFM/로컬 링크/diff와 앞선 바이트 보존을 확인한다. 현재3파일 diff를 private bundle `p2-preflight-stop-01/current-changes.patch`에 복구 가능한 형태로 보존한다. 소비자는 Owner의 이 사전 분석 복구 판단과 승인 후 P2 진행이며, 승인된 commit으로 같은 내용을 복구할 수 있게 되면 추가 patch의 보존 의존성이 끝난다. 기존 source/검증 환경은 잔여 P2 근거 소비가 있어 유지한다.
+
+## P2 Preflight Recovery And Budget Gate — 2026-10-11
+
+### Recovery Authorization And Outcome
+
+Owner actual authorization: “사전 분석 복구를 승인한다. trace 시작 상태를 확인해 입력을 바로잡고, 전체 필수 검사와 관측 설계가 기존 범위·예산에 들어가면 승인된 P2 묶음을 계속 진행해. 계약 amendment·예산 초과·예상 밖 실패 시 중단하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+앞선 trace 선택 오류의 사전 분석 복구는 정상 완료됐다. 그러나 현재 관측 설계와 확인된 실행비용으로 전체 P2가 승인된 예산에 들어간다는 gate는 통과하지 못했다. 앞서 Driver가 제안한 physical/recovery9후보 배정은 충분한 비용 근거 없이 작게 잡혔다. 이 결과에 따라 제품/controls 구현·새 테스트·리뷰를 시작하지 않고 중단한다. 이는 새 제품 실패나 추가 controller 실패가 아니다. 기존 D1~D4 결정과 부분 검증 수락은 유지하며 P2는 계속 open이다.
+
+### Corrected Trace Identity And Starting State
+
+기존 보존 환경 `hv2-reference-private-colvia-s3-verification-20261010-b06`의 `exec/runs/focused-p2/work`를 사용했다. 실제 입력은 `entry-scenarios/EntryProductTests-test_transition_prefix_01_recovers-2.json`, 대응 `EntryProductTests/test_transition_prefix_01_recovers/EntryProductTests-test_transition_prefix_01_recovers-2.events`, 사례별 비용의 `executed.jsonl`이다. 모두 승인된 agent-worktree root 아래의 기존 read-only 결과다.
+
+- Scenario SHA-256: `efdd62e8d0aae7d57defd30df219031c803a019187d8efaab8d639ff6acc204d`.
+- Events SHA-256: `385a7f9f2e1d842306ca43d3cce3f481100da90231477ac7e34b29447cde89cd`.
+- Executed rows SHA-256: `6a2acd277ac5e8d485a63ed1c2e7847c5dc1c624842ecef5db3cfc9a4a5c9252`.
+
+테스트 본문의 `transition_prefix_case`는 actual OLD init 후 preview를 만들고 최초 apply를 실행한다. 선택 scenario에는 `--recover`가 없고 fault는 `open-after`, path `colvia`, occurrence1이다. 따라서 S0에서 시작해 S1/S2/S3를 거쳐 N open 직후 종료한 trace다. 같은 테스트의 `-4.json`은 recovery trace이므로 카운트에 혼합하지 않았다. 앞선 S3-prepared launcher test도 제외했다.
+
+전체55,145 event에서 staging mkdir 시작 index4,207과 release rename 시작 index49,353이 각각 하나이고 순서가 맞음을 확인했다. 누락을 `next()`로 가정하지 않고 목록의 개수와 순서를 확인한 후 구간을 선택했다. 읽기 전용 `python3 - <<'PY'` 분석은 exit0으로 끝났다. 이 명령은 JSON을 읽고 집계할 뿐 제품/테스트/controls import나 파일 변경을 하지 않았다.
+
+### Observable Edges And Required New Observation
+
+선택 S2 구간에서 `mkdir-before`97회, 성공한 `mkdir-after`8회, `fsync-before`254회와 `fsync-after`254회를 확인했다. Directory 생성105 edge와 sync508 edge를 합쳐613개다. Directory sync224회는 durable-directory97회×2에 member-parent sync30회를 더한 것이고, file sync30회를 합치면254회가 된다. 기존 directory에 대한89번의 mkdir는 `FileExistsError` 경로로 현재 observer의 성공 after-event가 없다. 그89개를 이미 성공 관측한 것으로 세지 않는다.
+
+별도로 receipt의 file-sync before/after와 publication parent-sync before/after4개를 확인했다. 그 앞 admission의 같은 parent sync는 이4개에 포함하지 않는다. Receipt1+staged inventory/payload30의 exclusive-create audit31개도 확인했다. Audit는 create 전 관측이므로 성공 create-after나 raw write 증거로 대체하지 않는다.
+
+| S1/S2 obligation | 현재 trace 또는 설계 기준 | 필요한 검사 지점 |
+| --- | --- | ---: |
+| S2 directory 및 file/parent sync | 실제 관측한 before/after; 반복 occurrence 유지 | 613 |
+| S1 receipt file/parent sync | admission sync와 구별한 publication 구간 | 4 |
+| 각31파일의 exclusive create와 최소1 raw write | 각각 before/after; 새로운 관측 구현·자기검증 필요 | 124 |
+| 각31파일의 실제 short write | 1/mid/L-1 길이; zero는 create-after와 구별해 검사, 합성 tear로 대체하지 않음 | 93 |
+| 이 하위 집합 합계 | 아직 구현·실행된 test 수가 아님 | 834 |
+
+834는 전체 A1/A2 상한이 아니라 이 설계에서 빠뜨릴 수 없는 하위 집합이다. 실제 buffered flush가 여러 raw write를 발생시키는 경우, 오류 종료 mkdir의 별도 after 관측, 추가 close/fullfsync 경계의 해당 여부, S2 complete-member recovery/resync 반복, D3 잔여 오류·diagnostic 분기와 영향 회귀는 이 숫자로 닫지 않는다. 각 검사 지점마다 고정 selector/occurrence·허용 delta·truth·정확한 recovery 또는 preserved refusal를 연결해야 한다. 여러 subcase를 하나의 ID에 넣어 비용이나 개별 cap을 숨기지 않는다.
+
+현재 `Path.open("xb")`는 C-buffered I/O이므로 `os.write` hook만으로 raw write를 포착할 수 없다. 검토 방향은 test-only로 해당 exclusive file의 실제 FileIO 위임을 감싸고 create/raw-write의 before/after 및 제한된 short-write fault를 연결하는 것이다. 다른 reader/writer와 buffer size·flush/close·예외·mode·fd/path identity의 의미를 보존해야 하며 R0와 관측기 자기검증이 필요하다. 아직 구현된 수단이나 실제 raw syscall 관측 증거는 아니다. 관측 비용을 줄이기 위해 기존 witness를 삭제하거나 instrumentation을 바꿔 빨라질 것이라고 가정하지 않는다.
+
+### Budget Fit Assessment
+
+동일한 기존 실행의 `test_transition_prefix_01~09_recovers`9개는 각각11.415,11.947,11.643,12.032,11.666,12.476,12.752,13.109,11.042초였다. 모두 S0 fixture/전환 및 kill 뒤 복구를 포함한다. Median은11.947초, 최대는13.109초다. 새 S1/S2 case의 실측치나 통계적 보장으로 취급하지 않고, 현재 사용 가능한 유사 구조의 계획 비용 근거로만 쓴다.
+
+| 산정 | 집중 검증 시간 |
+| --- | ---: |
+| A1 하위 집합834×과거 median11.947초 | 9,963.798초, 약166분 |
+| A1 하위 집합834×과거 최대13.109초×보수적 여유1.25 | 13,666.1325초, 약228분 |
+| 승인된 physical/recovery9후보의 예상 상한 | 9×900=8,100초,135분 |
+| 같은9후보의 controller hard cap | 9×1,200=10,800초,180분 |
+
+25% 여유는 이 사전 산정에서 선택한 계획 가정이지 측정된 변동률이 아니다. Median을 사용해도 A1 하위 집합이9후보의 계획 한도를 넘으며, 보수적 산정은 hard cap의 합도 넘는다. D3 잔여·B-07 영향·E1~E4 직접 회귀도 같은9후보에 배정돼 있으므로 그 비용을0으로 두어도 적합성 판단을 통과할 수 없다. 실제 모든 새 테스트가 반드시 이만큼 걸린다는 하한 증명은 아니지만, 현재 근거로 승인 상한 내 완료를 약속할 수는 없다.
+
+보수적 산정의 A1 하위 집합만 focused 예상900초 기준16후보를 요구한다. 원래 다른 영역7후보를 그대로 두면 총23후보/138 controller/누적218회 규모가 되며 A2와 나머지 physical 비용도 아직 빠져 있다. 이 숫자는 전체 P2 새 예산 제안이나 승인 요청이 아니라 기존16후보 산정 부족을 보여주는 부분 비교다. 전체 상한으로 올려 적거나 지금 실행하지 않는다.
+
+B1/B2, C1~C5, Owner 결정 후 구현 및 X1은 앞선 통합표의 필수 범위 그대로 남는다. 이 항목들을 축소하거나 P3/P4로 넘기지 않는다. A1만으로 적합성 gate가 막혔으므로 다른 영역의 아직 없는 exact test ID/hash를 만들어 전체 배치가 완료됐다고 주장하지 않는다. 계약 amendment 필요 여부도 아직 전체 검토가 끝나지 않았다.
+
+### Stop, Remaining Authorization And Next Decision
+
+현재 중단 사유는 사전 예산 적합성 미충족이다. 새 제품/test 실행0, controller 신규0/누적80, 새 reviewer/auth 호출0이며 검증20시간 창은 시작하지 않았다. 이번 복구 분석·기록에는 authoring 예산10분을 추가 차감하여 기존10분과 합20분, 잔여 상한7시간40분으로 보수적으로 기록한다. 임의 시간·횟수 연장은 없다.
+
+다음 판단에는 두 경로가 있다. 권고는 전체 범위를 유지한 채 A2와 나머지 영역을 포함한 새 전체 비용·분할표를 먼저 작성하는 것이다. 다른 경로는 별도로 한정한 관측/fixture 성능 측정으로 기존 예산에 들어갈 수 있는지 확인하는 것이며, 그 측정의 실행 권한·입력·cap을 먼저 구체화해야 한다. 어느 쪽도 지금 승인됐다고 간주하지 않는다. 반복 occurrence 생략·witness 삭제·합성 손상 대체는 비용 절감안에 포함하지 않는다. 기존 네 Owner 결정과 수락한 결과는 다시 판단받을 대상이 아니다.
+
+이번에는 Work에 이 사전 분석 결과만 추가한다. 앞선 Work prefix와 테스트·README·제품·controls·accepted DR·HEAD/index를 보존하고 GFM·local link·diff 검사를 한다. 현재3파일 diff 한 개를 private bundle `p2-preflight-budget-01/current-changes.patch`에 보존한다. 소비자는 Owner의 예산/측정 경로 판단과 후속 승인된 P2 진행이며, 승인된 commit으로 같은 내용을 복구할 수 있게 되면 추가 patch의 보존 의존성이 끝난다. 사용한 기존 trace 원본과 source/검증 환경은 잔여 P2의 구체적인 근거 소비 때문에 유지한다.
+
+## P2 Full Remaining Budget And Partition Plan — 2026-10-11
+
+### Request, Scope And Status
+
+Owner actual request: “검사 기준과 기존 수락 결과는 유지하고, D3와 나머지 영역까지 포함한 P2 전체 잔여 작업의 예산·분할표를 다시 산정해줘. 기존 근거 재사용과 검사 범위를 줄이지 않는 비용 절감도 검토하고, 추정과 실측을 구분해. 아직 추가 구현·검증 실행은 하지 마.”
+
+이번 작업은 L2 문서 계획이며 기존 CHORE-20261009-002의 PLAN 단계다. Source의 Contributing과 기존 Work가 절차·기록 소유자이고 새 Work/STATUS/backlog를 만들지 않는다. 적용되는 별도 path rule은 없으며 DR-007의 본문/제목 관례를 따른다. D1~D4의 Owner 결정과 이미 수락한 결과는 유지한다. 현재 요청은 계획만 허용하므로 앞선 실행 승인을 근거로 새 구현·검증을 시작하지 않는다. 제품 계약, P2 Done Criteria, P3/P4 귀속 및 활성화 상태는 바꾸지 않는다.
+
+입력은 branch `codex/colvia-brand-transition`, HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, 직전 Work SHA-256 `1c115281ad754f3d7074bd30e933fb4946b6da574ffff968d22deb0ae19cd8e3`다. Test `978db7325f970e2597fb2f467b3826b8b205cc01b40712ea65ef9f766f359aa0`, controls README `c3318f6434726481afec9f73aa5043f42e385cacabcde3b4de0d0dcd7181d3f6`의 승인 변경도 그대로다. Runtime 코드를 import하지 않고 소스·AST와 기존 native JSON/JSONL/로그를 읽었다.
+
+권고안은 전체 잔여 범위를 위한 **최대104개 검증 분할, 신규624 controller 호출, 누적704회**의 계획 봉투다. 이는 소스를104번 수정하거나 실패를104번 재시도한다는 뜻이 아니다. 수렴한 소스·controls를 고정하고 서로 다른 필수 검사 집합을 기존1,200초 runner에 배치한다. 관측기 자기검증과 실제 제품 위임 확인은 별도 두 분할에 배치하고, 나머지는 같은 최종 후보의 근거로 연결한다. 실패 재시도는0회다. 아직 새 실행 승인을 요청하거나 받은 상태로 표시하지 않는다.
+
+### What Is Measured And What Is Estimated
+
+아래 수치는 모두 기존 실행에서 읽은 실측이다. 이번에 같은 검증을 다시 실행한 것이 아니다.
+
+| 기존 관측 | 실측 | 적용 한계 |
+| --- | --- | --- |
+| S0 시작 physical-prefix/recovery9개 | median11.947초, 최대13.109초/사례 | 아직 없는 S1/S2 raw-write hook의 시간은 아님 |
+| D3 `test_d3_`42개 | 합153.834초, median4.254초, 최대9.483초 | 정상·오류·복구·여러 subcase를 포함한 서로 다른 시험이다. 신규 cell당 실측으로 바꾸지 않음 |
+| OLD installed late-lock4개 | 3.354~6.991초/시험 | 당시 대표 action 및 prefix이며 모든 action/state 비용이 아님 |
+| candidate05 writer-family4개 | 25.518~42.426초/시험 | 한 시험에 positive와 여러 prefix가 있다. 이 수치를 개별 요청 비용이라고 하지 않음 |
+| Local baseline positive | D3에서15.012초, candidate04에서13.667초 | parent·worker·다중 baseline 비용은 미측정 |
+| 정상 transition의 D3 product sync | 259회 | 성공 호출 수이며259개 fault PASS를 뜻하지 않음 |
+| S5 recovery의 D3 product sync | 50회 | 다른 recovery 시작 상태로 확대하지 않음 |
+| S6 replay의 D3 product sync | staging 유지16회 / 허용된 operation retirement 뒤14회 | staging root 자체가 없는 경우13회는 코드에서 계산한 값이며 미실측 |
+| 성공한 선행5단계 합계9건 | 최소62.031초, median64.820초, 최대68.762초/분할 | acquire/canary/collect base/smoke20/collect p2. 후속 focused 실패가 있던 root도 선행 단계는 각각 PASS였음 |
+| S0 physical 한 사례의 보존량 | 논리25.32MiB, 그중 event25,369,236bytes | 디스크 할당량/평균/새 시험의 상한은 아님 |
+| D3 binding 오류 한 사례의 보존량 | 논리1.23MiB | 다른 fixture 크기를 보장하지 않음 |
+
+S0 trace와 비용 입력 신원은 직전 Budget Gate section에 있다. 추가 D3 입력은 기존 `hv2-reference-private-colvia-d3-verification-20261010-b03/exec/runs/focused-p2/work/EntryProductTests`의 다음 로그다. Normal `test_d3_normal_sync_set_and_order/2-d3-sync.log` SHA `b0a5063622c63a839b461b885e538275d9160ad517e716dafcdf69483e237751`; S5 `test_d3_complete_prefix_retry_resynchronizes/2-d3-sync.log` SHA `97798d2d248c4534dca0b8565ef53aed54eb060a7d13b83ffd198f56cee6500a`; S6 retained `test_d3_current_replay_sync_set_and_retired_staging/3-d3-sync.log` SHA `d741c810e12b7215f2792f2c63d88d2c8f4c3d853a0ce381e7e24a46f524c73b`; retired `4-d3-sync.log` SHA `84b356b9f4b5ed1723f5afd54fc07014d291724fc451f1a5d8a6cd121f9ca6b4`.
+
+이하의 cell 수, cell당 시간 배당, 분할 수와 전체 시간은 계획 추정이다. `cell`은 위치/occurrence·입력 상태·실행기/action·fault·기대 결과가 식별된 검증 의무다. Test method 수나 실제 discovery/실행 수와 같다고 가정하지 않는다. 각 cell의 선택/관측/결과를 식별하고, 합쳐 실행하더라도 개별 의무를 잃거나 coordinator/child cap을 우회하지 않는다. 가능하면 독립적인 고정 TestCase ID로 배치한다. 미작성 ID/hash를 지금 생성해 실행 가능한 packet으로 가장하지 않는다.
+
+### Full Remaining Partition And Cost Envelope
+
+행별 cell 상한은 해당 범위의 작성·검증을 수용하기 위한 용량 배당이다. 아직 유효한 fixture를 구성하지 않은 조합까지 모두 실제 필수 테스트라고 확정한 숫자가 아니다. 각 필수 항목은 최종 obligation map에서 실행·근거 재사용·계약상 비지원의 증거 중 하나로 연결하며, 남은 항목을 조용히 N/A로 돌리거나 상한에 맞춰 삭제하지 않는다.
+
+| 묶음 / 통합표 연결 | 빠뜨리지 않을 범위 | 계획 cell 상한 | cell당 시간 배당 | focused 시간 산식 | 분할 배당 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| T0 / D4, E7 | raw I/O 위임·create/flush/close/short-write 관측, F-03 원인 전달, dir-fd/거부/lock/failfast 영향 검사, 실제 CLI 동작 보존·비용 확인 | 60 | 6초 | 360초 | 2 |
+| A1 / S1/S2, D1 영향 | 모든 receipt/staged member·directory·반복 occurrence의 before/after, 실제 short-write·kill, exact recovery/torn refusal, 추가 관측 경계와 직접 영향 회귀 | 1,400 | 17초 | 23,800초 | 27 |
+| A2 / D3, D1, E3 | 정상·receipt/staging/release/N/binding 복구·S6 replay의 각 required sync 위치/반복과 unavailable/OSError, fallback·진단·우선순위·검증 unavailable | 2,800 | 12초 | 33,600초 | 38 |
+| B1 / executor-operation-state | 네 executor의 S0~S6 및 S3a/S3b, 유효 lifecycle/record action·prepare·recovery, 부재/비지원과 실제 fence의 구분 | 600 | 8초 | 4,800초 | 6 |
+| B2 / late-lock·stale | 모든 writer action의 S0 positive, NEW lock 소유→OLD 대기→prefix 이후 획득·재검사·거부, stale operation/ticket | 216 | 15초 | 3,240초 | 4 |
+| C1 / admission | predecessor/OLD pending, root type/mode/alias/collision, Git index·descendant·effective ignore, persisted Work/intent transaction, quiescence 한계 및 positive | 80 | 12초 | 960초 | 2 |
+| C2 / local·parent, D2 | 비완료6상태·schema1/2, 단일/다중 baseline·drift, scope/required refs·captured child, historical graph 보존과 restart/S6 비교 | 192 | 20초 | 3,840초 | 5 |
+| C3 / worker | selected/orphan·pending admission, old proof/ticket, 역사 해석, synthetic NEW baseline과 명시적 same-intent human rebind/resubmit, 부정 사례·보존 | 144 | 30초 | 4,320초 | 5 |
+| C4 / history·lifecycle, D3 | actual OLD→NEW→두 NEW candidate, update/rollback/repair/detach·중단 복구·plain audit, retired collision runtime 및 same-entry 범위 복원 | 384 | 25초 | 9,600초 | 11 |
+| C5 / caller·fixture closure | closed C1 proof 소비 경로·26 test module의 의미/fixture 대조, 영향받은 fresh-init·required refs·CRLF/attributes 직접 회귀 | 96 | 12초 | 1,152초 | 2 |
+| X1 / P2 통합 | 최종 동일 후보에서 교차 영역 연결·필수 결과 맵·변경 영향 회귀·정상 종료/보존 확인, 누적 리뷰 입력 | 64 | 20초 | 1,280초 | 2 |
+| 합계 | 전체 P2 잔여 범위 | 6,036 | 실측 아닌 배당 | 86,952초 ≈24.15시간 | 104 |
+
+각 분할의 focused 예상치는900초 이하로 맞추고 기존1,200초 hard cap을 유지한다. T0 두 분할은 관측기 자기검증과 제품 위임/비용 확인을 나누기 위한 배당이며, 같은 검사를 두 번 통과시켜 숫자를 채우지 않는다. 소스·controls는 첫 검증 전에 수렴시켜 고정하는 것이 기본이다. 통과 뒤 fixture나 입력 generator를 바꾸면 해당 입력의 근거 재사용 판단을 다시 한다.
+
+행별 분할은 계획 배치이며 전체104회가 hard 상한 제안이다. 정확한 cell과 timing을 확보한 뒤 완료된 행의 미사용 분할은 이미 정의된 다른 필수 cell 배치에만 사용할 수 있다. 실패한 분할의 재실행이나 누락을 감추는 용도는 아니다. 새로운 의무·관측 수단·제품 계약이 필요하면 기존 범위라고 추정하지 않고 중단한다.
+
+### A1 Coverage Accounting
+
+직전 분석에서 확인한 하위 집합834는 유지한다: S2 관측 edge613 + S1 sync4 +31파일 create/raw-write before/after124 + 실제 short-write93. 여기에 mkdir의89개 `FileExistsError` 종료 위치,31파일 fullfsync call before/after62, buffered API write/flush/close의 before/after186까지 보수적으로 배당하면1,171이다. 이 추가 항목은 아직 실제 관측·검증되지 않았으며 fullfsync 호출 관측은 power-loss 성능 보장이 아니다. 남은229 cell 용량은 실제 raw write가 여러 번 호출되는 경계, observer 동작 보존·명시 거부 분기와 이 범위의 직접 회귀를 위한 것으로, 실패 retry용이 아니다.
+
+기존 BufferedWriter/FileIO 객체와 실제 위임 호출을 유지하면서 raw write를 관측할 수 있는지 먼저 설계/R0와 T0에서 확인한다. `os.write` hook에 C-buffered write가 보일 것이라고 가정하거나 원래 buffered I/O를 다른 제품 구현으로 바꾸지 않는다. Fault 없는 동작의 bytes/mode/응답·호출 위임, fault의 정확한 위치·길이·반환, 예외/close·descriptor identity를 확인한다. 단순 audit-before를 completed create로 쓰지 않는다. 이 관측 수단이 성립하지 않으면1,400이라는 용량만으로 완료를 보장하지 않고 중단한다.
+
+### D3 Full Coverage Accounting
+
+D3의 성공 sync259회는 fault 검증259회와 다르다. 이번에는 위치뿐 아니라 invocation 경로의 반복 occurrence를 포함해 비용을 산정했다. 아래의259/50/16/14는 실측이고,267/52/13 및 partial-frontier 배당은 현재 코드에서 계산한 계획값이다.
+
+| D3 경로 | 계획 산식 | 재사용 반영 후 cell 배당 근거 |
+| --- | --- | ---: |
+| S0 정상 전환의 모든 product directory-sync | 259×오류2종−기존 정확한 위치의30개 | 488 |
+| 완전한 S1 receipt 및 완전한 S2 staged-prefix retry | (259+267)×2. S2의267은 정상259에 기존 switch/staged directory admission8을 더한 코드상 추정 | 1,052 |
+| Published release/N/binding의6개 recovery 형태 | S3·S3a·S3b·S4·S5·S5 binding-prefix, 각 최대52위치×2−기존 S5 fault10개 | 614 |
+| S6 exact-current replay | retain16 / operation retirement14 / staging root absent13, 각 오류2종−기존 replay fault2개 | 84 |
+| Release resync의 surviving-parent fallback2형태 | 각 최대52위치×2 | 208 |
+| Partial staging의 admission directory-set 경계 | inventory-derived7 frontier×최대15위치×2의 보수적 배당 | 210 |
+| Post-B1 verification-unavailable 및 precedence | 최대18 post-B1 위치×오류2종×추가 진단/우선순위2목적 | 72 |
+| 소계 | 이 경로 집합의 계획량 | 2,728 |
+| 추가 용량 | selector 식별·누락 탐지·직접 회귀 및 확정 시 발견한 같은 범위의 경계 | 72 |
+| A2 전체 배당 | 계획 상한 | 2,800 |
+
+각 위치의 두 fault는 unavailable 반환과 OSError이며, stable token/exit65·B0/B1 구분·오류 뒤 publication 중단·허용 delta·truth 보존·동일 요청의 후속 복구까지 한 cell의 의무다. 성공 sync 또는 kill만으로 이 fault 의무를 닫지 않는다. 기존30/10/2 차감은 해당 exact selector·시작 상태·assertion·입력 영향이 유지되는 경우만 유효하다. 유지되지 않으면 해당 cell을72 용량 안에 복원하거나 전체 배치를 재계산한다.
+
+S1/S2/S3 등의 서로 다른 시작 상태를 임의로 합치지 않는다. A1은 각 정상 physical prefix와 그 후 recovery/refusal를, A2는 위 경로의 필수 sync 오류를 소유한다. Partial S2에서 새로 생기는 admission path-set은 별도210에 들어간다. 정상/new-member와 완전한 existing-member retry에서 다루는 suffix가 partial prefix에서 다른 제어 분기·phase·필수 occurrence를 만들면 정확한 추가 cell을 포함한다. 단순히 같은 함수라는 이유로 차감하지 않는다. 반대로 모든 fixture 값×모든 fault의 무한 직교 조합을 새 요구로 추가하지도 않는다. 최종 R0의 call-site/phase/path/occurrence/시작 상태 map에서 계약상 의무가 연결되는지 확인하며, 이 연결이 성립하지 않으면 실행 전 중단한다.
+
+### B And C Coverage Accounting
+
+B1/B2는 현재 CLI와 guard 호출을 정적으로 열거했다. Installed writer는 intent draft/apply2, candidate8 action, Work publish의5 operation 및 apply의4 action, lifecycle update/rollback/detach3으로22개 semantic route다. Source lifecycle init/update/rollback/repair/detach5를 별도로 다룬다. Reader/prepare, source parser 비지원, 설치 경로 부재는 writer 성공으로 세지 않는다.
+
+B1의 계획 기초는 installed22×2세대×9상태396 + source lifecycle5×2세대×9상태90 + installed prepare2×2세대×9상태36 =522개 위치다. 여기에 정확한 recovery/비지원·부재 증거와 입력 구분을 위한78 용량을 둔다. 물리적으로 진입점이 없거나 계약상 지원하지 않는 조합은 이유와 부재/거부 증거를 남긴다. 그런 행을 유효 writer의 under-lock 검증으로 세지 않는다. Record payload/schema 차이와 parent/worker branch는 C2/C3에서 연결한다.
+
+B2는 OLD installed22 + OLD source5의27 route를8 downstream prefix(S1/S2/S3/S3a/S3b/S4/S5/S6)에 배치하는216 상한이다. 각 route의 유효한 S0 positive가 먼저 필요하다. 같은 요청의 positive·lock-attempt·NEW 소유·release 이후 OLD 획득·정확한 runtime/receipt 거부를 확인한다. 기존 대표5 route의 수락 근거는 matching cell에 연결하며,216 전부를 새 실행 의무로 재선언하지 않는다. 아직 valid fixture가 없는 action은 invalid-input failure로 대체하지 않는다.
+
+C의 수치는 실제 작성된 test 수가 아니라 다음 필수 범위를 위한 배당이다.
+
+- C1: predecessor/OLD prefix16, root occupant/type/mode/alias16, index8, effective ignore8, persisted transactions8, quiescence 경계와 positive/실제 S6 fingerprint24 =80. External ignore는 실제 사용자 설정을 바꾸지 않고 격리된 synthetic 외부 경로로 구성한다. 발견 불가능한 copied ticket이나 외부 writer를 탐지했다고 주장하지 않는다.
+- C2: schema1/2×비완료6상태×baseline 일치/불일치24, 다중 baseline16, ordinary/parent/captured-child의 Work/intent required-ref 경로와 required/optional96, restart·captured graph·역사 보존56 =192. Path/schema상 유효하지 않은 조합은 그 거부와 도달 불가 이유를 기록하고 실제 transition dependency 검증으로 세지 않는다. D2에 따라 직접 capture한 child만 검사하며 자동 refresh/완료는 없다.
+- C3: selected/orphan admission18, pending4종과 유효 record 형태12, old proof/ticket와 역사 해석36, 명시적 new-baseline/rebind/resubmit24, scope/baseline/worker locator 등의 부정 사례36, 재시작·보존18 =144. Synthetic Git/worker fixture는 승인된 검증 경계 내부에만 둔다. 실제 source/adopter Git 작업 권한이 아니다.
+- C4: 두 NEW candidate의 mixed lifecycle24, schema3 detach의 정확한 removal/suffix와 중단 복구256, 독립 plain audit16, retired collision 및 status/doctor/view classification/exit40, D3 결정의 same-entry 동작24, repair backup/중단·관측 한계24 =384. Detach의 실제 remove/directory 집합이256 배당에 맞는지는 exact fixture에서 확인하며 위치를 대표값으로 줄이지 않는다.
+- C5: closed C1의 root launcher와 product/work/intent/workspace/candidates/view/cli 및 관련26 test module을 정적으로 대조하고, 영향받은 실제 proof 경로·fresh-init·CRLF/attributes·fixture seam을 최대96개 직접 검증으로 연결한다. 텍스트 검색0건이나 untested double 교체를 closure로 세지 않는다. 무관한 전체 suite 반복은 P2 기본 계획에 넣지 않는다.
+
+### Evidence Reuse And Cost Reduction
+
+현재 수락 결과는 폐기하거나 미착수로 돌리지 않는다. E1~E7의 한정된 주장과 입력 신원은 기존 통합표를 따른다. 특히 N/O·binding·S3·D3·합성 tear·local baseline·대표 writer 및 F-02/S-02는 실제 실행된 범위의 근거다. Candidate03의 성공 probe만 부분 재사용하며 그 전체 실패를 PASS로 바꾸지 않는다. Candidate04/05를 합쳐 한 번의 완전 실행이라고 하지 않는다.
+
+새 product.py 변경은 D2의 direct-child refs와 D3의 same-entry 경계에 영향을 줄 수 있고 observer 변경은 기존 관측 경로에 영향을 줄 수 있다. 따라서 파일 hash 불일치만으로 모든 결과를 폐기하지도, 함수가 비슷하다는 이유로 모두 이월하지도 않는다. 변경된 호출 경로·fixture/helper·selector·기대 의미를 대조하고 직접 bridge를 T0/C5/X1에 배치한다. 예전 후보의 artifact PASS를 새 SHA의 실행 결과로 재표시하지 않는다. P1b의 fresh-init/proof 소비 경로는 이후 제품 변경 영향을 반영해 C5에서 선택한다.
+
+| 비용 절감 | 검사 기준을 유지하는 조건 | 새 예산 반영 |
+| --- | --- | --- |
+| 기존 정확한 cell 재사용 | 동일 의무·입력 의미·witness·영향 분석이 연결됨 | D3의30+10+2 및 E1~E7의 기존 부분을 반영. 단순 PASS 합계로 시간을 빼지 않음 |
+| 동일 시점 snapshot의 중복 계산 제거 | 중간 제품 호출/파일 변화 없이 같은 최종 상태를 항목별 비교하는 루프에서만 한 snapshot을 공유. before/fault/recovery/replay의 서로 다른 시점은 각각 읽음 | 정적 절감 후보. 속도 할인0 |
+| Immutable oracle/fixture metadata 재계산 정리 | 고정 expected 값의 순수 계산만 공유. live target·identity·truth·source drift 재검사를 cache하지 않음 | 정적 절감 후보. 속도 할인0 |
+| 같은 preserved-refusal prefix의 준비 공유 | 각 요청마다 독립 positive 근거, 직전/직후 snapshot과 정확한 거부 원인, 독립 ID/결과·cap을 유지. 한 번이라도 변화하면 중단 | 미측정 선택안. 속도 할인0 |
+| 같은 최종 source/controls로 분할 | 구현 변경을 사이에 끼워 전체를 다시 qualify하는 일을 줄임. 매 root의 기존 acquire/canary/collection/smoke gate는 유지 | 기본 배치 방식에 반영; gate 생략에 따른 할인 없음 |
+| 실행 환경의 보존 기간 관리 | 필요한 입력·결과·원본 witness의 소비자와 종료 조건을 확인한 뒤에만 cleanup | 저장 비용 관리안. 실행시간 할인0, 이번 기존 자료 삭제0 |
+
+구체적인 snapshot 중복은 `d3_fault`와 `remaining_recovery_fault`에서 final recovery 뒤 `for name, value in before.items()` 안의 `snapshot(target)[name]`이다. 그 루프에는 제품 mutation이 없으므로 한 번의 같은 시점 snapshot으로 모든 항목을 비교하는 수정 후보가 된다. 이는 아직 수정·검증하지 않았고 실패 뒤 snapshot이나 recovery 자체를 없애는 제안이 아니다.
+
+원본 target/plan을 복사해서 fingerprint·authority precondition을 건너뛰기, log flush를 생략해 kill witness를 잃기, fault 위치 sampling, 실제 write를 합성 tear로 대체, base smoke/canary 생략, runner cap 확대, 병렬 실행의 미측정 속도 이득은 절감안에 포함하지 않는다. 이번 비용 봉투는 새 성능 개선이 전혀 없어도 검토 가능한 기준으로 잡았다.
+
+### Whole-Bundle Time, Attempt And Storage Budget — Proposed Only
+
+- Driver authoring·정적 점검·fixture/selector map·기록은 추가32시간 상한 제안이다. 배당은 controls/관측 설계6시간, A1/A2 작성·정적 대조8시간, B/C의 fixture·허용된 제품 수정12시간, 통합·입력 고정·문서6시간이다. 이 배당은 실측 공수가 아니며 기존 사전 분석에 기록한20분과 이번 계획 작업을 삭제하거나 이미 사용한 예산을 초기화하지 않는다.
+- 실행은 단일 Driver가 순차 진행한다.104분할×기존6호출 = 신규624회, 실제 사용80회를 포함한 누적704회 상한 제안이다. 각 분할은 acquire/canary/collect base/smoke20/collect p2/focused p2를 사용한다. 기존300/300/300/1,200/300/1,200초 hard cap과 격리 정책을 유지한다.
+- 새 focused 계획량의 산식은86,952초(약24.15시간)다. 분할마다900초를 모두 배당하는 용량은26시간이다. 선행5단계는 기존 최대68.762초에 여유를 두어 분할당90초,104분할에2.6시간을 배당한다. 입력 확인·기록·cleanup에4시간을 두면32.6시간이다. 따라서 첫 controller 시작부터 검증·기록 창을 최대34시간으로 제안한다. 모든 authoring을 이 창 뒤로 미루지 않고 검증 전 입력을 고정한다.
+- 모든 개별 hard cap의 산술 합은104시간이지만,104시간 실행을 허용한다는 뜻이 아니다. 별도의34시간 전역 창이 먼저 제한하며 한 번의 예상 밖 timeout/실패도 중단 조건이다. 상한에 도달할 수 있는 마지막 호출은 cleanup 여유까지 남아 있을 때만 시작한다.
+- 실제 완료시간의 범위는 아직 산정할 근거가 부족하다. 신규 parent/worker·raw-write cases에는 실측이 없으므로 focused24.15시간과 검증 창34시간은 비용 배당이지 실행시간 예측이나 신뢰구간이 아니다. 기존 시험의 median을 모든 신규 cell에 곱해 전체 실측처럼 제시하지 않는다. 기술 gate의 측정값이 배당을 넘으면 완료를 보장하지 않고 중단한다.
+- CLI static review는 R0 두 건(관측/통제, 전체 matrix·runtime 범위), 영역 R1 두 건, 누적 P2 R1 한 건, 설명/수정 후 확인 한 건의 합6호출×1,200초=최대2시간을 제안한다. 기존 구독 auth/billing 확인·fresh session·실제 모델·입력 diff/digest·no-tools·원문 response/Driver 처분 경계를 유지한다. 기존4호출보다 늘어난 제안이며 이번 승인/실행으로 기록하지 않는다.
+- 순차 상한을 합치면 authoring32시간+검증 창34시간+CLI review2시간=추가68시간의 작업 예산이다. Owner 대기·앱 미가동·외부 사정은 실제 기록에서 구분하고 자동 연장/백그라운드 스케줄을 만들지 않는다. 같은 예산의 기술 gate를 통과할 때마다 새 작업을 발명하거나 작은 승인 단위로 쪼개는 계획이 아니다.
+- 저장 공간은 physical 사례25.32MiB와 D3 사례1.23MiB라는 두 실측 및 나머지 fixture의 미측정 여유를 바탕으로 검토용 상한64GiB를 잠정 배당한다. 예를 들어 A1의1,400 cell 전부가 단일 physical 사례와 같다고 가정하면 약34.62GiB, A2의2,800 cell 전부가 단일 D3 사례와 같다고 가정하면 약3.36GiB다. 이는 단일 표본을 확대한 민감도 계산이며 실제 peak 예측이 아니다. 나머지 영역·gate·실행 환경 크기는 미측정이라64GiB 안에 들어간다는 보장도 아직 없다. 실제 파일시스템 할당량과 가용 공간은 아직 확인하지 않았고 예약/생성하지 않았다. 실패 보존64MiB/시도·256MiB/실행, stdout16MiB·fixture child1MiB, product coordinator180초·child150초는 유지한다. 공간 부족을 원본 삭제나 임시 worktree 생성으로 피하지 않는다.
+
+### Execution Gates And Completion Boundary
+
+이 재산정안을 추후 승인받더라도 구현 전에 R0에 전체 obligation map과 관측 설계를 제공한다. 각 cell은 시작 상태·실행기/action·실제 지원 여부·fault/occurrence·기대 결과·재사용 신원을 가진다. 의미를 바꾸는 amendment, closed C1 밖의 runtime/통제 변경, 새로운 dependency/권한/관측 수단은 별도다. 제품 수정은 accepted behavior를 구현·복원하는 최소 범위이며 common/controller/runner/acquisition/sandbox·network/credential 정책의 변경은 포함하지 않는다.
+
+승인된 추가 authoring에서 순수 test-helper 비용 절감을 구현할 수 있으나 그 효과를 사전에 약속하지 않는다. 첫 두 T0 분할은 정상 위임·실제 raw-write witness·short-write/거부 진단 및 실제 비용을 확인하는 기술 gate다. 이를 통과하면 측정된 cell당 비용과 collection/output/보존량으로 남은104분할 및34시간 창을 다시 대조한다. 통과한 경우 같은 전체 승인 안에서 계속 진행할 수 있다. 실패·미관측·불명확한 drift·cap/저장 초과 위험·계약 변경 필요가 나오면 자동 보정/재시도 없이 중단한다. 이미 지출한 호출·시간은 유지한다.
+
+완료 기준은 기존 통합표의 모든 필수 행과 D1~D4 후속 조치, actual selected/executed coverage, 각 실행 fail/error/skip/unstarted/unfinished0, truth와 입력 보존·정상 종료·누적 R1·Driver 처분 및 Owner의 별도 P2 종료 수락이다. 통과 개수 합계나 큰 예산 승인은 완료 근거가 아니다. P3는 원래 안내·문서 정렬만, P4는 원래 고정 최종 candidate의 complete-normal/parent-O/exact-artifact qualification만 맡는다. P2 미완은 넘기지 않는다.
+
+### This Turn Checks And Preservation
+
+이번에는 기존 근거 읽기·집계와 이 Work의 계획 append만 한다. 제품/테스트/controls 구현 및 import/discovery/controller/reviewer/auth 실행은0이다. 누적 controller80회와 앞선 실제 결과는 그대로다. GFM·로컬 링크·diff 및 앞선 Work prefix/승인 테스트/README/HEAD/index 보존을 확인한다. STATUS/DR/Work Done 변경과 Git 게시는 없다.
+
+현재3파일 diff 한 개를 private bundle `p2-full-rebudget-01/current-changes.patch`에 보존한다. 소비자는 Owner의 이 전체 예산 판단과 승인된 후속 P2이며, 승인된 commit으로 같은 내용을 복구할 수 있게 되면 추가 diff 사본 의존성이 끝난다. 원본 source와 실제 사용한 기존 검증 trace는 잔여 P2 영향/리뷰에 필요한 소비가 있어 유지한다. 재현 가능한 전체 source tree·새 archive·별도 실행 ledger는 만들지 않는다.
+
+## P2 Full Remaining Execution Approval And R0 Design — 2026-10-11
+
+### Owner Authorization And Resume Inputs
+
+Owner actual decision: “재산정한 P2 전체 잔여 작업을 제안한 범위·예산 안에서 승인한다. 기존 근거 재사용과 검사 범위를 유지하는 비용 절감을 반영하고, 첫 기술 검증에서 관측 가능성과 실제 비용을 확인한 뒤 계속 진행해. 계약 변경·예산 초과·예상 밖 실패 시 중단하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+직전 Full Remaining Budget And Partition Plan은 이제 해당 범위의 실행 승인 근거다. 계획에 있던 ‘제안/미승인’은 당시 시점을 보존한다. 추가 authoring32시간, 첫 controller부터 검증·기록34시간, Claude 정적 리뷰6호출·각1,200초/합2시간, 최대104분할·신규624/누적704 controller, retry0 및 잠정64GiB를 그대로 적용한다. 실행 전 현재3파일 변경·기존 테스트/README·HEAD를 대조했다. 현재 controller 사용80회, 이번 추가0회다. 기존 Work가 계속 단독 진행 기록이며 P2 종료·DR 활성화·Git/adopter 작업은 승인되지 않았다.
+
+추가 authoring 계측은 이번 재개 준비가 시작된04:24 UTC부터 보수적으로 계산한다. 이전 계획/실행에서 사용한 시간과 호출은 삭제하지 않는다. 가용 공간은 이번 조회에서147,200,000KiB(약140.38GiB)였지만 예약이나 신규 peak 보장이 아니다. Claude Code2.1.296의 비밀 제외 인증 결과는 loggedIn=true / authMethod=claude.ai / apiProvider=firstParty / subscriptionType=pro다. API/provider override는 모두 미설정이었다. 리뷰 직전 다시 확인하며 다르면 호출하지 않는다.
+
+### R0-A Observer Design And Qualification Map
+
+첫 R0는 아래 관측 설계와 통제 경계, 전체 잔여 map의 연결을 검토한다. 둘째 R0는 실제 runtime/fixture 설계와 전체 obligation map을 검토하며, 해당 구현 전에 두 관문을 구분한다. 아직 작성되지 않은 test ID를 executed/collected로 표시하지 않는다. 전체 예산 표의 cell 배당은 필수 assertion을 축소할 권한이 아니다.
+
+1. `io.open`의 test-only wrapper는 원래 함수를 원래 positional/keyword 인수로 한 번 호출한다. NEW observer의 synthetic target 내부 exclusive binary open만 선정한다. 반환된 기존 BufferedWriter와 FileIO 객체, fd, buffering, opener, mode, closefd를 그대로 유지한다. 객체 교체·별도 open·buffering=0·제품 I/O 변경을 하지 않는다. 지원되지 않는 유형은 정상 관측으로 간주하지 않는다.
+2. create-before는 원래 open 직전, create-after는 원래 open 성공 및 fd identity 확인 뒤에 기록한다. 생성 실패는 동일 예외를 전달하며 after-success로 기록하지 않는다. FileIO의 instance `write`를 원래 bound method로 위임하는 관측 seam 후보와 BufferedWriter의 write/flush/close instance seam 후보를 사용한다. C 구현의 실제 method dispatch와 context-manager close가 seam을 통과하는지는 미확인 가정이며 T0의 필수 관측 항목이다. T0 이전 정적 검토에서 불가능하다고 드러나면 다른 I/O 구현으로 치환하지 않고 중단한다.
+3. raw-write-before/after는 요청 길이/실제 반환 길이·fd identity·호출 순서와 묶는다. 정상 관측에서 원래 data와 반환/예외를 그대로 전달한다. 명시 short-write fault만 실제 raw bound method에 지정한 prefix를 전달하고 반환 후 fsynced witness를 남긴 다음 kill한다. zero/one/interior/payload-minus-one 등 실제 파일 길이에 맞는 각 의무를 별도로 식별한다. synthetic tear로 실제 하위 write 관측을 대체하지 않는다.
+4. buffered write/flush/close의 before/after, 기존 mkdir-before/after 및 FileExistsError 종료, 실제 file-sync/fullfsync 호출의 관측을 추가한다. 반환/예외와 implicit close를 구분하고, after는 위임이 반환한 경우에만 기록한다. 사건 이름을 분리해 기존 os.write와 새 raw-write를 혼동하거나 audit-before를 완료 관측으로 쓰지 않는다. 기존 logger flush/fsync와 failfast, dir-fd 원 syscall 인수·T-A·sandbox·controller/runner/acquisition은 그대로다.
+5. F-03은 observer refusal이 발생한 곳에서 별도 진단 사건을 남기고 동일 예외를 전달하는 test-only 보강이다. 해당 거부 이전에 제품 syscall이 수행되지 않았음을 별도 확인한다. 기존 empty-events assertion은 ‘제품 사건0’과 ‘observer 진단 있음’을 구분하며, 정확한 refusal 이유를 assertion한다. 제품 CLI의 error/token 계약은 바꾸지 않는다.
+6. 비용 절감은 `d3_fault`/`remaining_recovery_fault`의 최종 recovery 뒤 mutation 없는 assertion loop에서 snapshot 한 번을 공유하는 데 한정한다. before/fault/recovery/replay는 별도 시점으로 유지한다. 불변 expected 계산도 실제 target/source/proof 재확인을 생략하지 않는다. 측정 전 절감시간은0으로 둔다.
+
+T0 첫 분할의 계획 의무는 controls 60-cell 배당 중 원래 객체/fd/bytes/mode/delegation·정상 write/flush/implicit-close·create 예외·다중 raw 호출·short-write 위치/길이·kill witness·fullfsync·거부 진단·dir-fd/lock/failfast 직접 회귀다. 둘째 분할은 실제 제품 receipt와 staged member를 통해 동일 경계가 관측되고 기존 recovery/거부 의미가 유지되는지 확인한다. 독립 ID와 정확한 선택 목록/입력 digest는 구현 뒤 실행 packet에 고정한다. 각 child150초/coordinator180초, focused1,200초, 선행5단계와 격리 경계는 그대로다. 첫 기술 검증의 미관측/실패/비용 초과는 STOP이며 그 실행 중 즉석 수정이나 재시도는 없다.
+
+전체 obligation map의 소유 범위는 직전 표의 T0/A1/A2/B1/B2/C1~C5/X1을 유지한다. A1은 receipt1+staged30의 실제 raw/buffered 경계와 모든 directory/occurrence·torn/complete-prefix 결과, A2는259/267 및 recovery/replay의 phase/path/occurrence별 unavailable/OSError, B는 실제 유효 요청·S0 positive·지원 여부와 상태/lock witness, C는 각 유효 local/parent/worker/lifecycle fixture와 required-ref/보존·판정, X1은 누락0과 동일 최종 입력 연결을 맡는다. 재사용은 E1~E7 및 정확한 D3 30+10+2 의무에만 조건부 연결한다. 최종 matrix에서 각 필수 행은 exact cell/reuse 신원/계약상 비지원 증거로 닫혀야 하며 숫자만으로 완결성을 주장하지 않는다.
+
+### Review Boundary And Retention
+
+승인된6호출 중 R0-A는 fresh Claude no-tools 정적 검토로 수행한다. 고정 stdin packet, custom system prompt, tools/MCP0, safe/restricted/dontAsk, no-session-persistence, source cwd,1,200초 및 stdout16MiB/stderr1MiB 상한을 사용한다. 실제 모델·세션·입력 base/diff digest/별도 파일 hash·전후 drift와 원문 응답/Driver 처분은 이 Work에 기록한다. Reviewer 응답은 실행 결과나 Owner 수락이 아니다.
+
+Packet과 일시 CLI 출력은 이번 리뷰 응답을 Work에 옮기고 신원/결과를 확인하기 위한 scratch다. 그 소비가 끝나면 별도 영구 manifest/전체 source copy로 보존하지 않는다. 실패·미해결 finding의 복구에 필요한 원문은 예외로 해당 소비자와 종료 조건을 이 Work에 명시한다. 현재 승인된 source 변경의 복구용 diff는 이번 결과 기록 후 private bundle에 한 개 보존한다.
+
+### R0-A Actual Review And Driver Disposition
+
+승인된6호출 중1회를 사용했다. Claude Code2.1.296 / 실제 `claude-opus-5-5`, fresh session `ce42c0f4-eb39-4251-b7aa-8de36f1a574b`, auth `claude.ai / firstParty / pro`였다. tools/MCP/tool-use/permission-denial은 모두0, exit0, success,424.636초, 프로세스 그룹 종료 및 전후 입력 보존 PASS다. 이것은 정적 리뷰 완료이며 테스트 PASS가 아니다. No-tools stdin packet만 보았고 일부 소스는 발췌라 문맥 독립성/coverage에 한계가 있다.
+
+입력 base `a17f35cf323ffde7a8642a85501fddbec858b6de`, uncommitted whole diff SHA `35cc4b4a7c523c3f6a5ea09855693671fd5609adcaf10c692d36b039b7b7f11c`, packet SHA `0aed348f79459b25bbf831975e9968dd8ef3d7a2f746258988a0bbfe638959b6`, 원문 응답 SHA `501e929a427409a9e9a65714e012ef770a1d2e4b60ed53b8c499fa4ce7618469`다. Diff 밖에서 제공한 기존 소스와 reviewed excerpt의 원본 파일 신원은 다음과 같다.
+
+- `docs/development/CHORE-20261009-002-colvia-verification-controls.md`: `5ad89879fd68651f19378442a5c160606e7116b0219722d6fb3a743b15edaffc`
+- `docs/development/verification/colvia-entry/observer.py`: `b41f14a620fed1b34ed0b5b20b6adf226d30698c5f6129e497c489e7fc22d77e`
+- `docs/decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md`: `86bce9d1906b55ef31d8f8e47a0e75d7341021d3eff5a70ffac9c5597a5bf25e`
+- `docs/development/verification/colvia-entry/prefix-oracle.json`: `4bd3f424bb442f4da35e2c25117bae7bc56225a2029db087d9497657b42a69e8`
+- `src/hv2ref/product.py`: `7c5797f7bdfb1ed3ccde0506f90a470ee7bd9526048b8d0be093569e2bb7cdae`
+- `tests/test_entry_window_transition.py`: `978db7325f970e2597fb2f467b3826b8b205cc01b40712ea65ef9f766f359aa0`
+- `docs/development/verification/colvia-entry/README.md`: `c3318f6434726481afec9f73aa5043f42e385cacabcde3b4de0d0dcd7181d3f6`
+
+#### Verbatim Reviewer Response
+
+# R0-A 정적 리뷰 — P2 잔여 묶음 (관측 seam · F-03 · 비용 절감 · 예산/T0 정합)
+
+**R0-A 처분: 아래 in-scope 보정 후 authoring 가능.** 계약·범위 차단 사유는 찾지 못했습니다. 실행·도구 호출은 0회입니다. CPython 동작 서술은 모두 기억에 근거한 정적 추론이며 미검증입니다. 이 리뷰는 실행 증거나 Owner 수락이 아닙니다.
+
+Owner 문장이 필요해질 수 있는 지점은 A-10 하나입니다. 34시간 창을 문언 그대로(벽시계) 적용하면 범위 안에서 해결되고, 누적 활성 시간으로 읽으려면 Owner의 예산 의미 확인이 필요합니다.
+
+## 1. Seam 성립 가능성 (정적 추론, T0 gate 유지)
+
+- **instance 대입:** `_io.BufferedWriter`와 `_io.FileIO`는 instance `__dict__`를 가지므로 `write`/`flush`/`close` 대입은 가능할 것으로 봅니다. type의 method descriptor는 non-data라 instance 속성이 우선합니다.
+- **raw write:** BufferedWriter의 C 구현은 raw write를 이름 기반 호출(`self->raw.write(memoryview)`)로 수행하는 것으로 기억합니다. 그렇다면 FileIO instance seam을 통과합니다.
+- **암묵 close:** `with` 종료는 `_IOBase.__exit__` → `self.close()` 이름 호출, close 내부는 `self.flush()`와 `raw.close()` 이름 호출로 기억합니다. 이 경우 암묵 close도 seam을 통과합니다.
+- **`io.open` 조회:** `Path.open`이 호출 시점에 `io.open` 모듈 속성을 조회하는지는 3.14.7에서 확인하지 못했습니다.
+- **판정:** 설계가 계약을 충족할 수 없는 구조는 아닙니다. 다만 위 네 가지 모두 확신이 아니라 T0에서 판정할 가정입니다. 우회가 드러나면 I/O 치환 없이 STOP하는 현 설계가 맞습니다.
+
+## 2. Findings
+
+### A-01 (높음) close 뒤 fd로 emit하면 관측기 자체 OSError 또는 오귀속
+- **위치:** R0-A 설계 2·4항, `observer.py`의 `emit` → `path_of`(`os.fstat(value)`, `F_GETPATH`).
+- **기전:** `close-after` 시점의 fd는 닫혔거나 재사용됐습니다. fd로 emit하면 EBADF가 seam 안에서 발생해 제품에는 close 실패(OSError)로 보이거나, 다른 파일 경로에 귀속됩니다.
+- **최소 보정:** create-after에서 확정한 경로 문자열과 (dev, ino)를 handle별로 보관합니다. close-after와 오류 종료 사건은 경로로 기록합니다. fd 기반 신원 확인은 위임 전에만 합니다.
+- **분류:** in-scope 설계 보정.
+
+### A-02 (높음) F-03 진단 채널이 현재 `emit` 구조로는 성립하지 않음
+- **위치:** 설계 5항, `emit`(target 밖 경로는 무기록, `active` 중 무기록), `path_of` 내부 `require`, Review 2의 seq 16401(target 밖 parent dir_fd).
+- **기전 1 — 기록 누락:** target 밖 경로, 경로 없는 거부, `emit`/`path_of` 내부 거부는 `emit`으로 기록할 수 없습니다.
+- **기전 2 — 위장:** witness 호출(`os.fstat`, `fcntl`)의 OSError는 `require`를 거치지 않아 제품 I/O 오류로 위장될 수 있습니다.
+- **기전 3 — "거부 이전 제품 syscall 0"의 한계:** 위임 전 거부에만 참입니다. create-after 신원 불일치 거부는 이미 파일을 만든 뒤입니다. raw seam 거부 뒤에도 `with` 종료의 암묵 close → flush가 남은 buffer를 실제로 씁니다.
+- **기전 4 — 삼킴:** 제품의 넓은 except가 RuntimeError를 삼키면 exit 0과 거부 행이 공존할 수 있습니다.
+- **최소 보정:**
+  - `path_of`/`active`에 의존하지 않는 전용 기록 함수를 observer 안에 둡니다. `common.py`는 수정 제외이므로 기록 후 기존 `require(False, reason)`로 같은 예외를 전달합니다.
+  - witness 예외는 이 경로로 변환합니다.
+  - 행에 `site`, `reason`, `stage: pre-delegation | post-delegation`을 넣습니다.
+  - 단언은 pre(거부 행 이전 제품 사건 0)와 post(생성된 부작용 명시 열거)로 나눕니다.
+  - 거부 뒤 후속 seam 호출을 같은 거부로 고정(latch)할지 설계에 명시합니다.
+  - positive 경로의 "거부 행 0"은 공용 row helper에서 일괄 단언하고, 거부 기대 테스트만 opt-in합니다.
+- **분류:** in-scope(D4). 제품 CLI의 token/exit는 불변입니다.
+
+### A-03 (중간) close 내부 flush 재진입과 selector 산식
+- **위치:** 설계 2·4항, A1 산식의 "buffered write/flush/close before/after 186".
+- **기전:** 암묵 close가 flush를 이름으로 다시 부르면 파일당 flush 쌍은 2회입니다(명시 1 + close 내부 1). 그러면 186이 아니라 248이 될 수 있습니다. 또 raw seam은 BufferedWriter 내부 lock 보유 중에 호출되므로, 그 안에서 buffered 메서드를 부르면 재진입 RuntimeError가 납니다.
+- **최소 보정:**
+  - 사건에 중첩 표식(예: `within: close`)을 두고 occurrence를 명시·암묵으로 구분합니다.
+  - raw seam은 미리 잡아 둔 fd와 경로만 씁니다.
+  - mkdir의 `FileExistsError` 종료는 별도 사건을 기록한 뒤 원 예외를 그대로 재전달합니다(`_entry_durable_directory`가 이 예외에 의존).
+  - T0 단언은 구현 의존 횟수보다 불변식(순서, create 쌍 정확히 1, close-after가 마지막, 중첩 일관)을 우선합니다.
+- **분류:** in-scope.
+
+### A-04 (중간) 파일 길이에 따라 raw-write·short-write cell이 정의되지 않는 경우
+- **위치:** Budget Gate 표(31×create/raw 124, short 93), 설계 3항.
+- **기전:** 0바이트 member는 raw write가 0회입니다. L=1~3이면 1/mid/L-1이 없거나 겹칩니다. raw write가 `handle.write` 중에 나는지 `flush` 중에 나는지는 길이와 buffer 크기에 달려 있습니다. 3.14의 기본 buffer가 커졌다고 기억하지만 미확인입니다.
+- **최소 보정:** literal inventory에서 member별 길이표를 고정합니다. 정의 불가 cell은 "실제 raw-write 0회 관측 + 사유"로 닫고 묵시적 N/A로 두지 않습니다. selector는 (경로, raw-write occurrence)로 잡고 write/flush 소속을 가정하지 않습니다.
+- **분류:** in-scope(cell map). 31개 member 길이는 입력에 없어 실제 해당 여부는 미확인입니다.
+
+### A-05 (중간) seam 우회를 스스로 검출하는 불변식이 설계에 없음
+- **위치:** 설계 1·2항, `audit` hook.
+- **기전:** builtin `open`/`_io.open` 직접 사용, pathlib의 조회 방식 차이, C fast path가 있으면 조용히 미관측이 됩니다.
+- **최소 보정 (T0 통과 기준이자 A1 상시 단언):**
+  - target 내 쓰기·생성 `audit-before:open`은 반드시 `os.open` 쌍이나 create 쌍에 둘러싸여야 하고, 아니면 non-pass입니다.
+  - 파일별로 `Σ raw-write-after.written == 최종 크기 == 기대 길이`를 단언합니다.
+  - T0-1에 seam 없는 handle의 음성 대조를 넣어 검출기가 실제로 실패하는지 확인합니다.
+  - 비선택 open(wb, text x 등)은 통과시키되 "미관측 유형"으로 표시합니다.
+- **분류:** in-scope.
+
+### A-06 (중간) fullfsync 관측 대상 미확정과 재귀 위험
+- **위치:** 설계 4항, `_entry_write_exact`의 `_sync_fd`(jsonio, 구현 미제공), `path_of`의 `fcntl.fcntl`.
+- **기전:** `_sync_fd`가 `F_FULLFSYNC`를 부르는지 알 수 없습니다. `fcntl.fcntl`을 감싸면 관측기 자신의 `F_GETPATH` 호출이 wrapper를 통과합니다. cmd 판별 전에 `path_of`를 부르면 무한 재귀가 됩니다.
+- **최소 보정:**
+  - `original_fcntl`을 `original_flock`처럼 먼저 잡아 관측기 내부에서만 씁니다.
+  - wrapper는 cmd를 먼저 걸러 `F_FULLFSYNC`만 기록합니다.
+  - 제품이 호출하지 않으면 62 cell은 "호출 0회 관측"으로 닫습니다.
+  - 호출 관측을 지속성 보증으로 쓰지 않습니다(DR D3-S-A 말미).
+- **분류:** in-scope. logger 자체는 `os.write`/seam을 거치지 않고 `original["fsync"]`를 쓰므로 재귀 위험을 찾지 못했습니다.
+
+### A-07 (낮음) memoryview 보관 금지와 순환 참조
+- **기전:** raw write 인수는 내부 buffer를 가리키는 memoryview로 기억합니다. 보관하면 위험하므로 길이만 기록하고, short-write는 slice를 넘기기만 합니다. instance 속성 → closure → bound method → handle 순환이 생기므로 close-after에서 instance 속성을 제거합니다. 관측기 거부로 handle을 버릴 때는 원 close로 닫고 예외를 전달합니다(기존 dir_fd 경로와 같은 패턴).
+- **분류:** in-scope.
+
+### A-08 (낮음) 명명과 oracle 정확 delta
+- **위치:** `prefix-oracle.json`의 S1-01~S2-02 evidence, limitations 3번째 줄, B-07, `observer.py`의 fault event allowlist와 `write_bytes` 조건.
+- **기전:** 주입 방식은 "절단된 실제 raw write + kill"이며 OS가 낸 short write가 아닙니다. oracle은 아직 "synthetic tears"만 말합니다.
+- **최소 보정:**
+  - 합성 tear / 계측 절단 write + kill / 예외 주입의 세 라벨을 고정합니다.
+  - oracle·README의 정확한 diff를 freeze 전에 확정합니다.
+  - `write_bytes`는 `raw-write-after`에만 추가 허용합니다.
+  - `write_bytes > 0`은 유지합니다. 0바이트는 raw-write-before kill로 표현합니다.
+  - seam 설치 조건은 기존 NEW/canary selector와 같게 합니다(OLD는 flock만).
+- **분류:** in-scope(D4와 묶음의 authoring 범위에 명시된 파일).
+
+### A-09 (중간) 비용 절감의 단언 동등성 조건
+- **위치:** `d3_fault`와 `remaining_recovery_fault`의 마지막 loop(`snapshot(target)[name]`).
+- **판단:** loop 안에 제품 호출이 없으므로 snapshot 1회 공유는 논리 단언과 동등합니다. 조건은 네 가지입니다.
+  1. snapshot 위치는 마지막 `verify_workspace_product`와 `.exists()` 뒤, loop 직전입니다.
+  2. `[name]` 인덱싱을 유지합니다(누락 시 KeyError → ERROR 의미 보존).
+  3. `need(... st_nlink == 1)` 평가가 1회는 남습니다.
+  4. `if b1: assertEqual(after, snapshot)`도 같은 snapshot을 써도 됩니다.
+- **잃는 것:** 반복 snapshot이 우연히 제공하던 "loop 구간 중 target 정지" 관측 하나입니다. 보존하려면 loop 뒤에 snapshot 1회를 더해 동등 단언합니다(N회 → 2회).
+- **주의:** 두 method의 AST가 바뀌므로 E3/E4 재사용 판단에 이 delta를 명시합니다.
+- **분류:** in-scope.
+
+### A-10 (높음) 34시간 창의 기산점과 T0 → map → R0-B → 작성 순서가 충돌
+- **위치:** "첫 controller 시작부터 검증·기록 창 최대 34시간", "측정된 cell당 비용으로 다시 대조", "둘째 R0는 … 해당 구현 전에".
+- **기전:** 배당은 26 + 2.6 + 4 = 32.6시간이라 여유가 1.4시간입니다. T0가 첫 controller인데 그 뒤에 A1 실제 trace 기반 map 확정, R0-B, A/B/C 작성(배당 26시간)이 오면 벽시계 창을 넘습니다.
+- **범위 안 보정:** 104분할의 소스·controls·테스트·선택과 R0-B를 T0 이전에 모두 고정합니다. A1 cell은 사전 선언한 사건 순서에 대한 매개변수 map으로 두고, T0와 불일치하면 STOP합니다.
+- **범위 밖 대안:** 창을 누적 활성 시간으로 읽는 것은 예산 의미의 변경입니다.
+- **분류:** 문언 적용은 in-scope, 재해석은 범위 변경.
+
+### A-11 (중간) 봉투의 실패 허용도가 0
+- **위치:** 분할표, "retry 0 / 미사용 분할의 실패 우회 사용 0".
+- **기전:** 후보 01~05 중 02, 03과 그 뒤의 GFM·trace 선택이 Driver 준비 오류로 멈췄습니다. 약 6,000 cell을 미실행 상태로 작성하면 첫 fixture 오류에서 전체가 중단됩니다. A1/A2/C4의 900초 기준 여유는 2~3%입니다.
+- **조치:** 중단 규칙과 예산은 Owner 권한이므로 바꾸자는 제안이 아닙니다. 사전 기록에 "허용도 0"을 명시하고, 새 helper 계열의 첫 사용을 각 분할 앞쪽에 둬 조기에 드러나게 하는 것은 in-scope입니다.
+- **확인된 것:** 산술(104분할, 624/704회, 86,952초)은 일관됩니다. 6,036은 용량 배당이며 coverage가 아닙니다.
+
+### A-12 (낮음) F-03 변경이 candidate03 probe5 재사용에 미치는 영향
+- **기전:** 거부 행이 추가되면 mutation 거부와 unsafe component 거부 probe, `:576`/`:578`의 empty-events 단언이 바뀝니다. 해당 probe는 "AST 불변 재사용" 대상에서 빠집니다.
+- **최소 보정:** T0-1에 probe 5개 전부와 변경된 단언을 직접 포함합니다. 거부 뒤 rows를 단언하는 기존 테스트를 정적으로 전수 열거합니다.
+- **분류:** in-scope.
+
+## 3. 첫 controller 전 선행 조건
+
+1. R0-A 처분을 반영한 observer 사양을 고정합니다. 포함 항목은 사건명, 중첩 표식, fault allowlist, 선택 규칙, 거부 채널, 원본 함수 capture 목록입니다.
+2. `jsonio._sync_fd`와 31개 파일의 실제 쓰기 경로를 정적으로 확인합니다(A-06, A-04).
+3. prefix-oracle과 README의 정확한 diff 및 control hash를 확정합니다. 바뀌는 method의 AST delta와 재사용 영향표도 여기에 포함합니다.
+4. T0-1/T0-2의 사전 선언 통과 기준(A-05 불변식과 음성 대조)과 STOP 조건, T0-1 → T0-2 순서를 정합니다.
+5. 34시간 창의 해석을 기록합니다. 문언 해석이면 전체 obligation → cell → test ID map, member 길이표, 분할 배치(각 900초 이하), R0-B를 T0 전에 끝냅니다.
+6. 분할별 고정 입력을 준비합니다. 부재 ROOT, invocation, 선택, 예상 collection, argv/cwd/hash, 저장 공간 재확인이 해당합니다.
+7. README의 read-only preflight와 import 없는 AST/JSON 검사를 수행합니다.
+
+R0-A 보정은 재-R0-A 없이 Driver 처분으로 닫을 수 있습니다. 확정 사양은 R0-B 입력에 포함하면 됩니다. E1~E7의 주장 자체는 건드리지 않았습니다.
+
+## 4. 리뷰 한계
+
+- **미제공 구현:** `common.py`, `controller.py`, `runner.py`, `jsonio.py`, `workspace.py`, `cli.py`. `product.py`와 테스트는 발췌만 받았습니다(`call`, `event_rows`, `d3_run`, `interrupted_api`, `_init_partial_tree` 없음).
+- **입력에 없는 사실:** member 길이, `_sync_fd` 동작, ROOT별 collection 고유성 규칙. 이들은 확인할 수 없습니다.
+- **미재검증 수치:** trace 수치(613/834/259 등)와 timing은 Work 기재를 그대로 받았습니다.
+
+#### Driver Disposition
+
+Reviewer의 ‘범위 내 보정 후 authoring 가능’은 검토 의견으로 기록한다. Driver는 아래 처분으로 현재 Owner 승인 안에서 진행하며, 실행이나 결과 수락으로 올리지 않는다.
+
+| Finding | Driver 처분 | 구현/검증 의무 |
+| --- | --- | --- |
+| A-01 | accept | handle 생성 뒤 path/dev/ino/fd를 포착한다. close-after는 저장한 path로 기록하고 닫힌 fd를 조회하지 않는다. close 전 신원 검사는 유지한다. |
+| A-02 | revise | 전용 refusal 기록 함수는 path lookup 없이 site/reason/pre 또는 post delegation을 기록한다. 실제 witness OSError를 제품 오류처럼 숨기지 않는다. argument guard의 명시 부정 대조와 handle 신원 실패를 구분한다. buffered handle에서 거부가 나면 후속 raw write를 금지하는 handle별 latch로 close/finalize가 buffer를 쓰지 못하게 하고 raw fd를 정리한다. 이미 위임된 부작용은 별도 단언한다. 전체 observer를 영구 latch해 여러 독립 부정 probe의 원인을 뭉개지 않는다. 정상 product helper는 refusal 행0을 의무로 검사한다. |
+| A-03 | accept | close 내부 flush의 중첩/occurrence를 식별하고 raw wrapper에서 buffered method를 재호출하지 않는다. FileExistsError 종료는 별도 사건 뒤 동일 예외를 전달한다. 최대 추가62 cell은 A1의 기존229 잔여 용량에서 수용하며 실제 map 확정 전 확정 개수로 표시하지 않는다. |
+| A-04 | accept | 실제 inventory/member 길이와 raw occurrence를 고정한다. 길이0/짧은 파일의 정의 불가·중복 fault는 관측/정확한 이유로 연결한다. write와 flush 중 어느 호출에서 raw write가 나오는지 가정하지 않는다. |
+| A-05 | accept | audit와 create/os.open 짝, raw 누적 반환과 기대 bytes/길이, 의도적 seam 우회 음성 대조로 미관측 검출을 추가한다. 실제 write가 없는 read/검증 경로와 지원 밖 write 유형을 구분한다. |
+| A-06 | accept | jsonio._sync_fd는 읽기만 하고 실제 fullfsync 경로를 확인한다. original_fcntl을 먼저 포착하고 F_FULLFSYNC cmd만 기록한다. 관측기 F_GETPATH와 logger fsync는 original을 사용한다. 지속성/정전 안전성 주장은 하지 않는다. |
+| A-07 | revise | memoryview를 보관하지 않고 정상 close 뒤 설치한 instance seam을 해제한다. 거부 후 original buffered close의 무조건 호출은 잔여 flush 위험이 있어 채택하지 않는다. latch와 raw-close 정리, 닫힌 fd와 최종 bytes를 직접 검증한다. |
+| A-08 | accept | synthetic tear / instrumented truncated raw write + kill / injected exception을 구분한다. 기존 양수 write_bytes를 raw-write-after에만 확장하고 0바이트는 create-after/raw-write-before 경계로 다룬다. prefix oracle/README와 D1 retain 의미를 같은 입력에 고정한다. |
+| A-09 | revise | 마지막 관측 직후 loop 앞 snapshot1회와 loop 뒤 동일 snapshot 확인1회를 남겨 반복 N회를2회로 줄인다. 모든 [name]·mode/link/bytes assertion과 오류 의미를 보존한다. AST delta를 재사용 영향에 연결하고 비용 이득은 실측 전0이다. |
+| A-10 | accept | 34시간은 첫 controller부터 벽시계다. R0-B, 전체 필수 map/ID·구현·분할·입력을 첫 controller 전에 고정한다. T0 불일치는 STOP이며 이후 authoring 시간을 제외하는 재해석은 하지 않는다. |
+| A-11 | accept | retry0·첫 예상 밖 실패 STOP을 유지한다. 새 helper의 첫 사용을 앞쪽에 배치하되 coverage나 실행 상한을 줄여 성공시키지 않는다. |
+| A-12 | accept | F-03 변경으로 영향을 받는 기존 dir-fd probe5를 T0에 직접 포함한다. 기존 행0 assertion과 event 소비 지점을 정적으로 열거해 미검증 이월을 막는다. |
+
+R0-A를 추가 호출하지 않고 이 처분의 확정 사양과 실제 관측 구현을 R0-B의 입력으로 연결한다. 전체 runtime/fixture 범위의 R0-B는 해당 구현 전에 수행한다. 지금부터의 authoring은 승인된 test-only observer·관련 controls/테스트·oracle/README와 정확한 검사 map에 한정한다. common/controller/runner/acquisition/sandbox 또는 product I/O는 변경하지 않는다.
+
+추가 리뷰 사용1/6, 실제 소요424.636초, controller 추가0/누적80회다. 남은 추가 authoring은 보수적으로31시간40분으로 기록한다(첫20분을 차감; 이 중 리뷰 대기 시간도 포함해 상한을 늘리지 않음). 첫 controller가 아직 없어34시간 검증 창은 시작하지 않았다. 원래 승인 예산을 초기화하거나 이번20분을 과거 사용분과 상쇄하지 않는다.
+
+## P2 Full Remaining Authoring Stop — 2026-10-11
+
+### Outcome And Exact Failure
+
+Owner의 ‘계약 변경·예산 초과·예상 밖 실패 시 중단’ 조건에 따라 추가 구현·검증·review를 중단했다. 첫 R0-A는 정상 종료했지만, 둘째 R0에 제공할 runtime 제안 diff를 만들던 Driver 준비 스크립트가 문자열 일치 assertion에서 실패했다. 이것은 제품/검증 실패도 소스 drift도 아니며 Driver가 잘못 적은 예상 문자열 때문에 생긴 준비 오류다. 오류를 수정하거나 해당 스크립트를 재실행하지 않았다.
+
+실행은 `python3 /private/tmp/p2-runtime-design.py`, exit1이었다. 핵심 출력은 다음과 같다.
+
+```text
+File "/private/tmp/p2-runtime-design.py", line 43, in <module>
+    assert s.count(a)==1;s=s.replace(a,b,1)
+AssertionError
+```
+
+그 단계의 예상 문구는 `"source changed during switch"`였으나 실제 `workspace_switch_apply.checkpoint` 문구는 `"switch source changed"`다. 스크립트는 제안 내용을 메모리에서만 조합하다 멈췄으며 마지막 파일 쓰기에 도달하지 않았다. `p2-runtime-proposed.py`와 `p2-runtime-proposed.diff` 모두 생성되지 않았다. 실제 `src/hv2ref/product.py`는 HEAD와 byte-identical이며 SHA-256 `7c5797f7bdfb1ed3ccde0506f90a470ee7bd9526048b8d0be093569e2bb7cdae`다. Contract/제품 수정은 적용되지 않았다.
+
+### Authored, Reviewed And Unverified
+
+- R0-A: Claude Opus5.5의 fresh no-tools 정적 검토1회와 원문·입력 신원·Driver 처분을 이 Work에 기록했다. 리뷰의 범위 내 보정 의견은 Owner 수락이나 실행 성공이 아니다.
+- `observer.py`: 원래 BufferedWriter/FileIO를 유지하는 test-only create/raw-write/API/fullfsync 관측, 별도 refusal 진단, handle별 거부 후 쓰기 방지·close 정리 초안을 작성했다. 원래 controller/runner/acquisition/sandbox와 제품 I/O는 변경하지 않았다. 실제 CPython dispatch와 관측 가능성은 미검증이다.
+- `test_entry_window_transition.py`: 고정 observer probe와 신규 control test method30개를 작성했다. 기존 dir-fd probe5의 진단 assertions, 정상 product call의 observer-refusal 거부를 보강했다. 두 최종 snapshot loop는 모든 항목 assertion과 앞뒤 상태 확인2회를 유지하며 반복 계산을 줄였다. 속도 이득은 측정하지 않았다.
+- R0-B, 전체 exact obligation→test ID map, runtime 수정, A1/A2/B/C 잔여 작성, controls 첫 기술 검증과 이후 controller 실행은 미완이다. 추가 import/discovery/제품 테스트/controller 실행은0이다. 기존 E1~E7 수락 결과는 그대로이며 새 초안을 현재 PASS로 표시하지 않는다.
+
+### Budget At Stop
+
+| 항목 | 이번 승인 묶음 사용 | 남은 한도/상태 |
+| --- | --- | --- |
+| 추가 authoring | 04:24 UTC부터 보수적으로40분 차감. 기존20분 기록은 이40분에 포함하며 다시 더하지 않음 | 31시간20분. 리뷰 대기 일부까지 포함한 보수적 차감이며 이전 묶음 사용분을 지우지 않음 |
+| Claude static review | 1/6호출, 실측424.636초 | 최대5호출, 각1,200초. 실패 재시도0 |
+| 새 controller | 0/624호출 | 누적 실제80회, 승인 누적 상한704회 |
+| 검증 창 | 아직 시작하지 않음 | 첫 controller부터34시간 벽시계 유지 |
+| 새 실행 분할/ROOT | 0/104 | 실행 ROOT 생성 없음 |
+| 전체 결과 | 미완·중단 | P2 종료 수락/활성화/Git/adopter 작업은 별도 |
+
+### Bounded Recovery Proposal And Preservation
+
+복구안은 실패한 제안 생성기의 정확한 입력 문자열을 실제 함수 전체와 대조해 바로잡고, source를 쓰지 않는 제안 diff 생성을1회 수행하는 것이다. 만들어진 D2 직접 captured-child refs와 F-05 same-entry 범위 복원 제안을 남은 R0-B에서 검토한다. D2가 기존 계약 해석인지 amendment인지 아직 확정하지 않았으며, amendment가 필요하면 제품 변경 전에 다시 중단한다. 오류 복구 후에도 원래 남은 시간/호출·범위와 예상 밖 실패 STOP을 유지한다. 기존 controller 재실행이나 예산 초기화·확대는 없다. 현재는 이 실패 복구의 Owner 재개 승인 대기이며, 승인된 문서·controls 작성물을 자동 되돌리지 않는다.
+
+현재4파일 binary diff와 실패한 제안 생성기1개를 private bundle `p2-full-execution-01/`에 보존한다. 소비자는 Owner의 중단/복구 판단과 그 생성기의1회 복구 및 후속 P2다. 생성기 사본은 해당 실패 복구와 원문 비교가 끝나면 추가 보존 의존성이 종료되며, current diff는 승인된 commit으로 복구할 수 있게 되면 종료된다. 원문 오류와 실제 문자열은 이 Work가 영구 최소 기록으로 가진다. 별도 전체 source copy·archive·영구 실행 ledger는 만들지 않는다.
+
+Source worktree와 기존 native evidence는 R0-B 및 잔여 P2의 구체적 후속 사용이 있어 유지한다. 이번 중단 때문에 기존 accepted evidence나 ignored deliverable을 삭제하지 않는다. 중단 기록과 보존에 필요한 문서/정적 검사만 수행하며 runtime 또는 실패한 생성기의 재시도는 하지 않는다.
+
+## P2 Preparation Recovery And R0-B Design — 2026-10-11
+
+### Actual Owner Resume And Recovery Result
+
+Owner actual decision: “준비 오류 복구를 승인한다. 실제 소스와 대조해 제안 생성기를 바로잡고1회 실행한 뒤, 둘째 R0부터 남은 P2 작업을 기존 범위·잔여 예산 안에서 계속 진행해. 계약 변경·예산 초과·예상 밖 실패 시 중단하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+실제 `workspace_switch_apply` 전체와 제안 생성기를 대조했다. 예상 문자열과 교체 문자열 양쪽의 `source changed during switch`를 현재 진단인 `switch source changed`로 바로잡았다. 수정된 생성기를1회 실행해 exit0으로 source 미적용 제안 diff를 얻었다. Diff SHA-256은 `6314409554f507d71c8c63c23c18b33164b8ce684bb32aac14a0c8961d2dd1fd`,6,654 bytes다. 실제 product.py SHA-256 `7c5797f7bdfb1ed3ccde0506f90a470ee7bd9526048b8d0be093569e2bb7cdae`와 HEAD 동일성은 유지했다. 이것은 제안 생성 복구이며 제품·테스트 통과가 아니다.
+
+### R0-B Proposed Runtime Delta
+
+둘째 R0는 아래 설계, 전체 필수 검사 의무와 현재 controls 초안을 검토한다. 제품 제안은 아직 적용하지 않았다. R0-A의 원문·Driver 처분을 이어 받되 새로운 fresh no-tools session을 사용한다. Product/fixture 작성을 승인하는 Owner 판단을 Reviewer가 대신하지 않는다.
+
+- D2/C2: 현재 `_entry_local_baselines`의 selected non-completed local/parent 순회에서 schema2 parent의 이미 captured된 direct child revision 및 그 captured intent confirmation에 있는 required document/evidence path를 검사 후보에 넣는다. 원본 Work graph 전체 검증을 거친 동일 graphs의 typed references를 `_resolve`로 따라간다. Child의 현재 selection을 새로 선택하거나 재귀로 손자를 순회하지 않는다. Child scope는 부모 own scope와 동일하다고 확대 해석하지 않는다. 기존 parent/child immutable history와 baseline은 쓰지 않는다. 이 범위가 accepted C0-L-A에 포함되는지 R0-B에서 판단 근거를 요구한다. 계약을 확장해야 한다면 제품 적용 전 STOP한다.
+- F-05/C4/D3: entry transition에 추가한 receipt 이후 staging/source 재확인·unknown staging guard를 `transition` 조건 아래로 한정한다. same-entry에는 이전 `checkpoint`의 binding 확인과 원래 release/manifest 검증·기존 writer guard를 유지한다. 완료된 same-entry replay의 기존 read-only 경로를 복원한다. 같은 진입창에서 기존과 같은 결과를 내는 공통 guard만 유지한다는 D3 결정에 따라 정적 prior source와 current/proposed를 대조한다. Unknown-state 보존이나 기존 shared writer fence를 약화시키는 변경이 필요한 경우 적용 전에 STOP한다.
+- B/C의 나머지 제품 수정은 미리 포괄 승인하지 않는다. 검증 과정에서 새 결함·예상 밖 실패가 나오면 해당 실행에서 자동 수정하지 않는다. 기존 accepted behavior 구현에 필요한 변경도 이 설계와 closed C1 범위 안인지 확인한다. shared helpers/runner/controller/acquisition/sandbox는 수정하지 않는다.
+
+### Mandatory Matrix And Fixture Construction
+
+아래는 authoring 설계다. 직전6,036-cell 배당을 PASS 수나 이미 완성된 exact ID map으로 바꾸지 않는다. 테스트를 작성하면서 각 cell에 고유 `test_p2_<area>_<ordinal>` 식별자를 부여하고 (origin obligation, valid fixture/state, executable/action, selected event/phase/path/occurrence or no-fault control, expected result/preservation, prior evidence ref)를 함께 고정한다. 한 method에 여러 fault를 감춰 배당/실패 위치를 잃지 않는다. 원래 Work에 필수 map/배치표를 기록하고, tests의 정적 선언에서 실행 ID 목록이 도출되게 한다. 개별 ID·member 길이·occurrence를 첫 controller 전 확정하지 못하면 T0를 시작하지 않는다.
+
+| 영역/용량 | 생성할 유효 fixture와 실행 의무 | 기대 결과·완결성 확인 |
+| --- | --- | --- |
+| T0/60 | 현재30개 신규 buffered controls와 기존5개 dir-fd 진단 변경, lock/failfast·delegate control; 별도 actual receipt/staged31파일 witness | 원래 object/fd/bytes/mode/예외/호출 보존, audit→opener 짝, raw 누적 bytes, close 중첩, fullfsync, refusal pre/post 분리. Native 의존은 실행 전 PASS로 표시하지 않음 |
+| A1/1,400 | 고정 OLD→NEW source/target. S0/S1/S2의 receipt·staged member 각 실제 create/raw/buffered/fsync/mkdir 경계와 occurrence; 완료 prefix·torn bytes·member길이별 정의 가능한 short 위치 | exact before/fault/recovery/replay snapshot과 durable kill witness, 허용된 recovery 또는 보존 거부. 합성 tear는 실제 raw witness 대체 불가. empty prefix D1 retain. 0바이트/겹친 길이는 원인·실제 호출0으로 명시 |
+| A2/2,800 | D3 정상259, full-S2/partial-S2와 S3/N/B prefix, S5 회복·S6/replay, operation/staging 부재 분기, parent fallback, post-B1 검증 예외 | 모든 phase/path/occurrence의 unavailable와 OSError를 독립 실행. B1 이후 오류 우선순위/보존. 기존30+10+2는 동일 obligation 신원 조건부 reuse. 없는 cell을 다른 위치 PASS로 대체 금지 |
+| B1/600 |22 installed semantic route×OLD/NEW×9states,5 source lifecycle route 및 prepare support. 먼저 동일 유효 요청의 S0 positive를 만들고 유지된 prefix에 적용 | 지원 route별 exact fence/diagnostic, project/product preservation. parser/기동 불가와 transition fence를 구별. 지원 불가 셀은 계약·실제 interface로 닫음 |
+| B2/216 | OLD installed22+source5 route×8post-lock prefix. 동일 writer 요청으로 실제 flock 진입 전 pause, parent가 transition prefix 생성, writer 진행 | lock 재획득 이후 재검증과 publication0, byte/mode/truth 보존. pause-ready/ordering/종료 witness. 기존5대표 근거는 일치하는 행만 reuse |
+| C1/80 | predecessor16,pending16,root8,index8,ignore8,persisted transaction24와 positive 대조를 해당배당 안에 포함 | S1 이전 거부·receipt 부재, exact refusal cause와 prefix 보존. 외부 ignore/index는 synthetic target fixture 안의 Git으로 구성 |
+| C2/192 | schema1/2 noncompleted local, multi-Work, own Work/intent 및 captured direct-child Work/intent required refs, path aliases/ancestor/descendant, optional 대비, restart parent graph | independently valid graph와 immutable baseline, S0/S6 equality, required 경로 거부·optional 허용, child refresh/acceptance0. Contradictory malformed graph는 desired transition refusal로 세지 않음 |
+| C3/144 | selected/orphan worker18,pending12,old proof/ticket36,new baseline/rebind24,negative36,preservation18. 기존 합성 worker 테스트 builder의 정식 graph/repo/proof 생성 절차를 사용 | unfinished/orphan 허용과 durable pending 거부, old proof 재사용 거부·explicit rebind 뒤 정상 제출, orphan/record 보존. source/adopter Git 변경0 |
+| C4/384 | mixed two-NEW24, schema3 detach exact remove/dirs와 suffix faults256,plain audit16,runtime collision40,same-entry24,repair24 | 목록/receipt paired schema exactness, 모든 removal frontier recovery/보존, payload 삭제 뒤 plain audit, no retired reactivation; same-entry prior equivalence 및 source/installed repair 경계 |
+| C5/96 | 전체26test module static 영향 대조 뒤 changed helper/graph/runtime seam 관련 proof/fresh-init/CRLF·기존 assertion 회귀 선택 | 누락/변경 semantics 명시. P4 full normal/parent-O qualification을 선실행하거나 P2 필수 의무를 P4로 넘기지 않음 |
+| X1/64 | 최종 exact input 신원, map↔선택↔실행↔native evidence 연결, 재사용 bridge, 필수 diagnostic/preservation 조합 | 모든 필수 의무의 unique closure, fail/error/skip/unstarted/unfinished0, drift 없음. Reviewer/Owner 수락을 자동 생성하지 않음 |
+
+기존 fixture helper와 같은 포맷을 쓰되 새 fixture는 제품의 유효 writer/prepare/apply 절차를 통해 만든다. Fault 대상 아닌 truth/manifest를 무효로 조립해 목표 guard 도달을 추정하지 않는다. 각 negative fixture의 valid positive와 선행조건 확인을 포함한다. Partial-S2·D3 호출 맵은 실제 statically traversable branch/occurrence를 열거하고 신규 관측 횟수와 다르면 STOP한다. 모든 분할은 같은 최종 source/controls를 대상으로 기존6단계를 수행하며900초 계획·1,200초 focused hard cap을 유지한다. T0 이전 전체 작성·R0-B·입력 고정 의무와34시간 벽시계, retry0는 유지한다.
+
+### R0-B Questions And Record Boundary
+
+Reviewer에게 계약 D2 해석/amendment 경계, F-05 before/after equivalence와 안전 guard 보존, 전체 mandatory matrix의 누락·중복·유효하지 않은 fixture 위험, controls 실제 코드의 R0-A 처분 충족 여부 및 T0 선행조건을 요청한다. Capacity 배당을 exact coverage라고 받아들이지 않도록 명시한다. 현재 미작성 전체 ID map은 authoring deliverable이며 이를 누락한 채 실행하는 것은 허용하지 않는다. 응답은 정적 추론과 실행 사실을 구분하고, 계약 변경 필요를 명시한다. 전후 input/diff 보존·auth·실제 model/session과 원문/Driver 처분을 같은 Work에 기록한다. 검증 미실행 상태와 기존 accepted E1~E7은 유지한다.
+
+### R0-B Automatic Approval Block — No Review Invocation
+
+둘째 R0의 고정 packet을 준비했지만, 실행 도구의 automatic approval review가 CLI 프로세스 생성 전에 요청을 거부했다. 거부 사유 원문은 다음과 같다.
+
+> 둘째 R0 실행은 14개 파일과 561KB 고정 packet을 Claude 구독 경로로 전송할 가능성이 있어 민감한 소스·문서의 외부 egress에 해당하며, 해당 payload와 destination에 대한 명시적 승인이 없습니다.
+
+Owner의 기존 전체 묶음·둘째 R0 진행 승인은 위에 기록돼 있다. 그러나 자동 검토가 요구한 payload/destination 승인을 우회하거나 다른 실행 경로로 보내지 않았다. `started.json`/stream 출력이 없으며 CLI auth/reviewer process/controller는 이번 시도에서 시작하지 않았다. 리뷰 사용은 여전히1/6이고 R0-B 결과·finding은 없다. 현재 제품은 HEAD와 동일하며, 남은 authoring/테스트/controller를 자동 진행하지 않고 외부 전달의 정확한 승인 범위를 제시한다.
+
+승인을 요청하는 목적지는 현재 설정된 Claude Code의 Anthropic first-party 서비스이며 기대 인증은 `claude.ai / firstParty / pro` 구독이다. 실제 호출 직전에 비밀 제외 auth와 override 부재를 다시 확인하며 다르면 중단한다. 전송 대상은 준비된 고정 stdin packet 하나,561,186 bytes, SHA-256 `fd30b56b2ad91bff6e321c8093be06031040ee496493943fb30a0f6a9c28044e`다. 여기에는 다음14개 파일의 전체 또는 명시한 발췌, input identity, 리뷰 질문과 미적용 runtime 제안 diff가 들어 있다. Private 개발 소스·내부 판단·일부 로컬 경로가 외부 Reviewer 서비스에 전달되는 내용이다. 의도한 범위에 credential/account file이나 실제 adopter 데이터는 없으며 이 문장이 자동 보안 검사를 대신하지는 않는다.
+
+- Work: 이번 통합 계획·재산정·R0-A 원문/처분·복구/R0-B 설계 구간.
+- 전체 소스: `product.py`, `umbrella.py`, `cli.py`, 현재 test-only `observer.py`.
+- 소스 발췌: `work.py`, `intent.py`, `workspace.py`, `jsonio.py`, `test_entry_window_transition.py`의 지정 helper/controls와 fixed probe.
+- 계약/검사 기준: DR-0004, `prefix-oracle.json`, `GENERAL-WORK.md`, `WORKSPACE-CONTRACT.md`.
+- 별도 입력: 아직 적용하지 않은 runtime 제안 diff6,654 bytes, SHA-256 `6314409554f507d71c8c63c23c18b33164b8ce684bb32aac14a0c8961d2dd1fd`.
+
+승인 대상 packet은 이 차단 기록을 append하기 직전 Work prefix를 사용한다. Prefix의 whole-input hash는 packet identity에 있고 이번 기록이 그 뒤에 붙는다. 향후 실행 준비는 이 append를 설명된 record-only drift로 확인해야 하며 기존 스크립트의 이전 full-Work hash를 그대로 재실행해 불필요한 실패를 만들지 않는다. 검토할 frozen packet은 바꾸지 않는다. 다른 소스나 제안 diff가 달라지면 별도로 영향·승인 범위를 확인한다.
+
+고정 packet과 현재4파일 diff를 private bundle `p2-full-execution-01/r0-b-approval/`에 보존한다. Packet 소비자는 Owner의 정확한 외부 전달 판단과 승인된 R0-B invocation이며, 응답을 Work에 옮기고 입력 신원·보존을 확인하면 추가 packet 보존 의존성이 끝난다. Diff 소비자는 미커밋 작업 복구와 후속 P2이며 approved commit으로 복구 가능할 때 종료된다. 별도 전체 source copy나 영구 실행 ledger는 만들지 않는다. Source worktree는 잔여 P2의 실제 다음 사용처가 있어 유지한다.
+
+05:08 UTC 기준 authoring은04:24 이후 보수적으로45분을 차감한 잔여31시간15분이다. 앞선40분을 다시 더하지 않는다. 추가 review1/6만 사용, 최대5회가 남았고 controller는 추가0/누적80회다.34시간 검증 창은 미시작이다. Packet 외부 전송1회와 이후 기존 범위·잔여 예산의 P2 계속 진행을 요청하며, 계약 변경·예산 초과·예상 밖 실패 STOP 및 P2 종료/ Git 별도 결정은 유지한다.
+
+### Owner Approved Exact R0-B Disclosure And Continuation
+
+Owner actual decision: “승인해. 준비한 약561KB 고정 리뷰 자료를 Anthropic의 Claude Code 구독 경로로1회 전송해 둘째 R0를 진행하고, 이후 기존 범위·잔여 예산 안에서 P2를 계속해. 계약 변경·예산 초과·예상 밖 실패 시 중단하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+승인된 packet561,186 bytes/SHA-256 `fd30b56b2ad91bff6e321c8093be06031040ee496493943fb30a0f6a9c28044e`를 보존 사본과 byte-compare했다. 전송 자료는 변경하지 않는다. Packet이 검토하는 Work prefix는 SHA-256 `0d274feed5d94137e05e0823a8b38648dbaa2d689e49849e7a3d3499ef6b0b9b`이며 그 이후 차단/전송 승인 기록만 append됐다. 실행 전후에는 그 prefix와 현재 Work 전체·현재 diff를 각각 검증해 검토 입력과 새 운영 기록을 혼동하지 않는다. 나머지13개 파일과 미적용 proposal은 이전 packet 신원과 동일하다.
+
+05:19 UTC에 승인된 후속 준비를 재개했다.05:08~05:19의 Owner 승인 대기는 authoring 소비와 구분하며 기존45분은 유지한다. R0-B는 이번 구독 인증 확인 후1회 호출하고,1,200초/출력 상한·no-tools·fresh session·no retry를 그대로 적용한다. 이 재개가 제품/검증 성공이나 P2 종료/Git 승인은 아니다.
+
+### R0-B Actual Review, Verbatim Response And Driver Disposition
+
+Owner가 승인한 fixed packet의 R0-B를1회 실행했다. 실제 Claude Code2.1.296 / model `claude-opus-5-5`, fresh session `44a22153-4363-407d-9174-9035bf77cdc0`, auth `claude.ai / firstParty / pro`였다. API/provider override는 미설정이었다.2026-10-11T05:20:16.551441Z부터05:31:53.377430Z까지696.824초, exit0/success, tools/MCP/tool-use/permission-denial0, process group 종료, 전후 입력 보존 PASS다. 이는 정적 리뷰의 정상 완료이며 제품/controls 테스트 성공이 아니다.
+
+고정 stdin/explicit custom system prompt, opus/high, safe/restricted, tools 빈 집합, strict MCP empty config, setting-sources 빈 집합, slash commands/Chrome/session persistence 비활성, permission dontAsk/none, 별도 session ID, stream-json/verbose, source cwd를 사용했다. 상한1,200초, stdout16MiB/stderr1MiB였고 실행 도구·제품 테스트 명령을 Reviewer에 주지 않았다. 일부 입력은 발췌였고 baseline/controls 일부가 미제공이므로 리뷰 독립성과 범위에는 아래 원문에 기재한 한계가 있다.
+
+검토 base `a17f35cf323ffde7a8642a85501fddbec858b6de`, packet 구성 시 whole diff `a97ad06fd008b516700a6027eb1bafbe01b9c26a1fa114de31e00caf2e27ab69`, 실제 invocation 직전 whole diff `7669f06ba7803c0791fb2aef9491d7c1f684d2004341ec764f6280f067eee1df`, frozen packet SHA `fd30b56b2ad91bff6e321c8093be06031040ee496493943fb30a0f6a9c28044e`, 원문 응답 SHA `bac9791a699befaf3899fb76c039b139061057172bc8f5f8a0dbf7b879326031`다. 두 diff 차이는 Work의 차단·Owner 전송 승인 append뿐이며 검토 prefix hash와 실제 Work 전체 hash를 각각 확인했다. 실제 invocation Work SHA `2246f431c545abdcaa207c2c3ebe8fc9415db6dec9bed6d1c0a2885b389b40a0`; reviewed Work prefix는1,203,213 bytes다.
+
+Diff 밖에서 제공한 입력을 포함한14개 원본 파일 신원은 다음과 같다. Work hash는 packet 구성 때의 prefix 전체 신원이고, 해당 파일의 검토 본문은7503행 이후 발췌다.
+
+- `docs/development/CHORE-20261009-002-colvia-verification-controls.md`: `0d274feed5d94137e05e0823a8b38648dbaa2d689e49849e7a3d3499ef6b0b9b`
+- `src/hv2ref/product.py`: `7c5797f7bdfb1ed3ccde0506f90a470ee7bd9526048b8d0be093569e2bb7cdae`
+- `src/hv2ref/umbrella.py`: `fef162a8b41e2e4c643e473392540377c38c208e50acf7dba723692f09e08f1d`
+- `src/hv2ref/cli.py`: `dfee7d502aac9d0b064af9119500e279f77abf349cd8af0515dc88a31ef7fbd9`
+- `docs/decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md`: `86bce9d1906b55ef31d8f8e47a0e75d7341021d3eff5a70ffac9c5597a5bf25e`
+- `docs/development/verification/colvia-entry/observer.py`: `9b4abb2e80baa58344f06bc97a48ab6e57cc0f0752462343d717f470c3270621`
+- `docs/development/verification/colvia-entry/prefix-oracle.json`: `4bd3f424bb442f4da35e2c25117bae7bc56225a2029db087d9497657b42a69e8`
+- `src/hv2ref/work.py`: `c390f656cca9e981ec3ad9957a48f55bc80b3e5a805b93674e1a97169822d043`
+- `src/hv2ref/intent.py`: `f32ba7a1be036827d6a375a619a41753870e704fb3d6d99ee3bc13a18e4f313c`
+- `src/hv2ref/workspace.py`: `4913d185ec81e1c19a3bfa46773aacdf401ab4eb6fe06dc8649e92b245012e09`
+- `src/hv2ref/jsonio.py`: `6432f0d2b2a09dcbdc1c473ab0596def1751d2733b691684349fb62a536e69fe`
+- `tests/test_entry_window_transition.py`: `e0858668e16a36a2fa2e31f9805c798c676c9cd34ab8d160390577707517f19c`
+- `docs/GENERAL-WORK.md`: `1c3c3d8a48b8200fbd22cd63504db14df3b0d7550c28211893093bba58d99882`
+- `docs/WORKSPACE-CONTRACT.md`: `0b9e6db2236308b77eba104c6b77c6c9e51158964254576faecc79fe6781eeb0`
+
+별도 미적용 runtime proposal SHA `6314409554f507d71c8c63c23c18b33164b8ce684bb32aac14a0c8961d2dd1fd`는 fixed packet에 포함됐다.
+
+#### Verbatim Reviewer Response
+
+# P2 R0-B 정적 리뷰 — runtime 제안, 필수 matrix, 현재 controls
+
+**R0-B 처분: 분할.** D2 제품 hunk는 계약 사유로 차단(Owner가 지정한 STOP 대상)이고, F-05 hunk는 비교 근거가 없어 동치 판정을 보류합니다. 나머지 authoring은 아래 in-scope 보정을 조건으로 진행할 수 있습니다.
+
+이 리뷰는 실행 0회, 도구 0회의 정적 추론입니다. 실행 사실은 Work에 기재된 것만 인용했고, CPython 동작 서술은 기억에 근거한 미검증 가정입니다. 검토 승인은 Owner 수락이 아닙니다.
+
+`product.py`는 `ENTRY_MANAGED_PATHS`에 들어 있어 바이트가 바뀌면 candidate release ID와 모든 fixture가 바뀝니다. 따라서 D2와 F-05는 "첫 controller 전 전체 고정"(A-10) 이전에 확정돼야 하며, 미확정이면 T0도 시작할 수 없습니다.
+
+## 1. D2 — captured child required refs
+
+### R-01 (높음, 계약) 제안 hunk는 C0-L-A의 구현이 아니라 새 admission 거부
+- **위치:** DR-0004 Admission And Quiescence의 C0-L-A 첫 predicate, 제안 diff의 `_entry_local_baselines` hunk.
+- **규범 문장:** "for every non-completed selected local Work, enumerate **its** scope, required document/evidence refs and **its bound intent's** required refs … Apply the same rule to unfinished schema-2 local parent Work … parent/child graphs and captured references must remain valid, and migration neither refreshes child evidence nor accepts a parent."
+- **경계:** 열거 대상은 선택된 Work 자신의 revision과 그 intent입니다. parent에는 "같은 규칙"이 적용될 뿐입니다. "captured references must remain valid"는 보존 요건이지 열거 확장이 아닙니다.
+- **반례 (HEAD와 DR 문언으로는 허용, 제안으로는 거부):**
+  1. child가 required ref `colvia/notes.md`로 완료된다.
+  2. 그 파일을 삭제한다.
+  3. parent가 그 child를 capture한 baseline을 선택한다(rebind 또는 start).
+  4. 전환 admission 시 root에 `colvia`가 없고 index에도 없으며 parent baseline은 실제 snapshot과 같다.
+  5. HEAD는 통과하고 제안은 "entry path dependency"로 거부한다.
+- **문언 밖으로 넓어지는 점:**
+  - predicate 범위가 "non-completed selected local Work"인데, 완료된 child의 기록이 admission 입력이 됩니다.
+  - 완료된 worker-mode child도 포함됩니다(C0-W-A가 다루지 않는 영역).
+  - child Work revision의 required refs는 기존 계약 어디에도 대응 규칙이 없습니다. `_worker_required_refs`도 child **intent** refs만 보며, 그것도 worker 결과 overlap에 한정됩니다.
+- **판정:** 실질적으로 새 admission 동작입니다. fail-closed 방향이라 안전 위험은 낮지만 수락된 의미가 바뀝니다. named DR amendment가 필요합니다. Owner의 D2 권고 수락이나 Work 문구는 amendment 승인이 아닙니다.
+- **최소 보정:** 둘 중 하나를 Owner가 선택합니다.
+  - (a) 예: "C0-L-A direct captured-child required-ref extension"이라는 named amendment를 제품 적용 전에 수락받는다. 문장에는 R-02의 경계가 들어가야 한다.
+  - (b) hunk를 적용하지 않고 C2에서 captured graph 보존만 검증한다.
+- **분류:** named contract amendment 필요. STOP.
+
+### R-02 (중간) hunk 자체의 정적 정확성과 amendment 문장에 넣을 경계
+- **확인된 것:**
+  - 재귀가 없습니다. child는 schema 1로 강제됩니다(`_child_chain`의 nested 금지).
+  - 현재 child selection을 쓰지 않고 봉인된 `revision_ref`/`intent_ref`를 `_resolve`와 `require_current=False`로 따라갑니다.
+  - 쓰기와 refresh가 없습니다.
+  - `graphs[child id]`의 존재는 `_all()` 안의 `check_work_histories`가 선행 보장합니다.
+  - child scope는 포함되지 않습니다.
+  - 호출처가 전환 경로뿐이어서 same-entry에는 영향이 없습니다.
+- **명시가 필요한 것:**
+  - 선언됐지만 capture되지 않은 `required_children`은 검사하지 않습니다.
+  - worker parent는 통째로 건너뜁니다.
+  - child mode와 완료 여부를 가리지 않습니다.
+  - 거부 메시지에 parent ID만 있습니다. DR의 "refuse with Work IDs"에 child ID를 넣을지 정해야 합니다.
+  - child intent graph를 `_all()`의 읽기와 별도로 다시 읽습니다. 기존 own-intent 경로와 같은 패턴이며, 불안정하면 거부됩니다.
+- **분류:** (a)를 택하면 amendment 본문 요건, (b)면 해당 없음.
+
+## 2. F-05 / D3 — same-entry 동치
+
+### R-03 (높음, 근거 부족) 이전 동치는 현재 입력으로 판정할 수 없음
+- **위치:** 제안 diff의 `workspace_switch_apply` hunks. DR Fixed Baseline의 `product.py`(`7cd71f11…`, `:786-805`)는 제공되지 않았습니다.
+- **기전:** 실패한 생성기의 기대 문자열이 실제 진단과 달랐습니다(Work 기재). 이는 제안이 이전 바이트의 기계적 대조가 아니라 설계 의도에서 작성됐음을 시사합니다.
+- **필요한 비교:**
+  - 기준 정의: "원래 same-entry 계약"이 baseline `2385146`의 switch 경로인지, 거기에 수락된 delta(schema 2, entry-1, D1-A v2.1 collision 거부, `colvia`)를 더한 것인지 한 문장으로 고정한다.
+  - 3자 대조: baseline / HEAD / 제안의 `workspace_switch_apply`, `_switch_preflight`, `_replace_product_file`, `_write_exact`, `_durable_directory`를 `remove == []` 경로에 한정해 순서화한다. 항목은 guard 획득과 lock anchor 쓰기, preflight 호출 지점, 각 거부 문구, mkdir/sync/write/rename/replace 순서, inject point다.
+  - delta 분류: 각 차이를 "수락된 amendment / 복원 / 의도치 않은 변화"로 분류하고 HEAD guard를 도입한 commit을 식별한다.
+- **분류:** in-scope 정적 작업. 완료 전에는 hunk 적용과 C4 same-entry 24 cell의 기대값 작성을 보류합니다.
+
+### R-04 (중간) `not finished` 완화는 효과 없는 변경
+- **위치:** `checkpoint()`의 `(not transition or not finished)`.
+- **기전:** `finished`면 현재 binding이 이 operation 이후여서 `binding_ref` 비교가 반드시 실패합니다. `binding_ref`의 id가 operation_id이기 때문입니다. 완화해도 관측 가능한 결과가 같으므로 복원이 아니라 명시적 단언만 약해집니다.
+- **최소 보정:** `not finished`를 무조건 유지합니다.
+- **분류:** in-scope.
+
+### R-05 (높음) same-entry checkpoint 제거가 D1-A v2.1의 late-collision 관측점을 줄임
+- **위치:** staging 전, member별, rename 전, launcher replace 전의 `checkpoint()`를 `transition` 한정으로 바꾼 부분.
+- **기전:** 각 checkpoint는 `_switch_preflight`를 거쳐 `_refuse_retired_entry`와 truth 재검사를 수행합니다. 제거하면 staging 도중 나타난 `hv2` 점유자를 release publication **이후**(after-release checkpoint)에야 발견합니다. D1-A는 pending same-window 복구를 collision이 있는 동안 거부하고 "before any further product or authority publication"을 요구합니다. D1-A는 baseline 이후에 수락됐으므로 "원래 same-entry"만으로는 기준이 되지 않습니다.
+- **최소 보정:** R-03 대조표에 D1-A 관측점 열을 추가합니다. D1-A를 qualify한 후보의 same-entry late-collision 단언(P1b 계열)을 정적으로 열거하고, 그 관측점을 줄이는 제거는 하지 않습니다.
+- **분류:** in-scope. 다만 관측점 축소가 불가피하면 D1-A 해석 문제이므로 STOP.
+
+### R-06 (중간) same-entry에서 거부가 허용으로 뒤집히는 두 동작
+- **switch staging unknown member:** HEAD는 거부하고 제안은 무시한 채 진행합니다(삭제나 덮어쓰기는 없음). Workspace Contract의 "staging debris may remain"과는 부합하지만 행위 변화입니다.
+- **apply 중 source 변경:** HEAD는 "switch source changed"로 거부하고 제안은 완료합니다. 게시 바이트는 메모리의 candidate와 `verify_workspace_release`로 보호되므로 무결성 손실은 찾지 못했습니다.
+- **조치:** 둘 다 R-03 표에서 "복원"으로 입증된 경우에만 적용합니다. 입증되지 않으면 D3의 "검사 삭제도 승인 없이 하지 않는다"에 따라 유지합니다.
+
+### R-07 (낮음) 완료된 same-entry replay의 guard 제거
+- **판단:** 문서의 "exact historical replay is read-only"와 부합합니다. guard는 `.hrn/locks` anchor를 만들 수 있기 때문입니다. `installed` runtime 검사는 선행 호출로 남고, 경합 시에는 `verify_workspace_product`가 pending으로 거부합니다. 손실된 안전 장치는 찾지 못했습니다.
+- **조치:** same-entry replay에서 lock event를 단언하는 기존 테스트를 정적으로 열거합니다.
+
+### 전환 경로
+정적으로는 변화가 없습니다. replay guard, 모든 checkpoint, source 재검증, staging guard가 `transition=True`에서 그대로 유지됩니다. 실행 증거는 아닙니다. E1–E4 bridge로 "`transition`을 True로 상수 접기 한 제안과 HEAD의 AST 동일성"을 import 없는 검사로 기록하길 권합니다.
+
+## 3. 필수 matrix — 누락, 불가능 fixture, 혼동
+
+| ID | 심각도 | 영역 | 요지 |
+| --- | --- | --- | --- |
+| R-08 | 높음 | A2 | 반복 occurrence의 phase token이 `publication`이 아니라 `recovery` |
+| R-09 | 중간 | A2 | selector가 (path, occurrence)만으로는 모호 |
+| R-10 | 중간 | A2 | pre-B1 verification-unavailable 분기는 코드에 없음 |
+| R-11 | 높음 | A1 | kill 뒤 기대 결과가 member 길이와 buffer에 의존 |
+| R-12 | 중간 | A1 | 길이표, recovery-phase edge, fullfsync-after |
+| R-13 | 높음 | B1 | observer의 `runpy`가 실행 mode와 부분 바이트를 우회 |
+| R-14 | 높음 | B1 | OLD update/rollback positive에 두 번째 OLD candidate 필요 |
+| R-15 | 중간 | B1 | parser 거부와 fence 혼동, Read 열 미배치 |
+| R-16 | 중간 | B2 | lock 시도가 없는 route, S2 대표, stale ticket 미배치 |
+| R-17 | 중간 | C1 | 구성 불가 alias cell, pending 생성 수단 |
+| R-18 | 중간 | C2 | required-ref fixture 유효성 표 필요 |
+| R-19 | 중간 | C3 | ticket fence와 proof fence 분리 |
+| R-20 | 중간 | C4 | detach frontier, plain auditor, same-entry 기대값 |
+| R-21 | 중간 | X1 | map과 선택의 기계적 대조 |
+
+### R-08 (높음) A2: 반복 occurrence의 phase token
+- **위치:** `_entry_durable_directory`의 `phase = "recovery" if _exists(path) else "publication"`, `d3_fault`의 phase 유도.
+- **기전:** 정상 최초 apply에서도 이미 만든 parent에 대한 재호출(Work가 기재한 `FileExistsError` 89회)과 사전 존재하는 `.hrn/staging`은 `d3-sync:recovery:…`를 냅니다. 기존 helper는 selector 이름에서 `publication`을 가정하므로 occurrence 2 이상인 cell에서 메시지 단언이 깨집니다.
+- **최소 보정:** 기대 token을 (call-site, role, path, occurrence, 호출 시점의 존재 여부)에서 계산하는 표로 고정합니다. helper는 매개변수화합니다. 이 AST 변화는 E3 재사용 영향에 기록합니다.
+- **분류:** in-scope.
+
+### R-09 (중간) A2: selector 모호성
+- **기전 1:** `candidate-directory-parent/self` role은 7개 directory와 다수 occurrence가 공유합니다. token만으로는 위치를 식별할 수 없습니다.
+- **기전 2:** `.hrn`과 `.hrn/locks`에는 `writer_guard`의 공유 `_durable_directory` sync가 섞입니다. 이 sync는 반환을 무시하며 D3 범위 밖입니다. (path, occurrence)만 쓰면 guard 호출을 맞힐 수 있습니다.
+- **최소 보정:** selector를 (alias/call-site, role, path, occurrence)로 잡고, guard sync는 "비-D3, 주입 대상 아님"으로 map에 명시합니다.
+- **불확실성:** `D3_SYNC_PROGRAM`이 제공되지 않아 현재 selector 표현력을 확인하지 못했습니다. 이 프로그램을 바꿔야 하면 30+10+2 재사용을 다시 판단해야 합니다.
+
+### R-10 (중간) A2: verification-unavailable 분기
+- **pre-B1:** `_entry_sync(b1=False)`는 항상 `not-requested`입니다. pre-B1의 "verification-unavailable" 분기는 코드에 없습니다. 통합표 A2의 문구가 sync의 `unavailable` 반환을 뜻하는지 verification을 뜻하는지 map에서 분리해야 합니다.
+- **post-B1:** `unavailable`에 도달하려면 sync 실패와 **동시에** product 검증이 실패해야 합니다. 복합 주입이 필요합니다(예: 선택된 sync 직전에 합성 외부 변경).
+- **최소 보정:** post-B1 cell에 "합성 복합" 라벨을 붙이고, 각 cell의 기대 후속(보존 거부, 합성 처분 뒤 exact replay)을 정의합니다. `verify_workspace_product`를 mock으로 대체하면 "실제"라고 부르지 않습니다.
+
+### R-11 (높음) A1: kill 뒤 기대 결과의 길이·buffer 의존
+- **기전:** `buffered-write-after`, `buffered-flush-before`, `raw-write-before`에서 kill하면 디스크 바이트가 member에 따라 0일 수도 L일 수도 있습니다. 큰 member는 `write` 안에서, 작은 member는 `flush` 안에서 raw write가 날 것으로 추정되지만 3.14.7의 기본 buffer 크기는 확인하지 못했습니다. 기대 결과(complete-member recovery 대 torn refusal)를 미리 숫자로 박으면 T0 불일치가 전체 STOP으로 이어집니다.
+- **최소 보정:** cell ID는 (member, edge, occurrence)로 고정합니다. 기대 결과는 동결된 규칙으로 정합니다.
+  - 해당 fault 실행의 `Σ raw-write-after.written`이 실제 파일 크기와 같아야 한다.
+  - 그 값이 L이면 complete로, 아니면 torn으로 분류한다(L>0에서 0바이트인 경우 포함).
+  - `within` 값은 단언하되 사전 고정하지 않는다.
+- **분류:** in-scope.
+
+### R-12 (중간) A1: 길이표, recovery edge, fullfsync
+- **길이표:** receipt 1 + 30개의 실제 길이가 아직 없습니다. 0바이트 member(`__init__.py` 가능성)는 `create-after` kill이 곧 완전한 member이며 torn cell이 없습니다. L이 1~3이면 1/mid/L-1이 겹칩니다. 각각 사유와 "raw write 0회 관측"으로 닫아야 합니다.
+- **recovery-phase edge:** `_entry_write_exact`의 기존 member 분기(`open rb`, 파일 `fsync`, parent sync)는 834/1,171 산식에 없습니다. Work도 "이 숫자로 닫지 않는다"고 적었습니다. map에 열거가 필요합니다.
+- **receipt의 `create-before` kill:** S0에 lock anchor만 남은 상태입니다. 복구는 `--recover` 없는 동일 요청입니다. 기대값을 구분해야 합니다.
+- **fullfsync-after:** `_sync_fd`가 OSError를 삼키므로 환경에 따라 after가 0회일 수 있습니다. R-26과 같은 문제입니다.
+
+### R-13 (높음) B1: observer의 `runpy` 실행이 mode와 부분 바이트를 우회
+- **위치:** `observer.py`의 `runpy.run_path(entry)`, DR 표의 S3a/S3b.
+- **기전:** S3b(완전한 바이트, 0600)에서 observer는 mode와 무관하게 launcher를 실행합니다. 결과는 S4와 같은 bootstrap 거부가 되고 "실행 불가"가 관측되지 않습니다. S3a에서는 문장 경계에서 잘린 prefix가 문법상 유효할 수 있어 결과가 prefix에 따라 달라집니다(SyntaxError 또는 무동작 exit 0).
+- **최소 보정:** NEW installed의 S0–S3은 "경로 없음", S3a/S3b는 "mode 0600, 직접 exec 거부"를 테스트 내 직접 실행 시도로 증명합니다. observer 경유 결과는 fence 근거로 세지 않습니다. controller나 sandbox 변경은 요구하지 않습니다.
+- **분류:** in-scope fixture 설계.
+
+### R-14 (높음) B1: OLD positive의 독립 선행조건
+- **OLD update:** active와 다른 OLD-window candidate가 필요합니다. 그런데 적용하면 active가 `ENTRY_PREDECESSOR`가 아니게 됩니다.
+- **OLD rollback:** B0의 `prior_release`가 non-null이어야 합니다. 즉 "X → 감사된 predecessor" 이력이 있는 target이 필요합니다.
+- **문제:** 수정된 OLD source X가 controls에 있는지 packet에서 확인할 수 없습니다. 없으면 이 cell들은 유효 fixture가 없습니다. N/A로 숨길 수 없으므로 controller 전에 범위 문제로 제기해야 합니다.
+- **OLD installed S5/S6:** "부재(ENOENT)"와 "정확한 old 바이트가 root에 재등장"을 구분합니다. S5에서의 재등장은 DR상 S4 재관측이므로 S5의 OLD installed cell은 부재 형태뿐입니다. S6의 재등장은 C0-H-A collision과 old bootstrap 거부(`HV2-WORKSPACE-LAUNCHER`)가 됩니다.
+- **진단:** 상태별 진단 코드가 다릅니다. cell마다 정확한 code를 고정합니다.
+- **"동일 요청":** plan이 target fingerprint에 묶이므로 "동일하게 구성한 쌍둥이 target의 요청"으로 정의를 명시합니다(기존 관행).
+
+### R-15 (중간) B1: parser 거부와 fence의 혼동, Read 열
+- **parser 수준:**
+  - NEW installed의 `--recover`는 `set_defaults` 때문에 argparse가 거부합니다.
+  - NEW source의 `--profile checkout-1`은 `choices` 오류입니다.
+  - OLD source에서 profile을 빼면 `HV2-WORKSPACE-COMMAND`입니다.
+- **조치:** 이들은 under-lock fence가 아닙니다. fence cell은 유효한 profile과 인수로 도달해야 합니다.
+- **누락:** DR Source×Target×Operation 표의 **Read 열**이 어느 영역에도 명시 배치되지 않았습니다. NEW source의 S1–S5 status(partial/14, pending과 복구 안내), OLD의 S1–S6 non-pass가 해당합니다. B1 여유 78 또는 C4 안에 배치하고, 기존 근거가 있으면 재사용 신원을 연결합니다. 새 범위가 아니라 DR 표의 내용입니다.
+
+### R-16 (중간) B2
+- **lock 시도가 없는 route:** 완료된 init replay처럼 guard 전에 반환하는 경로에는 "lock-attempt → 획득" witness가 성립하지 않습니다. route별로 S0 positive의 `lock-attempt` 존재를 먼저 표로 고정합니다. 없는 route는 "guard 없음, 사전 검증 거부"로 닫습니다. candidate의 8 action 중 읽기 전용이 있는지는 `candidates.py`가 제공되지 않아 확인하지 못했습니다.
+- **S2 대표 1개:** prefix 8개에서 S2를 한 frontier로 대표하는 것은 동등성 축약입니다. old writer의 거부가 receipt에만 의존한다는 근거를 Work 규칙대로 먼저 제시해야 합니다.
+- **stale ticket 미배치:** 216 = 27×8에는 "B0에서 준비한 local Work/intent ticket을 S6의 NEW installed가 사용"하는 cell이 들어갈 자리가 없습니다. C3는 worker 맥락입니다. 명시 배치가 필요합니다.
+
+### R-17 (중간) C1
+- **구성 불가 cell:**
+  - `hv2`와 `colvia`는 ASCII라 NFC가 항등입니다. casefold alias는 대소문자 변형뿐이므로 "NFC alias" cell은 만들 수 없습니다.
+  - root 직하 이름이라 "상위 경로"(`entry.startswith(name + "/")`)는 유효 project path로 도달할 수 없습니다.
+  - 둘 다 사유와 함께 닫고 cell로 세지 않습니다.
+- **파일시스템 의존:** `hv2`와 `HV2`의 공존은 case-sensitive FS에서만 가능합니다. sandbox FS에 따라 기대값을 사전 고정합니다.
+- **OLD pending repair:** target만으로는 관측할 수 없습니다(DR의 한계). 손상이 남았으면 거부 원인은 product 손상입니다. 전부 복원되고 receipt만 없으면 **허용**되며 한계로 기록합니다. 원인을 혼동하지 않습니다.
+- **pending 생성 수단:** observer는 old-code fault를 금지합니다("no old-code fault substitution"). OLD의 persisted pending(Work/intent/switch)은 OLD API의 자체 주입 seam이나 합성으로만 만들 수 있습니다. 수단과 라벨을 사전 확정합니다.
+- **외부 ignore:** `git_environment()`가 제공되지 않아 제품이 어떤 외부 입력을 실제로 반영하는지 확인하지 못했습니다.
+
+### R-18 (중간) C2
+- **유효성 표:** {Work scope, Work document ref, Work evidence ref, intent ref} × {`hv2`, `colvia`, `colvia/하위`, 대소문자 alias, `hv2/하위`} × {required, optional} 각각에 대해 세 가지를 먼저 고정합니다.
+  1. OLD에서 유효하게 게시할 수 있는가.
+  2. 첫 거부 원인이 무엇인가.
+  3. 같은 fixture에서 의존만 제거한 positive가 있는가.
+- **이미 보이는 제약:**
+  - Work required ref가 정확히 `hv2`인 경우는 OLD의 `_live_external_refs`가 거부하므로 불가로 추정됩니다.
+  - `hv2/하위`는 `hv2`가 파일이라 required ref가 될 수 없습니다.
+  - `colvia/…` required ref는 게시 시 파일이 있어야 합니다. admission에서는 `_entry_absence_admission`의 root 점유 거부가 먼저 납니다. 파일을 지우면 의존 거부가 snapshot 비교보다 먼저 납니다. 다만 그 삭제가 baseline 불일치도 만들면 "의존만의 거부"라는 독립성은 입증되지 않습니다.
+- **다중 baseline:** 서로 다른 `result`를 가진 두 local Work가 모두 실제 snapshot과 같을 수는 없습니다. "서로 다른 baseline"은 거부 전용입니다. positive는 `result`가 같은 다중 Work입니다.
+- **local parent:** captured child가 있는 parent는 parent start → child 완료 → 새 intent로 human rebind 순서가 필요합니다(local same-intent rebind 미지원). 상태 6개와 곱할 때 비용을 map에 반영합니다.
+
+### R-19 (중간) C3
+- B0 ticket의 stale 거부와 old commit의 launcher proof 거부(`verify_worker_sources`)는 서로 다른 fence입니다. 후자는 B1에서 **새로 prepare**해야 도달합니다. cell을 분리하고 첫 거부 원인을 고정합니다.
+- 새 control baseline은 합성 repo 안의 Git 조작으로 만들고, retention ref의 정확한 이름을 사전 고정합니다.
+
+### R-20 (중간) C4
+- **detach frontier:** CLI inject는 "첫 파일"만 맞힙니다. 모든 removal frontier는 observer의 `unlink-after`/`rmdir-after`에 (path, occurrence 1)을 지정해 만듭니다. 256이 맞는지는 exact fixture에서 계산합니다.
+- **plain auditor:** `product_plain_auditor.py`가 schema 3과 `colvia`를 지원하는지 packet에 없습니다. 수정이 필요하면 범위를 먼저 확인합니다.
+- **same-entry 24:** R-03 완료 전에는 기대값을 작성할 수 없습니다.
+
+### R-21 (중간) X1
+map에서 선택 목록으로의 도출이 import 없이 검증 가능해야 합니다(유일 ID, origin obligation, 재사용 신원). T0 관측과 map 불일치 검사는 사전 선언된 STOP 규칙이어야 합니다. 6,036은 용량 배당일 뿐이며 coverage 근거로 인용하지 않습니다.
+
+## 4. Observer와 controls
+
+### R0-A 처분 대비 정적으로 충족돼 보이는 것
+- **A-01:** `close-after`는 저장한 경로로 기록합니다.
+- **A-02:** `refuse()`는 path lookup 없이 site/reason/stage를 기록한 뒤 `require`로 전달합니다. handle별 latch 뒤에는 `raw.close()`로 정리하고 flush하지 않습니다.
+- **A-03:** `within` 표식이 있고 `mkdir-exists` 뒤 원 예외를 재전달합니다.
+- **A-06:** `original_fcntl`을 먼저 잡고 cmd를 먼저 거릅니다. `jsonio._sync_fd`가 모듈 속성으로 `fcntl.fcntl`을 호출하므로 seam을 통과할 것으로 보입니다.
+- **A-07:** memoryview를 보관하지 않고 seam을 해제합니다.
+- **A-08:** `write_bytes`는 `raw-write-after`에만 확장됐고 OLD entry에는 flock만 설치합니다.
+- **A-09:** snapshot은 loop 전과 후 2회이고 `[name]` 인덱싱이 유지됩니다.
+
+원 객체 반환과 인수 그대로의 1회 위임도 유지됩니다. 다만 `event_rows`의 기본 refusal-0 단언은 본문이 제공되지 않아 확인하지 못했습니다.
+
+### R-22 (중간) `-after` 사건의 witness 실패가 "pre-delegation"으로 표기됨
+- **위치:** `emit` → `path_of`의 `witness(…)` 기본 stage.
+- **기전:** `fsync-after`, `write-after`, `fchmod-after`, `lock-acquired` 같은 위임 후 사건에서 fd witness가 실패해도 stage가 pre로 기록됩니다. "pre이면 그 호출의 제품 부작용 0"이라는 단언이 틀릴 수 있습니다.
+- **최소 보정:** `emit`이 사건 edge에서 stage를 유도해 `path_of`에 전달합니다.
+
+### R-23 (중간) 거부 채널을 거치지 않는 경로
+- **해당 지점:**
+  - `observed_write`의 길이 guard는 plain `require`를 씁니다.
+  - `observed_flock`의 `os.fstat`와 `require`는 감싸지 않았습니다. OSError가 제품 오류로 보일 수 있습니다.
+  - `emit`과 `refuse`의 logger I/O에서 난 OSError는 그대로 전파됩니다.
+- **위험:** 관측기의 OSError가 `_workspace_observe`나 `_entry_sync(b1)`의 `except OSError`에 들어가면 exit 65 또는 `verification=unavailable`로 위장됩니다.
+- **최소 보정:** 세 지점을 `witness`/`observed_require`로 전환합니다. 또는 "남는 공백"으로 명시하고 해당 경로의 결과를 제품 거부 PASS로 세지 않습니다.
+- **전제:** `common.require`의 예외 타입이 `ValueError` 계열이 아니어야 합니다. `common.py`가 제공되지 않았습니다. probe는 RuntimeError를 가정합니다.
+
+### R-24 (중간) pre/post 의미와 latch 잔여물
+- **기전:** `identity-refusal`은 "pre-delegation"이지만 그 앞에 create와 buffered write가 이미 있었습니다. "거부 행 이전 제품 사건 0"은 handle 단위로는 거짓입니다.
+- **최소 보정:** pre를 "이 가로챈 호출의 위임이 호출되지 않음"으로 정의합니다. 단언은 호출 단위로 바꿉니다. latch 뒤 남는 파일(0바이트 또는 이전 raw 바이트)을 부작용으로 열거합니다.
+- **누락된 형태:** 제품은 `with` 형태를 씁니다. `with` 안에서 거부가 났을 때의 형태(본문 예외 뒤 `__exit__`의 close가 다시 거부하고 flush 0)를 probe에 추가합니다. 현재 probe는 명시 호출만 씁니다.
+
+### R-25 (중간) 누락된 qualification 단언 (기존 30개 method에 추가)
+- **A-05 전역 불변식:** 현재 `assert_buffered_witness`는 지정한 path만 봅니다. 제품 trace에서는 target 내 **모든** 쓰기 open audit이 opener 쌍 안에 있어야 합니다. 전환 경로에서 `unobserved-open-after`가 0인지도 봐야 합니다. `os.fdopen(…, "wb")`(same-entry와 repair의 `_replace_product_file`)가 이 사건을 내는지 확인하는 probe kind도 없습니다.
+- **raw occurrence:** 2 이상에서의 fault와, 큰 payload에서 `write` 안의 short write가 없습니다.
+- **길이 0:** `create-after` kill이 없습니다.
+- **중첩 flush:** close 내부 flush에 해당하는 `buffered-flush-before`의 occurrence 2 kill이 없습니다.
+- **반환값:** `handle.write`의 반환값이 요청 길이와 같은지 보지 않습니다.
+- **기본 buffering과 mode:** 제품은 기본 buffering을 쓰지만 probe는 256을 씁니다. T0-2에서 기본 buffering 경로와 생성 mode(0644는 umask 가정)를 확인해야 합니다.
+- **fullfsync:** `error:errno`와 `unavailable` 분기가 없습니다.
+
+### R-26 (중간) fullfsync-after control이 환경 의존
+`test_buffered_fault_fullfsync_after`는 sandbox FS가 `F_FULLFSYNC`를 거부하면 kill 지점에 도달하지 못합니다. retry 0 아래에서는 전체 STOP입니다. 이를 사전 예상된 T0 비통과로 기록합니다. 정상 `fullsync` probe를 앞에 두고 결과별 처리(STOP 또는 "after 0회 + errno"로 종결)를 freeze 전에 선언합니다. native 동작 자체는 T0 불확실성으로 남습니다.
+
+## 5. 재사용과 비용
+
+- **E1–E7 drift bridge:**
+  1. `d3_fault`와 `remaining_recovery_fault`의 AST delta를 기록한다.
+  2. 기존 실행 selector 중 fault 2종 × admission / pre-B1 / post-B1 6개와 recovery 2개를 첫 A2 분할 맨 앞에 둔다.
+  3. 전환 경로의 상수 접기 AST 동일성을 기록한다.
+  4. observer 변경으로 영향받는 dir-fd probe 5개는 T0-1에 둔다(기존 처분 유지).
+- **공용 helper:** A1은 `physical_cell(member, edge, occurrence, write_bytes)` 하나로 둡니다. 순서는 before snapshot → fault 실행 → 마지막 행이 kill witness인지 확인 → R-11 규칙으로 분류 → 동일 요청 복구 또는 보존 거부 → replay → 전후 snapshot 2회입니다. 속도 할인은 0으로 둡니다.
+- **조기 노출:** 새 helper 계열의 첫 사용과 bridge를 각 분할 선두에 두고 기존 failfast로 첫 예상 밖 실패에서 중단합니다. retry와 예산 자동 증액은 제안하지 않습니다.
+- **쓸 수 없는 절감:** target fingerprint가 경로에 묶이므로 준비된 target 복사는 쓸 수 없습니다(Work의 금지와 일치).
+
+## 6. 첫 controller 전에 열거·고정할 것
+
+1. D2 경로(amendment 수락 또는 미적용)와 R-03 대조표 결과에 따른 `product.py` 최종 바이트.
+2. receipt 1 + 30 member의 길이표와 길이별 정의 가능한 cell.
+3. A1 cell (member/dir, edge, occurrence), R-11 결과 규칙, recovery-phase edge.
+4. A2 호출 map: (call-site, role, path, occurrence, 존재 여부) → 기대 token. guard sync 제외 표기와 복합 주입 라벨 포함.
+5. B1 route × state 표: 부재 / parser / 직접 exec 거부 / fence의 구분, 상태별 진단 code, Read 열의 배치.
+6. B2 route별 lock-attempt 유무, S2 동등성 근거, stale ticket cell의 위치.
+7. C1 불가 cell의 사유, FS 전제, OLD pending 생성 수단.
+8. C2 유효성 표.
+9. C3 fence 분리.
+10. C4 detach frontier 수와 auditor 지원 여부.
+11. 두 번째 OLD-window candidate의 존재 여부(R-14).
+12. observer 보정(R-22~R-26)을 반영한 controls hash, oracle과 README의 diff.
+
+## 7. 정적 불확실성과 리뷰 한계
+
+- **미제공 구현:** `common.py`, `controller.py`, `runner.py`, `candidates.py`, `view.py`, `git_environment`, `exclusive_file_lock`, `write_new_bytes`, `D3_SYNC_PROGRAM`, `event_rows`/`call`/`scenario`/`interrupted_api`, baseline `product.py`, plain auditor.
+- **발췌만 받은 파일:** `work.py`, `intent.py`, `workspace.py`, 테스트.
+- **미검증 CPython 가정:** `Path.open`의 `io.open` 조회, instance seam dispatch, 기본 buffer 크기와 raw write 횟수, `__exit__`의 close 호출.
+- **재검증하지 않은 수치:** trace 수치와 timing은 Work 기재를 그대로 받았습니다. 259 = 7+1+224+2+1+1+4+1+2+16의 내부 합만 정적으로 맞춰 봤습니다.
+
+## 8. 재검토 범위
+
+위 in-scope 보정만으로 추가 리뷰를 요청할 필요는 없습니다. 이 packet 밖의 실질 변경으로 재검토 대상이 되는 것은 다음입니다.
+
+- D2 amendment 본문.
+- R-03 대조 결과로 달라지는 same-entry hunk.
+- `D3_SYNC_PROGRAM`, common/controller/runner, plain auditor의 변경.
+- 두 hunk 외의 `product.py` 수정.
+- 새 OLD-window fixture source의 도입.
+
+실행은 완성된 exact map과 T0 통과 뒤에만 가능합니다. 이 처분은 실행 준비 완료나 성공에 대한 주장이 아닙니다.
+
+#### Driver Disposition And Contract Stop
+
+Driver는 R-01의 계약 판단을 수용한다. C0-L-A의 현재 열거 대상은 선택된 Work 자체와 그 bound intent이며, captured graph의 유효성 보존이 완료된 child의 required path까지 검사하라는 문장은 아니다. 제안은 parent/child 역사 구조를 그대로 읽지만 admission 거부 대상을 넓힌다. 기존 D2 권고 선택과 전체 P2 실행 승인을 named amendment 수락으로 대체하지 않는다. Reviewer의 예시 fixture는 정적 반례 제안이며 아직 실행으로 재현하지 않았다. 이 계약 의미 판단은 반례 실행 성공 주장과 구분한다.
+
+Owner가 지정한 ‘계약 변경 시 중단’이 적용되므로 R0-B 뒤의 추가 제품/테스트/observer 작성, controller와 후속 리뷰는 중단한다. Reviewer가 나머지 authoring은 가능하다고 했어도 Owner의 중단 경계를 대신하지 않는다. 아래는 처분과 재개 시 의무이며 이번에 구현/검증했다는 뜻이 아니다.
+
+| Finding | Driver 처분 | 근거 또는 재개 시 한정된 조치 |
+| --- | --- | --- |
+| R-01 | needs-user | D2는 named C0-L-A amendment를 먼저 확정해야 한다. 아래 exact draft는 미수락 제안이며 product hunk는 미적용이다. |
+| R-02 | accept | direct captured revision/intent만, child mode·현재 완료 상태 무관, child scope/optional/미capture/재귀 제외를 문안에 명시한다. 거부 시 parent와 offending child ID를 함께 식별하는 안을 제안한다. |
+| R-03 | accept | DR의 fixed baseline2385146을 기준으로 accepted schema/entry/collision delta를 포함한3자 대조가 필요하다. R0 대기 중 읽은f71c69d의 switch 함수는 보조 근거일 뿐 대조 완료가 아니다. F-05 적용·기대값 확정은 보류한다. |
+| R-04 | revise | 동일 binding 비교와 finished 불변식의 관계를3자 대조에 넣고, 동치 근거 없는 단언 완화는 삭제 후보로 다룬다. 원 제안은 아직 수정하지 않는다. |
+| R-05 | accept | D1-A v2.1의 추가 publication 전 collision 거부를 same-entry 기준에 포함한다. checkpoint가 수행하던 collision/truth 관측을 단순 제거하지 않는다. 현재 finding은 정적이며 재현 완료가 아니다. |
+| R-06 | accept | staging unknown member와 mid-apply source drift가 기존 수락된 동작에 미치는 차이를 별도 행으로 증명하기 전 제거하지 않는다. |
+| R-07 | accept | historical replay read-only 근거와 현재 lock assertion 영향을 확인한다. f71c69d의 완료 replay guard 부재는 읽기 확인했지만 전체 current equivalence는 아직 미완이다. |
+| R-08 | accept | D3 phase는 실제 호출 시 존재 여부·call-site/role/path/occurrence 표로 결정한다. helper 변경과 E3 재사용 bridge를 연결한다. |
+| R-09 | accept | 공유 writer-guard sync를 D3 호출과 구분한다. D3_SYNC_PROGRAM 표현력을 먼저 읽고 바뀌는 경우 영향/리뷰 범위를 판정한다. |
+| R-10 | revise | pre-B1은 sync unavailable와 verification not-requested를 구분한다. post-B1 복합 주입은 합성 라벨·정확한 보존 후속을 유지하며 실제 검증 대체로 표기하지 않는다. |
+| R-11 | accept | cell 신원은 고정하고, fsynced raw-write witness와 실제 길이/바이트에 기반한 동결 판정 규칙으로 complete/torn을 구분한다. 실제 buffer 경로를 실행 전 추정값으로 PASS 처리하지 않는다. |
+| R-12 | accept |31파일 길이, 길이0/중복 위치, existing-member read/fsync/parent-sync와 create-before의 S0 동일 요청을 map에 포함한다. fullfsync-after의 도달 여부는 T0에 연결한다. |
+| R-13 | revise | mode0600/부재는 observer runpy 결과로 exec fence를 주장하지 않는다. 고정 synthetic target의 직접 exec 대조를 기존 허용 실행 경계 안에서 정의하고, 새 권한이 필요하면 확대하지 않는다. |
+| R-14 | revise | 기존 승인 OLD fixture/source가 두 OLD 후보의 정상 update/rollback 선행조건을 만들 수 있는지 먼저 정적으로 확인한다. 새 OLD source를 몰래 변형하거나 target fingerprint를 복사하지 않는다. 사용할 근거가 없다면 해당 정확한 범위 문제를 보고한다. |
+| R-15 | accept | source/installed read 열을 기존 여유 배당 또는 기존 근거로 명시 연결한다. parser/부재/bootstrap/under-lock fence 진단을 독립 구분한다. |
+| R-16 | accept | 실제 lock-attempt가 있는 route만 B2 lock witness를 요구한다. S2 동등성은 근거를 먼저 쓰고, local Work/intent stale ticket을 C2 또는 B 잔여 배당에 명시 배치한다. |
+| R-17 | accept | ASCII NFC·상위 경로 같은 구성 불가 항목은 사유로 닫고 실행 개수에 넣지 않는다. 실제 FS/ignore 전제와 OLD pending 생성 수단·repair 관측 한계를 구분한다. |
+| R-18 | accept | C2 각 ref fixture의 OLD 게시 가능성·최초 거부 guard·positive를 검증 설계에 기록한다. graph 무효나 baseline drift로 원하는 renamed-ref 거부를 대신하지 않는다. |
+| R-19 | accept | B0 ticket stale와 B1에서 새 prepare하는 old worker proof를 다른 cell로 둔다. synthetic control의 retention ref만 사용한다. |
+| R-20 | accept | exact detach removal frontier와 plain auditor의 현재 schema3 지원을 먼저 확인한다. 임의 cap이나 첫 removal만으로 전수 의무를 닫지 않는다. |
+| R-21 | accept | import 없는 선언 map/ID/선택 목록의 유일성·closure 대조와 T0 map 불일치 STOP을 고정한다.6,036은 여전히 배당량이다. |
+| R-22 | accept | observer witness stage를 before/after·lock acquisition 등 실제 위임 순서에 맞춰 전달한다. 미구현이다. |
+| R-23 | revise | 관측기 guard/flock witness와 logger I/O 실패를 제품 OSError처럼 세지 않는다. logger 실패를 같은 logger에 재귀 기록하는 보정은 하지 않는다. common 수정 없이 non-pass를 식별하는 범위를 설계하고 검증한다. |
+| R-24 | accept | pre-delegation은 해당 가로챈 호출의 위임 전이라는 의미로 한정한다. 이전 create/write 부작용과 with/close 재거부·flush0을 별도 단언한다. |
+| R-25 | accept | 전체 target의 write-audit 짝, 다중 occurrence·large/default-buffer·empty·implicit flush·반환값·mode 및 fdopen 지원 밖 분류의 의무를 controls/T0 용량 안에 배치한다. 기존30 method 수를 coverage로 주장하지 않는다. |
+| R-26 | revise | fullfsync 정상/오류·unsupported 여부와 after 도달 조건을 freeze 전에 선언한다. 미도달을 성공한 fault로 세거나 예상 밖 실패를 N/A로 바꾸지 않는다. 불확실성은 T0에 남는다. |
+
+R0-B가 지정한 별도 재검토 항목(D2 amendment, 대조 뒤 달라지는 F-05 hunk, D3_SYNC_PROGRAM/통제·auditor 변경, 다른 제품 hunk, 새 OLD fixture source)은 현재 자동 진행 권한으로 확대하지 않는다. F-05 비교 부족과 미완 map/qualification은 잔여 작업으로 남는다. D2를 결정했다고 전체 P2가 바로 실행 준비된 것은 아니다.
+
+#### Exact Proposed Amendment — Not Accepted Or Applied
+
+권고는 이미 선택된 D2 방향을 철회하거나 검사 범위를 줄이는 대신, 아래 문안을 named amendment로 검토·수락한 뒤 구현하는 것이다. 이 문안은 DR-0004 본문에 아직 삽입하지 않았다. 현재 DR SHA-256 `86bce9d1906b55ef31d8f8e47a0e75d7341021d3eff5a70ffac9c5597a5bf25e`를 유지한다. 대안은 D2 확장을 채택하지 않고 현재 계약의 own Work/intent 검사와 captured graph 보존에 한정하는 별도 Owner 결정이다. 어느 쪽도 Driver가 자동 선택하지 않는다.
+
+제안 revision1의 정확한 UTF-8 내용은 다음 text block 내부의 마지막 LF까지2,202 bytes, SHA-256 `5debd4895b1f21b0793a92c41a447422dc22d18c26b8de1cd01cf5ba264d75c4`다. 아래 블록은 검토 가능한 계약 문안 후보이며 활성 규범이나 Owner 수락 기록이 아니다.
+
+```text
+C0-L-A Direct Captured-Child Required-Reference Extension — Proposed Revision 1
+
+This amendment extends only C0-L-A's renamed-entry path-dependency predicate for a currently selected, non-completed, schema-2 local parent Work. In addition to that parent's own scope and required Work/intent references, enumerate required document_refs and evidence_refs from each direct child revision and its bound intent confirmation identified by the parent's sealed umbrella_evidence.children references. Resolve the recorded revision_ref and intent_ref against verified historical graphs; do not select the child's current revision or intent. Include a captured child regardless of its current completion state or local/isolated-worktree execution mode. Do not include child scope, optional references, declared-but-uncaptured children, descendants beyond a direct capture, or a worker-mode parent through this extension.
+
+Apply the existing hv2/colvia path-dependency rule to these additional required paths whenever the existing C0-L-A predicate is evaluated, including its admission/recovery and S6 comparison call sites. A matching captured-child path refuses with the existing HV2-WORKSPACE-PRODUCT diagnostic and identifies both the selected parent Work and each offending captured child Work. This is an intentional additional refusal that may block a parent because of an immutable historical child reference. It does not verify current child reference bytes, refresh captured evidence, rewrite history, update a baseline, rebind, cancel, complete, or accept any Work or intent. Existing graph validity, snapshot equality, truth-drift handling and post-B1 preservation/reporting rules remain in force.
+
+All other accepted C0-L-A/C0-W-A, T-A, D1-A and D3-S-A behavior remains unchanged. This amendment does not alter ordinary parent/child publication or acceptance, same-entry lifecycle behavior, record schemas, the admitted predecessor, writer guards, shared helpers, or the P2 verification criteria. Design acceptance requires explicit Owner acceptance of these identified bytes; it neither activates the runtime contract nor accepts implementation, P2 completion, adopter application or Git actions.
+```
+
+#### Budget, Preservation And Bounded Next Step
+
+새 묶음 리뷰는2/6회 사용했다. R0-A424.636초 + R0-B696.824초 = 실측1,121.460초(약18분41초)이며 남은4회 각각1,200초 한도다. 각 호출의 실제 소요가 짧았다는 이유로 호출 수를 늘리지 않는다. 추가 controller는0/누적80회이고34시간 검증 창은 미시작이다. Authoring은 기존45분에 이번05:19 재개 이후 기록·대기 시간을20분으로 상향 반올림해 더한 누적65분, 잔여30시간55분으로 잡는다.05:08~05:19 Owner 대기는 별도로 구분한다. 기존 예산을 초기화하거나 과거 승인 묶음 사용분을 삭제하지 않는다.
+
+중단 기록과 현재4파일 diff를 private bundle `p2-full-execution-01/r0-b-result/current-changes.patch`에 보존한다. 기존 fixed packet은 미해결 R-01의 Owner 계약 판단과 R-03의 비교 입력 확인 소비에 한해 유지하며, 해당 판단·비교가 끝나고 Work에 필요한 최소 결과가 기록되면 추가 packet 보존 의존성이 종료된다. Runtime 제안은 source에 미적용이고 원문 diff는 packet에 포함돼 있다. Source checkout과 기존 native evidence는 잔여 P2의 구체적 재사용이 있어 유지한다. Product/DR/HEAD/index를 보존하고 문서 GFM·링크·diff만 확인한다. 테스트/import/discovery/controller 추가 실행, Git 작업, P2 종료 수락·활성화는 없다.
+
+다음 단계의 제안은 위2,202-byte amendment 문안의 검토와 별도 Owner 계약 수락이다. 남은4회는 원래 영역 R1 두 건·누적 R1 한 건·후속 확인 한 건을 위한 한도다. D2와 F-05가 각각 추가 R0를 요구하면 그 배치를 초과하므로, 다음 재개 전 필요한 정적 대조를 마친 뒤 한정된 후속 R0 한 건에 함께 제공할 수 있는지 정리해야 한다. 아직 그 추가 packet이나 review를 실행하지 않는다. 별도 호출이 더 필요하면 자동 증가·R1 생략 없이 예산 경계에서 보고한다. 계약 수락 뒤의 P2 재개에도 기존 전체 map·same-entry3자 대조·T0·예산/실패 중단 조건을 유지한다.
+
+## D2 Contract And Same-Entry Equivalence Follow-Up — 2026-10-11
+
+### Owner Authorization And Current Boundary
+
+Owner actual decision: “승인해. 준비한 D2 계약 문안 검토와 same-entry 동치 대조를 기존 잔여 예산 안에서 진행해. 필요한 후속 R0는 묶어서 수행하고 정확한 계약 수락안을 제시해. 계약·제품 적용과 검증 실행은 별도 수락 전까지 보류해.”
+
+05:41 UTC부터 이 한정된 문안·정적 대조·후속 R0 작업을 재개했다. 이전 authoring 사용65분/잔여30시간55분을 유지하며 Owner 대기와 구분한다. 남은4회 중1회의 fresh Claude subscription no-tools R0에 D2와 same-entry를 함께 제공한다. 그 뒤 영역 R1 두 건과 누적 R1 한 건을 위한3회가 남는다. 추가 review가 필요하면 자동 증가하거나 R1을 생략하지 않는다. 계약/제품/controls 적용, product import/discovery/test/controller 실행은 이번 승인 범위 밖이다. 스크립트는 읽은 소스의 AST·diff와 미적용 제안을 구성할 뿐 제품을 import/호출하지 않는다.
+
+이번 D2는 P2 잔여 결정표의 captured-child 문제를 가리킨다. 이미 수락된 fresh-init D2-A amendment와 다른 항목이다. 제안의 정식 이름은 `C0-L-A Direct Captured-Child Required-Reference Extension`이며 기존 D2-A를 바꾸지 않는다.
+
+### Comparison Inputs And Definition
+
+동치 기준은 DR-0004 Fixed Baseline `238514686078ce1564010a7b69013f48a635c57c`의 same-window switch에 이미 수락된 entry-1 membership/launcher·paired schema2·D1-A v2.1 collision 규칙을 명시적으로 더한 것이다. 과거 checkout-1 자체를 새 entry-1과 동일하다고 보거나 현재 HEAD의 모든 검사를 이미 수락된 계약으로 승격하지 않는다.
+
+- Baseline product.py SHA `7cd71f11e316b7c6635213b2ffbeb983ebc9181f1349d8852419f92ed52dc34d`: DR에 적힌 값과 실제 `git show` 바이트가 일치한다. 기존 switch 함수는5,418 bytes다.
+- HEAD product.py SHA `7c5797f7bdfb1ed3ccde0506f90a470ee7bd9526048b8d0be093569e2bb7cdae`: 현행9,202-byte switch 함수다. 현재 branch `codex/colvia-brand-transition`, HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`에 들어 있으며 이번에도 미변경이다.
+- Baseline workspace.py SHA `ca08550f64bb7331bdd5ceba720b36f67e1603f90cffe7286c80565ee84762f3`, current `4913d185ec81e1c19a3bfa46773aacdf401ab4eb6fe06dc8649e92b245012e09`. 전체 파일은 달라도 `writer_guard`, `_durable_directory`, `_write_exact` 함수의 source bytes는 동일하다. product.py의 `_replace_product_file`과 `_write_exact` 함수도 source bytes가 동일하다. 다른 함수나 호출 context까지 자동 동치라는 뜻은 아니다.
+- Git history에서 해당 switch 변경은 `a17f35c`에 들어 있다. 직전 product 변경 `f71c69d`의 함수만으로 현재 기준을 대체하지 않고 위 fixed baseline을 사용했다. 아직 커밋되지 않은 새 제품 변경은 없다.
+- D2 exact draft revision1은2,202 bytes/SHA `5debd4895b1f21b0793a92c41a447422dc22d18c26b8de1cd01cf5ba264d75c4`이며 아래 후속 R0의 문안 입력이다. 현재 Accepted DR 본문은 그대로다.
+
+### Same-Entry Three-Way Sequence
+
+아래 `P0..P3`는 새로운 제품 API나 persistent state가 아니라 비교를 위한 이 문서의 임시 표기다. `same-entry`는 schema2 entry-1 candidate와 `remove=[]`의 유효 switch를 뜻한다. 진입창/schema/launcher 바이트와 release identity 변화는 accepted migration delta이고, 같은 target을 복제해 identity를 무시하는 실험을 하지 않았다.
+
+| 지점 | Fixed baseline의 same-window | 현재 HEAD | M1: 기준 순서 복원 제안 | 분류/판정 |
+| --- | --- | --- | --- | --- |
+| 입력·runtime·target·ticket | runtime/argv point/token/target topology·fingerprint, installed proof, candidate를 한 번 읽어 preview identity 대조 | 같은 순서; 새 entry/schema plan validator | HEAD validator 유지 | entry-1/schema2는 수락된 delta |
+| P0 | `_switch_preflight`1회. complete면 `verify_workspace_product`로 read-only return | complete도 guard 획득, installed 재검사·preflight 재호출 뒤 replay | same-entry complete만 guard 없이 `_entry_replay_result`; transition은 HEAD 유지 | baseline read-only 복원. 현재 replay helper에서 remove=[]이면 추가 sync/S6 비교 없음 |
+| guard·P1 | `_visible_truth` 후 guard; installed proof·preflight; 경합으로 done이면 read-only return | 동일; guard protocol 변경 없음 | 동일 | lock directory/anchor가 원래 허용하는 쓰기는 그대로 |
+| receipt | binding/receipt output bytes 사전 검증, `_visible_truth`, workspace `_write_exact`; after-receipt inject | transition 여부에 따라 exact helper 선택 | same-entry는 기존 workspace helper | 동일 I/O·예외·flush/sync. D3 strict sync는 transition만 |
+| staging 시작 | candidate가 없으면 rollback unavailable; `_durable_directory`3단계, `_init_partial_tree` | 앞에 full checkpoint/source 재확인, operation sibling whitelist 추가 | 추가 checkpoint와 sibling whitelist는 transition만 | unknown staged candidate 내부는 `_init_partial_tree`가 계속 검사. operation의 무관한 debris 허용 여부 복원 |
+| member 반복 | 원래 parent mkdir·file exact write; inventory/member inject points | member마다 full checkpoint/source 재확인 | member checkpoint는 transition만 | source bytes는 최초 candidate snapshot과 staged release verification으로 확인. same-entry 반복 source read 제거는 복원 후보 |
+| release publication | staged release 검증→rename→release parent sync→operation sync | rename 전 full checkpoint와 strict/normal sync 분기 | 추가 checkpoint는 transition만; same-entry 원래 sync 호출·순서 | mutation 순서는 baseline과 같음 |
+| release가 이미 존재 | verify release | transition resync 추가, operation 이름·잔여물 검사도 공통 적용 | resync와 추가 operation 검사 모두 transition만 | rollback/reused release의 same-entry debris 처리 복원 |
+| P2: after-release 뒤 | full preflight·binding 비교, message `binding changed during switch` | `checkpoint`가 같은 검사 + not-finished + source equality 수행 | full preflight·binding/not-finished 유지; source equality는 transition만 | binding 비교 자체는 baseline과 동일. finished이면 binding이 old state와 다르므로 not-finished는 약화하지 않는 중복 단언이라는 정적 가정도 Reviewer에 제공 |
+| launcher 교체 | 바이트가 다를 때 `_replace_product_file`, after-launcher inject | replace 직전에도 추가 checkpoint | 추가 checkpoint는 transition만; same-entry 원래 replace | replace helper bytes 불변 |
+| P3: binding 직전 | full preflight·binding 비교, message `binding changed before publication`; replace binding | checkpoint의 `binding changed during switch`로 진단 변경, source equality 추가 | baseline 진단 복원, full preflight·binding/not-finished 유지, 반복 source equality 제외 | 정상 반환·오류/주입 순서와 binding 재확인 유지 |
+| 최종 return | after-binding inject 후 verify product | `_entry_replay_result` | 같은 helper; remove=[]에서는 product verify+원래 result keys | transition sync/content 결과를 same-entry에 적용하지 않음 |
+| preflight의 수락된 변화 | old window validator, 기존 pending/history/binding/truth 검사 | entry/schema/retirement validation; verified entry-1에서 D1 collision; transition 전용 admission/local 검사 | HEAD `_switch_preflight`는 한 바이트도 변경하지 않음 | P0/P1/P2/P3의 D1·기존 비통과 우선순위 모두 유지 |
+
+정적 비교에서 switch mutation 순서는 same-entry의 정상/허용 recovery 분기에 대해 baseline의 receipt→mkdir/member write→rename+sync→launcher replace→binding replace 그대로다. 현재 추가 full checkpoint는 읽기와 조기 실패 시점을 바꾸므로 이를 무조건 동치인 공통 guard라고 부르지 않는다. 정상 경로의 일치만으로 concurrent drift/collision의 거부 시점 동치를 주장하지 않는다.
+
+### R-05 Collision Observation Question And Alternatives
+
+R0-B R-05는 추가 checkpoint를 없애면 late collision을 release publication 뒤에 발견하므로 D1-A 위반이라고 지적했다. 그러나 수락된 D1-A 문구는 `a detected collision`에 대한 추가 publication 금지를 규정하며, switch member마다의 신규 관측 빈도를 명시하지 않는다. 기존 init의 late-collision 문장은 기존 under-guard re-observation과 비협조적 변경 사이의 비원자성을 명시한다. 어느 해석이 맞는지 Work에 조용히 추가 정책을 쓰지 않고 fixed baseline과 정확한 D1 문구를 함께 R0에 제공한다.
+
+현재 테스트를 import 없이 AST로 열거했다. `test_live_collision_diagnostics_and_lifecycle_preservation`은 최초 live status/doctor·detach, `test_retired_collision_blocks_completed_transition_replay`는 완료된 transition replay, `test_init_recovery_and_completed_replay_preserve_collision`/`test_late_init_collision_preserves_exact_bootstrap_prefix`는 init, `test_same_entry_update_rollback_and_exact_repair`는 정상 same-entry, `test_d3_same_entry_scope_unchanged`는 receipt sync unavailable를 다룬다. 이들에 same-entry staging/member 도중 hv2를 만드는 late-collision 단언이나 same-entry completed replay lock 단언은 없다. 따라서 이 목록을 그 추가 관측점의 기존 qualification으로 인용할 수 없다. 더 넓은 module의 관련 assertion은 후속 C4/C5 검증 설계에서 확인할 의무로 유지한다.
+
+후속 R0에 아래 세 미적용 diff를 제공한다. 공통으로 D2의 own-ref 검사를 먼저 유지하고, 직접 captured child의 required Work/intent path를 모아 offending child IDs를 정렬해 parent ID와 함께 진단하는 hunk가 있다. 이는 새 계약이 수락되기 전에는 적용하지 않는다.
+
+| 제안 | extra checkpoint 처리 | 미적용 whole diff 신원 | Driver 사전 판단 |
+| --- | --- | --- | --- |
+| M1 baseline | 추가 staging/member/rename/launcher full checkpoint는 transition 한정. 기존 P0/P1/P2/P3는 그대로 |7,062 bytes / `ac7a67d132de6989ce76f22dca548f94958e4302f04bf1d38cc8e1ce9cca21e2` | fixed baseline+수락된 schema/entry/D1 변화라는 동치 정의에 가장 가까운 권고 후보. D1 관측 빈도 해석에 대한 Reviewer 판단 전 확정하지 않음 |
+| M2 collision-only | 기존 추가 지점에서 transition은 full checkpoint, same-entry는 `_refuse_retired_entry`만 수행 |7,329 bytes / `704223ce38eee15395d39e9377df8afa08655d7210b77445f207d5e9b471f7ff` | R-05 관측점은 유지하나 current product/truth 재확인을 생략해 동시 비통과의 우선순위를 바꿀 위험. 안전한 기본안이라고 단정하지 않음 |
+| M3 full | 추가 지점의 full preflight·binding 검사는 유지; source 반복 검사만 transition 한정 |5,680 bytes / `03ea203d82f7c15e4d3bfbd82eaa422e09b95f61d4b2fc8e5affb15fd3826f19` | HEAD의 관측·우선순위에 가깝지만 baseline보다 조기 거부하는 추가 관측이 남음. 새 same-entry 의미를 명시 수락해야 하는지 확인 필요 |
+
+세 안 모두 완료 same-entry replay는 read-only로 복원하고 unknown operation sibling/잔여 staging 검사와 source 반복 재검사는 transition에 한정한다. 모든 안에서 not-finished 단언은 유지하며 same-entry binding 직전 진단을 baseline 문구로 복원한다. 공유 guard, `_write_exact`/`_durable_directory`/`_replace_product_file`와 `_switch_preflight`는 변경하지 않는다.
+
+### Transition-Only Static Comparison And Limits
+
+각 제안의 `workspace_switch_apply`에 대해 `transition=True` 및 nonempty remove의 조건문만 정적으로 접었다. M2는 이 조건에서 단순 `checkpoint()`를 호출하는 `publication_checkpoint` wrapper를 펼쳤다. Product import/실행은0이다. 이 정규화에서 HEAD와 세 제안의 AST dump가 동일했고 공통 SHA는 `0e064b8f4d7e1df4fa788df2458abf1193f91cf9458ec12a3e5bdb1f6e2a0228`이다.
+
+이 결과는 해당 switch 함수의 그 분기에 한정한 정적 대조다. D2가 변경하는 `_entry_local_baselines`, 실제 Python dispatch·I/O·timing·race, 전체 source나 기존 E1~E7의 현재 후보 실행 성공을 증명하지 않는다. Normalizer source와 exact hashes는 Reviewer 입력에 포함한다. `_entry_local_baselines`의 새 거부는 의도한 계약 delta이며 전환 전체가 unchanged라는 주장을 하지 않는다.
+
+### Follow-Up R0 Request
+
+남은 후속 R0 한 회에서 (1) D2 exact amendment의 포함/제외·오류 식별·역사/worker 경계·S6/회복 의미, (2) D2 proposed hunk와 문안의 일치, (3) baseline+수락된 delta에 대한 세 same-entry 안의 비교 및 R-05 해석, (4) 추가 same-entry amendment가 필요한지, (5) 첫 controller 이전에 남길 실제 검증 의무를 함께 검토한다. Reviewer에게 기본 기준을 바꾸거나 새 권한/회귀 생략을 승인하도록 요청하지 않는다. 적합한 안이 없으면 그 사실과 최소한의 정확한 선택지를 보고한다. 검토는 계약 수락·적용이나 제품 실행으로 승격하지 않는다.
+
+후속 packet/제안 diff/정적 대조 출력은 이 named review와 Owner exact acceptance 판단의 임시 입력이다. 미해결 finding에 필요한 신원·원문·처분·최종 문안만 이 Work에 남기고, 최종 판단·결과 기록 뒤 재현 가능한 raw output을 영구 default deliverable로 승격하지 않는다. 현재 uncommitted diff의 복구용 보존은 기존 private bundle에 이어 한 개 추가한다. Git과 source worktree는 변경/삭제하지 않는다.
+
+### Combined R0-C External-Transfer Approval Block
+
+D2 문안과 same-entry3안을 한 fixed packet에 묶어 R0-C 실행을 요청했으나 automatic approval review가 프로세스 생성 전에 차단했다. 거부 사유 원문은 다음과 같다.
+
+> 후속 R0는 새로운293,470-byte packet을 Anthropic Claude로 전송하지만, 사용자의 승인 범위는 D2·same-entry 검토 자체이며 이 새 payload의 외부 전송에 대한 명시적 승인은 없습니다.
+
+이번 Owner 승인이 후속 R0를 명시적으로 포함한다는 사실은 위에 기록했다. 다만 자동 검토가 요구한 새 payload의 외부 전달 승인을 우회하지 않았다. CLI auth/reviewer process는 시작하지 않았고 `started.json`/stream 출력도 없다. 따라서 리뷰 사용은 여전히2/6이며 남은4회다. R0-C 결과나 새 Reviewer 처분은 없다. 이 단계에서 최종 계약 수락안을 reviewed로 표시하지 않는다.
+
+승인을 요청하는 자료는293,470 bytes/SHA-256 `86a85c3bfe0695515827c8003ac740dcdfce15917e9501c3ea46702438a3c12a`인 고정 stdin packet 하나다. 목적지는 기존 Anthropic first-party Claude Code 구독(`claude.ai / firstParty / pro`, 실행 직전 재확인)이다. 요청은 fresh no-tools 정적 리뷰1회,1,200초, 기존 출력/권한 한도 그대로다. 내용은 아래10개 파일의 전체 또는 명시된 발췌, fixed baseline2385146의 product/workspace 함수 발췌, D2 revision1 문안, 미적용 M1/M2/M3 diff, import 없는 transition AST normalizer/그 출력, 이전 R0-B의 R-01~R-07 원문과 검토 질문이다. Private 개발 소스·계약·내부 판단과 일부 로컬 경로가 전달된다. Credential/account file이나 실제 adopter 데이터를 추가하지 않았다.
+
+- `docs/development/CHORE-20261009-002-colvia-verification-controls.md`
+- `docs/decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md`
+- `src/hv2ref/product.py`
+- `src/hv2ref/workspace.py`
+- `src/hv2ref/work.py`
+- `src/hv2ref/intent.py`
+- `src/hv2ref/umbrella.py`
+- `tests/test_entry_window_transition.py`
+- `docs/WORKSPACE-CONTRACT.md`
+- `docs/GENERAL-WORK.md`
+
+Packet의 base는 `a17f35cf323ffde7a8642a85501fddbec858b6de`, 구성 시 diff SHA `eaf4db3fbb92aabd19c4a72771bda46d9706a335c078b9a91fbc2315d00afa24`, reviewed Work prefix1,269,687 bytes/SHA `808643e64c24090a8c565e62ff13df936941aa0de140cd51cee26db794488a9b`다. 이 차단 기록은 그 prefix 뒤에만 붙인다. 향후 실행 전에 packet 자체는 그대로 두고 reviewed prefix와 그 뒤의 설명된 운영 append·현재 full Work/diff를 각각 확인해야 한다. 이전 full Work hash를 그대로 재시도해 설명된 append를 drift 실패로 만들지 않는다. 다른 source/proposal 바이트가 변하면 별도 영향 판단이 필요하다.
+
+고정 packet과 현재4파일 diff는 private bundle `p2-full-execution-01/r0-c-approval/`에 보존한다. Packet 소비자는 Owner의 이번 외부 전달 판단, 승인된 R0-C와 그 finding 처분·정확한 계약 수락안 준비다. 그 소비가 끝나면 최소 원문/신원/처분을 Work에 남기고 추가 packet 보존 의존성이 끝난다. Source/기존 native evidence는 실제 후속 P2 사용이 있어 유지한다. 중요한 미커밋 변경은 current-changes.patch로 복구 가능하다.
+
+이번 authoring은05:41 재개 이후의 준비·정적 대조·기록 시간을15분으로 상향 반올림해 추가 차감한다. 기존65분+이번15분=80분, 잔여30시간40분이다. 실제 reviewer 추가0/누적2회, controller 추가0/누적80회,34시간 검증 창은 미시작이다. 계약/제품/controls 적용·테스트/import/discovery·Git 작업은0이며 원래 입력을 보존했다. 이번에는 문서와 source-text 대조만 수행했다. Owner의 정확한 전송 승인이 있으면 이 packet으로1회 후속 R0를 실행하고 계약 수락안을 제시한다. 계약·제품 적용과 검증 실행은 그 뒤에도 별도 수락까지 보류한다.
+
+### R0-C Exact Transfer Owner Approval
+
+Owner는 위 exact 293,470-byte packet의 Anthropic first-party Claude Code 구독 경로 1회 전송 승인 요청에 2026-10-11 05:55 UTC `승인`이라고 답했다. 이는 packet SHA `86a85c3bfe0695515827c8003ac740dcdfce15917e9501c3ea46702438a3c12a`의 fresh no-tools 정적 리뷰 1회에 대한 승인이다. 계약·제품 적용과 검증 실행은 기존 지시대로 별도 수락까지 보류한다. 고정 packet은 변경하지 않으며 이 운영 append는 reviewed Work prefix 밖이다. 실행 직전 full Work/diff와 reviewed prefix를 별도로 고정해 전후 drift를 확인한다.
+
+## R0-C Result And Exact Owner Acceptance Proposal — 2026-10-11
+
+### Actual Review And Input Identity
+
+승인된 고정293,470-byte packet을 Anthropic first-party Claude Code 구독 경로로1회 전달했다. auth `claude.ai / firstParty / pro`, 실제 model `claude-opus-5-5`(Claude Opus5.5), fresh session `e886acac-1f96-477e-b594-90852c891a9f`, no-tools/no-MCP였다. Driver는 Codex, Reviewer는 Claude, 수락 주체는 Owner다. 시작05:56:01.424 UTC, 종료06:01:52.116 UTC,350.690초, exit0/success, tool-use0/permission-denial0, child process group 종료, 입력 전후 drift PASS다. 정적 리뷰의 정상 종료이지 제품/테스트 PASS가 아니다. Reviewer는 제공 packet만 보았고 일부 소스는 발췌라 문맥/coverage가 제한된다.
+
+Base `a17f35cf323ffde7a8642a85501fddbec858b6de`, 고정 packet SHA `86a85c3bfe0695515827c8003ac740dcdfce15917e9501c3ea46702438a3c12a`, packet 구성 시 whole diff SHA `eaf4db3fbb92aabd19c4a72771bda46d9706a335c078b9a91fbc2315d00afa24`다. 승인 차단·Owner 승인 append 뒤 invocation whole diff SHA `19310c7279eb6dad53c6bd82a07c892f27f3360b0dd2c7cf74bf282034dc30d7`, full Work SHA `a3162ee9725fa95316d8030f43933317c034deb64b5910238ec9852fc82cbd84`; reviewed Work prefix1,269,687 bytes/SHA `808643e64c24090a8c565e62ff13df936941aa0de140cd51cee26db794488a9b`도 따로 일치했다. 설명된 운영 append는 Reviewer packet에 새로 넣지 않았다.
+
+Diff 밖의 읽기 입력까지 포함한 reviewed source 신원은 아래와 같다. Work는 위 prefix 신원을 적용한다.
+
+- `docs/decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md`: `86bce9d1906b55ef31d8f8e47a0e75d7341021d3eff5a70ffac9c5597a5bf25e`
+- `src/hv2ref/product.py`: `7c5797f7bdfb1ed3ccde0506f90a470ee7bd9526048b8d0be093569e2bb7cdae`
+- `src/hv2ref/workspace.py`: `4913d185ec81e1c19a3bfa46773aacdf401ab4eb6fe06dc8649e92b245012e09`
+- `src/hv2ref/work.py`: `c390f656cca9e981ec3ad9957a48f55bc80b3e5a805b93674e1a97169822d043`
+- `src/hv2ref/intent.py`: `f32ba7a1be036827d6a375a619a41753870e704fb3d6d99ee3bc13a18e4f313c`
+- `src/hv2ref/umbrella.py`: `fef162a8b41e2e4c643e473392540377c38c208e50acf7dba723692f09e08f1d`
+- `tests/test_entry_window_transition.py`: `e0858668e16a36a2fa2e31f9805c798c676c9cd34ab8d160390577707517f19c`
+- `docs/WORKSPACE-CONTRACT.md`: `0b9e6db2236308b77eba104c6b77c6c9e51158964254576faecc79fe6781eeb0`
+- `docs/GENERAL-WORK.md`: `1c3c3d8a48b8200fbd22cd63504db14df3b0d7550c28211893093bba58d99882`
+
+Fixed baseline2385146의 product/workspace 바이트와 함수 발췌 신원은 위 Comparison Inputs And Definition에 기록돼 있다. D2 revision1, M1/M2/M3 exact diff, normalizer와 그 결과, R0-B R-01~R-07도 제공했다. 응답 원문 16736 bytes/SHA `94985abcd41b32b8e560eb2163cd30858afa56b81d793053c7811653189b5740`는 다음 구간에 그대로 보존한다. API envelope/stream은 영구 review deliverable이 아니다.
+
+### Verbatim R0-C Reviewer Response
+
+# P2 R0-C 정적 리뷰 — D2 문안과 same-entry 동치
+
+실행 0회, 도구 0회의 정적 판독이며, 아래 판정은 Owner 수락도 구현 승인도 아닙니다.
+
+**처분 요약**
+- **D2 revision1:** 범위는 정밀하고 hunk와 대체로 일치하지만, 문언과 hunk가 어긋나는 경우가 1건(A-02) 있습니다. 아래 교체문을 반영한 revision 1.1 바이트로 수락을 판단하길 권합니다. 교체는 모두 명확화이고 실질 범위 변경은 없습니다.
+- **same-entry:** M1을 권고합니다. 별도 same-entry amendment는 필요 없습니다. M3는 별도 amendment가 있어야 하고, M2는 권고하지 않습니다.
+- **R0-B R-05:** "D1-A 위반" 판정을 철회합니다. D1은 switch의 관측 빈도를 정하지 않습니다.
+
+## A. D2 revision1 (SHA `5debd489…`)
+
+### hunk와 문언의 대응
+공통 hunk(`_entry_local_baselines`, `@@ -493`)를 문언과 대조했습니다.
+
+| 문언 | hunk 근거 | 일치 |
+| --- | --- | --- |
+| 선택된 non-completed schema-2 local parent만 | `state == "completed"`와 `mode != "local"`은 기존 `continue`, 이후 `schema_version == 2` | 일치 |
+| 봉인된 direct child revision과 bound intent confirmation | `_resolve(graphs[child_id]["revisions"], child["revision_ref"])`, `_resolve_workspace_intent(..., require_current=False)` 뒤 `acceptances[...]["confirmation"]` | 일치 |
+| child의 현재 revision/intent를 쓰지 않음 | `graph["current"]`를 child에 대해 참조하지 않음 | 일치 |
+| child mode와 완료 여부 무관 | child에 대한 필터 없음 | 일치 |
+| child scope, optional, 미capture, 재귀 제외 | `if ref["required"]`만 수집하고 `umbrella_evidence.children`만 순회. nested는 `umbrella._child_chain`의 "nested umbrella unsupported"가 차단 | 일치 |
+| 기존 호출처 전부 | admission/preview(`_entry_admission`), pending 복구(`_switch_preflight`), S6(`_entry_replay_result`의 truth 일치 분기) | 일치 |
+| parent와 child 모두 식별 | child 분기 메시지에 `work_id`와 `sorted(offending_children)` | 조건부 (A-02) |
+
+`graphs[child_id]`의 존재는 `_all()` 안의 `check_work_histories`가 선행 보장합니다. same-entry에서는 `_entry_local_baselines` 호출처가 없어 영향이 없습니다.
+
+### A-01 (낮음, 명확화) 어느 revision의 evidence인지 불명
+- **위치:** 1문단 2문장 "the parent's sealed umbrella_evidence.children references".
+- **문제:** parent는 revision마다 evidence가 다릅니다(start의 부분 capture, rebind). hunk는 현재 선택된 revision만 봅니다.
+- **교체:** `identified by the sealed umbrella_evidence.children references of that parent's currently selected revision`
+- **경계:** 계약 문언만 고치며 hunk는 그대로입니다.
+
+### A-02 (중간, 문언과 hunk 불일치) own-ref 거부가 먼저일 때 child가 식별되지 않음
+- **위치:** 2문단 2문장과 hunk의 기존 `_serial_require(... "entry path dependency in selected local Work: " + work_id)`.
+- **기전:** parent 자신의 ref와 captured child ref가 모두 걸리면 기존 own-ref 거부가 먼저 발생하고, 그 메시지에는 parent ID만 있습니다. 문언의 "identifies both … and each offending captured child Work"가 이 경우 성립하지 않습니다.
+- **추가 사실:** 여러 parent가 걸려도 첫 Work에서 끝납니다. 순회 순서는 `iterdir()`에 의존하므로 어느 parent가 보고될지는 고정되지 않습니다. 이는 own-ref 검사의 기존 성질입니다.
+- **교체 (2문단 2문장 전체):**
+  ```
+  The existing refusal for a Work's own scope and required Work/intent references is evaluated first and keeps its existing diagnostic; it need not enumerate captured children. Otherwise a matching captured-child path refuses with the existing HV2-WORKSPACE-PRODUCT diagnostic and identifies the refusing selected parent Work and each of that parent's offending captured child Works. This extension does not change how many refusing Works a single response reports.
+  ```
+- **경계:** 문언을 hunk에 맞추는 명확화입니다. 반대로 "전체 offending parent/child 목록"을 요구하면 hunk 변경이 필요하고, 그 코드는 이번 검토 범위 밖입니다.
+
+### A-03 (낮음, 명확화) 불변 조항 목록의 누락
+- **위치:** 3문단 1문장 "C0-L-A/C0-W-A, T-A, D1-A and D3-S-A".
+- **문제:** S6 호출처는 D3-R-A의 exit 10/65 mapping 아래에 있는데 목록에 없습니다. fresh-init D2-A와의 구분도 본문에 없고, "T-A"는 DR의 표기(C0-T-A)와 다릅니다.
+- **교체:**
+  ```
+  All other accepted DR-0004 behavior remains unchanged, including the rest of C0-L-A, C0-W-A, C0-T-A, D1-A/D2-A revision 2.1 and D3-A revision 1.1. This extension is distinct from the fresh-init D2-A amendment.
+  ```
+
+### A-04 (낮음, 명확화) "P2 verification criteria" 불변 문구
+- **위치:** 3문단 2문장 끝.
+- **문제:** 새 거부는 자체 검증이 필요한데, 이 문구는 검증 추가를 금지하는 뜻으로 읽힐 수 있습니다.
+- **교체 (해당 문장):**
+  ```
+  This amendment does not alter ordinary parent/child publication or acceptance, same-entry lifecycle behavior, record schemas, the admitted predecessor, writer guards or shared helpers. It neither weakens nor replaces existing P2 verification criteria; evidence for this added refusal is a separate verification-plan obligation.
+  ```
+
+### A-05 (정보) Owner가 알고 수락해야 할 실질 결정
+문언에 이미 들어 있어 교체할 것은 없습니다.
+- **worker-mode child 포함:** 완료됐거나 worker-mode인 child의 봉인 기록이 local parent를 막습니다. C0-W-A의 "worker record alone does not block"과 충돌하지는 않지만 인접한 경계입니다.
+- **비대칭 제외:** child scope, 미capture child, worker parent는 이 확장으로 거부되지 않습니다.
+- **해소 비용:** 문언에 해소 경로가 없습니다. GENERAL-WORK상 local parent rebind는 새 accepted intent를 요구하므로, 옛 runtime에서 parent를 완료하거나 intent를 바꾸고 human rebind를 해야 할 것으로 추론합니다(미실행 추론).
+
+### A-06 (낮음, 정적 불확실성)
+- S6에서 이 거부가 나면 메시지에 "B1 remains current" 접미가 없습니다. 접미는 `_entry_compare_local`의 baseline mismatch에만 있습니다.
+- 다만 truth가 같으면 admission과 결과가 같으므로, 이 경로는 비교 도중 비협조적으로 truth가 바뀐 경우에만 도달합니다. own-ref도 같은 성질입니다.
+- child intent graph는 `_all()`과 별도로 다시 읽으며 원자적이지 않습니다. 기존 own-intent 경로와 같은 패턴입니다.
+- `_serial_require`의 본문은 제공되지 않았습니다. 코드와 exit 65 대응은 미확인입니다.
+
+## B. Same-entry 대조
+
+### B-01 Driver matrix는 제공된 baseline 발췌와 일치
+baseline `workspace_switch_apply`의 `remove == []` 순서는 다음과 같습니다.
+
+1. P0 preflight. done이면 guard 없이 `verify_workspace_product`를 반환합니다.
+2. `_visible_truth`, guard 획득, P1 preflight.
+3. receipt를 workspace `_write_exact`로 씁니다.
+4. `_durable_directory` 3회, `_init_partial_tree`, member별 parent와 exact write.
+5. staged 검증, rename, `sync_directory` 2회, release 검증.
+6. P2 preflight ("binding changed during switch"), launcher가 다르면 replace.
+7. P3 preflight ("binding changed before publication"), binding replace, product 검증.
+
+M1의 same-entry 경로는 이 순서와 문장 단위로 대응합니다. 차이는 다음 수락된 delta뿐입니다.
+- HEAD `_switch_preflight`: schema 2와 entry-1 검증, 그리고 마지막 순서의 D1 collision 검사.
+- `colvia`와 `ENTRY_MANAGED_PATHS`.
+- 종결 helper `_entry_replay_result`.
+
+`writer_guard`, `_durable_directory`, `_write_exact`, `_replace_product_file`은 제공된 두 발췌에서 본문이 같습니다. lock anchor 쓰기와 sync 호출은 비-replay 경로에서 변하지 않습니다.
+
+### B-02 (낮음) matrix에 빠진 종결 관측점
+- **위치:** matrix "최종 return" 행, `_entry_replay_result`의 `_refuse_retired_entry`.
+- **내용:** binding 게시 뒤에도 collision을 한 번 더 관측합니다. P3 이후에 생긴 점유자는 binding이 이미 게시된 상태에서 exit 65가 됩니다.
+- **판단:** HEAD와 세 안에 공통이라 선택에는 영향이 없습니다. after-binding 기대값을 의식적으로 정하도록 matrix에 한 줄 추가하길 권합니다.
+
+### B-03 R0-B 재평가
+
+| 항목 | 재평가 |
+| --- | --- |
+| R-03 | baseline 발췌가 제공돼 해소됐습니다. |
+| R-04 | 유지합니다. finished면 현재 binding의 id(operation id)가 `state["binding_ref"]`와 달라 `not finished`는 중복 단언입니다. 세 안 모두 유지하며 메시지도 같습니다. |
+| R-06 | sibling whitelist, 게시 후 debris 검사, apply 중 source 재검증은 baseline에 없습니다. 제거는 "복원"으로 입증됩니다. 게시 바이트는 메모리 candidate와 `verify_workspace_release` 2회가 보호합니다. |
+| R-07 | 유지합니다. baseline과 WORKSPACE-CONTRACT("exact historical operation replay is read-only") 모두 guard 없는 replay입니다. 완료 replay의 collision은 P0 preflight와 helper가 각각 관측합니다. |
+
+## C. R-05 재평가
+
+**판정: "위반"을 철회하고 "관측 빈도 선택(중간)"으로 낮춥니다.** 문언 근거는 네 가지입니다.
+
+1. D1 Lifecycle refusal 문단의 주어는 "a **detected** collision"입니다. 탐지 이후의 추가 게시를 금지할 뿐, 탐지 지점의 수를 정하지 않습니다.
+2. 관측 일정을 말하는 유일한 문장은 init 문단입니다. "at each **existing** under-guard re-observation"이라 하고, "not atomic protection against a non-cooperating path change between observations"라고 명시합니다.
+3. D3-A는 "same-entry lifecycle contract … remain unchanged"와 "does not silently change same-entry lifecycle semantics"를 둡니다.
+4. guard 아래에서 P1과 P2 사이에 root를 바꿀 수 있는 것은 guard 밖의 편집뿐입니다. 계약은 이를 보호 대상에서 명시적으로 제외합니다.
+
+M1에서 **탐지 이후**의 게시는 없습니다. P1 탐지 뒤에는 receipt가 없고, P2 뒤에는 launcher와 binding이 없으며, P3 뒤에는 binding이 없습니다. P1과 P2 사이에 생긴 점유자는 release 게시 뒤 P2에서 탐지되는데, 이는 init 문단이 허용한 것과 같은 유형입니다.
+
+**불확실성:** D1을 qualify했던 과거 후보에 mid-staging 단언이 있었는지는 이 packet으로 확인할 수 없습니다. 제공된 테스트 발췌에는 없습니다.
+
+**Owner의 실질 선택은 하나입니다.** "게시 단계마다 선행 관측"을 same-entry 의미로 원하면, 그것은 D1 해석이 아니라 새 same-entry 의미입니다. M3와 named amendment가 필요합니다.
+
+## D. 세 안 비교와 권고
+
+**권고: M1.** 기준(baseline + 수락된 delta)과 일치하는 유일한 안입니다.
+
+| 상황 (P1 통과 후, staging 도중) | M1 | M2 | M3 |
+| --- | --- | --- | --- |
+| guard 밖 편집으로 `hv2` 출현 | release 게시 후 P2에서 65 | 다음 지점에서 collision 65 | 다음 지점에서 collision 65 |
+| binding 손상과 `hv2` 동시 출현 | P2에서 "product unavailable" | **"retired entry collision"** | 다음 지점에서 "product unavailable" |
+| truth 변경과 `hv2` 동시 출현 | P2에서 "truth changed" | **collision 우선** | 다음 지점에서 "truth changed" |
+| `switch-<op>` 안의 미지 sibling | 무시하고 보존 (baseline) | 같음 | 같음 |
+| apply 중 source 변경 | 계획된 바이트로 완료 | 같음 | 같음 |
+
+- **M2 (비권고, 중간~높음):** 추가 지점에서 `_refuse_retired_entry`만 호출합니다. D1의 "Target-state scope comes before the name check"와 "other preexisting non-pass outcomes retain precedence"에 어긋납니다. 코드와 exit는 같아도 진단이 뒤바뀌고, baseline에도 HEAD에도 없는 제3의 의미입니다.
+- **M3 (계약상 가능, 별도 amendment 필요):** 우선순위는 지킵니다. 그러나 member별 full preflight는 baseline에 없는 조기 거부 일정이고, 남는 prefix가 다릅니다(부분 staging 대 완성 release). 호출마다 `_workspace_observe`가 두 번 읽으므로 I/O가 약 30배 늘어납니다. 검사가 많다는 것만으로는 규범 근거가 되지 않습니다.
+- **M1의 한계:** guard 밖 변경을 P2까지 보지 못합니다. 두 prefix 모두 pending으로 남고, collision이 있는 동안 복구는 거부됩니다. 손실되는 무결성 성질은 찾지 못했습니다.
+
+**M1 diff 판독:** 모든 hunk가 `transition` 또는 `plan["remove"]` 조건 아래이거나 same-entry `else` 분기 안에 있습니다. `transition`은 `checkpoint` 정의보다 앞서 할당됩니다. 미해결 결함은 찾지 못했습니다.
+
+## E. 전환 경로 folding 검증과 한계
+
+- **논리:** normalizer는 `transition`과 `plan["remove"]`를 참으로 접고 `If`/`And`를 축약합니다. 제 판독으로도 세 diff의 `workspace_switch_apply` 변경은 전부 그 조건 안에 있어, "equal: true"는 정적으로 그럴듯합니다.
+- **한계 1:** 스크립트 입력은 `/private/tmp/p2-*.py`인데 IDENTITY에는 `.diff` SHA만 있습니다. 그 `.py`가 제공된 diff의 적용 결과라는 연결은 이 packet으로 입증되지 않습니다.
+- **한계 2:** `publication_checkpoint`는 본문 확인 없이 삭제하고 이름만 바꿉니다. M2의 동등성은 wrapper가 `if transition: return checkpoint()`라는 수동 판독에 의존합니다. 호출부가 반환값을 쓰지 않는 것은 확인했습니다.
+- **한계 3:** 대상은 이 함수 하나입니다. `_entry_local_baselines`(D2), dispatch, I/O, timing은 다루지 않습니다. 전환 경로는 D2로 실제 변합니다.
+
+**향후 C4 targeted 증명 (M1 + D2).** 기존 test module과 fixture 패턴 안에서 하며, 새 runner·common·의존성은 추가하지 않습니다. P2 exact map은 아직 없고, 테스트 추가에는 별도 승인이 필요합니다.
+
+1. **D2 양성:** child revision ref와 child intent ref 각각으로 preview가 65로 거부되고, 메시지에 parent와 child ID가 있으며, target 바이트가 불변이고 receipt가 없음.
+2. **D2 음성:** optional ref, child scope, 미capture child, worker parent, 완료 parent는 이 확장으로 거부되지 않음. child의 현재 revision만 걸리고 봉인본이 깨끗한 경우도 포함.
+3. **D2 우선순위:** own-ref와 child가 동시에 걸리면 기존 own-ref 진단. fixture는 offending parent 1개로 고정.
+4. **same-entry 완료 replay:** lock anchor를 만들지 않고 snapshot이 같음. collision이 있으면 65이고 snapshot이 같음.
+5. **late collision:** after-release 뒤에 생기면 P2에서 거부되고 launcher와 binding이 불변. 기대값은 "release 게시됨"이며 zero-change가 아님. 점유자를 치운 뒤 exact recover가 완료됨.
+6. **복원된 허용:** same-entry에서 sibling debris와 source 변경은 완료되고, 전환에서는 계속 거부됨.
+7. **전환 회귀:** `product.py` 바이트가 바뀌어 release ID와 fixture가 재유도됩니다. 기존 31/31은 새 바이트를 qualify하지 않습니다.
+
+## 최종
+
+1. **D2 수락 준비도:** A-01~A-04 교체를 반영한 revision 1.1이면 문언상 수락 판단이 가능합니다. revision1을 그대로 수락하면 A-02 때문에 hunk를 바꿔야 하고, 그 코드는 미검토입니다. 교체문을 그대로 반영하는 한 재검토는 필요 없습니다. 새 바이트와 SHA는 Driver가 산출해 Owner에게 제시합니다.
+2. **same-entry:** M1을 선택하고, DR amendment는 필요 없습니다. Owner 적용 수락에는 두 가지를 명시해야 합니다.
+   - R-05 처분: "탐지 조건부, 기존 P0–P3 관측"이라는 해석.
+   - same-entry에서 HEAD 검사 제거: 추가 checkpoint, source 재검증, sibling/debris 검사, replay guard.
+3. **남은 위험과 증거:** 실행 증거는 전무합니다. 세 가지가 남습니다.
+   - E의 identity 공백.
+   - `_init_partial_tree`, `_lifecycle_truth`, `_serial_require`, `d3_run` 본문 미제공.
+   - `test_d3_same_entry_scope_unchanged`의 주입 횟수 단언이 M1에서 유지되는지는 실행으로만 확인 가능.
+4. **Owner 경계:** D2 정확 바이트 수락, M1 적용 수락, 제품·테스트 실행은 각각 별도 결정입니다. 이 응답은 P2 PASS, closeout, 구현 승인이 아니며 예산·호출 수·기록 변경을 요청하지 않습니다.
+
+### Driver Disposition — Distinct From Owner Acceptance
+
+| Finding | Driver 처분 | 판단·남은 의무 |
+| --- | --- | --- |
+| A-01~A-04 | accept | 제안한 교체문 네 곳을 그대로 반영하고 제목만 Revision1.1로 올린다. 선택 parent revision, own-ref 선행 진단, 기존 계약 조항 명칭/신규 검증 의무를 명확히 한다. 아래 exact bytes가 최종 수락 후보이며 DR/제품에는 미적용이다. |
+| A-05 | needs-user | 완료·worker-mode child의 봉인된 required ref도 local parent를 막을 수 있고, child scope/미capture/worker parent는 제외한다는 실질 경계를 정확한 계약 수락에 포함한다. 해소 경로는 미실행 추론이며 자동 완료·rebind/역사 변경을 허용하지 않는다. |
+| A-06 | revise | 다중 graph read와 S6 비협조적 변경의 비원자성, 모든 오류에 B1 보존 접미가 붙지 않는 한계를 기록한다. 누락된 `_serial_require`/CLI의 코드·exit65 연결만 아래 Driver 정적 추가 확인으로 좁힌다. 실행으로 확인했다고 하지 않는다. |
+| B-01/B-03 | accept | M1이 fixed baseline+수락된 delta에 대응한다는 정적 판단을 채택한다. 기존 R-03 비교 부족은 정적 수준에서 해소하고, R-04 단언 유지 및 R-06/R-07 baseline 복원 판단을 따른다. 실제 회귀 검증은 미완이다. |
+| B-02 | accept | P0~P3 뒤의 기존 completion/replay helper도 product 검증 후 collision을 관측한다. P3 이후 collision이면 binding이 이미 게시된 채65가 될 수 있다. 별도 기대값을 exact map에 넣고 zero-change라고 주장하지 않는다. |
+| C / 이전 R0-B R-05 | revise | 이전 ‘extra checkpoint 제거가 D1 위반’ 처분을 새 baseline 근거에 따라 교정한다. D1은 탐지된 collision 이후 추가 게시를 막으며 extra member checkpoint 빈도를 정하지 않는다. P0~P3와 기존 종결/replay 관측은 유지한다. 과거 전체 D1 qualification의 관련 assertion 점검은 후속 의무다. |
+| D / M1 | needs-user | M1을 권고한다. 추가 full checkpoint·same-entry source 반복검사·operation sibling/debris guard·완료 replay lock을 baseline대로 복원한다. 별도 same-entry amendment는 필요 없다는 정적 판단이다. M2의 진단 우선순위 변경, M3의 추가 조기 거부 의미는 선택하지 않는다. Reviewer의 I/O 약30배는 실측값이 아니며 성능 주장으로 채택하지 않는다. |
+| E identity/normalizer | revise | 아래 source→diff exact 연결을 Driver가 정적으로 보충했다. M2 wrapper의 이름 기반 fold 한계는 유지한다. M1은 그 wrapper가 없으며 세 함수의 AST 일치가 D2 포함 전체 제품 동치나 실행 성공을 증명하지 않는다. |
+| E future C4 / final | accept | 아래 targeted 의무를 기존 map·T0·영역 R1·누적 R1에 연결한다. 구현/실행/결과 수락은 아직 없다. 제품 변경에 따른 release ID·fixture 재유도와 기존 E1~E7 재사용 영향 판단이 필요하다. |
+
+### Driver Static Supplement After Review
+
+Reviewer가 확인한 결과와 아래 Driver의 후속 정적 확인은 구분한다. Product import/test/controller를 호출하지 않았다. 현재 HEAD product text와 각각의 미적용 candidate text에서 `difflib.unified_diff`를 재생성해 Reviewer가 받은 exact diff와 바이트 전체가 같은지 대조했다. 세 안 모두 일치했다. 이 연결은 frozen packet에 빠졌던 `.py` 신원 공백을 보완할 뿐 새 Reviewer 판정은 아니다.
+
+| Candidate | candidate source SHA-256 | reviewed diff SHA-256 |
+| --- | --- | --- |
+| m1-baseline | `c81fb4e979d80242c2a1314a6702d6be0f82b069e23368120dc875da9ee7d191` | `ac7a67d132de6989ce76f22dca548f94958e4302f04bf1d38cc8e1ce9cca21e2` |
+| m2-collision | `35782dfa5448cb20836d782d00b866a5423579930a26c1c360ae0d59e498421a` | `704223ce38eee15395d39e9377df8afa08655d7210b77445f207d5e9b471f7ff` |
+| m3-full | `430bf6cfab4f919d6bb808942c3040af1232df39c96d8a09f5c9209bc920a7df` | `03ea203d82f7c15e4d3bfbd82eaa422e09b95f61d4b2fc8e5affb15fd3826f19` |
+
+M2 normalizer는 wrapper body를 검증하지 않고 이름을 접는 한계가 남는다. M1 선택에는 이 wrapper가 존재하지 않으며 제공 diff를 직접 판독한 근거를 함께 사용한다. 기존 정규화 결과 `0e064b8f4d7e1df4fa788df2458abf1193f91cf9458ec12a3e5bdb1f6e2a0228`는 위 Transition-Only Static Comparison And Limits에 한정한다.
+
+현재 `product.py:230`의 `_serial_require`는 조건이 거짓이면 `ContractError("HV2-WORKSPACE-PRODUCT", detail)`을 발생시킨다. `cli.py:164–166`은 그 예외를 stderr에 출력하고65를 반환한다. 이는 코드 읽기로 확인한 연결이며 실제 CLI 실행 결과가 아니다. `_init_partial_tree`, `_lifecycle_truth`, `d3_run` 등이 Reviewer에게 발췌되지 않은 제한과 주입 횟수/동시 변경/실제 I/O 검증 의무는 해소된 것으로 표시하지 않는다.
+
+### Exact D2 Revision 1.1 — Proposed, Not Accepted Or Applied
+
+네 교체문은 Reviewer 원문 그대로이며 범위를 더하거나 제품 hunk를 바꾸지 않았다. 제목의 revision만1.1로 갱신했다. 아래 text block 안의 마지막 LF까지2,768 bytes, SHA-256 `cbb81a9bc1dca0bf73359b0ce48bab2e50ef92a8b038b0e2d4bc046762e58484`다. 이 바이트의 Owner 수락이 필요하다.
+
+```text
+C0-L-A Direct Captured-Child Required-Reference Extension — Proposed Revision 1.1
+
+This amendment extends only C0-L-A's renamed-entry path-dependency predicate for a currently selected, non-completed, schema-2 local parent Work. In addition to that parent's own scope and required Work/intent references, enumerate required document_refs and evidence_refs from each direct child revision and its bound intent confirmation identified by the sealed umbrella_evidence.children references of that parent's currently selected revision. Resolve the recorded revision_ref and intent_ref against verified historical graphs; do not select the child's current revision or intent. Include a captured child regardless of its current completion state or local/isolated-worktree execution mode. Do not include child scope, optional references, declared-but-uncaptured children, descendants beyond a direct capture, or a worker-mode parent through this extension.
+
+Apply the existing hv2/colvia path-dependency rule to these additional required paths whenever the existing C0-L-A predicate is evaluated, including its admission/recovery and S6 comparison call sites. The existing refusal for a Work's own scope and required Work/intent references is evaluated first and keeps its existing diagnostic; it need not enumerate captured children. Otherwise a matching captured-child path refuses with the existing HV2-WORKSPACE-PRODUCT diagnostic and identifies the refusing selected parent Work and each of that parent's offending captured child Works. This extension does not change how many refusing Works a single response reports. This is an intentional additional refusal that may block a parent because of an immutable historical child reference. It does not verify current child reference bytes, refresh captured evidence, rewrite history, update a baseline, rebind, cancel, complete, or accept any Work or intent. Existing graph validity, snapshot equality, truth-drift handling and post-B1 preservation/reporting rules remain in force.
+
+All other accepted DR-0004 behavior remains unchanged, including the rest of C0-L-A, C0-W-A, C0-T-A, D1-A/D2-A revision 2.1 and D3-A revision 1.1. This extension is distinct from the fresh-init D2-A amendment. This amendment does not alter ordinary parent/child publication or acceptance, same-entry lifecycle behavior, record schemas, the admitted predecessor, writer guards or shared helpers. It neither weakens nor replaces existing P2 verification criteria; evidence for this added refusal is a separate verification-plan obligation. Design acceptance requires explicit Owner acceptance of these identified bytes; it neither activates the runtime contract nor accepts implementation, P2 completion, adopter application or Git actions.
+```
+
+### Concrete Acceptance And Resume Proposal
+
+권고는 아래 세 결정을 명시적으로 함께 수락하는 것이다. 서로 다른 권한이며 Reviewer 의견이나 단순 design 수락만으로 나머지를 추정하지 않는다.
+
+1. 위 exact D2 revision1.1을 C0-L-A named design amendment로 수락하고, 기존 DR-0004의 수락 본문을 보존한 append-only 수락 기록을 허용한다. 제품 계약의 기술적 활성화나 adopter 적용 수락은 아니다.
+2. reviewed M1 diff7,062 bytes/SHA `ac7a67d132de6989ce76f22dca548f94958e4302f04bf1d38cc8e1ce9cca21e2`의 D2+same-entry 두 hunk 적용을 허용한다. same-entry는 P0~P3 및 기존 completion/replay 관측을 유지하는 baseline 복원이며, 중간 비협조적 collision은 release 게시 뒤 탐지될 수 있다. 탐지 뒤 추가 publication은 금지하고 종결 때 이미 게시된 binding은 되돌리지 않는다.
+3. 기존 전체 P2 승인 범위·남은 예산 안에서 제품/controls/tests와 전체 exact map 작성 및 검증을 재개한다. 첫 controller 전 전체 map/ID·배당·fixture/입력 신원·T0 의무를 고정하고, T0가 불일치하면 STOP한다. 기존 R0-A/R0-B/R0-C 처분과 영역 R1 두 건·누적 R1 한 건을 생략하지 않는다. 새 계약/범위·예산 초과·예상 밖 실패는 중단하며 retry0다. 추가 리뷰 호출이나 새 runner/common/의존성 권한은 늘리지 않는다. P2 종료 수락·기술적 활성화·adopter 적용·Git은 별도다.
+
+Owner가 일부만 수락하면 그 부분까지만 진행한다. 현재 실제 Owner 결정은 고정 packet 전송1회 승인까지이며, 위 세 결정은 모두 미수락이다. 이번 턴에는 DR/제품/controls/test source를 적용하거나 product import/discovery/test/controller를 실행하지 않았다.
+
+### Required Verification After Separate Resume Acceptance
+
+- D2: captured child revision/intent required ref 각각의 거부, parent+child ID·무변경·receipt 부재, own-ref 선행 진단, optional/scope/미capture/worker parent/완료 parent 제외, clean capture와 changed current child의 구분. graph 유효성이나 다른 baseline 실패가 목표 refusal을 대신하지 않게 한다.
+- M1: 완료 replay의 lock anchor/바이트 불변과 collision 거부; release 게시 후 P2 late collision의 정확한 남은 상태와 exact recovery; P3 이후 종결 collision의 이미 게시된 binding 보존; sibling debris/source snapshot의 same-entry 허용 및 transition 거부. `_switch_preflight`의 기존 비통과 우선순위와 기존 D3 same-entry 주입 횟수를 실제로 확인한다.
+- 누적: wider test module과 과거 qualification에 미검토 same-entry 중간 충돌/lock assertion이 있는지 연결하고, D2로 달라진 release identity·fixture/retained source 영향과 이전 E1~E7 재사용 근거를 명시한다. 기존31/31이나 정적 AST를 새 후보 실행 증거로 대체하지 않는다. 전체 P2 map은 여전히 미완이며6,036은 확정 coverage가 아닌 기존 배당량이다.
+
+### Budget And Durable Preservation
+
+리뷰는 이번1회로3/6 사용, 실측 누적1,472.150초(24분32.150초)다. 남은3회는 영역 R1 두 건과 누적 R1 한 건이며 각1,200초 한도다. 짧게 끝난 시간을 새 호출 권한으로 환산하지 않는다. Controller 추가0/누적80회,34시간 검증 창 미시작이다.
+
+Authoring은 이번05:55 재개부터 문안/기록/정적 확인까지15분을 보수적으로 추가 차감해 누적95분, 잔여30시간25분으로 잡는다. 앞선80분을 유지하며 Owner 대기는 차감하지 않는다. 기록·보존이06:10 UTC를 넘으면 그 초과를 추가 차감해야 한다.
+
+최종 D2 text와 reviewed M1 diff는 private bundle `p2-full-execution-01/r0-c-result/`에 Owner의 정확한 수락 판단 및 승인 시 적용 입력으로 보존한다. 현4파일 미커밋 변경도 같은 곳의 `current-changes.patch`로 복구 가능하게 보존한다. 이 추가 입력의 소비자는 Owner exact acceptance와 그 승인에 따른 적용이며, 적용 결과의 Work 기록/신원 확인까지 유지한다. 리뷰 원문/입력 신원/처분은 이 Work가 최소 기록이다. 기존 source worktree와 native evidence는 남은 P2의 구체적인 재사용 대상이므로 정리하지 않는다. Commit/push/PR/merge는 수행하지 않았다.
+
+문서 기록 후 `git diff --check`(source cwd, exit0), `node /private/tmp/p2-plan-document-check.mjs`(exit0, GFM PASS/local link160/external1 not fetched), source/HEAD/index·원문/문안 byte 확인(PASS)을 수행했다. 제품 검증 실행이 아니라 문서·입력 보존 확인이다. Product/DR를 포함한 나머지 reviewed9파일은 R0-C 입력과 동일하고, staged/untracked 파일은0이다.
+
+## Owner Acceptance And P2 Resumption — 2026-10-11
+
+Owner actual decision: “D2 revision 1.1과 M1 적용을 수락해. 기존 범위·잔여 예산·중단 조건 안에서 P2 작성과 검증을 재개하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+This explicitly accepts the D2 revision1.1 exact bytes above and the reviewed M1 diff, and authorizes resuming P2 authoring and verification under the existing scope, remaining budget and STOP conditions. The three decisions in Concrete Acceptance And Resume Proposal are now accepted for this bounded work; P2 result acceptance, technical activation, adopter application and Git actions remain separate. Earlier proposed/unaccepted labels describe their historical point in time.
+
+At06:10 UTC, source HEAD remains `a17f35cf323ffde7a8642a85501fddbec858b6de`; pre-resume whole diff SHA was `574e48389e753aa93610153d949e0f4dc6872b53375820bcefcb68699dd0086a`. Product and DR matched the R0-C identities before mutation. Added only the append-only accepted D2 record to DR-0004 and applied the reviewed7,062-byte M1 diff (D2 predicate and same-entry restoration). Resulting product.py SHA is `c81fb4e979d80242c2a1314a6702d6be0f82b069e23368120dc875da9ee7d191`; it matches the reviewed candidate source exactly. No new product hunk, shared helper or runner/common/acquisition/sandbox change is included.
+
+Resumed authoring starts06:10 UTC from cumulative95minutes/remaining30hours25minutes. Review calls3/6 used and3 reserved (two domain R1, one cumulative R1), actual1,472.150seconds. Controllers remain80 cumulative/0 new; the34-hour validation wall-clock window has not started. The first controller must follow complete authored map, exact IDs/input freeze and T0 obligations; no opportunistic product import/discovery/smoke is run during authoring. Unexpected failure, material contract/scope change, unknown drift or budget overrun stops the task without automatic retry.
+
+## P2 Remaining Review Dependencies — Bounded Stop Before T0
+
+D2 revision1.1과 M1은 위 Owner 수락대로 적용했다. 이어진 정적 검토에서 기존 R0-B가 별도 재검토 대상으로 남긴 두 항목의 실제 변경 필요를 확인했다. 앞선 R0-C packet이 D2/same-entry만 다뤄 이 항목들을 함께 해소하지 못한 것은 Driver의 준비 범위 누락이다. 새로운 제품 실패나 실행 실패가 발생한 것은 아니다. 원래3회의 영역/누적 R1을 모두 유지하면 추가 검토 여유가 없으므로 호출 상한을 자동 초과하지 않고 제품/테스트의 추가 적용과 검증 실행을 중단한다. 이 아래 작업은 중단 이유를 확인하고 Owner가 검토할 미적용 입력을 구체화하는 정적 준비다.
+
+### Confirmed Dependencies And Alternatives Rejected
+
+| 항목 | 현재 입력의 사실 | 필요한 한정 변경과 경계 |
+| --- | --- | --- |
+| R-08/R-09, A2 D3 exact selector | `D3_SYNC_PROGRAM`은22개 문자열 selector만 받고 `hits[selector] == 1`만 주입한다. 따라서 같은 role의 다른 directory 및 occurrence2 이상을 개별 선택할 수 없다. `d3_run`은 이 literal 프로그램만 실행한다. | 기존 test-only 프로그램에 `(site, phase, role, path, occurrence)`의 닫힌 구조를 추가한다. 실제 `_entry_sync` 호출 context를 관측하고 original을 동일 인수로1회 위임한다. 공유 writer-guard sync는 관측하되 D3 주입 후보에서 제외한다. 제품/runtime/공유 helper는 수정하지 않는다. 이 프로그램 변경은 R0-B가 명시한 재검토 대상이다. |
+| R-14, B1/B2 OLD update/rollback positive | controls의 acquisition/manifest는 fixed2385146의 단일 predecessor만 제공한다. `_OLD_PROGRAM_BASE`는 그 predecessor를 최초 설치하므로 prior_release=null이다. 현재 `d3_other_source`는 NEW source용이다. retained baseline의 일반 switch tests에는 합성 copy/내용 delta 패턴이 있지만 이 P2 OLD boundary에서 검토·고정된 두 번째 candidate input은 없다. | sealed OLD를 수정하지 않고 focused-p2의 synthetic WORK 안에서29 managed member를 복제하되 README에 고정 suffix 한 줄만 더한 X를 생성한다. 기존 OLD API로 X init→정확한 predecessor P로 update한 이력을 만들어 active=P/prior=X를 확인한다. 이 새 OLD fixture source는 R0-B가 명시한 재검토 대상이다. |
+
+기존 OLD source를 몰래 바꾸거나 target/plan을 복제해 fingerprint를 우회하지 않는다. 정상 대조군과 거부 대상 각각에서 유효 요청을 독립 준비하고, ‘같은 요청’은 target별 fingerprint를 제외한 같은 semantic route/record recipe라는 의미로 고정해야 한다. Update/rollback 성공 후 active가 X가 되는 정상 대조군을 그대로 transition 대상으로 쓰지 않는다. Admitted predecessor를 X로 확대하지 않는다.
+
+`tests/fixtures/product_plain_auditor.py`는 이미 paired schema3와 colvia membership 분기를 가진다(112~169행). 따라서 현재 읽은 범위에서는 auditor 변경을 이번 제안에 추가하지 않는다. 실제 suffix/removal 검증은 여전히 C4 의무다.
+
+### Reviewable Unapplied Code Proposal
+
+제안은 source의 실제 test module을 AST로 읽어 두 고정 프로그램과 factory helper 변경을 scratch에서 구성한 것이다. Product/control/test module을 import하거나 새 프로그램을 실행하지 않았다. 기존 tests/controls source는 재개 전과 동일하다.
+
+- `d3-sync-original.py`: 11342 bytes / SHA-256 `3f6d1acbc03c3d7a670f7a67932b6a0d84c7a53dc4c0346b6973e5c6980ec819`
+- `d3-sync-proposed.py`: 13815 bytes / SHA-256 `12e085c825c3fc2aa3855ef10e14e3d5c224a1843398d71febec5c3c6bf14732`
+- `d3-sync-proposed.diff`: 4932 bytes / SHA-256 `5d88a9bbdb96f3b51cfc1a71203f92febb32ff31470d367bbcb9f27246522b25`
+- `old-counterpart-proposed.py`: 4597 bytes / SHA-256 `342b433e81f24c26f0e2de676e2c8b738b3084887e07425ea1ecb21e77aa59fd`
+- `test-entry-proposed.diff`: 16816 bytes / SHA-256 `43f807ef750e1cae38287643776798f9fd39a74511e01bc181dcf47ef0c7e42e`
+
+- Exact selector가 정확히1회 주입되지 않으면 고정 RuntimeError로 중단하도록 최종 제안에 포함했다. 관측되지 않은 selector를 정상 성공으로 표시하지 않는다.
+- D3 관측은 정상 trace에도 context를 추가하고, 기존 문자열 selector/첫 occurrence 분기는 유지한다. 추가 context는 `b1`도 기록한다. 정적 정확 식별과 별개로 기존30+10+2 cell의 helper 영향 및 고정 bridge를 다시 판단해야 한다. 이 제안만으로 map이 완성되거나 같은 성능이 보장되지 않는다.
+- OLD X의 유일한 bytes delta는 README 끝의 `\nSynthetic OLD-window counterpart for P2 fence qualification.\n`이다. Manifest의29 member와 원래 canonical JSON 방식(indent2/sort_keys/LF)으로 정적으로 유도한 inventory SHA는 `fad79ba1ba414435cd42e21c1e903d7c25eb10c8c3c20a83c3386e0cecc9d630`이다. 원래 P inventory `8bd0eeac55fb0af92b61a7a36a98adb9957b880c791b957b20c319a51c5577f3`도 같은 계산에서 일치했다. 이는 source/fixture 신원 제안이며 OLD API 실행 성공이 아니다.
+- Child command는 기존 pinned runtime의 `-I -S -B -c <fixed literal>`만 사용한다. D3는 기존150초 child/180초 coordinator, OLD fixture도 동일 cap이며 cwd/source와 output은 기존 factory 규칙을 따른다. Input 제공 코드·임의 명령·dependency·network/credential·새 sandbox 권한은 추가하지 않는다. 원본 OLD 검증은 전후 수행하고 fixture 쓰기는 해당 focused-p2 WORK 내부로 제한한다.
+- Frozen execution source에 적용하기 전에는 이 exact 제안을 fresh no-tools R0 한 번에 묶어 검토하고 Driver 처분을 기록한다. 검토가 새 계약·제품 hunk·통제 권한 변경을 요구하면 자동 적용하지 않는다. T0 이전 전체 map·fixture·입력 고정과 모든 기존 STOP 규칙은 유지한다.
+
+### Requested Call-Cap Adjustment Without Time-Budget Reset
+
+현재 리뷰는3/6회 사용, 남은3회는 영역 R1 두 건·누적 R1 한 건에 필요하다. 이를 삭제하거나 이름만 R0로 바꿔 추가 검토를 대신하지 않는다. 제안은 두 의존성을 묶은 R0-D 1회만 추가해 총 호출 상한을6→7로 바꾸는 것이다. 호출당1,200초와 전체 리뷰2시간 한도는 유지한다. 실제 사용1,472.150초 + 앞으로4회 최대4,800초 =6,272.150초(1시간44분32.150초)여서 전체2시간 안에 들어간다. 이 산식이 지금 일곱째 호출을 승인한다는 뜻은 아니다.
+
+Authoring은06:10 재개부터 이 정적 대조·제안·기록까지20분을 상향 반올림해 차감한다(06:30 UTC까지). 누적115분, 잔여30시간05분이다. Controller 추가0/누적80회, 신규 실행 root0,34시간 검증 창 미시작이다. 최대104분할/신규624·누적704 controller, retry0, 저장64GiB 잠정 한도와 나머지 범위는 유지한다. Owner 대기는 추가 소비로 계산하지 않는다.06:30을 넘겨 작업하면 초과분을 별도 차감한다.
+
+중단 원인 확인을 위해 경로 탐색에서 없는 문서/시험 파일을 만난 경우는 실제 존재 경로로 좁혀 읽었다. 이는 실행 gate·제품 테스트·fixture 검증의 실패가 아니며 그 읽기를 PASS evidence로 세지 않았다. 새 scripted proposal 구성은 source import 없이 AST/diff·manifest 연산만 수행했고 exit0이었다. Source의 수락된 D2/M1 변경은 되돌리지 않고 보존한다.
+
+### Packet Preparation Failure — No Retry Or External Transfer
+
+Owner의 예상 밖 실패 시 중단 조건에 따라 준비 스크립트 오류에서도 자동 수정·재실행하지 않았다. 실행한 명령은 `python3 /private/tmp/p2-review-dependencies/build-packet.py`, exit1이다. Source product/controls/tests import, fixture 생성, controller, auth/reviewer 실행은 없었다. 오류 핵심은 다음과 같다.
+
+```text
+File "/private/tmp/p2-review-dependencies/build-packet.py", line 35, in <module>
+  ... functions(old.decode(), [..., '_init_preflight', ...])
+File "/private/tmp/p2-review-dependencies/build-packet.py", line 24, in functions
+  assert len(matches)==1,(name,len(matches))
+AssertionError: ('_init_preflight', 0)
+```
+
+Driver가 과거 product.py에서 추출할 함수명을 `_init_preflight`로 잘못 적었다. 실패 뒤 읽기 전용 AST 이름 조회로 실제 함수가 `_workspace_init_preflight`임을 확인했다. 생성기를 고치거나 다시 실행하지 않았다. Packet/identity 쓰기는 해당 추출 뒤이므로 `packet.md`와 `review-identity.json`은 생성되지 않았다. 준비 실패가 실행 슬롯이나 reviewer 호출을 소비한 것은 아니며, 이를 제품 회귀나 격리 실패로 표시하지 않는다.
+
+따라서 R0-D 전송용 exact packet은 아직 미완이다. 검토 가능한 두 프로그램과 test-module diff는 이미 작성돼 있으며 위 최종 SHA를 유지한다. 실패 생성기 SHA는 `2023f619ed9b54e776e3eb77ff4b8e83558dab4532ee156cc44c56bdd24167ba`다. 복구 제안은 추출 목록의 모든 함수명을 실제 AST와 대조하고 잘못된 한 이름을 수정해 packet 생성을1회 수행하는 것이다. 재시도 성공을 미리 가정하지 않는다.
+
+권고 재개 범위는 (1) 이 준비 오류의1회 복구, (2) 두 검증 입력 변경을 함께 검토하는 추가 R0 한 회로 호출 상한6→7 조정하되 총 리뷰2시간 유지, (3) 새 고정 packet의 구성·크기·SHA를 기록하고 Anthropic first-party Claude Code 구독 경로로1회 전달, (4) 정상 검토 뒤 범위 내 처분·보정과 기존 잔여 P2 작성/검증 계속이다. Packet 내용은 위 두 미적용 프로그램/연결 diff·기존 D3 프로그램, 현재 관련 product 함수와 OLD fixed baseline 함수, 현재 Work의 해당 처분·DR-0004·controls common/baseline manifest/test.sb 및 관련 factory helper로 한정한다. Credential/account 자료나 실제 adopter 데이터는 포함하지 않는다. Owner가 이 재개를 승인하기 전에는 오류 복구·리뷰 전송·검증을 수행하지 않는다. 이후에도 새로운 계약/범위·예산 초과·예상 밖 실패 STOP, P2 종료 수락/Git 별도 조건을 유지한다.
+
+### Stop Preservation And Current Result
+
+실제 적용 완료는 D2 revision1.1의 append-only DR 수락 기록과 exact M1 product.py 변경이다. Product SHA `c81fb4e979d80242c2a1314a6702d6be0f82b069e23368120dc875da9ee7d191`, DR SHA `dfc916e5cb124a726e87c1d9e1aa650a691c175dbd13e978d449f72d2c0be287`다. 나머지 기존 controls/test source는 이번 재개 전과 같은 바이트다. 테스트/새 fixture 제안은 미적용이고 P2는 미완이다.
+
+Private bundle `p2-full-execution-01/p2-review-dependencies-01/`에 두 프로그램·연결 diff·counterpart inventory·입력 신원, 실패 생성기와 현재6파일 복구용 diff를 보존한다. 미적용 제안의 소비자는 Owner의 추가 검토 범위 판단과 승인된 R0/후속 적용이며, 그 결과·신원이 Work에 기록될 때까지 보존한다. 실패 생성기의 소비자는 승인된1회 복구와 전후 원인 확인이며, 그 복구 기록 뒤 추가 보존 의존성이 끝난다. 원본 source worktree와 기존 native evidence는 실제 남은 P2 사용이 있어 유지한다. Git 작업은 수행하지 않았다.
+
+06:30 UTC까지의 준비·기록·보존은 위20분 차감에 포함한다. 잔여 authoring30시간05분, 실제 리뷰3회/1,472.150초(추가 R00), controller 누적80회(추가0),34시간 검증 창 미시작이다. 이번 중단은 통과·완료·취소가 아니며 승인된 D2/M1도 되돌리지 않는다.
+
+중단 후 보존 확인: `git diff --check` exit0, `node /private/tmp/p2-plan-document-check.mjs` exit0/GFM PASS/local links160/external1 not fetched. Import 없는 AST/diff 대조로 product가 exact M1과 일치하고 DR의 이전 prefix와 D2 exact text가 보존됨을 확인했다. HEAD/index/untracked 및7개 비변경 R0-C 입력도 보존됐다. 이는 준비 오류 재시도나 제품 검증 실행이 아니다.
+
+## R0-D Recovery, Review And Compound-Fault Dependency — 2026-10-11
+
+### Actual Owner Authorization And Recovery
+
+Owner actual decision: “승인. 준비 오류를 1회 복구하고, 두 제안의 고정 리뷰 자료를 Anthropic Claude Code 구독 경로로 1회 전송해 R0를 진행한 뒤 기존 P2를 계속해. 리뷰 호출 상한만 7회로 늘리고 총 리뷰 2시간과 나머지 잔여 예산·중단 조건은 유지해. P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+이 수락으로 이전 준비 실패의1회 복구와 추가 R0 한 회, 총 호출 상한7회가 승인됐다.06:33 UTC부터 재개했다. 추출할 모든 함수명은 product10개·factory11개·OLD10개·historical fixture1개로 읽기 전용 AST 대조했다. `_init_preflight`만0개였고 실제 `_workspace_init_preflight`는1개였다. 잘못된 이름 한 곳만 수정하고 `python3 /private/tmp/p2-review-dependencies/build-packet.py`를1회 실행해 exit0을 확인했다. 수정 전 생성기 SHA `2023f619ed9b54e776e3eb77ff4b8e83558dab4532ee156cc44c56bdd24167ba`, 수정 후 SHA `0431fd1f896f35fc4c42b66be8fbdce7c723d8d083082b005558641ddd4853ee`다. Product import·fixture·controller 실행이 아니다.
+
+### Actual Review And Exact Input Identity
+
+R0-D는 `python3 /private/tmp/p2-r0-d-run.py`로 한 번 실행했다. 인증 override 환경변수의 값은 출력하지 않고 부재를 확인한 뒤 `claude auth status`에서 `loggedIn=true / authMethod=claude.ai / apiProvider=firstParty / subscriptionType=pro`를 확인했다. Credential/account 식별자는 기록·전송하지 않았다. 기존 `--model opus --effort high`, fresh session, `--safe-mode --restricted --tools '' --strict-mcp-config --mcp-config '{"mcpServers":{}}' --setting-sources '' --disable-slash-commands --permission-mode dontAsk --permission-prompts none --no-chrome --no-session-persistence` 조건을 유지했다.
+
+- cwd: `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition`; HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`.
+- 전송 직전 diff SHA `8bddee18da29f0609c2a00d506ce181592b6b37ddd64d9c8bf18c128a93ffcf6`; Work prefix1,321,213 bytes/SHA `b41cdae0de6935f8090fbbb1508389d1e161395d513e16cbddc74457d0bede9e`.
+- 고정 packet283,226 bytes/SHA `d95f5aba242ca4c464e305af797a7f2450a505ac20092976f99a8205c36dd2ca`. 내용은 직전 Owner가 승인한 두 코드 제안·연결 diff와 현재/OLD 함수·계약·controls 발췌다. Source diff 밖의 프로그램·제안 source/diff·inventory7파일은 위 Reviewable Unapplied Code Proposal 및 private bundle의 proposal-identity와 같은 바이트다.
+- 실제 모델: `claude-opus-5-5`; session `2b1bb046-b74b-460b-8ac9-a1b9730638e9`. Codex Driver와 별도 fresh Reviewer이며 제공된 정적 packet만의 판단이다. Backend의 내부 독립성은 별도로 증명하지 않았다.
+-06:37:44.132818→06:45:22.618243 UTC,458.484초, exit0/result success, tool-use0/tools[]/MCP[], permission denial0/invalid line0, process group 부재, 전후 입력 drift PASS.1200초·stdout16MiB/stderr1MiB 한도다.
+- 응답 원문 17272 bytes/SHA `ac99e6605463db6de55e2296dcc074ce77ca03fde87d1b020232ff521c849d4b`. 아래는 최종 응답 원문이며 Driver 처분/Owner 판단과 구분한다. 테스트 실행이나 counterexample 재현은 없었다.
+
+### Verbatim R0-D Reviewer Response
+
+# R0-D 정적 검토 결과: D3 exact selector와 OLD counterpart fixture
+
+## 0. 결론
+
+- **판정:** 제공된 두 변경은 test-only이며, 정적으로는 수락된 계약(DR-0004, D3-A r1.1, C0-L-A 확장 r1.1)과 기존 격리 안에 들어옵니다. 제품·common·controller·runner·sandbox 변경은 diff에 없고, 이 diff 자체가 요구하는 확정 STOP은 찾지 못했습니다.
+- **조건:** 아래 in-scope 보정을 freeze 전에 반영해야 합니다. 조건부 STOP 후보는 3건(D-02, O-01, O-03)입니다.
+- **범위 밖:** exact map 미작성, R-22~R-26, `buffered_probe`의 `pause` 보정은 이 검토로 해소되지 않습니다. 이 검토는 실행 준비 완료, P2 PASS, Owner 수락이 아닙니다.
+
+## 1. D3 exact selector
+
+### 정적으로 확인된 것
+
+- **caller 집합:** 제공된 본문에서 `_entry_sync`를 직접 부르는 함수는 allowlist의 7개와 정확히 일치합니다. `workspace_switch_apply` 안의 `durable`, `exact`, `checkpoint` closure는 직접 호출하지 않으므로 `co_name` 불일치가 없습니다.
+- **인수와 위임:** 모든 호출이 `(target, path, phase=…, role=…[, b1=True])` 형태라 wrapper 서명과 맞습니다. 위임은 1회이고, `b1=False`를 명시 전달하는 것은 기본값과 동등합니다.
+- **guard 구분:** `writer_guard` 계열 sync는 alias가 `workspace` 또는 `jsonio`입니다. 비전환 경로의 product 직접 `sync_directory`는 `d3_stack`이 비어 있습니다. 둘 다 `d3=None`이 되어 주입 후보에서 빠집니다.
+- **legacy 보존:** `matches`, `facts`, `hits`는 바이트상 동일해 보입니다. `selected`의 legacy 분기는 원래 조건과 동치이고, `rows.append`와 `injected.index`의 관계도 유지됩니다.
+- **주입 횟수:** exact 일치는 occurrence가 단조 증가하므로 최대 1회입니다. 미주입이면 envelope 출력 전에 RuntimeError가 나고 `d3_run`이 "no envelope"로 실패합니다. 조용한 성공은 없습니다.
+- **검증 시점:** selector 검증은 CLI 호출 전에 끝나므로 target 변경이 없습니다.
+- **diff 산술:** hunk 6개의 줄 수와 offset(+66, +87, +97, +98, +99)이 일관됩니다.
+
+### 발견 사항
+
+**D-01 (중간) wrapper 우회와 중첩이 fail-open**
+- **위치:** `observe.sync`의 `if alias == 'product' and d3_stack: … else: row['d3'] = None`.
+- **기전:** D3와 비-D3의 구분이 "stack이 비었는가" 하나에만 의존합니다. patch되지 않은 참조로 `_entry_sync`가 실행되면 실제 D3 sync가 "shared helper"로 조용히 기록됩니다. 반대로 stack이 찬 동안 다른 product-alias sync가 나면 D3로 계수됩니다.
+- **최소 보정:** `sync` 안에서 `sys._getframe(1).f_code is original_entry_sync.__code__`를 구합니다. alias가 `product`일 때 이 값이 `bool(d3_stack)`과 같아야 합니다. frame마다 sync 횟수가 정확히 1이고 sync 경로가 wrapper의 `path` 인수와 같은지도 봅니다. 위반은 list에 latch하고 `with` 블록 뒤에서 고정 RuntimeError로 올립니다.
+- **분류:** in-scope.
+
+**D-02 (중간, 조건부 STOP) R-10의 post-B1 복합 주입 수단이 없음**
+- **기전:** request key와 `truth_change` 제약이 그대로입니다. "선택된 sync 실패 + 같은 시점의 product 검증 실패" cell(`verification=unavailable`)을 만들 방법이 이 diff에 없습니다.
+- **위험:** 그 cell이 A2 map의 필수 항목인데 프로그램을 다시 바꿔야만 구성된다면, R0-B §8이 재검토 대상으로 정한 `D3_SYNC_PROGRAM` 변경이 한 번 더 생깁니다. 호출 상한 7에는 여유가 없습니다.
+- **조치:** freeze 전에 Driver가 둘 중 하나를 증명합니다. (a) 프로그램 변경 없이 구성할 수 있다. (b) 구성할 수 없다. (b)라면 Owner에게 범위와 호출 상한 결정을 올립니다. 필수 cell을 조용히 빼지 않습니다.
+
+**D-03 (중간) `site`와 `occurrence`의 의미를 map에 고정해야 함**
+- **site:** 함수 이름이며 어휘적 call-site가 아닙니다. `durable(staged, …)` 직접 호출과 loop의 `durable(staged / '.', …)`는 같은 identity를 공유하고 occurrence로만 갈립니다.
+- **occurrence:** key에 phase가 들어 있습니다. 같은 경로라도 최초 존재 여부에 따라 `(publication, 1)`과 `(recovery, 1)`로 갈리거나 `(recovery, 1)`과 `(recovery, 2)`로 갈립니다. `.hrn/staging`에 대한 두 번의 `staging-directory`가 그 예입니다.
+- **계수 범위:** child process마다 초기화되므로 `--recover` 재실행은 별도 계수입니다.
+- **조치:** 코드 결함이 아니라 map 작성 규칙입니다. cell ID에 fixture 사전상태와 호출 단위를 포함합니다.
+- **선택 사항:** `row['d3']`에 caller `f_lineno`를 비-식별 진단 필드로 추가하면, 고정된 product SHA(`c81f…`) 아래에서 map을 import 없이 대조하기 쉬워집니다.
+
+**D-04 (낮음) caller 식별이 `co_name`뿐임**
+- `frame.f_globals.get('__name__') == 'hv2ref.product'` 조건을 추가합니다.
+- 두 번 반복된 7개 이름 literal은 상수 하나로 묶습니다.
+
+**D-05 (낮음) 제품 흐름 안에서 던지는 RuntimeError가 위장될 수 있음**
+- **기전:** `'unmapped D3 caller'`는 제품 흐름 안에서 올라갑니다. `cli.main`이 넓은 예외를 exit code로 번역하면 제품 거부처럼 보일 수 있습니다.
+- **불확실성:** `cli.py`가 제공되지 않아 확인하지 못했습니다.
+- **최소 보정:** D-01의 latch에 같이 넣고 `with` 뒤에서 다시 올립니다.
+
+**D-06 (낮음) wrapper 인수 이름**
+- 첫 인수 이름이 `root`입니다. 현재는 전부 positional이라 문제없지만, `target=` keyword 호출이 생기면 TypeError가 납니다.
+- 이름을 원래대로 맞추거나 `*args, **kwargs` 그대로 위임합니다.
+
+**D-07 (중간) 소비자 helper가 diff에 없음**
+- **기전:** `d3_fault`는 `selector.startswith`와 `selector.replace`를 쓰고 `row['occurrences'][selector]`를 봅니다. `remaining_recovery_fault`는 dict lookup을 합니다. 둘 다 dict selector에서 깨집니다.
+- **미주입 대조군:** `d3_run`이 envelope 부재를 `fail`로 처리합니다. 따라서 "미주입 → RuntimeError" 음성 대조군은 `spawn`과 `finish`를 직접 써야 합니다.
+- **조치:** R-08이 지정한 매개변수화 helper를 in-scope로 작성하고, AST delta를 E3 재사용 영향에 기록합니다. 이 검토는 아직 없는 그 helper를 승인하지 않습니다.
+
+**D-08 (낮음) 모든 row에 `d3` key가 추가됨**
+- 제공되지 않은 약 249KB 모듈 안에 row 전체 동등성이나 key-set 단언이 있으면 깨집니다. AST 검색으로 확인이 필요합니다.
+- envelope가 수십 KB 늘어날 것으로 추정됩니다. 1MiB log 상한 여유를 T0 bridge에서 관측값으로 단언해야 합니다.
+
+**D-09 (낮음) 표기**
+- `d3=None` 주석의 "shared helper"는 product의 비전환 직접 sync도 포함하므로 "non-D3 sync"가 정확합니다.
+- `row['d3']['b1']`은 호출 인수이고 `facts['b1']`은 디스크 관측입니다. `b1_arg`처럼 이름을 구분하길 권합니다.
+
+## 2. OLD counterpart X
+
+### 정적으로 확인된 것
+
+- **API 서명:** `workspace_init_preview`, `workspace_init_apply`, `workspace_switch_preview`, `workspace_switch_apply`의 인수 형태가 제공된 OLD 본문과 맞습니다.
+- **선행조건:** 빈 target에 `a`만 있으면 init preflight는 `fresh`입니다. update preview의 window 조건(candidate와 active 모두 checkout-1)을 충족합니다. operation id 두 개는 서로 다릅니다.
+- **launcher 불변:** README만 달라서 launcher 바이트가 같습니다. `_replace_product_file`을 타지 않고 root `hv2`는 정확한 O로 남습니다. 이 점은 NEW admission의 "O exact"와 양립합니다.
+- **inventory 구조:** 후보 inventory는 29개 항목이고 순서가 manifest의 `checkout-1` literal과 같습니다. README를 뺀 28개의 sha와 size가 manifest와 일치합니다. README 크기는 2603 + 62 = 2665로 맞습니다.
+- **canonical 형식:** `common.canonical`과 OLD `canonical_json_bytes`는 같은 형식입니다. OLD와 현재 `jsonio.py`의 SHA가 `6432f0d2…`로 같습니다.
+- **격리:**
+  - argv는 6개 고정이고 stdin은 비어 있습니다.
+  - `-I`라 cwd(NEW source)가 import 경로에 없습니다.
+  - 마지막에 `hv2ref` 모듈 출처가 OLD인지 검사합니다.
+  - `verify_old`를 전후로 호출합니다.
+  - 쓰기는 WORK 안의 target과 counterpart뿐입니다.
+  - `config()`를 child에서 부르는 것은 buffered probe에 선례가 있습니다.
+- **역할:** rollback positive의 전제(prior=X non-null, release X 보존)는 구성됩니다. X는 NEW allowlist에 추가되지 않습니다.
+
+### 발견 사항
+
+**O-01 (조건부 STOP) history target에 대한 NEW admission이 미확인**
+- **기전:** 이 target은 기본 `fixed_old` target과 세 가지가 다릅니다.
+  - receipt가 2개입니다.
+  - release X가 보존돼 있습니다.
+  - 빈 `.hrn/staging/switch-fixture-to-predecessor`가 남을 것으로 추정됩니다.
+- **불확실성:** NEW의 admission과 `_switch_preflight` 본문이 제공되지 않았습니다. "old lifecycle prefix 없음" 판정이 이 상태를 통과시키는지 알 수 없습니다.
+- **조치:** 거부 twin을 history target 위에 세울 계획이면, 그 twin의 S0에서 NEW transition preview와 도달 상태를 양성 대조로 먼저 고정합니다. NEW가 거부하면 제품 수정이나 allowlist 확장 없이 STOP합니다.
+
+**O-02 (중간) update positive의 경로를 map에서 고정해야 함**
+- **경로 1:** history target에서 X로 update하면 release X가 이미 있어 `_exists(release)` 분기를 탑니다. staging과 release 게시를 거치지 않습니다. `_switch_binding_receipt`가 prior 재활성화를 허용하는지는 제공되지 않았습니다.
+- **경로 2:** plain P target(prior=null)에 X source로 update하면 새 release를 게시합니다.
+- **조치:** 어느 쪽을 "독립 update positive"로 쓸지 선택하고 근거를 적습니다. helper는 두 경우 모두 지원합니다.
+
+**O-03 (조건부 STOP) `focused-p2` 고정**
+- **위치:** `work = paths['exec'] / 'runs' / 'focused-p2' / 'work'`.
+- **기전:** factory는 `ENTRY_RUN_NAMES` 전체를 허용하지만 이 프로그램은 한 이름만 받습니다. B1/B2 분할이 다른 run 이름에서 돌면 `fixture boundary`로 실패합니다.
+- **불확실성:** `controller.py`가 제공되지 않았습니다.
+- **조치:** 분할과 run 이름의 대응을 freeze 전에 확인합니다. 이 프로그램의 literal 조정으로 풀리면 in-scope입니다. controller 변경이 필요하면 STOP입니다.
+
+**O-04 (중간) recipe 동등성과 미제공 OLD 함수**
+- `OLD_INIT_PROGRAM`이 제공되지 않아, `a` 바이트, `fixture-home`, `TIME`, operation id 규칙이 `fixed_old`와 같은지 확인하지 못했습니다. 상수 대조표를 import 없이 기록해야 합니다.
+- init과 update의 `created_at`이 같습니다. OLD가 시간 단조성을 요구하는지는 `_switch_plan_shape`와 `_workspace_product_once`가 없어 알 수 없습니다.
+- `safe_target`, `classify_target`, `_lifecycle_truth`, `bootstrap_root`도 제공되지 않았습니다.
+- 이 부분의 최초 실행 결과가 T0 관측이며, 정적 검토로 대체되지 않습니다.
+
+**O-05 (낮음) child 안의 누락 단언**
+- init 결과가 `initialized`이고 `replayed`가 False인지, switch 결과가 `updated`인지.
+- P와 X의 release ref 전체(id, sha256, inventory_id). P의 id는 DR allowlist의 `product-release-8bd0eeac55fb0af92b61a7a3`, X의 id는 `product-release-fad79ba1ba414435cd42e21c`입니다.
+- target root가 정확히 `{.hrn, a, hv2}`인지, `hv2`의 sha와 mode 0755, `a` 바이트.
+- receipt 파일이 정확히 2개이고 releases가 정확히 {P, X}인지.
+- counterpart의 파일 membership이 정확히 29개인지.
+- `verify_workspace_release(X)`가 `x` ref와 같은지.
+
+**O-06 (낮음) helper의 `paths` 이름**
+- factory closure에 `paths`라는 이름이 있는지 제공된 발췌로는 확인되지 않습니다. `_validated_context` 내부 이름은 `p`입니다.
+- AST 이름 해석으로 확인하거나 `ctx['controls_dir']`를 사용합니다.
+
+**O-07 (낮음) 위생**
+- 다른 child의 선례처럼 `Path(sys.modules['common'].__file__) == controls / 'common.py'`를 단언합니다.
+- 쓰지 않는 `stat`, `canonical`, `canonical_json_bytes`는 제거하거나, X inventory의 canonical digest 재계산 단언에 씁니다.
+
+**O-08 (낮음) 실행자와 불변성**
+- counterpart와 release X의 payload는 **후보 데이터**로만 씁니다. "old 실행자"는 sealed OLD 경로와 설치된 P뿐입니다(DR의 four-executor 정의).
+- counterpart는 0644로 변경 가능합니다. 사용 직전에 `source_rows`를 재검증하거나, 생성 후 0444/0555로 봉인합니다.
+
+**O-09 (낮음) 시간 예산**
+- child가 `config()` 전체 검증과 OLD lifecycle 2회를 수행합니다. 테스트당 180초 coordinator 예산에서 후속 child의 여유를 T0에서 관측해야 합니다.
+
+## 3. 최소 단언 (기존 할당 안, 새 runner 없음)
+
+**T0**
+1. trace-only 정상 전환 1회에서 `d3`가 non-null인 row의 순서열이 동결된 map과 완전히 같아야 합니다. `d3=None` row는 alias 조건으로 설명돼야 합니다. 불일치는 사전 선언된 STOP입니다.
+2. exact selector 음성 대조 2종을 둡니다.
+   - 형식 오류: CLI 이전에 거부되고 target snapshot이 변하지 않습니다.
+   - 존재하지 않는 occurrence: exit≠0, envelope 없음, 고정 메시지.
+3. `old_history_target` 1회에 O-05의 단언과 부모 쪽 `verify_old`를 붙입니다.
+
+**A2**
+- 분할 선두에 legacy 8개 bridge(fault 2 × admission/pre-B1/post-B1, recovery 2)를 새 프로그램 바이트로 재실행합니다.
+- bridge cell마다 주입 row의 `d3`가 기대 exact identity와 같아야 합니다. 같은 위치의 exact selector 실행은 token, 주입 index, snapshot이 같아야 합니다.
+- exact cell마다 다음을 봅니다.
+  - `len(injected) == 1`.
+  - 주입 row의 alias가 `product`이고 `d3`가 selector와 같음.
+  - 메시지 token이 selector에서 계산한 `d3-sync:{phase}:{role}`.
+  - `B1 … observed`가 `d3`의 `b1`과 일치.
+  - 주입 이후 row가 0개.
+  - snapshot 보존.
+  - 규정된 retry 또는 replay.
+- 기존 30+10+2는 원 프로그램 SHA `3f6d…`의 역사 근거로만 남깁니다.
+
+**B1/B2**
+- twin의 child 결과에서 `predecessor`, `counterpart`, `source_rows`, binding의 active와 prior가 같아야 합니다.
+- 각 twin이 자기 S0에서 준비한 OLD 요청은 `target_fingerprint`를 뺀 plan이 같아야 합니다. token만 달라야 합니다. `expected_binding_ref`까지 달라지면 원인을 먼저 고정합니다.
+- 거부 twin의 OLD 요청은 **NEW S1 이전**에 준비합니다. S1 이후에는 OLD preview 자체가 거부되어 under-lock apply fence가 아닌 다른 거부를 재게 됩니다.
+- 거부 cell은 정확한 code, 거부 전후 snapshot 동일, 대응하는 positive twin의 성공을 단언합니다.
+- B2의 lock-attempt witness는 R-16의 route 표를 그대로 따릅니다.
+
+**C5**
+- C5의 정의가 packet에 없어 구체 단언을 제시하지 못합니다.
+- 이 두 변경이 C5 선택 ID에 닿는다면, 새 프로그램 SHA를 재사용 신원에 묶는 것이 최소 조건입니다.
+
+**X1**
+- 모듈 SHA가 바뀌므로(`e085…` → `fcff…`) 재사용 신원을 (method AST, 참조 프로그램 상수 SHA, helper) 단위로 정의합니다. import 없이 도출 가능해야 합니다.
+- D3 프로그램 `12e0…`과 counterpart 프로그램 `342b…`의 SHA를 기록합니다.
+
+## 4. 범위와 예산
+
+- **in-scope 보정:** D-01, D-03~D-09, O-02, O-04~O-09.
+- **조건부 STOP:** D-02, O-01, O-03. 조건이 성립하면 자동 적용이나 자동 추가 호출 없이 Owner 판단으로 넘깁니다.
+- **새 계약, 권한, 제품 동작:** 이 diff에서는 발견하지 못했습니다.
+- **예산 산식:** 1,472.150 + 4 × 1,200 = 6,272.150초로 7,200초 미만입니다. 이번이 4번째 호출이고 R1 3회가 남아 총 7회입니다. 산식은 일관됩니다.
+
+## 5. 검토 한계
+
+- 도구와 실행 없이 본문만 읽었습니다. SHA-256 값은 어느 것도 재계산하지 못했습니다. X release digest `fad79…`는 구조와 크기 일관성만 확인했습니다.
+- 다음 본문은 제공되지 않았습니다.
+  - `test-entry-proposed.py` 전체
+  - `cli.py`, `workspace.py`, `controller.py`, `observer.py`
+  - `OLD_INIT_PROGRAM`
+  - NEW `_switch_preflight`, `_entry_binding_stage`, `_entry_inventory_directories`
+  - 위에 적은 OLD 내부 함수들
+- caller 7개의 완전성은 제공된 본문 범위에서만 확인했습니다. 미제공 함수가 `_entry_sync`를 부르면 wrapper가 fail-closed로 실패합니다.
+- 유지된 OLD의 일반 `switch_candidate` 패턴은 29-member 사본 source가 받아들여진다는 정황일 뿐입니다. 이 fixture의 실행 근거나 승인 근거로 쓰지 않았습니다.
+
+### Driver Disposition And Conditional Stop Audit
+
+| Finding | Driver 처분 | 근거·처리 경계 |
+| --- | --- | --- |
+| D-01/D-04~D-06/D-09 | accept | frame code와 module identity, frame별 sync1회/path 일치, instrumentation 오류 latch, 원래 target 인수명, b1_arg 표기를 미적용 후속안에 포함했다. source에는 적용하지 않았다. 현재 cli.py:166~169는 일반 Exception을70/HV2-INTERNAL로 번역하므로 with 밖 latch 확인이 필요하다는 D-05 근거를 추가 확인했다. |
+| D-02 | needs-user | 필수 post-B1 verification-unavailable cell은 현재 고정 프로그램으로 의도해 만들 수 없다. 아래 정적 증명과 exact 미적용 변경으로 구체화했다. R0-B §8의 D3 프로그램 재검토 조건과 원래 R1 세 회 유지 시 호출 상한7회가 충돌하므로 추가 호출/적용/실행 없이 STOP한다. |
+| D-03 | accept | site는 lexical line이 아니라 product 함수이며 phase를 포함한 occurrence는 child마다 초기화된다. fixture 사전 상태와 호출 단위를 map identity에 포함한다. 정상 S0의 import 없는 map 초안은259행(admission7/publication56/recovery180/replay16)으로 기존 수치와 일치했으나 실행 근거는 아니다. |
+| D-07 | revise | 기존 문자열 helper에 dict를 바로 전달하지 않는다. 독립 exact helper가 필요하며, compound 전용 consumer와 d3_run의 닫힌 선택자 전달을 후속 exact diff에 포함했다. 일반 전체 map/helper와 negative no-envelope controls는 미작성 의무다. |
+| D-08 | accept | 최종 module의 row 전체/keyset 사용과1MiB headroom을 고정 bridge에서 확인할 의무를 유지한다. 이번 정적 검토로 실행 회귀를 면제하지 않는다. |
+| O-01 | revise | NEW `_entry_admission`은 active=P·pending 없음·정확한 O·빈 staging child들을 검사한다. `_workspace_product_once`는 유효한2-receipt chain와 retained X를 순회한다. 빈 switch-fixture-to-predecessor는 정적으로 허용돼 보인다. 실제 NEW preview/admission positive는 T0에 반드시 두고 실패하면 제품 수정/allowlist 확장 없이 STOP한다. |
+| O-02 | accept | B1/B2의 OLD update와 rollback은 모두 history active=P/prior=X의 독립 twin을 사용한다. Update는 X retained release 분기를 검증하며 새 release 게시 검증이라고 부르지 않는다. OLD `_switch_binding_receipt`는 candidate!=active와 동일 window rank, rollback만 prior==candidate를 요구하므로 X 재활성화를 정적으로 허용한다. |
+| O-03 | accept | 승인된104분할은 각 새 execution root의 같은 `focused-p2` slot이다. controller.py:14~19에 focused/p2가 있고 factory는 그 work 경계를 허용한다. 다른 slot으로 이동하거나 controller를 바꿀 필요가 없다. 실제 input freeze에서 매 분할 이름을 다시 고정한다. |
+| O-04 | revise | `_OLD_PROGRAM_BASE`와 새 recipe의 a 바이트(`preserved project content`+LF), fixture-home,2026-01-01T00:00:00Z, non-Git 전제가 같다. 기존 init id fixture-init과 새 history id fixture-x-init/fixture-to-predecessor는 의도적으로 다르며 twin끼리는 같아야 한다. OLD `_switch_plan_shape`는 created_at에 `_text`만 검사하고 monotonic time 비교가 없다. 실행 valid history는 T0 의무로 유지한다. |
+| O-05~O-08 | accept | init/update 결과, P/X full ref, root/O/a·receipt/release membership, X release 검증, common origin, source-only candidate 역할과 mode sealing을 후속 미적용안에 넣었다. X는 admitted OLD executor가 아니며 chmod0444/0555는 악의적 동일 계정에 대한 불변성 보장이 아니다. |
+| O-06 | accept | `build_entry_suite` 첫 줄이 `ctx, config, paths = _validated_context(...)`이므로 helper의 paths closure는 실제로 존재한다. |
+| O-09 / T0/A2/B1/B2/C5/X1 | accept | 실행·재사용 bridge·형식/미주입 음성 대조·각 twin의 독립 request/token·보존·로그 cap·실제 시간 및 최종 map 의무를 남긴다.1,200초 리뷰 통과는 fixture180초/child150초 통과가 아니다. |
+
+### Why D-02 Needs A Further Reviewed Change
+
+현재 reviewed D3 프로그램의 request는 preview/recover/selector/fault/truth_change뿐이다. 주입 분기는 sync alias에서 고정 OSError 또는 unavailable 반환만 만들며 target을 바꾸지 않는다. truth_change는 clean replay에서 `_entry_compare_local` 뒤의 합성 truth 추가이며 selector가 있으면 CLI 전에 거부한다. Product의 `_entry_sync`는 b1=True일 때 실제 `verify_workspace_product`를 호출한다. 유효 target을 계속 보존하는 sync-only fault로 그 검증 실패를 의도해 만들 수 없다.
+
+미리 launcher/product를 손상시키면 `_switch_preflight`와 `_workspace_observe`가 sync 도달 전에 거부한다. 완료 replay 역시 `_entry_replay_result`의 최초 product 검증 뒤에야 sync한다. Native 우연한 I/O 실패, 타이밍 경쟁 또는 유효하지 않은 fixture를 해당 cell의 의도된 주입 근거로 쓰지 않는다. 따라서 Reviewer D-02(b)가 성립한다는 Driver 정적 판단이다. 실제 counterexample 실행이나 제품 결함 재현은 아니다.
+
+R0-B가 D3_SYNC_PROGRAM의 추가 변경을 재검토 대상으로 명시했고, R0-D도 이 조건을 유지했다. 남은3회는 영역 R1 두 건과 누적 R1 한 건에 이미 필요하다. Domain R1을 사전 R0로 바꾸거나 생략해 상한 안으로 위장하지 않는다. 이 의존성을 앞선 R0-D packet에 넣지 못한 것은 Driver의 준비 누락이며 제품 계약 변경이 원인이 아니다.
+
+### Concrete Unapplied Follow-Up
+
+후속안은 기존 fixed D3 프로그램에 optional enum `verification_fault=None|launcher-mode`만 더한다. Legacy request key 집합은 그대로 받는다. exact post-B1 publication/replay selector와 sync fault가 있을 때만 허용하고 실제 B1과 b1_arg를 확인한다. 선택 sync 직전에 synthetic target/colvia의 같은 one-link regular inode를 O_NOFOLLOW로 열어0755→0600으로 바꾸고 fsync한다. 실제 product verifier는 교체하지 않는다. 다른 파일·바이트·binding이 바뀌지 않았는지 snapshot으로 확인하고 변경 전후를 envelope에 표시한다. 오류 뒤 자동 복원은 하지 않는다.
+
+제안 consumer는 unavailable 진단·주입1회·추가 sync0·동일 B1/receipt/prefix 보존을 확인하고, 실제 verifier가 거부한 뒤에도 상태가 같은지 확인한다. 그 다음 이 시험이 만든 정확한 mode 변화만 명시적으로0755로 되돌려 변경 전 snapshot과 대조하고 동일 요청의 exact replay/무변경을 확인한다. 이는 실제 adopter 복구 권한이나 제품의 자동 rollback이 아니다. 프로그램과 consumer는 아직 실행·적용하지 않았다.
+
+같은 후속 diff에 D-01/D-04~D-06/D-09 및 O-05~O-08의 정적 보정을 포함한다. 새 product/common/controller/runner/acquisition/sandbox/의존성/네트워크 권한은 제안하지 않는다. 기존 전체 map·입력 freeze·T0와 모든 필수 cell 및 실패 STOP은 유지한다.
+
+- `d3-sync-proposed.py`: 16962 bytes/SHA `e3c25ac10eb98968bf1f9cbd0c00f1a1d1c85f6eb35e573ed136b0dd6b148118`.
+- `old-counterpart-proposed.py`: 6724 bytes/SHA `b81142bb995402a7b6af99911dcb80f2077310b87d1a55d7cb12d98546038573`.
+- `compound-helper-proposed.txt`: 3553 bytes/SHA `94173ee02865376fd3008a0daf7c1e74510f57472b9e5d9c4595e6e184f5a14e`.
+- `test-entry-proposed.diff`: 47582 bytes/SHA `07a250720171c3bd419b7c8ea248a6becfffc0c367db4adc9d2ca88c008191d3`.
+
+### Budget And Specific Resume Decision Requested
+
+리뷰 실측은4/7회, 누적1,930.634초(32분10.634초)다. 현재 남은3회는 원래 R1들로 유지하며 추가 호출은0이다. 제안하는 유일한 예산 변경은 호출 상한7→8회로 추가 R0 한 회를 허용하는 것이다. 총 리뷰2시간·호출당1,200초는 유지한다.1,930.634+4×1,200=6,730.634초(1시간52분10.634초)로2시간 이내다. 짧게 끝난 시간이 추가 호출 승인으로 바뀐 것은 아니다.
+
+Authoring은06:33 재개부터 이 기록·후속안·보존까지25분(06:58 UTC까지)을 보수적으로 차감해 누적140분/잔여29시간40분으로 잡는다. 그 시간을 넘겨 작업하면 초과분을 별도 차감한다. Controller 추가0/누적80회, 새 execution root0,34시간 검증 창 미시작,104분할·신규624/누적704호출·retry0·64GiB 및 나머지 한도는 그대로다. P2 종료 수락·technical activation·adopter 적용·Git은 별도다.
+
+Owner에게 요청하는 범위는 위 exact 후속안과 관련 검증 함수/계약·R0-D 원문/처분을 고정 packet으로 Anthropic first-party Claude 구독 경로에1회 전송하는 추가 R0, 호출 상한8회, 이후 기존 승인 범위·잔여 예산 안의 P2 재개다. 새로운 계약/권한·예산 초과·예상 밖 실패는 계속 STOP한다. 이는 아직 제안이며 적용·전송·호출은 미승인/미실행이다.
+
+### Preservation And Current State
+
+현재 canonical source는 이번 리뷰 전의6파일 변경 상태 그대로이며 D2/M1만 제품/계약에 적용된 상태다. 두 최초 test 제안, 이번 보정과 compound 제안은 모두 미적용이다. 리뷰 중 R-22/R-23 observer와 R-24~R-26 buffered probe/helper 및259행 정적 normal map을 scratch 초안으로 작성했으며 이를 실행 근거로 쓰지 않는다. 이 초안들도 후속 P2 authoring용으로만 보존한다.
+
+Private bundle `p2-full-execution-01/r0-d-result/`에는 현재 source 복구 diff와 후속 exact 제안·identity 및 재개에 쓸 작성 초안만 둔다. 소비자는 Owner의 이 제한된 후속 범위 판단과 승인된 추가 R0/P2이며, source 적용 및 최종 Work 신원/결과 기록까지 보존한다. 원문 응답·입력 신원·처분은 이 기존 Work가 최소 기록이다. Raw API envelope·stream·전체 source copy를 추가 영구 deliverable로 만들지 않는다. Source worktree와 기존 native evidence는 남은 P2가 사용할 예정이어서 유지한다. Git commit/push/PR/merge와 STATUS/Done 처리는 없다.
+
+### Exact Follow-Up Packet — Prepared, Not Transmitted
+
+후속 R0-E packet은 391533 bytes, SHA-256 `1f77eff11e9ace4ec9fc0362719f3a1c5d4ee132a2217049f041cad3ef41bb28`로 고정했다. 제안한 두 프로그램·compound consumer·현재 source 대비 test diff, R0-D 원문과 Driver 처분 초안, 현재 product.py/jsonio.py·CLI 예외 처리, controls common/test.sb와 controller slot 정의, DR-0004, 실제 factory helper·OLD base 및 고정 OLD product 함수만 포함한다. Canonical source8개 전체 파일을 모두 보내는 것이 아니라 위 필요한 전체 파일/발췌를 보낸다. 각 파일과 source diff 밖 제안의 SHA는 packet identity에 있다. Credential/account·실제 adopter 데이터는 포함하지 않는다. 대상은 같은 Anthropic first-party Claude 구독 경로이며 아직 전송·auth·review 호출하지 않았다. 세션 ID는 미사용 후보다. Owner의 이 정확한 후속 전송/1회 리뷰와7→8호출 조정 승인이 필요하다.
+
+기록 후 확인: source cwd의 `git diff --check` exit0, `node /private/tmp/p2-plan-document-check.mjs` exit0/GFM PASS/local links160/external1 not fetched. R0-D reviewed source8개·이전 Work prefix·HEAD/index/untracked 보존, 응답 원문 byte 포함, 후속 packet SHA와 private 복구 diff 전체 일치를 확인했다. 실행 준비 완료나 제품 PASS가 아니라 기록·입력·보존 확인이다. 최종 기록·보존 시간은 위06:58 UTC까지25분 차감 안에 포함한다.
+
+
+## R0-E Review And In-Scope Disposition — 2026-10-11
+
+### Actual Authorization And Invocation
+
+Owner는 준비된 exact R0-E packet을 Claude first-party 구독 경로에1회 전송·검토하고 호출 상한을8회로 조정한 뒤, 나머지 범위·잔여 예산·STOP 조건을 유지해 P2를 계속 진행하도록 승인했다. 총 리뷰2시간, P2 종료 수락과 Git의 별도 경계는 그대로다. 이 승인은 앞선 ‘Prepared, Not Transmitted’ section 뒤의 실제 결정이며 과거 제안 상태를 소급 변경하지 않는다.
+
+- Source base: `a17f35cf323ffde7a8642a85501fddbec858b6de`. Invocation diff SHA-256: `2ed6b8cef6e6d73122a7aca1c677d4e7213af8530e9071adcd9226ad4d5ec9bd`. Work SHA: `8fb4350fe039a973db298ca12071b5359d247c21e2dc7fcaef3d5370be0a35d5`.
+- Packet: 391533 bytes / SHA `1f77eff11e9ace4ec9fc0362719f3a1c5d4ee132a2217049f041cad3ef41bb28`. Source 밖 제안/발췌의 신원은 직전 packet 기록과 review-identity에 있다.
+- 고정 실행: `/private/tmp/p2-r0-e-run.py`; cwd는 현재 source worktree. Fresh session `5ed80ce6-782a-4f66-9478-21b3b05c2d06`, actual model `claude-opus-5-5`, effort high. Auth는 `claude.ai / firstParty / pro`, loggedIn=true; credential/account value는 기록하지 않는다.
+- CLI는 no-tools, empty strict MCP, safe/restricted, no project/user settings, dontAsk/no permission prompts, no Chrome, no session persistence로 실행했다. 제한1,200초, stdout16MiB/stderr1MiB; 실행·수정 권한을 Reviewer에 주지 않았다.
+- 실제 2026-10-11T06:56:08.318142+00:00 → 2026-10-11T07:04:32.587627+00:00, 504.268초, exit0/success. Tool call0, MCP0, permission denial0, invalid stream line0, 종료 process group 부재, 전후 frozen input/diff 동일 PASS.
+- 최종 응답 SHA `b1930d2c3ae1a1fb3be7c68cd7e799876a610347f4358e82a98a6aec9424954b`. 아래 원문은 그대로 기록한다. 모델 계열은 Driver와 다르지만 제공된 packet만 읽은 정적 검토이며 test 실행이나 독립적인 source retrieval은 없다.
+
+### Reviewer Final Response — Verbatim
+
+# R0-E 정적 검토 결과: compound sync/검증 실패와 R0-D 보정
+
+## 0. 결론
+
+- **판정:** 확정 STOP은 찾지 못했습니다. 두 프로그램과 helper diff는 test-only이고, 제공된 본문 기준으로 product·common·controller·sandbox 변경을 요구하지 않습니다.
+- **조건부 STOP 4건:** E-06, E-09, E-10, E-13. 조건이 성립하면 자동 적용이나 추가 호출 없이 Owner 판단으로 넘깁니다.
+- **freeze 전 in-scope 보정:** E-01~E-05, E-07, E-08, E-11, E-12.
+- 이 검토는 실행 근거, P2 PASS, Owner 수락이 아닙니다.
+
+## 1. 질문 1 — `verification_fault`와 launcher-mode 주입
+
+### 정적으로 확인된 것
+
+- **legacy 보존:** `d3_run`은 `verification_fault`가 None이면 key를 넣지 않아 5-key 요청과 stdin 바이트가 그대로입니다. `selected`의 legacy 분기는 원 조건과 동치이고 `matches`·`hits`·`facts`도 같습니다.
+- **post-B1 한정:** 정적 allowlist는 `_entry_replay_result`/`replay`와 `workspace_switch_apply`/`publication`의 `binding-product-parent`·`binding-operation-parent`뿐입니다. product.py에서 이 호출은 모두 `b1=True`입니다. 실행 시점에도 `b1_arg`와 `s['b1']`를 다시 봅니다.
+- **실제 verifier 실패:** `_entry_sync`의 `verify_workspace_product`는 patch되지 않습니다. `_workspace_product_once`의 비-crossing 분기에서 `launcher.stat().st_mode & S_IXUSR`가 0이 되어 ContractError가 나고 `verification=unavailable`이 됩니다.
+- **authority 비손상:** 바뀌는 것은 root `colvia`의 mode뿐입니다. binding·receipt·release 바이트는 건드리지 않고, 전후 `tree()` 비교가 mode 한 건의 delta를 강제합니다.
+- **권한:** O_RDONLY fd의 fchmod/fsync는 `_entry_replay_result`가 이미 쓰는 형태이고, WORK 안 mode 변경은 `file-write*`에 들어갑니다. test.sb 변경은 필요 없습니다.
+- **latch:** `instrumentation_error`는 raise 전에 list에 넣습니다. `cli.main`이 70으로 번역해도 `with` 뒤에서 다시 올리고 envelope가 나오지 않습니다.
+- **R0-D 보정:** D-01(frame code 일치, frame당 sync 1회, path 일치), D-04(module 이름, `D3_SITES` 단일 상수), D-06(`target` 인수명), D-09가 반영돼 있습니다.
+- **caller 집합:** 이번에 제공된 product.py 전체에서 `_entry_sync` 직접 호출 함수는 `D3_SITES` 7개와 일치합니다.
+- **same-entry 무영향:** 비전환 경로의 product 직접 sync는 `direct_d3=False`이고 stack이 비어 통과합니다. `same_entry_receipt` 경로에 새 오탐은 없습니다.
+
+### 발견 사항
+
+**E-01 (중간) 계측 쪽 OSError가 주입된 sync 실패로 위장됨**
+- **위치:** `observe.sync`의 `break_launcher_mode()` 호출과 `injected.append({... tree() ...})`.
+- **기전:** 이 코드는 `_entry_sync`의 `try: sync_directory(path) except OSError` 안에서 돕니다. `os.open`·`fchmod`·`fsync`·`tree()`의 OSError가 `oserror:N` sync 실패로 흡수됩니다.
+- **현재 방어:** `synthetic_changes`와 `injected` 개수 검사로 envelope 없이 실패합니다. 다만 `fchmod` 성공 뒤 `fsync`가 실패하면 target은 0600인데 기록이 없고 사유도 "mutation missing"으로만 남습니다.
+- **최소 보정:** 두 지점을 `try/except OSError as exc: instrumentation_error('compound I/O ' + str(exc.errno))`로 감쌉니다.
+
+**E-02 (낮음) latch 범위는 `instrumentation_error` 경유 경로뿐**
+- `tree()`의 `'special D3 fixture'`, `facts()`의 KeyError 같은 예외는 cli가 70으로 번역합니다. legacy/trace 실행에서는 `diagnostic=None`인 정상 envelope가 나옵니다.
+- 소비자가 exit를 단언하므로 fail-closed이지만 product 내부 오류와 구분되지 않습니다.
+- 선택 보정: `sync`의 계측 구간 예외를 list에 기록합니다. alias가 product가 아닌데 `d3_stack`이 찬 경우도 오류로 올릴 수 있습니다.
+
+## 2. 질문 2 — `d3_compound_fault`
+
+### 정적으로 확인된 것
+
+- 메시지 세 단언은 `_entry_sync`의 f-string과 맞습니다(`unavailable:22`, `oserror:5`, `observed=yes; current product verification=unavailable`).
+- 주입 1회, 이후 row 0개, `row['d3'] == {**selector, 'b1_arg': True}`, `facts.new_mode == 0o600`이 child 코드와 맞습니다.
+- snapshot 사슬(`change.before` → mode 한 건 → `change.after` == `injection.snapshot` == `result.after` == 부모 snapshot)이 일관됩니다. 부모 verifier 호출 전후 동일성도 봅니다.
+- 처분 후 replay는 `_switch_preflight`의 done 분기에서 `_entry_replay_result('replayed')`로 가고 쓰기가 없습니다. `before == after`와 binding 바이트 동일 단언은 타당합니다.
+
+### 발견 사항
+
+**E-03 (중간) 부모 verifier 단언이 원인과 class를 고정하지 않음**
+- **위치:** `with self.assertRaises(ContractError): self.product().verify_workspace_product(target)`.
+- **기전:** 어떤 ContractError든 통과하므로 "mode 때문에 unavailable"이 부모에서 확인되지 않습니다. `from hv2ref.errors import ContractError`가 `self.product()`와 같은 모듈 객체인지도 제공된 본문으로는 알 수 없습니다.
+- **최소 보정:** `product = self.product()`의 `product.ContractError`를 쓰고, `code == 'HV2-WORKSPACE-PRODUCT'`와 메시지의 `'launcher differs from permitted release or is not executable'`를 단언합니다.
+
+**E-04 (중간) receipt·prefix 보존 단언이 legacy보다 약함**
+- `completed=True`: `result['before'] == change['before']`를 추가합니다. replay가 주입 전에 아무것도 쓰지 않았음을 직접 고정합니다.
+- `completed=False`: legacy `d3_fault`처럼 receipt의 `plan == preview['request']`, `hv2` 부재, `binding.next` 부재, 기존 member 보존(`hv2`·binding 제외)을 추가합니다.
+- 공통: `row['pre_synthetic_facts']`가 `b1=True`, `new_mode=0o755`이고 `facts`와 `new_mode`만 다름을 단언합니다.
+- mode 확인은 `stat()` 대신 `lstat()`이 정확합니다.
+
+**E-05 (중간) helper가 기대는 미제공 의존성**
+- `copy.deepcopy`: test module의 `import copy` 여부가 발췌에 없습니다. 없으면 NameError입니다.
+- `interrupted_api(..., 'after-binding')`: product는 이 지점을 받지만 helper 본문이 없어 지원 여부를 확인하지 못했습니다.
+- `self.old_target()`의 이름이 `'target'`으로 고정이라 한 test method에 cell 하나만 가능합니다(legacy와 같음).
+- 조치: 세 가지를 AST로 확인합니다. test module 안의 수정으로 풀리면 in-scope입니다.
+
+**E-06 (조건부 STOP) `launcher-mode` 하나는 ContractError 갈래만 실행함**
+- `_entry_sync`의 `except (ContractError, OSError)` 중 OSError 갈래와 다른 실패 원인(binding 손상 등)은 이 enum으로 만들 수 없습니다.
+- 제공된 D3-A 본문은 원인별 구분을 요구하지 않고 두 갈래의 출력도 같습니다. 그 기준이라면 추가 enum은 필요 없습니다.
+- R-10/A2 map이 갈래별 또는 원인별 cell을 요구하면 프로그램을 또 바꿔야 합니다. freeze 전에 "단일 원인으로 충분"을 map에 명시하거나 Owner에게 올립니다.
+
+**E-07 (낮음) cell 조합과 음성 대조의 상태 규칙**
+- `completed=True`에 publication selector를 주면 주입이 없어 envelope 없이 실패합니다. 유효 조합을 map에 고정합니다.
+- "없는 occurrence" 음성 대조는 전환이 끝까지 진행된 뒤 실패합니다. target 무변경을 단언하면 안 됩니다.
+- 음성 대조 2종은 child의 고정 메시지가 이미 있으므로 `spawn`/`finish` 직접 사용으로 충분하고 프로그램 변경은 필요 없습니다.
+
+## 3. 질문 3 — wrapper 불변식, occurrence, map
+
+- **불변식:** code 일치, module 이름, frame당 sync 1회, path 일치가 fail-closed로 연결됩니다. 정적 반례는 찾지 못했습니다.
+- **occurrence:** child마다 초기화되는 `(site, phase, role, path)`별 단조 계수입니다. 호출 순서는 정렬과 고정 tuple로 결정적입니다. `f_lineno`는 코드에 없어 caller line은 신원이 아닙니다.
+- **259행 재도출:** product.py에서 손으로 다시 세어 Driver 수치와 일치했습니다. 실행 근거는 아닙니다.
+  - admission 7.
+  - publication 56 = 1 + 2 + 2 + 12 + 30 + 2 + 1 + 1 + 2 + 1 + 2.
+  - recovery 180 = 기존 디렉터리 `durable` 88회 × 2 + staging 4.
+  - replay 16 = 6 + 7 + 3.
+- **미작성 의무:** 음성 대조 2종, 259행 map 동결, old 8-cell bridge, T0 실행은 그대로 남습니다.
+
+**E-08 (낮음) envelope와 row key 추가**
+- 모든 envelope에 `synthetic_changes`, 모든 row에 `d3`, compound 주입 row에 `pre_synthetic_facts`가 생깁니다.
+- 미제공 모듈에 key-set 단언이 있는지 AST로 확인합니다.
+- compound envelope는 전체 tree가 5벌 들어갑니다. 1MiB 여유는 T0 관측값으로 단언합니다.
+
+## 4. 질문 4 — OLD counterpart
+
+### 정적으로 확인된 것
+
+- **O-05~O-08 반영:** init/update 결과, P·X full ref, root membership, `a`, O 바이트와 mode, receipt 2개, release {P, X}, X release 검증, 29-member, common 출처, mode 봉인과 봉인 후 재검증이 들어 있습니다. 쓰지 않는 import는 없습니다.
+- **NEW admission 양립:** 현재 product.py로 따라가면 `_entry_admission`과 `_workspace_product_once`가 history target을 통과합니다.
+  - schema-1 receipt 2개의 chain과 release X·P 검증이 성립합니다.
+  - staging의 `init-fixture-x-init`와 `switch-fixture-to-predecessor`는 빈 디렉터리로 허용됩니다.
+  - `_validate_plan_shape`는 미제공입니다. T0 양성 대조는 여전히 필수입니다.
+- **update/rollback 경로:** 제공된 OLD 본문에서 active=P/prior=X twin의 X update는 기존 release 분기를 타고, rollback은 `prior_release == X` 조건을 충족합니다.
+- **recipe:** `a` 바이트, `fixture-home`, TIME, non-Git 검사는 OLD base program과 같습니다. suffix는 62바이트입니다.
+- **focused-p2:** controller의 `focused` × `p2`와 factory의 WORK 규칙에 맞습니다.
+
+### 발견 사항
+
+**E-09 (조건부 STOP) WORK 안의 0555 디렉터리**
+- **위치:** `directory.chmod(0o555)`, `counterpart.chmod(0o555)`.
+- **기전:** 쓰기 불가 디렉터리의 하위 항목은 unlink할 수 없습니다. controller나 runner가 WORK 또는 execution root를 정리하면 실패합니다. 그 본문은 제공되지 않았습니다.
+- **최소 보정(택일):**
+  - 파일만 0444/0555로 봉인하고 디렉터리는 두되, 사용 직전에 membership과 digest를 재검증합니다.
+  - `old_history_target`에 디렉터리 mode를 되돌리는 `addCleanup`을 둡니다.
+- controller 변경이 필요해지면 STOP입니다.
+
+**E-10 (조건부 STOP) `focused-p2` literal의 전방 의존**
+- P2의 104분할 안에서는 정합합니다.
+- `complete-normal-final`, `complete-parent-O-final`, `focused-correction`이 이 fixture를 쓰는 test를 포함하면 `fixture boundary`로 실패합니다. 그때 프로그램 바이트 변경이 필요합니다.
+- 지금 둘 중 하나를 정합니다.
+  - P2 전용으로 두고 이후 gate의 취급을 기록합니다.
+  - factory와 같은 규칙으로 바꿉니다: `target.relative_to(paths['exec']/'runs').parts[0]`이 `ENTRY_RUN_NAMES`에 속하는지 확인합니다.
+
+**E-11 (중간) update/rollback positive twin은 종단 상태**
+- 성공 뒤에는 active=X입니다. root `hv2`(O 바이트)를 실행하면 X payload 모듈이 돌아 DR의 "old = 정확한 감사 구현" 밖입니다.
+- map 규칙: 이 twin에서는 상태 단언만 하고 installed `hv2` 실행이나 old-installed 근거 집계를 하지 않습니다.
+- root `hv2` 바이트가 바뀌지 않으므로 launcher 교체 검증이라고 부르지 않습니다.
+
+**E-12 (낮음) 보강**
+- child에 staging membership 단언(`{init-fixture-x-init, switch-fixture-to-predecessor}`, 둘 다 빈 디렉터리)을 넣으면 admission 전제가 fixture 쪽에서 고정됩니다.
+- 사용 직전 `source_rows` 재검증이 부모 helper에 없습니다. 각 twin이 counterpart를 쓰기 전에 수행해야 합니다.
+- 부모 쪽 `verify_old`는 T0 단언으로 남습니다.
+- comprehension 변수 `p`가 predecessor dict `p`와 이름이 겹칩니다. 기능 오류는 아니지만 이름을 바꾸길 권합니다.
+
+**E-13 (조건부 STOP) X digest literal `fad79…`**
+- 재계산하지 못했습니다. T0에서 불일치하면 프로그램 상수가 바뀌어 새 검토 의존성이 됩니다. freeze 전에 import 없는 재계산을 다시 대조합니다.
+
+## 5. 질문 5 — 남은 STOP과 한계
+
+**조건부 STOP**
+- E-06: map이 다른 검증 실패 원인이나 OSError 갈래를 요구하는 경우.
+- E-09: 봉인된 디렉터리 때문에 controller 변경이 필요한 경우.
+- E-10: 이후 gate에서 프로그램 literal을 바꿔야 하는 경우.
+- E-13: X digest가 불일치하는 경우.
+- Driver가 이미 정한 STOP: history target에 대한 NEW preview/admission의 T0 실패.
+
+**유지되는 의무**
+- R1 3회, 259행 map과 controls 동결, input freeze, T0, 8-cell bridge, 음성 대조 2종.
+- 180초/150초 실행 예산과 log cap 관측.
+- 프로그램 SHA 기록 시 embedded 상수는 선두 LF를 포함하므로 파일 바이트와 어느 쪽을 묶는지 명시합니다.
+
+**예산**
+- 1,930.634 + 4 × 1,200 = 6,730.634초로 7,200초 이내입니다. 이번이 5번째 호출이고 R1 3회가 남아 총 8회입니다.
+
+**검토 한계**
+- 도구와 실행 없이 본문만 읽었습니다. SHA-256은 어느 것도 재계산하지 못했고, embedded 상수와 별도 파일의 바이트 동일성은 줄 단위 육안 대조뿐입니다.
+- 미제공 본문:
+  - `workspace.py`, `work.py`, `intent.py`
+  - `cli.py`의 `main` 외 부분
+  - controller의 정리 로직, runner, observer
+  - test module의 `snapshot`, `transition`, `interrupted_api`, `product()`, `remaining`
+  - OLD의 `workspace`/`work` 내부 함수
+- OLD base program은 `before=snap()`에서 잘려 있습니다.
+- `_id`의 길이·문자 규칙이 없어 `fixture-to-predecessor`의 유효성은 T0 관측입니다.
+- 가장 깊이 따라간 것은 product.py의 sync 경로와 verifier 분기입니다. test module 쪽 helper는 제공된 발췌 범위에서만 판단했습니다.
+
+
+### Driver Disposition And Conditional Stop Resolution
+
+Reviewer의 ‘확정 STOP 없음’은 검토 의견이다. Driver는 아래 근거로 conditional STOP이 현재 성립하지 않음을 확인하고 기존 승인 authoring을 계속한다. T0 실패·새 계약/권한·예산 초과·예상 밖 실패 STOP은 유지한다.
+
+| Finding | 처분 | 확인·보정과 한계 |
+| --- | --- | --- |
+| E-01/E-02 | accept | sync wrapper의 관측/facts/tree/compound 변경 구간을 별도 try로 묶어 일반 계측 예외를 instrumentation latch에 기록한다. 의도된 sync OSError와 실제 original sync 위임은 이 catch 밖에 둔다. non-product alias가 열린 D3 frame에 들어오면 거부한다. CLI가70으로 번역해도 envelope 없이 실패한다. |
+| E-03 | accept | 부모는 product.ContractError를 사용하고 HV2-WORKSPACE-PRODUCT 및 정확한 launcher 실행권한 진단을 단언한다. 제품 verifier는 mock하지 않는다. |
+| E-04 | accept | replay의 before와 synthetic 변경 전 snapshot 동일, receipt.plan, O/binding.next 부재, 기존 member 보존 및 pre_synthetic_facts의 mode 단일 delta를 추가한다. mode 조회는 lstat이다. |
+| E-05 | revise | 실제 module은 copy를 import하며 interrupted_api는 point를 그대로 기존 inject_at에 전달하고 code/point를 검사한다. old_target은 기본값 target 외 name도 받지만 compound helper는 method당 cell1개로 유지한다. 실행으로 증명한 것은 아니다. |
+| E-06 | defend | accepted D3-A의 목적은 sync 오류 뒤 독립 verifier가 불가능하면 unavailable이라고 보고하는 것이다. ContractError/OSError 원인별 branch coverage를 별도 필수 의무로 추가하지 않았다. 모든 해당 post-B1 sync 위치·두 sync fault에 real verifier의 launcher-mode 실패를 적용한다. 같은 진단의 다른 verifier 원인 전수를 검증했다고 주장하지 않는다. 새 enum 불필요. |
+| E-07 | accept | publication compound는 S0에서, replay compound는 완료 S6에서 실행한다. 잘못된 selector 형식은 CLI 전 거부/무변경, 없는 occurrence는 실제 transition 완료 뒤 envelope 없이 거부하는 서로 다른 기대값이다. |
+| E-08 | accept | 현재 D3 소비자는 새 envelope/row key 전체 집합의 exact equality를 요구하지 않는다. 앞으로 추가할 소비자는 새 shape를 고정한다. 모든 child에 기존1MiB cap이 있고 compound의 다섯 snapshot 크기는 T0에서 실제 관측한다. |
+| E-09 | revise | counterpart 파일만0444/0555로 유지하고 디렉터리는0755를 검증한다. 사용 직전 membership/digest/size/mode를 재검증하는 부모 helper를 추가한다. controller/runner 정리·권한 변경이 필요하지 않다. 동일계정의 악의적 변경을 막는 보장으로 부르지 않는다. |
+| E-10 | revise | 지금 fixed child를 factory와 동일한 controller.ENTRY_RUN_NAMES 규칙으로 제한한다. validated controls에서 controller를 읽고 origin을 검사하며 target과 counterpart를 같은 run/work 아래로 한정한다. 따라서 future final/correction slot 때문에 다시 literal을 바꿀 필요가 없다. 새로운 slot/runner/권한이나 P4 실행 승인 추가는 없다. |
+| E-11 | accept | OLD update/rollback positive twin의 종단은 X active이며 상태만 확인한다. 그 뒤 installed launcher를 실행하거나 X payload 실행을 audited OLD 결과로 집계하지 않는다. Launcher 바이트 교체 시험도 아니다. |
+| E-12 | accept | history staging은 지정한 빈 init/switch 두 디렉터리인지 child에서 검사한다. 부모 source_rows 재확인 helper는 각 counterpart 사용 직전 호출하도록 B1/B2 작성 의무로 고정한다. 모호한 comprehension 이름도 정리한다. |
+| E-13 | accept | baseline2385146의 README Git bytes를 manifest SHA/size와 대조하고 fixed suffix 및 literal29-member inventory를 import 없이 재계산했다. X SHA fad79ba1ba414435cd42e21c1e903d7c25eb10c8c3c20a83c3386e0cecc9d630로 일치한다. 실제 OLD lifecycle/NEW admission positive는 T0까지 미검증이다. |
+
+위 보정은 이 리뷰가 제시한 최소 수정 및 기존 test authoring 범위다. D3/OLD 프로그램의 의미를 새 목적·executor·mutation으로 확대하지 않으며 추가 R0를 자동 호출하지 않는다. Remaining R1 세 회를 그대로 보존한다. 제품·shared helper·controller·runner·acquisition·sandbox는 수정하지 않는다.
+
+### Corrected Authoring Inputs And Remaining Gates
+
+보정 generator는 product/test import 없이 AST와 text만 처리하고 source 밖 초안으로 exit0 생성했다. Source 적용 전 초안 신원은 다음과 같다. Embedded 프로그램은 해당 파일의 선두 LF를 포함한 전체 UTF-8 바이트와 동일하게 넣는다.
+
+- `d3-sync-corrected.py`: 17416 bytes / SHA `5c23b7cb82added16260089857b8e265af02e4c7fcf6e26218942f673adc3aca`.
+- `old-counterpart-corrected.py`: 7460 bytes / SHA `f5ffef9f91dbe635944186a66bb476663314df8fd60df1486965d407db137cf7`.
+- `compound-helper-corrected.txt`: 4546 bytes / SHA `9c2db67243ecf876249f341dd3a355cbe2243b32a43e2e7e69d555b2e61e80f7`.
+- `test-entry-corrected.py`: 261787 bytes / SHA `a914b95d2cb79487b88987de5a7710f9e0309adce462f50e53905bf97b882801`.
+- `test-entry-corrected.diff`: 50590 bytes / SHA `c12932908e7bc75fc4f59657dab5ee22a5ce8a024566964fde0efd7af168a49a`.
+
+R0-E 대기 중 source를 읽기만 하며 normal259행 및54개 symbolic physical frontier의 D3 map 초안을 작성했다. 전체 경로 목록을 무조건 직교 곱하거나 같은 selector라는 이유로 시작 상태를 합치지 않는다. 승인된 A2 산식에 따라 S0/S1/full-S2,6개 release/N/binding recovery,3개 S6,2개 surviving-parent fallback,partial-S2 admission directory-set과 추가 phase/occurrence 및 post-B1 진단을 별도 계산 중이다. 현재2,704는 초안 요구량이며 fixture·selector·ID·최종 input closure나 PASS가 아니다. Full map/전체 authoring 완료 전 T0/controller/import/discovery를 시작하지 않는다.
+
+현재 추가 review는5/8회, 실측 누적2,434.902초(40분34.902초)다. 남은 R1 세 회를 각각1,200초로 계산하면 최대6,034.902초로2시간 안이다. Authoring은06:58 UTC까지의 누적140분에 이번 기록·보정·적용 예정 구간07:15 UTC까지17분을 보수적으로 더해 누적157분/잔여29시간23분으로 잡는다. 그 시각 이후 실제 작업은 다음 기록에서 추가 차감한다. 새 controller0/누적80회, 새 execution root0,34시간 검증 창 미시작, retry0,104분할/신규624·누적704/64GiB/개별cap은 유지한다.
+
+리뷰 원문/신원/처분의 영구 최소 기록은 이 기존 Work다. 보정 diff·프로그램과 정적 map 초안 및 현재 복구 patch는 private bundle r0-e-result에 남은 authoring/input freeze 소비용으로 보존한다. Source 입력을 최종 동결하고 검증/Work 기록으로 복구 가능한 상태가 되면 이 추가 초안의 보존 의존성이 끝난다. Raw API/stream·추가 전체source copy는 영구 deliverable로 만들지 않는다. Source worktree와 기존 native evidence는 남은 P2가 사용하므로 유지한다. P2 결과 수락·technical activation·adopter 적용·Git/STATUS/Done 처리는 별도다.
+
+
+### Applied R0-E Correction And Authoring Wave 01
+
+R0-E의 위 test-only 보정을 tests/test_entry_window_transition.py에 적용했다. 적용 SHA는 a914b95d2cb79487b88987de5a7710f9e0309adce462f50e53905bf97b882801이다. Embedded D3/OLD 프로그램의 SHA는 위 corrected file 신원과 바이트 단위로 일치한다. Product·DR·common·controller·runner·acquisition·sandbox는 이 적용에서 변경하지 않았다. Work GFM/로컬160링크와 git diff --check는 exit0이다. 이것은 정적 문서·입력 확인이며 테스트 실행 결과가 아니다.
+
+이후 source 밖의 미적용 초안으로 다음을 작성했다. Product/test/controls import, factory discovery, controller 또는 test 실행은 없었다.
+
+- Controls: R-22/R-23 observer 초안, default buffering·원 반환 객체/값, 다중 raw-write·with refusal·fdopen 미관측 탐지, synthetic fullfsync error/unavailable와 실제 native fullfsync gate를 연결했다. Witness/logger pre/post failure4개를 포함한 신규 control14개 및 전체 write-audit pairing helper를 작성했다. Synthetic observer 오류를 제품 sync 오류로 분류하지 않는다.
+- A1: receipt1+staged30 파일의 실제 길이표(59~125,111 bytes; receipt length-only model1,360 bytes)와 physical1,233개 selector 초안이다. 생성·raw/short write·buffered API·fullfsync·mkdir 성공/exists·반복 fsync를 별도 행으로 둔다.1,400 배당 안의 수치이지 실행수나 검증 완료 수가 아니다. Receipt 길이 모델의 두64자리 hex placeholder는 길이 계산 전용이며 실제 fixture에는 실제 plan/receipt를 사용한다.
+- A2: S0/S1/full-S2와6개 recovery,3개 replay,2개 fallback,8개 partial-directory admission frontier를 서로 다른 시작 상태로 유지한다. 현재2,700개 fault 의무 초안이다. 앞선2,704와의 차이4개는 ‘최대18 post-B1 위치×추가2목적’ 배당에서 historical-comparison precedence가 실제로 적용되는16개 replay 위치만 목적별로 구체화한 결과다. 두 publication 위치의 두 sync fault 및 verifier verified/unavailable 검사는 모두 유지한다. 검사 sampling이나 state 병합 차감이 아니다. 전체 ID/helper/fixture closure는 아직 미완이다.
+- A1/A2 helper: independent prefix byte/mode oracle, 정확한 준비 상태, 주입1회/이후sync0, receipt·binding·truth 보존 및 동일 요청의 recovery/replay/refusal 초안이다. 실제 raw multiplicity/implicit flush/fullfsync 또는 D3 trace가 frozen map과 다르면 T0 STOP이다.
+- B record fixture: real OLD/NEW API와 verified runtime 증거로 intent/candidate/Work의 닫힌 요청 집합을 준비하는 fixed child 초안이다. 실제 관측할 writer는 caller가 admitted executor로 실행한다. Fixture API 결과를 installed-executor 증거로 바꾸지 않는다. Lifecycle·late-lock 및 C2/C3의 전체 fixture는 아직 작성 중이다.
+
+Authoring wave01의17개 generator/helper/map·diff를 private bundle r0-e-result/authoring-wave-01에 byte-identical 보존했다. 소비자/종료 조건은 위 authoring/input freeze와 같다. 전체source copy나 영구 validation-output package를 새로 만들지 않았다. 현재 source 복구 patch는 r0-e-result/current-changes.patch로 갱신한다.
+
+Authoring 기록은07:15 UTC까지의157분에07:30 UTC까지15분을 보수적으로 추가해 누적172분, 잔여29시간08분이다. 추가 R1 호출0, reviews5/8·2,434.902초, controller 신규0/누적80, execution root0,34시간 검증 창 미시작이다. Scope·retry0·나머지 budget/STOP은 유지한다. 전체 테스트를 complete factory에서 몰래 제외하지 않으며 P4 full qualification의 시간 적합성이나 실행을 이번 P2 authoring으로 주장하지 않는다.
+
+
+### Authoring Wave 02 — B And C2 Drafts
+
+B1은 installed writer396·source lifecycle90·prepare36에 source record grammar38, 네 executor의 read36, B0 intent/Work ticket의 B1 stale4를 더해600개 선언 행으로 작성했다. B2는 기존216 위치를 유지한다. OLD init의 fresh-root 조건과 repair의 damaged-member 조건은 건강한 P 전환 선행조건과 동시에 성립하지 않으므로 그16개 위치는 정상 route 대조·정확한 precondition 거부이며 late-lock 검증으로 세지 않는다. 나머지200 위치는 실제 OLD lock-attempt와 NEW 소유, release 뒤 OLD lock-acquired, 정확한 OLD schema 거부·publication0·prefix 보존을 요구하는 초안이다. P 이전에 준비된 유효 요청과 정상 대조를 사용하고, source grammar·설치 파일 부재/0600·bootstrap 불일치를 writer fence라고 부르지 않는다. 부재/0600은 runpy 결과 대신 실제 직접 exec의 ENOENT/EACCES 대조를 작성했다.
+
+B의 OLD update/rollback은 R0-E의 sealed X counterpart와 실제 P 활성 이력을 사용한다. Positive의 종단 X에서는 binding/bytes만 확인하고 설치 O를 다시 실행하지 않는다. NEW same-entry positive, source init/repair/detach와 첫 transition rollback 비지원도 route별로 구분했다. Helper의 전역 write-audit 단언 초안은 R-25의 정확한 범위에 맞춰 cross-window transition 요청에서만 적용하도록 정리했다. R-25는 전환 trace의 unobserved-open-after 0건을 요구한다. 기존 record/same-entry/repair의 fdopen 경로는 지원 밖 계측으로 구분하며, 그 정상 결과나 flock 근거를 raw-write 관측으로 집계하지 않는다. Observer의 fdopen 의미/지원 범위를 새로 확장하지 않았다.
+
+C2는 baseline24·multiple16·reference96·scope8·alias-reference8·restart16·captured-history24의192개 선언 행과 실제 OLD API graph builder 초안이다. Required hv2/hv2 하위/대소문자 alias는 OLD publication에서 만들 수 없음을 정확한 원인·보존으로 닫고 transition predicate 통과라고 주장하지 않는다. 현재 colvia required ref는 root occupancy가 첫 거부이며, completed child의 역사 ref는 임시 project bytes를 제거한 뒤 새 parent intent와 명시적 local human rebind로 baseline을 다시 고정해 captured-child predicate를 구분한다. 선택된 현재 child를 바꾸어도 parent의 봉인된 ref를 검사하는 경우, optional·uncaptured·child scope 제외도 별도 행이다. 실제 fixture의 성립·진단은 아직 미검증이다. Nested umbrella가 현재 graph 계약상 비지원인 경계와 worker-mode child/parent는 남은 C3/C5 closure에 연결해야 하며 새로운 nesting을 제품에 도입하지 않는다.
+
+위 작업은 source 밖 authoring이며 product/test/controls import·factory discovery·T0·controller 실행은 없다. Python AST/text 생성만 수행했다. 모든 초안은 아직 적용·실행·검토 완료가 아니다. 남은 C1/C3/C4/C5/X1, A2 legacy bridge, 전체 assembly/ID/선택 목록 및 입력 동결까지 마쳐야 T0를 시작할 수 있다. 이 원래 Work 안에서 계속한다.
+
+Authoring wave02의14개 파일을 private r0-e-result/authoring-wave-02에 byte-identical 보존했다. 소비자는 남은 authoring/input freeze이며 종료 조건은 기존 wave01과 같다. Source의 product/test/observer는 이 기록 중 변경하지 않는다. 현재 source 복구 patch를 갱신했다.
+
+Budget은07:30 UTC까지172분에08:00 UTC까지30분을 보수적으로 선차감해 누적202분, 잔여28시간38분이다. 현재 시각보다 앞선 선차감 구간은 다음 기록에서 중복 차감하지 않는다. Reviews5/8·2,434.902초, R1 세 회 보존, 새 controller0/누적80,104분할/신규624·누적704,64GiB,34시간 검증 창 미시작, retry0 및 기존 개별cap/STOP을 유지한다. P2 종료 수락·활성화·adopter 적용·Git/STATUS/Done 권한은 추가되지 않는다.
+
+기록 명령의 자동 승인 검토가 process creation 전에 시간 초과됐다. 제품·test 실패나 source 변경은 없었다. Owner는 동일 범위 기록 실행을 명시적으로 재승인했다. 검토 대상 명령을 이 기존 Work 추가와 writable private 복구 patch 갱신의 두 단계로 나눴다. Git mutation 권한 추가는 없다.
+
+
+# P2 승인 검토 서비스 차단 중 후속 정적 확인
+
+이 문서는 기존 Work에 반영할 대기 기록이다. 별도 Work, 새 실행 승인, 검증 PASS 또는 P2 수락 기록이 아니다. 소비자는 기존 P2를 이어갈 Driver이며, 외부 worktree 쓰기가 가능해져 이 내용을 원래 Work와 최종 검사표에 반영하면 이 대기 기록의 별도 보존 의존성은 끝난다.
+
+## 현재 차단과 권한
+
+Owner는 고정 R0-E 1회, 총 호출 상한 8회, 총 리뷰 2시간과 기존 잔여 예산·중단 조건 안의 P2 계속을 승인했다. 이후 동일 범위 기록 실행도 재승인했다. Work에 4,380-byte 기록을 붙이는 외부 worktree 쓰기는 자동 승인 검토 시간 초과로 프로세스 시작 전에 반복 차단됐다. 이는 추가 Owner 승인 부족이나 제품/테스트 실패가 아니다. 같은 요청을 다시 제출하지 않았으며 source/test/observer/Work는 직전 확인 바이트를 유지한다.
+
+권한 서비스 차단이 있는 동안 쓰기 가능한 기존 private bundle에 작성물을 보존했다. 원래 source worktree를 이동·삭제하거나 임시 디렉터리로 대체하지 않았다. source 적용, 입력 고정, T0, controller, 제품 검증 및 남은 R1은 미실행이다.
+
+## C1: 첫 거부 원인을 따로 고정할 사항
+
+현재 product.py의 workspace_switch_preview는 _workspace_observe(target)를 먼저 호출한다. 일반 관측은 pending lifecycle을 허용하지 않으므로 OLD pending lifecycle fixture의 첫 진단은 `pending lifecycle blocks product use; recover exact plan from independent source`다. _entry_admission 안의 더 뒤쪽 `old pending lifecycle requires the retained old source`까지 도달했다고 표시할 수 없다. NEW apply에 OLD schema-1 요청을 넣는 경우는 _switch_preflight의 schema 경계이며 독립 행으로 기록해야 한다.
+
+_entry_admission 순서는 audited predecessor 일치, pending 없음, umask, 새 root entry 부재/alias 및 Git index/ignore, OLD entry 이름·mode, staging 타입/비어 있음, selected local baseline이다. Negative fixture마다 앞선 단계가 유효함을 확인하고 exact first cause를 지정해야 한다. 잘못된 OLD payload/binding을 조립한 fixture는 건강한 비지원 predecessor 증거를 대체하지 못한다. 이미 검토된 X counterpart를 실제 OLD API로 설치한 terminal target은 건강한 다른 checkout-1 release의 대조군으로 사용할 수 있으나, X를 허용된 OLD 실행 소스로 실행하지 않는다.
+
+Root `colvia` 또는 case alias 파일/디렉터리/끊어진 symlink는 이름 충돌이다. Index descendant는 파일을 stage한 후 worktree 파일·디렉터리를 제거해 root 충돌과 분리한다. Git exclude 및 core.excludesFile의 대조 자료는 synthetic target/실행 경계 안에만 두고 실제 사용자 전역 Git 설정을 바꾸지 않는다. ASCII `colvia`의 별도 NFC 표현이나 파일 `hv2` 밑의 실제 하위 파일처럼 구성 불가능한 조합을 실행 사례 수로 채우지 않는다.
+
+Persisted intent/Work transaction은 실제 OLD publish/apply의 고정 interruption 위치에서 만든 유효 pending graph여야 한다. Durable pending과 아직 선택되지 않은 revision/orphan을 분리하며, 후자는 desired pending 거부 증거가 아니다. 개별 80-cell 목록과 fixture helper는 아직 미작성이다.
+
+## C3: worker proof와 ticket의 서로 다른 경계
+
+기존 test_worktree_execution.py의 baseline/result recipe는 control Git commit과 retention ref, 별도 worker worktree, 실제 manifest base/candidate commit, isolated-worktree execution_context를 함께 만든다. 현재 repository fixture를 직접 실행하거나 임시 기본 디렉터리를 그대로 재사용하지 않는다. 새 고정 child는 이미 승인된 실행 WORK 경계 안에서 synthetic control/worker와 retention ref를 구성해야 한다.
+
+B0에서 만든 ticket을 B1 뒤 사용하는 경우의 binding freshness와, B1에서 새 prepare를 하면서 B0 worker proof를 사용하는 경우의 proof freshness는 다른 의무다. Selected unfinished worker, unselected revision/orphan, durable pending selection/decision도 각각 분리한다. 기존 installed pending fixture의 first refusal은 lifecycle의 `pending Work blocks lifecycle`이며 pending이 없는 unfinished worker 허용을 대신하지 못한다. Exact active-release repair는 pending ticket/record 보존만 입증하며 worker rebind 또는 수락을 의미하지 않는다.
+
+기존 helper의 상태 전이와 runtime verifier를 이식하기 전 실제 OLD source와 대조해야 한다. 기존 test의 runtime double을 native installed evidence로 표시하지 않는다. 새로운 baseline 및 explicit rebind 뒤의 정상 제출을 위한 전체 helper와 144개 개별 행은 아직 미작성이다.
+
+## C4: detach 정적 삭제 목록과 남은 의무
+
+현재 _detach_plan_shape와 plain auditor는 paired schema-3 receipt/plan 및 entry-1 membership을 이미 읽는다. _detach_order는 colvia를 먼저 지우고 나머지 remove 파일을 기록 순서대로 지운 뒤 깊은 디렉터리부터 지운다. _detach_observe_records와 plain auditor는 임의 부분집합이 아니라 정확한 파일/디렉터리 suffix를 요구한다.
+
+현재 두 literal managed-path 목록을 import 없이 AST로 읽고 다음 한정된 topology의 이름 목록을 계산했다: 기존 OLD P 한 개 + 첫 NEW 한 개 + 두 번째 NEW 한 개, receipt 세 개, root colvia, init-plan, binding. 결과는 파일 96개와 디렉터리 24개다. 각 삭제 직전·직후는 240개로 기존 detach 256-cell 배당 안에 들어가며 16개가 남는다. 함께 보존한 JSON은 OLD/NEW1/NEW2 symbolic 이름이므로 실제 release ID, size/digest, case ID 또는 frozen fixture 목록이 아니다. X history target처럼 추가 release/receipt를 가진 fixture에는 이 수치를 적용할 수 없다.
+
+각 frontier에는 exact preserved suffix, source recovery, replay, 별도 plain auditor 결과가 필요하다. 디렉터리를 먼저 지우거나 중간 파일만 빠진 상태, remaining byte 변경, unknown member, schema mismatch도 별도 거부 대조군에 연결해야 한다. 남은 16개가 모든 required negative를 충족하는지는 아직 확정하지 않았다. Mixed two-NEW 24, plain audit 16, runtime collision 40, same-entry 24, repair 24의 helper/정확한 선택표도 아직 미완이다. 이 계산은 실행 또는 coverage closure가 아니다.
+
+## 재개 순서
+
+1. 기존 source/Work/test/observer와 보존 초안 신원을 다시 확인한다. Owner 재승인을 다시 요구할 필요는 없으며, 외부 worktree 쓰기를 차단한 승인 검토 서비스가 실행 가능해야 한다.
+2. 이미 승인된 대기 append를 원래 Work에 반영하고 이 기록도 통합한다. 쓰기 실패 시 반복 재시도·다른 권한 경로로 우회하지 않는다.
+3. C1/C3/C4/C5/X1 및 기존 A/B/C2 초안의 정적 대조·조립을 완료하고 전체 ID/입력/배치표를 고정한다. 미완 영역을 PASS 또는 후속 P4로 넘기지 않는다.
+4. 기존 조건 안에서만 T0와 순차 분할 검증 및 예약 R1을 진행한다. 예상 밖 실패·계약 변경·예산 초과 STOP, P2 종료 수락과 Git 별도 조건을 유지한다.
+
+## 보존 확인과 예산
+
+2026-10-11 08:05 UTC까지의 보수적 선차감을 포함해 authoring 누적 207분, 잔여 28시간 33분이다. 직전 선차감 08:00 이후 5분만 추가했다. Reviews 5/8, 2,434.902초, R1 세 회 예약, 신규 controller 0/누적 80, 34시간 검증 창 미시작, retry 0을 유지한다.
+
+Wave02의 14개 보존 파일은 현재 초안과 byte-identical이며, source 전체 미커밋 변경은 기존 current-changes.patch와 일치한다. Work/test/product 신원도 직전 고정값과 일치했다. `git diff --check`는 exit 0이며 이는 문서/공백 확인일 뿐 제품 실행 결과가 아니다. Source worktree는 남은 P2의 구현·검증에 필요해 유지한다. 기존 bundle 및 native evidence는 삭제하지 않았다. Work/STATUS/Done 또는 Git 변경은 없었다.
+
+### Owner Resumption And Permission Service Recovery — 2026-10-11
+
+Owner가 “계속하자”로 기존 P2 재개를 요청했다. 08:34 UTC에 source/diff/pending append 신원을 확인한 뒤, 승인된 4,380-byte Work append를 한 번 실행해 exit 0으로 반영했다. 이번 시도에서 승인 검토 서비스 차단이 해소됐다. 위 차단 기록은 당시 상태이며 현재 실행 차단으로 유지하지 않는다. 중단 중 보존한 정적 확인도 이 Work에 통합했다. Source/test/observer의 추가 변경이나 제품 검증은 아직 없다.
+
+사용자 대기 구간을 authoring 시간으로 중복 차감하지 않는다. 직전 누적 207분에 이번 08:34~08:45 UTC의 11분을 보수적으로 선차감해 누적 218분, 잔여 28시간 22분이다. Reviews 5/8 및 2,434.902초, 신규 controller 0/누적 80, 34시간 검증 창 미시작, 기존 cap과 STOP, P2 종료 수락/Git 별도 조건을 유지한다.
+
+
+### C1 Authoring And Static Lookup Failure — 2026-10-11
+
+승인 검토 서비스 복구 후 C1을 predecessor16·old-pending16·root8·index8·ignore8·persisted-record24의80개 선언 행으로 작성했다. 실제 OLD API를 쓰는 고정 lifecycle interruption/recovery child와 intent/Work pending transaction child도 초안으로 작성했다. 두 child는 AST syntax 확인만 수행했고 실행하지 않았다. Parent helper·전체 assembly·freeze·T0는 아직 미완이다. 이는 coverage 또는 PASS 수가 아니다.
+
+이후 기존 OLD_INIT_PROGRAM의 내용을 읽으려던 Driver의 정적 조회 코드가 실패했다. 해당 assignment는 `_OLD_PROGRAM_BASE`와 문자열을 결합하는 식인데, 이를 단순 literal로 잘못 가정해 `ast.literal_eval(n.value)`에 넘겼다. 제품 import·fixture·controller·리뷰 실행은 없었다. 오류는 다음과 같다.
+
+```text
+ValueError: malformed node or string on line 171: Name(id='_OLD_PROGRAM_BASE', ctx=Load())
+```
+
+실패한 Python subcommand 뒤 별도의 sed 읽기가 성공해 전체 shell exit status는0으로 반환됐다. 이를 Python 조회 성공으로 취급하지 않는다. 실제 Python traceback이 확인된 준비/조회 오류다. Owner의 예상 밖 실패 시 중단 조건을 적용해 수정·재실행과 후속 authoring/검증을 멈췄다. 승인 검토 서비스 차단이 재발한 것은 아니다.
+
+제안하는1회 복구는 잘못된 literal 변환을 다시 실행하지 않고 `sed -n '125,183p' tests/test_entry_window_transition.py`로 기존 base와 assignment의 원문을 읽는 것이다. 평가·제품 import 없이 source를 대조한 뒤, Owner 재개 승인 범위에서 기존 P2 authoring부터 계속한다. 실패 코드/제품/controls 변경이나 추가 리뷰 호출·예산 확대는 필요하지 않다. 같은 오류의 수정·재시도는 아직 수행하지 않았다.
+
+Private bundle `r0-e-result/authoring-wave-03/`에 C1 map 생성기·80행 JSON·고정 OLD lifecycle child·pending record child의4개 현재 초안을 byte-identical 보존했다. 소비자는 승인된 조회 복구와 남은 C1 parent helper/assembly이며 종료 조건은 전체 입력 고정과 기존 Work 기록 완료다. Source worktree와 앞선 wave01/02 및 native evidence는 실제 잔여 P2 사용이 있어 유지한다.
+
+Work에 반영 완료된 wave02/중단 기록/재개 기록을 제외하고 기존 product/test/observer는 이번 재개 중 변경하지 않았다. D2/M1과 R0-E 보정은 보존돼 있으며 제품 검증 미실행 상태다. P2는 완료·취소·수락되지 않았다. 리뷰5/8·2,434.902초, 예약 R1 세 회, 신규 controller0/누적80,34시간 검증 창 미시작과 Git/최종 Owner 수락 별도 조건을 유지한다. 이번 작성·기록·보존은 이미 선차감한08:34~08:45 UTC 구간에 포함하며, 누적218분·잔여28시간22분을 유지한다.
+
+### Approved Raw Source Lookup Recovery — 2026-10-11
+
+Owner actual decision: “승인. 원문 조회로 1회 복구한 뒤 기존 범위·잔여 예산·중단 조건 안에서 P2를 계속해. P2 종료 수락과 Git 작업은 별도로 남겨둬.” 승인된 `sed -n '125,183p' tests/test_entry_window_transition.py`를1회 실행해 exit0으로 base와 결합 assignment 원문을 확인했다. 제품 import나 fixture 실행 없이 조회 오류 복구를 완료했다. 기존 OLD init fixture는 빈 non-Git target만 허용한다. C1 Git index/ignore fixture는 이 전제를 몰래 바꾸지 않고 OLD init 뒤 synthetic target의 Git 구성 가능 여부를 source 계약과 대조한다. 남은 authoring과 입력 고정 전 검증을 선실행하지 않는다.
+
+08:56 UTC 재개부터09:10 UTC까지14분을 보수적으로 선차감해 authoring 누적232분·잔여28시간08분이다. 앞선 선차감08:45~재개08:56 사이의 사용자 대기는 차감하지 않는다. Review5/8·2,434.902초, 신규controller0/누적80,34시간 검증 창 미시작, 기존cap/STOP와 P2 종료 수락/Git 별도 조건을 유지한다.
+
+### Authoring Wave 03 Continuation — C1 And C4 Drafts
+
+승인된 원문 조회 복구 뒤 C1의80개 행을 parent helper 초안에 연결했다. OLD non-Git init 뒤 같은 synthetic target에 Git을 구성하는 경로는 target_fingerprint가 절대 경로를 해시하며 일반 root 관측이 init 당시 topology를 고정하지 않는다는 source 사실과 대조했다. 실제 fixture 성립은 미실행이다.
+
+C4는384개 선언 행이다: 세 release·세 receipt topology의96파일/24디렉터리에 대한 실제 observer 삭제 전후240, detach 거부16, mixed24, plain auditor16, collision40, same-entry20 및 transition 대비4, repair24. 두 번째 NEW 후보는 기존 source의 README에 고정 synthetic suffix만 더한 데이터이며 ID는 product-release-45ef61dc5c4c8b5d1fabaada다. 실제 candidate 생성·제품 실행은 하지 않았다. Same-entry 도중 비협조적 collision/source/sibling 변경은 real API를 한 번 호출하는 고정 test child 초안으로 분리했고 native fault/installed 실행 증거라고 부르지 않는다.
+
+C1/C4 helper 및 map/고정 seam child5개를 기존 private authoring-wave-03에 추가 보존했다. 모두 미적용·미실행이며 AST syntax 확인만 했다. 정적 대조에서 public verify_workspace_product가 binding 전체를 반환하지 않는 점과 transition sibling 변경 시점에 따른 최초 진단 차이를 확인했다. 작성 중인 helper의 잘못된 반환값 접근과 기대 진단은 전체 assembly 전에 보정해야 한다. 발견한 초안 결함을 실행 결과나 제품 결함으로 표시하지 않는다. C3/C5/X1 및 전체 ID/배치/신원 고정도 아직 미완이다.
+
+09:10 UTC 선차감 뒤09:20 UTC까지10분을 추가 선차감해 authoring 누적242분·잔여27시간58분이다. 현재 앞선 구간의 남은 선차감 시간은 중복 차감하지 않는다. Reviews5/8·2,434.902초, 신규controller0/누적80,34시간 검증 창 미시작, 기존cap/STOP와 P2 종료 수락/Git 별도 조건을 유지한다.
+
+### Authoring Wave 04 — Worker Draft And Static Corrections
+
+승인된 원문 조회 복구 이후 P2를 같은 범위에서 계속 작성했다. C3의144개 행(selected/orphan18, pending12, OLD proof/ticket36, explicit new baseline24, invalid worker36, orphan preservation18)을 정적으로 선언했다. 실제 OLD/NEW API·Git retained proof·linked worker를 구성하는 고정 child와 parent helper 초안을 작성했으며, 현재 제품 실행·fixture 생성·test discovery·controller 실행은 하지 않았다. Source CLI가 record writer를 지원한다고 가정하지 않고 verified API와 installed executor를 명시적으로 구분했다. API interruption은 native kill 증거로 표시하지 않는다.
+
+API 반환값 대조로 C1/B/C4 초안의 잘못된 binding 접근을 고쳤고, stale ticket의 실제 오류 분류를 HV2-WORK-RECORD로 맞췄다. Cross-transition sibling 추가가 receipt 뒤인지 member 뒤인지에 따라 최초 거부 진단도 구분했다. 이들은 미적용 작성 초안 보정이며 제품 변경이나 실행 실패 보정이 아니다. C3의 Work rework manifest와 OLD proof publication의 유효 selected baseline도 원본 graph 규칙에 맞춰 작성했다. 모든 실제 성립·통과는 미검증이다.
+
+기존 private bundle의 authoring-wave-04에9개 초안을 byte-identical로 보존했다. 소비자는 남은 P2 assembly와 input freeze이며 전체 적용·검증 및 필요한 복구 의존 종료 때 보존 필요성을 다시 판단한다. C5/X1·D2 대조 조합·전체 ID와 batch/input freeze는 아직 미완이다. 누락된 의무를 다른 항목의 PASS로 닫지 않는다.
+
+09:20 UTC까지 선차감한 구간에 이어09:30 UTC까지10분을 선차감한다. Authoring 누적252분·잔여27시간48분, reviews5/8·2,434.902초, 신규controller0/누적80이며34시간 검증 창은 미시작이다. 예상 밖 검증 실패·계약/범위 변경·예산 초과의 기존 STOP, P2 종료 수락 및 Git 별도 조건을 유지한다.
+
+### Authoring Wave 05 — Current Fixture Migration Draft
+
+기존 승인된 호출부·대역 처분표 및 closed C1에 따라26개 기존 module을 AST로 읽고 current fixture migration 초안을 작성했다. 현재16개 module에 초안 차이가 있고, 나머지는 원문을 유지한다. 실제 source 적용·제품 import·discovery·테스트 실행은 하지 않았다. 실제 launcher proof에서 inventory ID를 누락한 호출과 embedded child 호출을 정렬하며, current launcher/profile/membership 및 init·receipt schema를 entry-1에 맞춘다. 과거 window membership과 no-SHA 대역은 유지하고 entry-1 capability 대조를 추가했다. 역사적 make_exact_suite 본문은 변경하지 않는다.
+
+Schema1/2 legacy detach는 새 schema3의 version 숫자만 바꿔 유효하다고 주장하지 않는다. 고정 OLD membership과 digest/size를 갖는 명시적 synthetic partial-suffix reader fixture 초안으로 분리했다. OLD 실행·native removal의 증거가 아니며 reader와 writer refusal을 각각 검사할 예정이다. 기존 assertion을 삭제·skip하거나 production gate를 완화하지 않는다.
+
+C5의 직접 회귀96개 ID 선택 초안은 fresh init, current runtime identity, actual proof 전달, OLD reader/window 거부, CRLF, parent capability, worker publication/recovery, 설치 진입 및 공유 관측 경로를 포함한다. 실제 collection occurrence와 실행 시간은 아직 검증하지 않았다. 전체 normal/parent-O suite를 수행한 것으로 표시하지 않으며, P3 문서 정렬/P4 전체 검증은 별도 범위다. 남은 semantic 대조와 exact map/input freeze 전에는 이 초안을 PASS로 쓰지 않는다.
+
+Private authoring-wave-05의 draft26개 및 generator·selection은 남은 assembly/input freeze 소비를 위해 보존했다. 09:40 UTC까지10분을 추가 선차감하여 authoring 누적262분·잔여27시간38분이다. Reviews5/8·2,434.902초, 신규controller0/누적80,34시간 검증 창 미시작과 모든 기존cap/STOP는 동일하다. 종료 수락·Git 작업은 별도로 남긴다.
+
+### Authoring Wave 06 — D2 Boundary Counterparts And X1
+
+C2 graph 초안을 실제 intent/parent guard 순서와 대조했다. Captured child의 required Work ref는 parent에서 live 재검사하지 않지만, required intent ref는 parent rebind 당시에도 실제 파일을 요구한다. 따라서 후자의 유효 graph는 참조 파일이 있을 때 parent를 구성한 뒤 synthetic 파일을 보존 조건에 따라 제거한다. 이 경우 immutable parent baseline과 현재 tree가 다를 수 있으며, 정확한 D2 dependency 진단이 baseline mismatch보다 먼저 나오는지를 검사한다. 이를 equal-baseline 사례라고 표시하지 않는다. Required=false counterpart에서는 정상 전환을 별도로 확인할 예정이다.
+
+X1은12개 D2 대조 조합과52개 기존 factory ID의 현재 입력 bridge로 작성했다.12개는 completed local/parent, worker parent, local parent의 worker child, own scope 진단 우선순위, clean capture와 나중 child 변화, nested umbrella unsupported 경계를 구분한다. Worker graph는 bounded WORK 내부 실제 Git/retained proof와 zero-change linked worker로 작성하는 초안이며, 미실행이다. Nested boundary는 기존 계약의 unsupported를 실제 capture 결과로 확인하는 목적이다. 지원 의미를 넓히지 않는다.
+
+52개 bridge는 foundation11, operation/reader/collision6, prefix9, 기존 D3 위치8, binding/launcher/진단18이다. 고정 현재 입력으로 실행할 선택 초안이며 과거 결과의 자동 재사용이나 통과가 아니다. 최종 map↔selection↔실행/native evidence 연결 및 입력 동일성은 전체 배치 종료 뒤 별도로 대조해야 한다. Six current drafts를 private authoring-wave-06에 보존했다. 전체 assembly와 정적 semantic 점검, input freeze, T0 및 나머지 검증·R1은 아직 수행하지 않았다. 예산은09:40 UTC까지 기존 선차감 안에 있으며 누적262분·잔여27시간38분으로 유지한다.
+
+
+### Authoring Wave 07 — Assembled P2 Candidate And Static Collection Plan
+
+승인된 P2 authoring 범위에서 observer 후속 보정, 전체 A/B/C/X fixture/helper 및 closed C1의 current fixture 정렬을 source에 적용했다. 제품 코드는 D2/M1의 기존 신원을 유지한다. 공통 controller/runner/acquisition/sandbox는 변경하지 않았다. 새 child는 고정 프로그램·정해진 인수/route·WORK 경계 및 기존 cap을 사용한다. 테스트 import/discovery, fixture 실행, T0 및 controller는 아직 수행하지 않았다.
+
+A1 1,233, A2 2,700, B1 600, B2 216, C1 80, C2 192, C3 144, C4 384, X1 추가12의 선언5,561개를 각각 고정 method ID로 연결했다. 반복 path/selector의 정적 목록을 공유하되 각 시작 상태·occurrence·행을 유지한다. 모든 method는 기존 complete factory에도 포함되며 P4에서 제외하지 않는다. 누락 helper/상수 참조는 정적 AST 대조에서0이다. 이는 실제 collection 또는 PASS가 아니다.
+
+C5는96 unique ID와 기존 discovery의13개 추가 occurrence를 합쳐109개 실행 예상이다. Imported ActualWorkspaceInitTests/SerialWriterTests의 중복을 제거하지 않는다. 전체 정적 예상은 ordinary779 + factory5,808이며, T0 60 및 X1 bridge52를 포함한 선택은5,769 unique ID/5,782 occurrence다. 실제 collection은 이 순서·중복·입력 신원과 일치해야 하며 불일치 때 기대값을 즉석 갱신하지 않는다.
+
+현재 배치는 T0 2, A1 24, A2 36, B1 6, B2 4, C1 2, C2 5, C3 5, C4 11, C5 2, X1 2의99개 계획이다.104개 상한 중 미사용5개는 기존 필수 의무의 비용 대조용 여유이며 재시도 권한이 아니다. 영역별 기존 cell당 배당을 유지하고 중복 occurrence도 시간에 포함했다. 실제 fixture 비용·로그 크기·저장량은 미실측이므로 첫 두 T0 이후 기존900초 계획/1,200초 hard cap·34시간·64GiB 적합성을 다시 판단한다.
+
+정적 semantic 대조에서 초안 두 곳을 바로잡았다. C2의 worker mode가 있으면 모든 local/worker baseline보다 먼저 synthetic Git을 초기화해 ignore policy를 일관되게 만든다. C5의 SingleHomeRuntimeTests init plan/receipt는 현재 제품의 schema1을 유지하며 entry-1 inventory만 정렬한다. Wave05의 schema2 init 서술은 작성 중 잘못된 가정이었고 이 기록으로 정정한다. Schema2는 update/rollback 전환, schema3는 current detach에 적용된다. Fresh init collision의 정확한 현행 진단도 원문에 맞췄다. 실행 실패 보정이나 제품 계약 변경은 아니다.
+
+Private authoring-wave-07에는 조립/정적 collection 작성기·개별 의무/선택표와 수정 helper를 남은 input freeze와 검증 결과 대조 소비용으로 보존한다. 적용한 source 전체 변경은 current-changes.patch에 복구 가능하게 보존한다. 기존 raw/native evidence나 review record를 삭제하지 않는다. Source worktree는 실제 P2 사용 중이라 유지한다.
+
+09:40 UTC 선차감 이후09:55 UTC까지15분을 추가 선차감해 authoring 누적277분·잔여27시간23분이다. Reviews5/8·2,434.902초와 R1 세 회 예약, 신규controller0/누적80,34시간 검증 창 미시작을 유지한다. 입력 전체 고정과 남은 정적 검토 전 T0를 시작하지 않는다. 예상 밖 실패·미관측·계약/범위 변경·예산 초과 STOP, P2 종료 수락/Git 별도 조건은 동일하다.
+
+
+### Full P2 Input Freeze — Selection, Reuse And Execution Boundary
+
+최종 정적 selection은5,769 unique ID/5,782 occurrence다. C5의96개 ID는 imported class의13개 중복 occurrence를 그대로 포함해109개다. 실제 collection 예상은 ordinary779 + factory5,808 =6,587개다. 각 테스트 ID/시작 상태/selector/route/기대 의미는 private fixed-input의 obligation-rows와 selection-and-batches에 연결하며, 실행 결과는 각 root의 selected/executed identity와 대조한다. 이는 실행 전 기대값이며 수집 결과에 맞춰 사후 변경하지 않는다.
+
+R0-B의 early bridge 처분을 반영해 X1의 D3 admission/receipt/pre-B1·binding/post-B1 및 recovery8개를 A2 첫 독립 배치로 옮겼다. Runner의 원래 discovery 순서를 유지하므로 새 A2 cell과 같은 배치에 섞어 앞선 실행이라고 주장하지 않는다. A2는2,700 신규 의무+8 bridge, X1은 나머지56개다. 최종 배치는 T0 2/A1 24/A2 37/B1 6/B2 4/C1 2/C2 5/C3 5/C4 11/C5 2/X1 2 =100개다. 각 focused 정적 배당900초 이하, hard cap1,200초,104개 중 미사용4개는 실패 retry 권한이 아니다. 신규600/누적680 controller 계획이며 hard 상한624/704는 그대로다.
+
+| 기존 통합표 | 현재 후보와의 연결 및 재사용 한계 |
+| --- | --- |
+| E1 N/O/binding | 기존 위치별 수락 증거를 유지한다. Transition=True switch 정규화 AST 동치, 공유 exact-write/replace/guard 불변 대조는 앞선 R0 근거다. 변경 observer 영향은 T0와 X1의 N/B full·short4종, rename/unlink/replace before/after로 직접 검사한다. 기존 결과를 새 SHA 실행으로 표기하지 않는다 |
+| E2 S3 | 기존 rename/parent-sync 오류·복구는 해당 후보의 근거다. 새 A2는 S3/S3a/S3b/S4/S5/binding-prefix 각 시작 상태의 모든 고정 sync occurrence를 실행한다. 기존 두 위치의 대표 PASS로 새 경로를 차감하지 않는다 |
+| E3 D3 | 최종 A2 2,700은 전체 새 map의 실행 의무이며, 계획상의30+10+2 재사용 차감에 의존하지 않는다. helper의 token/selector·final-snapshot delta는 현재 소스에 있다. 앞선8 bridge와 T0 normal/compound/history trace로 연결하고 실제 결과 전에는 동치 PASS를 주장하지 않는다 |
+| E4 synthetic tear | 기존112 payload tear 및 unknown staging 거부는 합성 손상에 대한 한정 근거다. D2는 직접 captured local graph 검사이고 해당 empty-truth tear fixture의 새 raw I/O 관측 증거가 아니다. A1 실제 raw/buffered write·각 prefix 결과와 A2 partial-directory map을 별도로 실행한다. X1은 invalid N/B/S6 보존을 다시 연결한다 |
+| E5 writer/late-lock | 기존 대표 route의 정확한 수락 결과는 유지한다. B1 600/B2 216에서 새 전체 route/state/실행기 구분과 유효 S0·under-lock witness를 실제 확인한다. 부재/비지원은 해당 근거로만 분류한다 |
+| E6 local/history | 기존 단일 local 사례는 당시의 제한된 근거다. D2 영향은 C2/C3와 X1의12 추가 의무로 current candidate에서 확인한다. Parent/worker 결과로 과거 PASS를 대체하지 않는다 |
+| E7 controls/기록 | 이전 F-02/S-02 수락은 유지한다. 동일 runner의 failfast4·observer dir-fd5도 T0에서 current observer와 다시 실행한다. 새 buffered/F-03은 T0의 새 의무이며, 전체 candidate03 실패는 여전히 실패다 |
+
+D1은 retain 구현과 허용 retirement/replay·unknown 보존을 A2/X1에, D2는 C2/C3/X1에, D3 same-entry는 C4/C5에, D4 observer 거부/위임은 T0/A1에 연결한다. C4의 repair backup/불명확 상태 refusal과 C5의 기존 recovery/interrupt 회귀를 구분하며 C4 수만으로 모든 repair 중단 지점을 실행했다고 주장하지 않는다. P2 필수 행의 종료는 실제 결과 및 R1에서 다시 판정하며 P3/P4로 넘기지 않는다.
+
+BASE의 기존101개 파일·mode는 그대로 두고 현재11개 controls만 붙인 bounded execution input을 approved agent-worktrees root 아래 `hv2-reference-private-colvia-full-p2-base-20261011`에 만든다. 기존 base execution copy를 수정하지 않는다. 이 사본의 소비자는 이번100개 배치의 baseline collection/smoke qualification이며, 모든 실행·R1·필요한 실패 복구가 끝나고 고유 필수 근거가 보존되면 용도가 끝난다. Git checkout/credential/실제 adopter는 복사하지 않는다.100개 ROOT 이름과4개 invocation JSON씩을 첫 controller 전에 고정하고 실제 root는 각 acquire 단계에서만 생성한다.
+
+현재 controller/runner/common/acquisition/sandbox는 기존 SHA 그대로이며 observer만 이미 승인된 새 SHA다. Base와 entry 모두 같은 controls를 사용한다. 기존 native Python3.14.7/Git/system-config SHA, no-network/no-credential 정책, 실제 parent umask0022 관측,150/180초 child·1MiB child-output·16MiB stdout 및 실패 보존64/256MiB를 유지한다. 입력/source/controls의 전후 신원과 actual selected/started/stopped identity를 대조하고 첫 예상 밖 실패·drift·미관측·cap 위험에서 중단한다.100개 입력의 고정은100개 검증 성공 또는 완료 보장이 아니다.
+
+기록 append는 Work의 frozen prefix를 보존하는 방식으로 허용하며 실행 소스·controls·selection/config/runner script는 별도 digest로 고정한다. Private fixed inputs의 소비자는 이번 실행과 R1/미해결 실패 복구이며 해당 기록 수락과 복구 의존성이 끝날 때 retention을 재평가한다. Source worktree와 현 authoring/변경 patch는 여전히 사용 중이다. 이 단계에서 Git/index/STATUS/Done/Owner 종료 수락을 변경하지 않는다.09:55 UTC까지 선차감된 authoring277분 및 나머지 예산을 유지한다.
+
+
+### T0 Actual Qualification — 2026-10-11 09:58 UTC
+
+고정100개 input의 manifest SHA는 `52107def864c966b9b161100b4d23fbdcd8d97f737b4dd255958bdcab3bd19ad`, current source map SHA는 `07e66416e2b6f28c51856d7b00de133779075486f8aabaaf2a0525e73cc7ee22`다. Product SHA `c81fb4e979d80242c2a1314a6702d6be0f82b069e23368120dc875da9ee7d191`, entry test SHA `46c1dc5576e761b53d0457636b87fc17a69c4018434c1effe103d24fb51374ee`, observer SHA `0a82418e7638923fd4ad9918e15c24e2b02d5b8ee55a56804187c438ccc67870`를 실행 전후 유지했다. Frozen launcher는 같은 private input에 별도 digest로 고정했다. 모든 호출의 실제 parent umask는0022였다.
+
+| 실제 배치 | 선행5단계 | focused 결과 | controller focused 시간 |
+| --- | --- | --- | ---: |
+| b001 controls | acquire/canary/collect-base/smoke20/collect-p2 모두 PASS |55 selected/run/pass; fail/error/skip/unstarted/unfinished0 |7.014초 |
+| b002 product | 같은5단계 모두 PASS |5 selected/run/pass; fail/error/skip/unstarted/unfinished0 |35.973초 |
+
+각 base collection776과 current collection6,587은 고정 expected의 bytes/hash와 정확히 일치했다. Current JSON은1,308,494bytes로4MiB cap 이내다. 두 focused는 정상 종료·process group 부재·입력 보존이 모두 확인됐다. 별도 예상 실패/뜻밖 성공도0이다. 기존 runner failfast4·dir-fd5와 buffered/raw/F-03의 한정 qualification을 current observer로 확인했으며 이를 P2 전체 성공으로 확대하지 않는다.
+
+실제 제품 T0에서 receipt1+staged30의 exclusive buffered/raw 경계·fullfsync·반복 flush, 모든 A1 selector occurrence의 존재 및 full normal D3 map259개가 일치했다. Malformed selector/없는 occurrence의 instrumentation 거부, pending history admission 및 post-B1 compound verification-unavailable도 통과했다. 이는 실제 power-loss 보장이나 각 A1/A2 fault의 실행 결과가 아니다.
+
+T0 test 자체 시간은 controls6.372초 합계, product35.354초 합계다. Product 첫 test23.720초는 실제 normal physical transition과 모든1,233 selector 검사 및 별도 D3 normal target을 포함한다. 해당 physical event witness96,523행의 first/last monotonic span은8.956523초이고 file22,746,442bytes다. 이 합성 test 시간을 A1 cell당 비용으로 그대로 적용하지 않으며 성능 할인도 하지 않는다. 나머지 product test는 compound5.037/잘못된 selector0.678/미관측 occurrence4.571/history1.348초다.
+
+선행5단계 합계는 b001 62.677초, b002 63.099초로90초 배당 안이다. T0 focused 합계42.987초는360초 배당 안이다. 실행 roots 두 개의 실할당 약41.63MiB는64GiB 상한 이내이며, 실제 전역 기록의 정확한 bytes와 가용량을 계속 확인한다. 나머지98배치의 fixed focused 배당82,645초와 선행단계8,820초, 기록 여유4시간은 약29.41시간이며 시작 이후 사용시간을 더해도34시간 안이다. 이는 계획 적합성이고 아직 실행하지 않은 B/C의 비용 보장이 아니다. 배치/child/output cap 위험이나 첫 예상 밖 실패가 나오면 다음 호출 전에 중단한다.
+
+기술 gate는 현재 자료에서 통과로 처분하고 기존 승인 안에서 A1부터 계속한다. 검증 창은09:54:33.655857 UTC 시작,2026-10-12 19:54:33.655857 UTC 종료로 고정했다. 신규controller12/누적92, 실패 재시도0이다. Authoring은09:55 UTC까지 선차감277분/잔여27시간23분이며 이후 실행·기록은34시간 창에 계산한다. Reviews5/8 및 R1 세 회 예약은 유지한다. Actual result/collection/event는 같은 고정 후보의 영역·누적 R1과 잔여 영향 판단을 위해 보존한다. Git·P2 종료 수락은 별도다.
+
+
+### A1 Partial Results — 2026-10-11 10:30 UTC
+
+b003/b004/b005의 focused는 각각52 selected/run/pass로 합156개가 통과했다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이고, 선행5단계·base smoke20·current collection6,587의 exact 비교·입력 전후 보존·자연 종료와 process group 부재가 통과했다. Controller focused 시간은 각각496.064/522.739/513.320초이며 각884초 계획 배당과1,200초 hard cap 이내다. Receipt/staged inventory와 초기 payload 경계의 실제 중단·torn 보존·정상 recovery/replay 근거이며 전체 A1 또는 P2 완료가 아니다.
+
+고정된 나머지 A1 b004~b026 순차 호출은 각 step 이전/이후 guard를 거쳐 첫 비통과에서 종료한다. 현재 b006의 선행 단계가 진행 중이며 이 기록은 진행 중인 focused 결과를 미리 PASS로 세지 않는다. 기록 시 실행 roots 실할당은3674972160bytes다. Source/controls/선택 목록/runner cap은 변경하지 않았고 재시도0이다. Actual source 변경 복구 patch와 native 결과는 잔여 P2 및 영역/누적 R1 소비용으로 유지한다.
+
+
+### A1 Partial Results — 2026-10-11 11:00 UTC
+
+b006/b007/b008도 각각52 selected/run/pass로156개가 추가 통과했다. A1 누적은312개이며 T0를 포함한 완료 focused는372개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각545.500/552.015/574.048초로884초 계획 배당과1,200초 hard cap 이내다.
+
+현재 b009 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은7618641920bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A1의 부분 결과이고 나머지 P2 실행 및 영역/누적 R1은 아직 남아 있다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A1 Partial Results — 2026-10-11 11:35 UTC
+
+b009/b010/b011도 각각52 selected/run/pass로156개가 추가 통과했다. A1 누적은468개이며 T0를 포함한 완료 focused는528개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각668.741/576.188/604.265초로884초 계획 배당과1,200초 hard cap 이내다.
+
+현재 b012 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은11831640064bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A1의 부분 결과이고 나머지 P2 실행 및 영역/누적 R1은 아직 남아 있다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A1 Partial Results — 2026-10-11 12:10 UTC
+
+b012/b013/b014도 각각52 selected/run/pass로156개가 추가 통과했다. A1 누적은624개이며 T0를 포함한 완료 focused는684개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각650.989/611.804/659.442초로884초 계획 배당과1,200초 hard cap 이내다.
+
+현재 b015 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은16291532800bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A1의 부분 결과이고 나머지 P2 실행 및 영역/누적 R1은 아직 남아 있다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A1 Partial Results — 2026-10-11 12:47 UTC
+
+b015/b016/b017도 각각52 selected/run/pass로156개가 추가 통과했다. A1 누적은780개이며 T0를 포함한 완료 focused는840개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각688.322/646.999/700.994초로884초 계획 배당과1,200초 hard cap 이내다.
+
+현재 b018 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은20998336512bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A1의 부분 결과이고 나머지 P2 실행 및 영역/누적 R1은 아직 남아 있다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### Owner Scheduled Pause Boundary — 2026-10-11 13:04 UTC
+
+Owner는 계속 진행하되2026-10-12 07:30 KST까지 안전하게 일시 중지하고, 진행 중인 테스트를 강제로 끊지 말며 완료 결과·고정 입력·예산·다음 위치와 프로세스 부재를 보존하도록 지시했다. Driver가 즉시 중지로 잘못 해석한 것을 Owner가 바로 정정하여 기존 범위에서 계속 실행한다. 일시적인 Owner STOP은 b018 focused와 b019 acquire가 자연 종료한 뒤 다음 단계 진입을 차단했다. 테스트/프로세스에 종료 신호를 보내지 않았다. 해당 shell의 exit1은 Owner STOP guard이며 검증 실패가 아니다. 기존 STOP 원문과 정정 기록은 private bundle의 `owner-pause-20261012`에 보존했다.
+
+b018은52/52 PASS, controller764.239초이며 실패·오류·skip·미착수·미완료·expected-failure·unexpected-success는0이다. 입력 보존·자연 종료·process group 부재도 PASS다. A1 누적832개와 T0 60개, 총892 focused가 완료됐다. b019는 acquire만 완료한 시점의 신규controller109/누적189를 기준으로, 입력 동일성을 다시 확인한 뒤 step2 canary부터 이어간다. 통과 단계를 재실행하지 않는다.
+
+이후 실행은 기존 고정 launcher와100개 입력을 수정하지 않고 바깥 순차 호출에 Owner 시간 경계만 추가한다. 고정된 step별 outer cap 합계3,780초와 기록·프로세스 확인 여유900초를 확보할 수 있을 때만 다음 배치를 시작한다. 따라서 새 전체 배치 시작은2026-10-12 06:12 KST 이전으로 제한하며, 실제 중지는07:30보다 일찍 될 수 있다. 잔여 시간이 부족하면 현재 배치의 자연 종료 뒤 Owner scheduled STOP을 남기고 신규 controller를 시작하지 않는다. 기존 첫 예상 밖 실패·drift·미관측·cap/storage 위험 중단 규칙도 유지한다. 외부 호출 script SHA는 `602b711c8745788e807e59f9edeaa1c00a7934b476af0b5c5268f05546562ad4`이며 재개 출발점은b019 step2다. 이 script는 검증 코드/controls/선택 목록을 바꾸지 않는다.
+
+검증 창 시작2026-10-11 09:54:33.655857 UTC와 종료2026-10-12 19:54:33.655857 UTC는 그대로다. KST 종료는2026-10-13 04:54:33.655857이다. 중지·이동 시간도 고정 wall-clock 창에서 경과한 시간으로 계산하며 자동 동결·연장·새 창 발급을 하지 않는다. 이 기록 시점 `2026-10-11T13:04:21.260728+00:00`의 경과는11387.605초, 잔여는111012.395초다.07:30 KST에 중지할 경우 원래 종료까지21시간24분33.655857초가 남는다. 실제 중지 시점의 잔여량을 다시 기록한다. Authoring277분 사용/잔여27시간23분, reviews5/8 사용 및 R1 세 회 예약을 유지한다. 검증/기록은 기존34시간 창에 계산한다.
+
+중지 후 Owner가 재개를 지시하기 전까지 새 실행을 시작하지 않는다. 재개 시 고정 manifest·launcher·runtime/Git·source/controls/mode·collection/선택 목록·Work frozen prefix, 다음 미실행 위치, process 부재, 사용 controller/배치/저장 용량 및 실제 남은 시간창을 다시 확인한다. 중지 기록/STOP은 먼저 보존하고 동일 입력과 잔여 예산이 충분할 때만 해당 Owner pause를 해제한다. 이전 실패 STOP은 이 방식으로 해제하지 않는다. 시간창이 만료되거나 잔여 실행이 예산에 들어오지 않으면 시작하지 않고 새 종료 시각/예산에 대한 Owner 결정을 받는다. 완료 결과·입력·필수 ignored 근거는 현재 private bundle과 사용 중인 execution/source roots에 보존하며 P2 종료 수락·Git 작업·checkout 정리는 별도 상태로 유지한다.
+
+
+### A1 Partial Results — 2026-10-11 13:32 UTC
+
+b018/b019/b020도 각각52 selected/run/pass로이 세 배치 합계156개가 통과했다. 앞선 Owner 중지 계획 기록의 b018 52개를 포함하며 중복 가산하지 않는다. A1 누적은936개이며 T0를 포함한 완료 focused는996개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각764.239/786.706/802.714초로884초 계획 배당과1,200초 hard cap 이내다.
+
+현재 b021 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은25924214784bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A1의 부분 결과이고 나머지 P2 실행 및 영역/누적 R1은 아직 남아 있다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A1 Partial Results — 2026-10-11 — b023 completed
+
+b021/b022/b023도 각각 52 selected/run/pass로, 이 세 배치 합계 156개가 통과했다. A1 누적은 1,092개이며 T0를 포함한 완료 focused는 1,152개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각803.527/756.262/808.120초로884초 계획 배당과1,200초 hard cap 이내다.
+
+현재 b024 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은31021817856bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A1의 부분 결과이고 나머지 P2 실행 및 영역/누적 R1은 아직 남아 있다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A1 Full Selected Execution — 2026-10-11 — b026 completed
+
+b024/b025/b026도 각각 52/52/37 selected/run/pass로, 이 세 배치 합계 141개가 통과했다. A1 전체 고정 선택 1,233개가 24개 배치에서 통과했으며 T0를 포함한 완료 focused는 1,293개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각801.961/849.740/589.149초다. 고정 계획 배당은 각각 884/884/629초이고 각 배치 hard cap은 1,200초다.
+
+현재 b027의 A2 bridge 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은35664715776bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A1 고정 선택 실행 완료이며, A2 이후 P2 실행과 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b029 completed
+
+b027/b028/b029에서 각각 8/75/75 selected/run/pass를 확인했다. A2 기존 D3 경계 사례 8개와 신규 사례 150개가 통과해 A2 누적은 158개이며, T0와 A1을 포함한 완료 focused는 1,451개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각43.960/397.680/429.791초다. 고정 계획 배당은 각각 96/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b030 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은35926577152bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 2,550개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b032 completed
+
+b030/b031/b032에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 375개와 기존 D3 경계 사례 8개를 합친 A2 누적은 383개이며, T0와 A1을 포함한 완료 focused는 1,676개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각456.590/482.917/508.143초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b033 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은36301934592bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 2,325개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b035 completed
+
+b033/b034/b035에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 600개와 기존 D3 경계 사례 8개를 합친 A2 누적은 608개이며, T0와 A1을 포함한 완료 focused는 1,901개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각526.960/400.446/383.598초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b036 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은36169076736bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 2,100개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b038 completed
+
+b036/b037/b038에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 825개와 기존 D3 경계 사례 8개를 합친 A2 누적은 833개이며, T0와 A1을 포함한 완료 focused는 2,126개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각412.992/438.261/461.466초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b039 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은36259962880bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 1,875개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b041 completed
+
+b039/b040/b041에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 1,050개와 기존 D3 경계 사례 8개를 합친 A2 누적은 1,058개이며, T0와 A1을 포함한 완료 focused는 2,351개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각481.044/500.735/423.715초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b042 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은36597284864bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 1,650개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b044 completed
+
+b042/b043/b044에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 1,275개와 기존 D3 경계 사례 8개를 합친 A2 누적은 1,283개이며, T0와 A1을 포함한 완료 focused는 2,576개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각534.143/560.127/585.625초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b045 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은36970930176bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 1,425개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b047 completed
+
+b045/b046/b047에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 1,500개와 기존 D3 경계 사례 8개를 합친 A2 누적은 1,508개이며, T0와 A1을 포함한 완료 focused는 2,801개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각606.322/624.830/648.337초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b048 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은37359702016bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 1,200개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b050 completed
+
+b048/b049/b050에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 1,725개와 기존 D3 경계 사례 8개를 합친 A2 누적은 1,733개이며, T0와 A1을 포함한 완료 focused는 3,026개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각555.145/396.947/459.148초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b051 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은37863018496bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 975개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b053 completed
+
+b051/b052/b053에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 1,950개와 기존 D3 경계 사례 8개를 합친 A2 누적은 1,958개이며, T0와 A1을 포함한 완료 focused는 3,251개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각493.227/505.942/597.138초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b054 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은39246405632bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 750개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b056 completed
+
+b054/b055/b056에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 2,175개와 기존 D3 경계 사례 8개를 합친 A2 누적은 2,183개이며, T0와 A1을 포함한 완료 focused는 3,476개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각469.346/497.560/618.354초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b057 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은40404086784bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 525개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b059 completed
+
+b057/b058/b059에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 2,400개와 기존 D3 경계 사례 8개를 합친 A2 누적은 2,408개이며, T0와 A1을 포함한 완료 focused는 3,701개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각395.257/389.493/392.946초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b060 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은40744906752bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 300개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Partial Results — 2026-10-12 KST — b062 completed
+
+b060/b061/b062에서 각각 75 selected/run/pass를 확인해 세 배치 합계 225개가 통과했다. A2 신규 사례 누적 2,625개와 기존 D3 경계 사례 8개를 합친 A2 누적은 2,633개이며, T0와 A1을 포함한 완료 focused는 3,926개다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두0이다. 선행5단계, base smoke20, 고정 collection 비교, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. Controller focused 시간은 각각397.055/459.861/594.329초다. 고정 계획 배당은 각각 900/900/900초이고 각 배치 hard cap은 1,200초다.
+
+현재 b063 선행 단계부터 동일한 고정 순차 실행을 계속한다. 기록 시 실행 roots 실할당은41828716544bytes이며64GiB 상한 이내다. Source/controls/selection/cap 변경과 실패 재시도는 없다. 이는 A2 부분 결과이며, A2 잔여 75개와 이후 P2 실행 및 영역/누적 R1은 아직 남아 있다. Owner의 종료 수락을 뜻하지 않는다. 기존34시간 창·예산·중단 조건·근거 보존 소비자를 유지하며 P2 종료 수락과 Git 작업은 별도다.
+
+
+### A2 Execution Complete — 2026-10-12 KST — b063 completed
+
+고정 A2 37개 배치(b027~b063)의 모든 6단계 결과를 대조했다. 기존 D3 경계 사례 8개와 신규 사례 2,700개를 합친 2,708 selected/run/pass를 확인했다. 각 배치의 fail/error/skip/expected-failure/unexpected-success/unstarted/unfinished는 모두 0이다. 선행 5단계, base smoke 20개, 고정 collection 대조, 입력 전후 보존, 자연 종료 및 process group 부재가 모두 통과했다. 마지막 b063의 75개는 409.463초에 완료됐다. T0 60개, A1 1,233개, A2 2,708개를 합친 완료 focused 누적은 4,001개다.
+
+동일한 고정 계획에 따라 다음 b064부터 B1을 진행한다. 기록 시 실행 roots 실할당은 41998802944 bytes이며 64GiB 상한 이내다. 실행 입력과 cap 변경, 실패 재시도는 없다. A2 실행 완료는 영역/누적 R1 또는 Owner 종료 수락을 뜻하지 않는다. 기존 34시간 검증 창과 예산, 첫 비정상 결과 중단 조건, 07:30 KST까지 안전 일시정지 경계를 유지한다. P2 잔여 실행과 R1이 남아 있으며 Git 작업은 별도다.
+
+
+### Unexpected Failure STOP And Owner Pause Verified — 2026-10-12 KST
+
+예정된 시각 경계보다 먼저 b065 focused에서 첫 예상 밖 실패가 발생해 기존 STOP 계약으로 중단했다. 종료 시각은 `2026-10-11T21:02:03.279339+00:00`(2026-10-12 06:02:03.279339 KST)이며 Owner가 요청한 07:30 KST 이전이다. 테스트와 controller는 강제 신호 없이 자연 종료했다. Driver exit 3, 해당 step outer exit 2, controller가 관찰한 runner exit 1이다. `execution-state/STOP.json`의 원래 실패 내용을 유지한다. 예정 시각에 의한 정상 배치 경계 일시정지로 분류하지 않는다. 이후 새 controller·재시도·수정·추가 리뷰는 실행하지 않았다.
+
+b064의 B1 112개는 784.248초에 모두 통과했다. 따라서 완전히 완료된 b001~b064 focused는 4,113개다. b065는 selected 112개 중 69개를 실행해 68 pass·1 failure·43 unstarted·0 unfinished였고 532.806초에 종료했다. T0 60·A1 1,233·A2 2,708·B1 180을 합친 전체 pass는 4,181개이며, failure는 1개, 아직 실행하지 않은 선택 occurrence는 1,600개다. b066~b100은 시작하지 않았고 b066 root도 없다. b065 선행 5단계와 base smoke 20개는 통과했다.
+
+실패 ID는 `test_entry_window_transition.EntryProductTests.test_p2_b1_0181`이다. 기존 실행의 마지막 출력은 다음과 같다. 이는 한 번의 실제 실행에서 관측한 결과이며 별도 재현 실행은 수행하지 않았다. 근본 원인 처분은 아직 하지 않았다.
+
+```text
+FAIL: test_p2_b1_0181 (test_entry_window_transition.EntryProductTests.test_p2_b1_0181)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4524, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4285, in p2_b1_dispatch
+    {'record':self.p2_b1_record,'lifecycle':self.p2_b1_lifecycle,
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     'source-record-grammar':self.p2_b1_source_grammar,'reader':self.p2_b1_reader,
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     'stale-ticket':self.p2_b1_stale_ticket}[spec['kind']](spec)
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3471, in p2_b1_record
+    positive_args,positive_value=self.p2_b_record_positive(generation,route,'positive')
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3448, in p2_b_record_positive
+    args,value=self.p2_record_request(target,generation,route);before=snapshot(target)
+               ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3396, in p2_record_request
+    _,data=self.finish(child,log,timeout=150);value=json.loads(data)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 369, in finish
+    self.assertEqual(code, expected, data.decode(errors='replace')[-8000:])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 86, in <module>
+    value=rebind if operation=='rebind' else proposal(operation);args=['work','publish']
+                                             ~~~~~~~~^^^^^^^^^^^
+  File "<string>", line 54, in proposal
+    rt=runtime(target);tree=snapshot(target,verified_launcher_sha256=rt['launcher_sha256'],verified_inventory_id=rt['inventory_id'])
+                            ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: snapshot() got an unexpected keyword argument 'verified_inventory_id'
+
+
+----------------------------------------------------------------------
+Ran 69 tests in 532.131s
+
+FAILED (failures=1)
+```
+
+완료·실패를 포함한 390개 step 결과에서 입력 전후 보존, 자연 종료 및 process group 부재를 확인했다. 현재 프로세스 조회에서도 이 P2 Driver/controller/runner/실행 root와 일치하는 잔여 프로세스는 0개였다. 조회 시각은 `2026-10-11T21:02:49.432914+00:00`이고 방법은 `/bin/ps -axo pid=,ppid=,pgid=,command=` 후 정확한 Driver/실행 root 명칭 필터(조회 자신과 부모 제외)다. 요약은 private `owner-pause-20261012/process-absence.json`에 보존한다.
+
+예산은 신규 controller 390/624, 이전 80개를 포함한 누적 470/704이며 hard 잔여는 234회다. 손대지 않은 b066~b100의 고정 계획은 210회이나, 실패 회복 실행을 자동 승인하거나 남은 24회를 재시도 허가로 해석하지 않는다. Authoring은 277분 사용·27시간 23분 잔여, review는 5/8회 및 2,434.902초 사용·R1 3회 예약을 유지한다. 검증 창 시작은 `2026-10-11T09:54:33.655857+00:00`, 고정 종료는 `2026-10-12T19:54:33.655857+00:00`(2026-10-13 04:54:33.655857 KST)다. 실패 중단 시 창 잔여는 22:52:30.376518였다. 중지·이동 시간도 wall-clock 경과에 포함하며 자동 동결·연장·새 창 발급은 없다.
+
+Owner가 “재개하자”라고 말하기 전에는 새 실행을 시작하지 않는다. 재개 시 고정 입력 동일성·잔여 프로세스 부재·현재 시점의 검증 창과 호출/review/storage 예산부터 확인하고, 먼저 b065 focused의 B1-0181 실패를 읽기 전용으로 검토한다. B1-0182나 b066으로 건너뛰지 않으며, 실패 원인 처분과 수정/회복 실행은 기존 STOP 계약에 따른 Owner 결정 후에만 가능하다. 기존 b065 실행 slot은 재사용하지 않는다.
+
+고정 manifest `52107def864c966b9b161100b4d23fbdcd8d97f737b4dd255958bdcab3bd19ad`와 source digest `07e66416e2b6f28c51856d7b00de133779075486f8aabaaf2a0525e73cc7ee22`, 원본 revision `a17f35cf323ffde7a8642a85501fddbec858b6de` 및 Work frozen prefix의 동일성 검사를 통과했다. Source worktree의 미커밋 변경은 원래 checkout과 private `r0-e-result/current-changes.patch`에 보존한다. 고정 입력·기존 authoring 자료·전체 실행/실패 근거는 임시 디렉터리 밖의 기존 source/bundle/execution roots에 유지한다. 현재 실행 roots 실할당은 43007193088 bytes로 64GiB 상한 이내다. 보존 소비자는 명시적 P2 재개·미해결 실패 회복·영역/누적 R1이며, 소비 종료 시 보존·정리 적격성을 다시 판단한다. 현재 checkout과 실행 roots는 해당 후속 작업에 필요하므로 정리하지 않는다. Git/index/STATUS/Done 변경과 P2 종료 수락은 수행하지 않았다.
+
+
+### Resume Assessment And B1 Fixture Recovery Proposal — 2026-10-12 KST
+
+Owner의 “재개하자” 요청으로 재개 전 읽기 전용 확인과 B1-0181 실패 검토를 수행했다. 현재 단계는 FAIL → RECOVER/PLAN이며, 아래 수정·새 입력 고정·회복 실행은 아직 제안이다. 기존 STOP을 해제하거나 controller를 호출하지 않았다. 이 Work는 처음부터 별도 typed Work가 아닌 source-owned 개발 기록이므로 새 Work나 STATUS pointer를 만들지 않는다.
+
+고정 manifest, source/controls/runtime/Git 입력, Work frozen prefix, 중지 당시 Work 전체 및 보존 patch의 동일성을 확인했다. Source branch는 `codex/colvia-brand-transition`, HEAD는 `a17f35cf323ffde7a8642a85501fddbec858b6de`다. 기존 390개 start/finish와 실패 STOP이 그대로이며 b066 root는 없다. 2026-10-11T23:43:26.906385 UTC 프로세스 조회에서 기존 P2 Driver/실행 root와 일치하는 프로세스는 0개였다. 23:45:29 UTC 실행 roots 65개의 실할당은 43,007,193,088 bytes/64GiB이고 파일시스템 여유는 107,724,800,000 bytes다.
+
+실패 원인은 `P2_RECORD_FIXTURE_PROGRAM`의 OLD/NEW API 분기 누락이다. 고정 b065 OLD source의 `hv2ref/work.py:254` snapshot은 `target, *, verified_launcher_sha256=None`만 받는다. NEW source의 같은 함수(`work.py:265`)에는 `verified_inventory_id`가 추가됐다. fixture는 generation에 따라 OLD/NEW 모듈을 골라 import하지만 embedded program line 54는 NEW 전용 keyword를 항상 전달한다. B1-0181은 OLD/installed-old/S0/work.publish.start이며 positive fixture 작성 단계에서 TypeError가 났다. 따라서 해당 사례의 제품 경계 검증에는 도달하지 않았다. 실제 실패 출력과 두 signature 및 호출 경로를 읽어 확인한 것으로, 별도 재현 실행은 하지 않았다.
+
+추천 수정은 `tests/test_entry_window_transition.py`의 embedded fixture snapshot 호출 한 곳을 다음과 같이 바꾸는 것이다. 이 코드는 제안이며 아직 적용하지 않았다.
+
+```python
+rt=runtime(target)
+if generation=='old':
+ tree=snapshot(target,verified_launcher_sha256=rt['launcher_sha256'])
+else:
+ tree=snapshot(target,verified_launcher_sha256=rt['launcher_sha256'],verified_inventory_id=rt['inventory_id'])
+```
+
+기존 runtime identity 확인(OLD checkout-1/NEW entry-1), snapshot 내용, oracle 및 OLD bytes는 유지한다. Product source·controls·sandbox 권한·runner·검증 cap·ID/선택 집합 변경은 제안하지 않는다. 직접 소비자는 p2_b_record_positive와 B1 record/stale-ticket, B2 record 경로다. 다른 영역의 과거 결과를 새 입력 전체 PASS로 자동 승격하지 않으며 R1에서 해당 변경 영향과 기존 후보 결과의 재사용 경계를 판단한다.
+
+승인 요청 범위는 다음의 1회 회복 slice다.
+
+1. 위 test-only hunk와 이 기존 Work 기록만 수정하고, 별도 immutable 회복 입력 집합에 새 source digest·collection·선택·명령·출력 root를 고정한다. 기존 frozen-inputs/STOP/결과를 덮어쓰거나 기존 slot을 재사용하지 않는다. 새 실행 root는 승인된 `/Users/kyungseo/dev-home/agent-worktrees/` 아래에서 등록·목적지 부재 확인 후 생성한다. Private 외부 순차 Driver는 새 입력을 사용하되 기존 controls 권한과 동작을 그대로 소비한다.
+2. 첫 회복 배치는 기존 6단계(acquire/canary/base collect/base smoke20/entry collect/focused)를 유지하고 기존 ID 6개만 focused로 선택한다: B1-0181, B1-0189, B1-0190, B1-0198, B2-0081, B2-0088. OLD 정상·퇴역 경계, NEW 미완료·정상 경계와 실제 lock 재확인을 확인한다.
+3. 첫 배치가 모두 통과하면 두 번째 새 배치에서 원 b065의 동일한 112개 선택 전체를 검증한다. 두 배치 모두 고정 collection과 예상 호출/입력 보존, 정상 종료/process group 부재를 확인한다. 첫 비정상 결과·drift·미관측·cap/storage 위험에서 중단하며 반복 회복은 허가하지 않는다.
+4. 두 배치 통과 후 동일한 승인 범위의 잔여 b066~b100 선택을 새 입력 신원과 새 실행 위치에서 계속한다. 기존 영역/누적 R1 3회 예약은 유지한다. 추가 R0나 리뷰 호출 상한 변경, 제품/controls 수정이 필요하면 확대하지 않고 Owner에게 돌아온다. P2 종료 수락·Git·STATUS/Done은 별도다.
+
+호출 계획은 기존 470 + 회복 12 + 미시작 잔여 210 = 692/704회다. 전체 batch 배당은 기존 100 + 회복 2 = 102/104이며 남은 여유를 자동 재시도 허가로 해석하지 않는다. Review 5/8회·2,434.902초 사용 및 R1 3회 예약, authoring 277분 사용·27시간23분 잔여를 유지한다. 이 읽기 전용 검토/기록은 기존 34시간 검증 창에 계산한다. 고정 종료는 2026-10-13 04:54:33.655857 KST이며 기록 시점 `2026-10-11T23:46:23.271912+00:00`의 잔여는 20:08:10.383945다. 미시작 35개 batch의 focused 배당 합계는 27,396초이고, 사전 단계·회복·R1·보존 시간을 별도로 포함해 실행 직전 잔여 여유를 다시 확인한다. 자동 시간 연장은 없다.
+
+위 회복 slice의 완료 기준은 6개 집중 사례와 원 실패 배치112개가 새 입력에서 모두 통과하고 before/after 실패 근거·입력 신원·예산을 연결하는 것이다. 이후 잔여 P2와 R1은 별도 완료 결과로 기록한다. 위험은 공통 fixture 수정으로 NEW 경로 또는 후속 OLD work route에서 추가 오류가 드러나는 것이며 첫 실패 STOP을 유지한다. 원 hunk와 기존 입력/실패 실행을 보존하므로 되돌림은 test-only hunk 단위이며 제품/authority 상태 변경을 되돌릴 필요는 없다.
+
+
+### B1 Fixture Recovery Authorized And Applied — 2026-10-12 KST
+
+Owner가 “승인. 계속하자.”로 직전 1회 회복안과 통과 후 잔여 P2 진행을 승인했다. OLD/NEW API에 맞춘 fixture 호출 한 곳만 수정했다. 정적 AST 비교에서 다른 Python 구문 변화가 없고 embedded program과 전체 파일 compile을 통과했다. 이 결과는 구문/범위 확인이며 실행 PASS가 아니다. 제품/controls/OLD baseline/선택 ID와 cap은 그대로다.
+
+수정 전 test SHA `46c1dc5576e761b53d0457636b87fc17a69c4018434c1effe103d24fb51374ee` → 수정 후 `fa363361bb0d9f646b1cad3d505db716545bd43caa2c53de0d76b1ab81fc47e7`. 원본 fixture, 수정 전 전체 변경 patch 및 프로그램 단위 diff는 private `b1-fixture-recovery-01/`에 보존한다. 소비자는 이번 실패 before/after 대조, 후속 영역/누적 R1과 회복 필요성 판단이며 해당 근거 수락·회복 의존성 종료 후 추가 보존 적격성을 재평가한다. 이전 frozen-inputs·STOP·390개 step 결과를 유지한다.
+
+새 immutable 입력 집합은 `b1-fixture-recovery-01/frozen-inputs/`의 37개 배치다. r001은 고정 6개 집중 사례, r002는 원 b065의 동일한 112개, r003~r037은 원 b066~b100의 동일한 선택이다. 각 배치는 승인된 6단계를 그대로 사용하며 새 root는 `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-recovery-20261012-rNNN`이다. 등록 worktree/목적지 부재를 확인했으며 실행 root는 아직 생성하지 않았다. source digest는 `79e8a358d0f1918a1627278306ca9dce431237bbd052b2eb5d43525e6cabc8e0`다. 예상 collection은 기존 ordered IDs/occurrence 그대로이고 source digest만 새 입력에 맞춰 고정했다. 실제 collection 대조 전 이를 관측 PASS로 쓰지 않는다.
+
+Controller 계획은 470+222=692/704이며 최초 회복 범위 밖 재시도는 없다. 기존 고정 종료 2026-10-13 04:54:33.655857 KST와 storage64GiB·review5/8 및 R1 3회 예약을 유지한다. 수정/입력 준비 authoring에 15분을 선차감해 누적292분·잔여27시간08분으로 기록한다(09:10 KST까지 준비 범위; 넘어가면 추가 실제 authoring을 차감). 실행/모니터링은 기존 검증 창에 계산한다. 이전 시간 중지 wrapper는 이미 종료했으며 새 승인에 따라 고정 검증 종료/첫 실패/예산/입력 보존 gate만 적용한다. 기록 시각 `2026-10-11T23:56:47.497883+00:00`.
+
+
+### Approved Fixture Recovery — Six-Case Result (2026-10-12 09:01 KST)
+
+승인된 순차 Driver를 고정 입력 검증 후 시작했다. Driver SHA-256은 `2320fed9ac0852b31640088cf65f641ee6bd55170a0a5dd3c913488a32e66ceb`이며 `b1-fixture-recovery-01/frozen-inputs/p2-run-recovery-sequential.py`가 37개 새 배치의 고정 6단계를 한 번씩 호출한다. 기존 STOP/manifest/실패 입력 bytes와 전체 검증 창을 보존하고, 기존·새 실행 roots를 합산해 64GiB storage guard를 적용한다. 기존 470회에서 이어 세며 첫 예상 밖 결과에 중단한다.
+
+회복 r001의 사전 5단계가 통과했고 기준 smoke는 20/20 PASS다. 실제 entry collection은 고정 예상 bytes와 일치했다. 승인된 B1-0181/B1-0189/B1-0190/B1-0198/B2-0081/B2-0088은 6/6 PASS, failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 모두 0이다. CPython 3.14.7, 고정 controller/runner, focused timeout 1200초·outer 1230초이며 controller 39.902초/outer 39.972569초에 exit 0으로 정상 종료했다. Process group 부재·입력 보존과 실행 전후 source 검사가 모두 통과했다. 종료 시각은 2026-10-12T00:01:06.201480 UTC다.
+
+기존 b065의 B1-0181 TypeError와 새 r001의 해당 ID 통과가 before/after 근거다. 이 6개 결과는 원 실패 배치112개 전체의 통과를 대신하지 않는다. 승인된 다음 r002에서 원 b065 선택112개 전체를 검증하고, 통과할 때만 잔여35배치를 계속한다. 기존 4181 PASS/1 FAIL 이력과 새 회복6개는 중복을 합산한 전체 통과 수로 보고하지 않는다. r001까지 controller 누적476/704회이며 새 리뷰 호출은 없다. 입력과 상세 결과의 소비자는 진행 중인 회복 검증 및 R1이고, 결과 수락·실패 disposition까지 보존한다.
+
+
+### Approved Fixture Recovery — Original b065 Full Selection Result (2026-10-12 09:18 KST)
+
+회복 r002의 선택112개는 원 b065의 선택 목록과 순서까지 동일하다. 사전5단계 PASS, 기준 smoke20/20 PASS, 실제 collection과 frozen expectation 일치 후 focused112/112 PASS를 확인했다. failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 모두0이다. 동일 CPython3.14.7·고정 controller/runner 및1200초/outer1230초 cap에서 controller877.868초, outer877.918338초, tests877.295초로 exit0 정상 종료했다. 종료 시각은2026-10-12T00:17:36.659575 UTC다. Process group 부재·입력 보존·전후 source 검사 PASS다.
+
+B1-0181은 원래 선택112개 안에서도 통과했다. 기존 b065는68PASS/1FAIL/43미시작이었고, 새 r002는동일112개 전부 PASS다. 원 실패 결과와 STOP을 역사적 근거로 유지하며 overwrite하거나 성공으로 바꾸지 않는다. 회복 r0016개와 r002112개 통과로 승인된 fixture 회복 slice의 검증 기준을 충족했다. 이는 P2 전체 검증 완료·R1 verdict·Owner 종료 수락이 아니다. 기존 완결 b001~b064의4113PASS와 새 r002112PASS를 합친 선택 진행량은4225/5782 occurrence다. 회복 r0016개와 원 b06568PASS는 중복 합산하지 않는다. 이 수치는 서로 다른 명시적 입력 신원의 실행 진행량이며 새 입력 전체 재실행 PASS로 승격하지 않는다.
+
+r002까지 controller누적482/704회다. 고정 순차 Driver는 승인대로 r003(원b066)부터 잔여35개 배치1557 occurrence를 진행한다. 기존34시간 창 종료2026-10-13 04:54:33.655857 KST·storage64GiB·첫 예상 밖 결과 STOP·retry0을 유지한다. Authoring292분, review5/8회·2434.902초 사용 및 R1 세 회 예약은 그대로다. 원/새 입력, before/after 결과, 미커밋 source와 patch의 보존 소비자는 잔여P2·영역/누적R1·실패 disposition이며 해당 소비 종료 전 정리하지 않는다.
+
+
+### Second Unexpected Failure STOP — B1-0396 (2026-10-12 09:47 KST)
+
+승인된 fixture 회복 r0016개·r002원b065112개는 통과했다. 이후 r003(원b066)112개도1058.156초/outer1058.251328초에 전부 통과했고 사전5단계·기준smoke20개·입력 보존·정상 종료·process group 부재가 확인됐다. r004(원b067)에서 첫 새 예상 밖 실패가 발생해 순차 Driver가 exit3으로 중단했다. 중단 시각은 `2026-10-12T00:47:43.573703+00:00`(2026-10-12 09:47:43.573703 KST)다. r004는112개 중60개를 실행해59PASS/1FAIL/52미시작/0미완료이며 controller545.852초·outer545.923989초, runner exit1·outer exit2로 자연 종료했다. Timeout이 아니다. r005(원b068) root는 없고 후속 controller·수정·재시도·review는 실행하지 않았다. 기존·새 STOP과 모든 실행 slot을 보존한다.
+
+실패는 B1-0396, lifecycle/update/new/installed-new/S6-retained 행이다. 실제 실패 출력의 핵심은 다음과 같다. 별도 재현 실행은 하지 않았다.
+
+```text
+FAIL: test_p2_b1_0396 (test_entry_window_transition.EntryProductTests.test_p2_b1_0396)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4524, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4285, in p2_b1_dispatch
+    {'record':self.p2_b1_record,'lifecycle':self.p2_b1_lifecycle,
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     'source-record-grammar':self.p2_b1_source_grammar,'reader':self.p2_b1_reader,
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     'stale-ticket':self.p2_b1_stale_ticket}[spec['kind']](spec)
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3644, in p2_b1_lifecycle
+    args,value=self.p2_lifecycle_request(target,executor,route,source)
+               ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3549, in p2_lifecycle_request
+    self.assertEqual(0,code,data);preview=json.loads(data);self.assertEqual('preview',preview['classification']);self.assertEqual(before,snapshot(target))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: 0 != 65 : b'{\n  "classification": "fail",\n  "code": "HV2-WORKSPACE-PRODUCT",\n  "message": "switch to active release is not an operation"\n}\n'
+
+----------------------------------------------------------------------
+Ran 60 tests in 545.107s
+
+FAILED (failures=1)
+```
+
+Driver의 읽기 전용 정적 확인: `p2_b1_lifecycle`는 먼저 S6-retained로 전환한 뒤 installed executor의 update 분기에서 `source=candidate_source`를 지정한다. 이 source는 방금 활성화한 release와 같지만 helper는 preview exit0과 이후 updated를 기대한다. 제품 `_switch_binding_receipt`는 candidate_release와 prior active_release가 같으면 위 메시지로 거부한다. 따라서 현재 근거는 이 사례의 fixture/기대값 불일치를 가리킨다. 제품 결함이나 새로운 계약 요구로 확정하지 않으며 Reviewer 처분과 Owner 결정은 아직 없다. 별도 positive fixture에는 README에 합성 문구를 추가해 다른 release를 만드는 기존 패턴이 이미 있다.
+
+회복 실행24개 step 전부에서 입력 보존·정상 종료·process group 부재가 확인됐다. `2026-10-12T00:48:38.029464+00:00`의 `/bin/ps -axo pid=,ppid=,pgid=,command=`와 정확한 Driver/root 명칭 필터(자신·부모 제외) 결과 잔여 프로세스0개다. 고정 source/runtime/controls·원 실패STOP·원fixture·manifest·Work prefix 확인도PASS다. 기존65개+새4개 실행 roots의 실할당은44842872832bytes/64GiB다. 모든 source와 필요한 ignored 입력/결과가 원 checkout과 private bundle 및 승인된 durable 실행 경로에 남아 있다. 미커밋 source는 `r0-e-result/current-changes.patch`로 추가 보존한다. 재개·미해결실패·R1의 구체적 후속 소비가 남아 있으므로 worktree/실행 root를 정리하지 않는다.
+
+중복 제외 선택 진행량은4396PASS/1FAIL/1385미시작이다(전체5782 occurrence). 계산은 기존 완결64배치4113 + 새r002112 + r003112 + r00459PASS다. 원b065의 과거68PASS와 새r0016개는 중복 합산하지 않으며 과거b065실패는 별도 역사로 남긴다. 이 합계는 신원이 다른 명시적 실행 결과의 진행량이고 새 입력 전체 재실행 PASS가 아니다.
+
+현재 controller누적494/704회, 남은hard한도210회다. 미시작33배치(원b068~100)의 고정 계획은198회다. Authoring292분사용/27시간08분잔여, review5/8회·2434.902초 및 R1 세 회 예약을 유지한다. 고정 검증 종료는2026-10-13 04:54:33.655857 KST이며 중단 당시 잔여는19:06:50.082154다. 중지 중에도 시간이 경과하며 새 창·상한 연장은 없다.
+
+### Proposed Recovery For B1-0396 — Not Approved Or Applied
+
+권고하는 다음 slice는 test-only fixture의 실제 update 전제를 바로잡는 것이다. `p2_b1_lifecycle`의 installed executor/S6-retained/update 분기에만, 기존 positive fixture와 같은 방식으로 candidate payload를 별도 합성 source에 복사하고 README에 한 줄을 추가해 다른 release를 만든다. 아래는 미적용 교체 후보다. runtime/product/controls·거부 조건·테스트 ID·계약을 바꾸지 않는다.
+
+```python
+source=candidate_source
+if route=='update':
+    source=self.directory('prefix-new-counterpart')
+    for member,data in self.product().workspace_candidate(candidate_source)['payload'].items():
+        write_file(source/member,data,0o755 if member=='colvia' else 0o644)
+    with (source/'README.md').open('ab') as handle:
+        handle.write(b'\nSynthetic P2 same-window lifecycle counterpart.\n')
+args,value=self.p2_lifecycle_request(target,executor,route,source)
+```
+
+승인 시 원 source와 두 차례 STOP/고정입력/결과를 보존하고 새 immutable 입력·새 실행 위치에서 한 번만 검증한다. 첫6개는 기존 B1-0395(미완료 거부),0396(완료 후 실제 update),0414(rollback 거부),0432(installed detach),0468(new-source stale update),0522(new-source detach)다. 이 배치가 모두 통과하면 원b067과 동일한112개 전체를 검증하고, 통과할 때만 잔여33개 배치를 이어간다. 각 배치는 기존6단계와 동일 caps/격리 통제를 사용한다. 첫 예상 밖 실패·drift·관측 누락·시간/용량/범위 위험에서 다시 STOP하며 자동 재시도는 없다.
+
+제안 호출은494+12회복+198잔여=704/704, 총 배치배당은104/104로 여유가 없다. 새 review는 추가하지 않고 예약된 R1 세 회를 유지한다. 회복 배치와 미시작 배치의 실행 결과는 별도로 집계해 중복을 합산하지 않는다. 이 다음 slice의 완료 기준은6개+112개 전부PASS와 before/after 및 입력 보존 확인이다. 이후 잔여P2/R1의 완료와 Owner 종료 수락·Git/STATUS/Done은 별도다. 제품/controls 변경이나 추가 budget이 필요해지면 이 제안 범위를 확대하지 않는다. 지금은 위 후보·실행을 적용하지 않았고, Owner의 별도 회복 승인 전 새 실행을 시작하지 않는다.
+
+
+### B1-0396 Recovery Authorized And Fixture Applied — 2026-10-12 KST
+
+Owner actual decision: “승인. 해당 fixture만 수정하고 제안한 6개 → 112개 → 잔여 33배치 순서로 계속하자. 기존 예산·종료 시각·첫 실패 중단 조건은 유지하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+직전 미적용 제안의 `p2_b1_lifecycle` installed/S6-retained/update 분기에만 합성 source 생성6줄을 추가했다. Candidate payload를 복사하고 README 한 줄을 추가하는 기존 positive fixture 방식이다. 역치환으로 원문 전체 일치, 해당 함수 이외 AST 일치, 전체 파일 compile PASS를 확인했다. 제품·controls·계약·거부 조건·테스트 ID·OLD baseline·caps는 변경하지 않았다. 수정 전 test SHA `fa363361bb0d9f646b1cad3d505db716545bd43caa2c53de0d76b1ab81fc47e7` → 수정 후 `cd4dfaa33a61f904f9d27eabe786fc808de1e9736bc7f8c9d465d0b316758d9a`다. 이것은 정적 범위/구문 확인이며 실행 PASS는 아니다.
+
+수정 전 fixture·전체 patch·한 hunk diff는 private `b1-lifecycle-recovery-02/`에 보존한다. 소비자는 이번 before/after·R1·미해결 실패 disposition이며 해당 소비 종료 시 보존 필요성을 재평가한다. 두 기존 STOP·고정입력·414개 기존 step 결과를 유지한다. 새 immutable 입력35배치를 `b1-lifecycle-recovery-02/frozen-inputs/`에 고정했다. r001은 B1-0395/0396/0414/0432/0468/0522, r002는 원b067과 동일112개, r003~r035는 원b068~100과 동일 선택이다. Source digest는 `a30e12c08c59dd45a4b63564be44a197c3ec14f24fdbce5e0ee72779a114997e`이며 예상 collection의 ID/순서/occurrence는 같고 digest만 바뀌었다. 실제 collect 결과 대조 전 이를 관측 PASS로 쓰지 않는다.
+
+새 실행 root는 `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-lifecycle-20261012-rNNN`이다. 등록 및 목적지 부재·ancestor 안전성을 확인했고 실행 root는 아직 생성하지 않았다. 매 배치6단계·원 runtime/격리 통제·동일 cap을 그대로 사용한다. 기존69개와 새 실행 roots를 함께 storage64GiB에 계산하며 controller494+210=704/704, 전체104/104배치 한도를 지킨다. 첫 예상 밖 실패·drift·누락·시간/저장 위험이면 STOP, retry0다.
+
+고정 종료2026-10-13 04:54:33.655857 KST를 유지하고 중지 시간도 경과로 계산한다. Review5/8회·2434.902초와 R1 세 회 예약은 그대로다. fixture/입력/Driver 준비에 authoring15분을 선차감해 누적307분·잔여26시간53분이다(10:07 KST까지; 초과 시 추가 실제 시간 차감). 검증/기록은 기존34시간 창에 포함한다. P2 종료 수락·Git/STATUS/Done은 수행하지 않았다. 기록 시각 `2026-10-12T00:53:11.148940+00:00`.
+
+
+### B1-0396 Recovery — Six Boundary Cases PASS (2026-10-12 09:57 KST)
+
+고정 Driver SHA `13c83742769004b178db10c940bebfa615e0d7775ce2ca8fb5208919973aba35`와 immutable manifest `0f15aa3601e6dae80851dc37d4d5c88f993742b5c43697d2405773a765274826`를 검증한 뒤 승인된35배치 순차 실행을 시작했다. 기존 두STOP·각 manifest·원fixture·동일 검증 창과 source/runtime/controls를 매 단계 확인하며 기존69개와 새 roots를 모두 storage guard에 포함한다.
+
+첫 배치 사전5단계PASS, smoke20/20PASS, 실제 collection과 고정 기대 bytes 일치다. B1-0395/0396/0414/0432/0468/0522의6개가 전부PASS이며 failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 모두0이다. 고정 CPython3.14.7, focused1200초/outer1230초에서 controller125.457초·outer125.506877초, exit0 정상 종료다. 종료 시각은2026-10-12T00:57:32.988008 UTC다. Group 부재·입력 보존·전후 source 검사PASS다.
+
+B1-0396의 이전 actual failure와 수정 후 이 ID의 통과를 before/after로 연결한다. 미완료상태 update 거부, 완료 뒤 실제 update, rollback 거부, installed/source detach, new-source stale update 거부가 이6개 범위다. 원 실패 배치112개 전체를 대신하지 않으며 r002에서 같은112개 선택을 이어간다. r001까지 controller누적500/704회이고 review 추가0회다. 기존/새 결과 중복을 전체 진행량에 더하지 않는다. 원본 입력과 결과의 소비자는 잔여P2·R1·실패 disposition이며 계속 보존한다.
+
+
+### B1-0396 Recovery — Original b067 Full Selection PASS (2026-10-12 10:17 KST)
+
+새 r002는 원 b067과 목록·순서가 같은112개를 전부 통과했다. 사전5단계PASS, smoke20/20PASS, 실제 collection/frozen expectation 일치, focused112/112PASS이며 failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 모두0이다. CPython3.14.7·고정controller/runner·focused1200초/outer1230초에서 controller1085.714초·outer1085.75937초, exit0 정상 종료했다. 종료 시각2026-10-12T01:17:31.632193 UTC, 입력 보존·전후 source 검사·process group 부재PASS다.
+
+B1-0396은 기존 선택112개 안에서도 통과했다. 이전 회복의 원b067 결과59PASS/1FAIL/52미시작과 이번 동일선택112PASS를 before/after로 연결하고, 이전 실패STOP/결과는 그대로 보존한다. 승인된6개+112개 회복 slice 검증 기준을 충족했으며 잔여P2/R1이나 Owner 종료 수락을 대신하지 않는다.
+
+중복 제외 완결 선택 진행량은4449/5782 occurrence다(기존완결64배치4113 + 첫회복의 원b065112/원b066112 + 이번 원b067112). 이전 실패배치의 부분PASS와 두 회복6개는 중복 합산하지 않는다. 서로 다른 명시적 입력 신원에서 얻은 결과이며 최신source 전체를 재실행했다고 표현하지 않는다. 최신수정의 영향과 과거영역 결과 재사용은 R1의 별도 의무다.
+
+r002까지 controller누적506/704회다. 다음r003부터 원b068~100의33개배치1333 occurrence를 고정순서로 계속한다. 기존 종료2026-10-13 04:54:33.655857 KST·storage64GiB·첫 실패STOP·retry0을 유지한다. Authoring307분·review5/8회2434.902초와 R1세회예약은 그대로다. Source와 ignored 입력/실행결과·current patch를 잔여P2/R1/실패disposition 소비가 끝날 때까지 durable경로에 보존한다.
+
+
+### Third Unexpected Failure STOP — B1-0496 (2026-10-12 10:26 KST)
+
+Owner 승인대로 두 번째 fixture 회복6개와 원b067112개를 모두 통과한 뒤 잔여 실행을 진행했다. 다음 r003(원b068)에서 새 실패가 발생해 첫 실패STOP 규칙에 따라 Driver exit3으로 종료했다. 시각은 `2026-10-12T01:26:27.044791+00:00`(2026-10-12 10:26:27.044791 KST)다.112개 중48개를 실행해47PASS/1FAIL/64미시작/0미완료이고, controller418.3초/outer418.356076초, runner exit1·outer exit2로 자연 종료했다. Timeout이 아니다. 다음r004(원b069) root는 없으며 이후 controller·제품/테스트수정·재실행·리뷰는 없다.
+
+실패행은 B1-0496(lifecycle/repair/new/new-source/S0)다. 실제 출력은 다음과 같고 별도 재현 실행은 하지 않았다.
+
+```text
+FAIL: test_p2_b1_0496 (test_entry_window_transition.EntryProductTests.test_p2_b1_0496)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4530, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4291, in p2_b1_dispatch
+    {'record':self.p2_b1_record,'lifecycle':self.p2_b1_lifecycle,
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     'source-record-grammar':self.p2_b1_source_grammar,'reader':self.p2_b1_reader,
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     'stale-ticket':self.p2_b1_stale_ticket}[spec['kind']](spec)
+     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3657, in p2_b1_lifecycle
+    else:self.p2_b_source_precondition(target,gen,route,state)
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3612, in p2_b_source_precondition
+    self.assertEqual(expected,error['message']);self.assertEqual(before,snapshot(target))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'repair requires the exact active release and no pending lifecycle' != 'older-window repair requires the exact retained old source'
+- repair requires the exact active release and no pending lifecycle
++ older-window repair requires the exact retained old source
+
+
+----------------------------------------------------------------------
+Ran 48 tests in 417.606s
+
+FAILED (failures=1)
+```
+
+읽기 전용 코드 확인에서 제품 `product.py:875~878`은 먼저 active inventory가entry-1인지 검사하고, 통과한 경우에만 exact release/pending 조건을 검사한다. S0은 아직 OLD window이므로 실제 메시지 `older-window repair requires the exact retained old source`가 먼저 나온다. `p2_b_source_precondition`의 해당 else는 두 번째 진단을 기대했다. 따라서 현재 근거는 거부 진단 우선순위의 테스트 기대값 불일치를 가리킨다. 제품 거부 자체나 상태 보존의 결함으로 확정하지 않는다. 특히 메시지 assert에서 멈췄으므로 그 뒤 snapshot 동일성·lock-attempt 부재·backup 부재 단언은 이 실패 실행으로 검증됐다고 주장하지 않는다.
+
+이번18개 step 전부에서 입력 보존·정상 종료·process group 부재PASS, source/runtime/controls·기존 두STOP/manifest·Work prefix 확인PASS다. 현재 실패STOP은 새 경로에 남긴다. 프로세스 기록 도구가 처음 이전 기록 경로를 가리켜 덮어쓰기 방지 assert로 중단됐고, 파일/제품/테스트 변경 없이 이번 새 기록 경로를 바로잡아 조회했다. `2026-10-12T01:27:39.197175+00:00`의 `/bin/ps -axo pid=,ppid=,pgid=,command=`에서 기존/회복 root 및 Driver 이름 필터(자신/부모 제외)에 해당하는 잔여 프로세스0개다. 이는 controller 재시도가 아닌 종료 보존 확인이다. 기존+새72개 실행 roots의 실할당은46433300480bytes/64GiB다. Source·필요한 ignored 입력/결과·미커밋 current patch를 durable경로에 보존하며 미해결실패·Owner판단·P2/R1의 소비가 남아 있어 정리하지 않는다.
+
+중복 제외 진행량은4496PASS/1FAIL/1285미시작(전체5782 occurrence)이다. 완결원배치b001~b067의4449개와 이번부분47PASS를 합친 값이며 과거부분PASS·두6개 회복 선택을 더하지 않는다. 과거 두실패는 별도 이력으로 보존한다. 서로 다른 명시적 입력 신원의 결과이므로 최신입력 전체재실행PASS가 아니다.
+
+Controller누적512/704회, 잔여192회는 미시작32배치(원b069~100)의192회와 정확히 같다. 현재 예산에는 실패배치 회복 실행 여유가 없다. Authoring307분사용/26시간53분잔여, review5/8회·2434.902초 및 R1세회예약을 유지한다. 기존 종료2026-10-13 04:54:33.655857 KST, 중단 시 잔여18:28:06.611066이며 중지 시간도 경과한다. P2종료수락·Git/STATUS/Done은 수행하지 않았다.
+
+### Proposed Diagnostic Expectation Recovery And Budget Change — Unapproved
+
+수정 후보는 `p2_b_source_precondition`의 repair 기대값 한 줄 중 NEW/S0에 해당하는 else 문자열을 실제 우선 진단으로 맞추는 것이다. OLD 정상·퇴역, NEW 미완료 및 S6 분기는 앞선 조건으로 처리되므로 그대로다. 아래는 미적용 후보이며 제품/controls·검사 기준·snapshot/lock/backup 단언을 완화하지 않는다.
+
+```python
+elif route=='repair':expected='active release needs no repair' if generation=='old' or state=='S6-retained' else 'older-window repair requires the exact retained old source'
+```
+
+회복 검증 제안은 기존 B1-0487(OLD/S0repair),0495(OLD/S6repair),0496(NEW/S0repair),0497(NEW/S1repair),0504(NEW/S6repair),0396(직전update수정회귀)의6개를 먼저 검증하고, PASS면 원b068동일112개, 다시PASS면 잔여32배치를 진행하는 것이다. 새immutable입력·새root를 사용하고 기존세STOP/입력/결과를 보존한다. 각배치의 기존6단계와 caps/격리통제,첫실패STOP·retry0,고정종료시각은 유지한다.
+
+필요 호출은512+회복12+잔여192=716회다. 따라서 controller상한704→716(+12), batch상한104→106(+2)의 명시적 Owner변경 없이는 실행할 수 없다. 기존R1예약3회는 유지하고 review상한을 늘리지 않는다. 이 제안은 기존 승인에 포함되지 않으며 현재 source수정·새입력freeze·실행root생성·추가검증0회다. 승인 시에도 완료기준은6개+112개PASS와 before/after/입력보존이며,잔여P2/R1완료와Owner종료수락은별도다. 새로운실패나제품/controls/계약수정필요시범위를자동확대하지않는다.
+
+
+### B1-0496 Diagnostic Recovery Authorized And Applied — 2026-10-12 KST
+
+Owner actual decision: “승인. 호출 상한 716회·배치 상한 106개로 늘리고, 기대값 한 줄만 수정한 뒤 6개 → 112개 → 잔여 32배치 순서로 계속하자. 기존 종료 시각·첫 실패 중단 조건은 유지하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+승인한 p2_b_source_precondition의 repair else 기대 진단 문자열 한 곳만 수정했다. OLD/S0 및 S6, NEW pending 분기와 status/snapshot/lock/backup 검사는 그대로다. 역치환 전체 원문 일치·해당 helper 이외 AST 일치·전체 compile PASS이며 runtime 검증은 아직 아니다. 수정 전 test SHA `cd4dfaa33a61f904f9d27eabe786fc808de1e9736bc7f8c9d465d0b316758d9a` → 수정 후 `a91257a255b0af73d4776e920748372499e8ba29ae8026e5fe0b54f403752353`. 제품/controls/OLD baseline/계약/선택ID/cap을 변경하지 않았다.
+
+수정 전 fixture·전체 patch·한 hunk diff는 private b1-repair-diagnostic-recovery-03에 보존한다. 소비자는 이번 before/after·R1·실패 disposition이며 소비 종료 시 보존 적격성을 재평가한다. 기존세STOP·고정입력·432개 기존 step 결과를 유지한다. 새 immutable34개 배치의 r001은 B1-0487/0495/0496/0497/0504/0396, r002는 원b068과 같은112개, r003~r034는 원b069~100과 같은 선택이다. Source digest `edd14070d1705de24accaf68ab230ccd347675d309617c4f4d7bf544163f1701`이며 예상 collection의 ordered IDs/occurrence는 그대로고 digest만 새 입력을 따른다. 실제 collect 대조 전 관측PASS로 쓰지 않는다.
+
+새 root는 /Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-repair-diagnostic-20261012-rNNN 이며 등록·목적지 부재와 ancestor 안전성을 확인했다. 아직 실행 root는 없다. 매 배치 기존6단계·고정runtime/격리통제·동일caps를 적용한다. 기존72개와 새 roots를 함께 storage64GiB로 계산하며 controller512+204=716/716, batch72+34=106/106이다. 이번 Owner승인으로 호출+12/배치+2를 변경했을 뿐 남은 시간이나 실패slot을 재사용하지 않는다. 첫 예상 밖 실패·입력drift·관측누락·시간/용량위험 STOP, retry0다.
+
+기존 종료2026-10-13 04:54:33.655857 KST와 review5/8회·2434.902초·R1세회예약을 유지한다. fixture/입력/Driver 준비 authoring10분을 선차감해 누적317분·잔여26시간43분이다(10:41 KST까지; 초과 시 실제시간추가차감). 실행/기록은 기존34시간 창에 포함한다. P2종료수락·Git/STATUS/Done은 별도다. 기록시각 `2026-10-12T01:31:41.461150+00:00`.
+
+
+### B1-0496 Recovery — Six Boundary Cases PASS (2026-10-12 10:35 KST)
+
+고정 Driver SHA c0e9fd98298cf3a6f1ebf185eb358b1f239906b253ee2935524a2fc61f8eb13a 및 manifest c3fd73d290346d99ad6431420921da3710165271860ab675792aec0cd436e423를 확인하고 승인된34배치 순차 실행을 시작했다. source/runtime/controls·세기존STOP/manifest·원fixture·동일window 보존과 전체roots 합산storage guard를 적용한다. 사전5단계PASS, smoke20/20PASS 및 actual collection/frozen expectation 일치 후 B1-0487/0495/0496/0497/0504/0396 전부6/6PASS다. failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 모두0이다. CPython3.14.7·fixedcontroller/runner·1200초/outer1230초에서 controller57.614초·outer57.691611초, exit0 자연 종료했고 종료시각2026-10-12T01:35:22.595204 UTC다. Process group부재·입력보존·전후source확인PASS다.
+
+B1-0496은 이전 실패한 메시지 assert와 그 뒤 snapshot/lock/backup 단언까지 통과했다. OLD 정상/퇴역과 NEW 미완료/완료 repair 경계 및 이전B1-0396 update 수정회귀도 해당6개 범위에서 확인됐다. 기존 실패와 새결과를 before/after로 연결하고 역사적STOP은 유지한다. 원b068동일112개 전체는 다음r002에서 검증하며6개결과로 대체하지 않는다. r001까지 controller누적518/716회, review추가0회다. 원/새입력·결과·patch의 소비자는 이번회복/P2/R1/실패disposition이고 계속보존한다.
+
+
+### B1-0496 Recovery — Original b068 Full Selection PASS (2026-10-12 10:49 KST)
+
+새r002의 목록과 순서는 원b068동일112개이며 전부PASS다. 사전5단계PASS, smoke20/20PASS, actual collection/frozen expectation 일치, failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes 모두0이다. CPython3.14.7·고정controller/runner·1200초/outer1230초에서 controller747.368초·outer747.418302초, exit0 자연종료했다. 종료시각2026-10-12T01:49:42.910960 UTC, process group부재·입력보존·전후source확인PASS다.
+
+B1-0496이 원배치안에서도 진단 및 후속상태/lock/backup 단언까지 통과했다. 기존원b06847PASS/1FAIL/64미시작과 새동일112PASS를 before/after로 연결하고 기존STOP/결과는 그대로 보존한다. 승인한6개+112개 회복검증 기준을 충족했다. 중복제외 완결선택 진행량은4561/5782 occurrence(기존원b001~67 4449 + 새원b068112)이며 과거부분PASS와 세회복6개를 중복합산하지 않는다. 명시적으로 다른 입력 신원의 결과이며 최신입력 전체재실행PASS나 R1/Owner완료수락으로 승격하지 않는다.
+
+r002까지 controller누적524/716회다. 다음r003(원b069)부터 잔여32배치1221 occurrence를 고정순서로 계속한다. 호출716/배치106·기존종료2026-10-13 04:54:33.655857 KST·storage64GiB·첫실패STOP/retry0,authoring317분·review5/8회2434.902초·R1세회예약을 유지한다. 기존입력/실패/변경source/current patch와 필요한ignored결과는 잔여P2/R1/실패disposition 소비종료까지 보존한다.
+
+
+### B1 Selected Execution Completed Across Explicit Inputs — 2026-10-12 10:54 KST
+
+B1 최종40개가170.77초/outer170.844688초에40/40PASS로 끝났다(2026-10-12T01:54:33.220583 UTC). 사전5단계·smoke20·actual collection 대조·전후source/입력보존·정상종료·group부재PASS다. B1 전체600개 고정ID에 대해 아래 완결실행의 선택집합 합집합이 정확히600개이며 중복/누락이 없음을 Driver가 대조했다. 각완결실행 failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는0이다. 역사적실패와 부분PASS 및 회복6개씩은 아래합계에서 제외한다.
+
+| Execution | PASS | Controller seconds | Source digest |
+| --- | ---: | ---: | --- |
+| p2-full-execution-01/b064 | 112 | 784.248 | `07e66416e2b6f28c51856d7b00de133779075486f8aabaaf2a0525e73cc7ee22` |
+| b1-fixture-recovery-01/b002 | 112 | 877.868 | `79e8a358d0f1918a1627278306ca9dce431237bbd052b2eb5d43525e6cabc8e0` |
+| b1-fixture-recovery-01/b003 | 112 | 1058.156 | `79e8a358d0f1918a1627278306ca9dce431237bbd052b2eb5d43525e6cabc8e0` |
+| b1-lifecycle-recovery-02/b002 | 112 | 1085.714 | `a30e12c08c59dd45a4b63564be44a197c3ec14f24fdbce5e0ee72779a114997e` |
+| b1-repair-diagnostic-recovery-03/b002 | 112 | 747.368 | `edd14070d1705de24accaf68ab230ccd347675d309617c4f4d7bf544163f1701` |
+| b1-repair-diagnostic-recovery-03/b003 | 40 | 170.77 | `edd14070d1705de24accaf68ab230ccd347675d309617c4f4d7bf544163f1701` |
+
+이는 명시된여러입력에서600개실행PASS를 확보한 것이며 최신입력으로B1전체재실행하거나Owner수락한 것이 아니다. 세fixture수정의 영향, 과거결과재사용, 실패원인처분은 영역/누적R1의 검토의무로 유지한다. T060/A11233/A22708/B1600을 합친 완결선택진행량은4601/5782 occurrence다. 다음B2이후1181 occurrence·31배치가 남고 고정순차Driver가 r004(원b070)부터 진행중이다. B1완료까지controller530/716이며 authoring317분·review5/8회2434.902초/R1세회예약·기존종료시각·storage64GiB·첫실패STOP/retry0을 유지한다. 근거와현재source/patch는 해당소비가끝날때까지보존하며Git/STATUS/Done/P2종료수락은별도다.
+
+
+### B2 Selected Execution Complete — 2026-10-12 11:41 KST
+
+B2 네 배치의 고정 선택 216개가 모두 PASS다. 선택 ID 합집합은 obligation map의 B2 216개와 정확히 일치하며 중복과 누락이 없다. 각 배치의 선행 5단계, baseline smoke 20개, actual collection 대조, 전후 입력 보존, 정상 종료와 process group 부재도 PASS다. 각 focused 결과의 failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 모두 0이다. CPython 3.14.7과 고정 source digest `edd14070d1705de24accaf68ab230ccd347675d309617c4f4d7bf544163f1701`에서 실행했다.
+
+| 배치 | PASS | Controller 초 | Outer 초 |
+| --- | ---: | ---: | ---: |
+| r004 / 원 b070 | 60 | 565.537 | 565.637149 |
+| r005 / 원 b071 | 60 | 697.642 | 697.723698 |
+| r006 / 원 b072 | 60 | 749.997 | 750.077797 |
+| r007 / 원 b073 | 36 | 367.094 | 367.144927 |
+
+최종 배치는 2026-10-12T02:41:34.844364 UTC에 끝났다. B2 완료까지 누적 controller 554/716회이며, 중복 제외 완결 선택 진행량은 4,817/5,782 occurrence다. C1~X1의 27배치 965 occurrence가 남아 있고 고정 Driver가 C1부터 이어간다.
+
+집계 대조에서 회복 계획 r031/r032의 `occurrences` 표시값이 각각 고유 ID 수 63/33임을 확인했다. 실제 collection에 따른 실행 occurrence는 원 b097/b098과 동일한 75/34이며 C5 합계는 109다. Runner는 선택 ID의 모든 discovered occurrence를 실행한다. 원본과 새 입력의 ordered selection이 정확히 같고 planned seconds도 900/408로 보존됐으며, 잔여 모든 배치의 collection 기반 occurrence가 원본 계획과 일치한다. 따라서 범위나 시간 배당의 변경은 없고, 고정 입력을 수정하지 않은 채 이 표시상의 차이를 기록한다. 이후 C5 결과 집계는 실제 selected/run occurrence를 사용하며, 이 설명은 아직 실행하지 않은 C5의 PASS가 아니다.
+
+Authoring 317분, review 5/8회·2,434.902초 및 R1 세 회 예약, 기존 종료 2026-10-13 04:54:33.655857 KST, storage 64GiB, 첫 실패 STOP/retry 0을 유지한다. 결과와 입력·source/current patch는 잔여 P2와 R1 및 실패 처분의 소비가 끝날 때까지 보존한다. P2 종료 수락과 Git/STATUS/Done은 별도다.
+
+
+### Fourth Unexpected Failure STOP — C1-0021 (2026-10-12 11:44 KST)
+
+승인된 repair 진단 기대값 한 줄의 회복 6개와 원 b068 동일 112개를 모두 통과했고, 이어 B1 잔여 40개와 B2 전체 216개가 통과했다. 다음 r008(원 b074) C1 첫 배치에서 예상 밖 실패가 발생해 첫 실패 STOP 규칙대로 Driver exit 3으로 종료했다. 종료 시각은 `2026-10-12T02:44:27.004746+00:00`다. 선택 75개 중 21개를 실행해 20 PASS / 1 FAIL / 54 미시작 / 0 미완료이며 errors/skips/expected failures/unexpected successes는 0이다. Controller 55.805초, outer 55.906063초이고 runner exit 1, outer exit 2로 자연 종료했다. Timeout이 아니다. r009(원 b075) root는 생성되지 않았다. 이후 controller·제품/fixture 수정·재현 실행·추가 리뷰는 수행하지 않았다.
+
+실패행은 C1-0021(old-pending / after-staged-inventory / preview)이다. 실제 실행의 essential failure output을 그대로 기록한다.
+
+```text
+FAIL: test_p2_c1_0021 (test_entry_window_transition.EntryProductTests.test_p2_c1_0021)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4530, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3775, in p2_c1_case
+    self.p2_old_lifecycle_api(target,counterpart,old_request,spec['point'],'interrupt')
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3695, in p2_old_lifecycle_api
+    _,data=self.finish(child,log,timeout=150);result=json.loads(data)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 369, in finish
+    self.assertEqual(code, expected, data.decode(errors='replace')[-8000:])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 24, in <module>
+    else:raise AssertionError('OLD interruption did not occur')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: OLD interruption did not occur
+
+
+----------------------------------------------------------------------
+Ran 21 tests in 55.216s
+
+FAILED (failures=1)
+```
+
+읽기 전용 확인에서 실패 fixture의 기존 OLD history 구성은 counterpart X를 init한 뒤 audited predecessor P로 update하여 P가 active, X가 prior인 상태를 만든다. 보존된 `1-old-counterpart.log`에 이 binding과 X release의 존재가 기록돼 있다. 그 뒤 요청의 candidate_release는 동일 X다. 고정 OLD `product.py:813~825`는 candidate release가 없을 때만 staging과 after-staged-inventory/after-staged-payload injection을 수행한다. 따라서 X가 이미 존재하는 이 fixture에서는 해당 두 지점을 건너뛴다. 보존된 실제 최종 binding도 X가 active임을 보여준다. 실제 관측은 “OLD interruption did not occur”이며, 코드와 보존 상태를 함께 보면 staging 분기에 도달하지 않는 fixture 전제가 원인이다. 별도 재현 실행은 하지 않았고 제품의 pending 거부/복구 결함으로 판정하지 않는다. 중단 fixture 구성 단계에서 실패했으므로 그 뒤 pending 관측과 NEW preview 거부·상태 보존 단언은 이 실행에서 검증되지 않았다.
+
+이번 48개 step 모두 source/runtime/controls·기존 세 STOP/manifest·Work prefix 및 입력 전후 보존, 정상 종료, process group 부재를 통과했다. `2026-10-12T02:46:55.468035+00:00`의 프로세스 조회에서도 관련 실행 root/Driver와 일치하는 잔여 프로세스는 0개다. 방법은 `/bin/ps -axo pid=,ppid=,pgid=,command=` 후 과거/현재 P2 root 및 Driver 이름 필터이며 조회 자신과 부모는 제외했다. 원본과 세 회복의 80개 실행 root 실할당은 51089645568 bytes로 64GiB 이내다. 실패 fixture는 기존 runner 보존 절차로 `work/failures/0`에 1,691,742 bytes를 복사했고, 원본/고정 입력/실행 결과/source 및 current patch를 durable 경로에 유지한다. 미해결 실패·Owner 판단·잔여 P2/R1의 구체적 소비가 있으므로 source worktree와 실행 root를 정리하지 않는다.
+
+중복을 제외한 현 진행량은 4,837 PASS / 1 FAIL / 944 미시작, 총 5,782 occurrence다. 완결된 원 b001~b073의 4,817개와 이번 부분 20 PASS를 합친 값이다. 이전 실패의 부분 PASS나 회복 focused 중복은 더하지 않으며, 과거 실패 기록을 성공으로 바꾸지 않는다. 입력 신원이 서로 다른 실행의 진행량이고 최신 입력 전체 재실행 PASS가 아니다.
+
+Controller 누적 560/716회이며 잔여 156회는 미시작 26배치(원 b075~100)의 156회와 정확히 같다. 실패 배치의 회복 실행 여유는 없다. Authoring 317분 사용/26시간43분 잔여, review 5/8회·2,434.902초 사용 및 R1 세 회 예약은 유지한다. 고정 종료는 2026-10-13 04:54:33.655857 KST이며 중단 시 잔여는 17:10:06.651111다. 중지 시간도 경과하며 새 검증 창이나 자동 연장은 없다. P2 종료 수락, Git/STATUS/Done은 별도다.
+
+### Proposed C1 Staging Fixture Recovery And Budget Change — Unapproved
+
+다음 slice는 `p2_c1_case`에서 old-pending의 두 staging 지점만 새 OLD target을 사용하게 하는 test-only 수정이다. 기존 history target과 counterpart X source는 그대로 보존하고, audited predecessor로 새로 초기화한 별도 target에 X release가 없음을 명시적으로 단언한다. 이 target에서 기존 positive preview와 정확한 OLD update 요청을 구성하므로 실제 staging을 거쳐야 injection에 도달한다. 해당 조합의 기존 8개 ID(C1-0021~0028)가 영향 범위이며, after-receipt/after-release 및 다른 C1 조합은 유지한다. 제품/고정 OLD/controls·API interruption 프로그램·관측/거부/복구 단언을 바꾸거나 기존 release/receipt를 삭제하지 않는다.
+
+아래는 target 구성 직후, Git fixture 구성과 첫 positive preview 이전에 넣을 미적용 후보다.
+
+```python
+if kind=='old-pending' and spec['point'] in {'after-staged-inventory','after-staged-payload'}:
+    target=self.old_target('pending-target')
+    self.assertFalse((target/'.hrn/product/releases'/history['counterpart']['id']).exists())
+```
+
+승인 시 새 immutable 입력과 approved worktree root의 새 실행 위치에서 C1-0017~0032의 기존 16개(4개 중단 지점 × preview/apply/recover-new-request/recover-old-source)를 먼저 검증한다. PASS면 실패한 원 b074와 동일 75개, 다시 PASS면 잔여 26배치를 원래 순서로 진행한다. 완료 기준은 16개와 75개 전부 PASS, 원 실패와 수정 후 결과 연결, 각 실행의 입력 보존·정상 종료·process group 부재다. 전체 P2/R1 완료와 Owner 종료 수락은 여전히 별도다.
+
+필요 호출은 560 + 회복 12 + 잔여 156 = 728회이며, batch 상한은 106→108(+2)이 필요하다. 따라서 controller 716→728(+12)와 batch 108의 명시적 Owner 변경 및 이 fixture 회복 승인 전에는 적용하거나 실행하지 않는다. 기존 6단계, 각 hard cap, 격리 경계, storage 64GiB, 고정 종료 시각, 첫 예상 밖 실패 STOP/retry 0과 R1 세 회 예약을 유지한다. 회복 입력의 표시용 occurrence는 collection 기준 실제 값(C5 75/34 포함)으로 기록하며 기존 frozen 입력은 수정하지 않는다. 현재 새 source 변경·새 입력 freeze·추가 실행은 모두 0이다.
+
+
+### C1-0021 Staging Fixture Recovery Authorized And Applied — 2026-10-12 KST
+
+Owner actual decision: “승인. staging fixture만 수정하고 호출 상한 728회·배치 상한 108개로 늘려서 16개 → 75개 → 잔여 26배치 순서로 계속하자. 기존 종료 시각과 첫 실패 중단 조건은 유지하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+승인한 `p2_c1_case`의 old-pending 두 staging 지점에만 새 OLD target을 구성하고 candidate X release가 없음을 단언하는 3줄을 추가했다. 기존 8개 ID(C1-0021~0028)의 fixture 전제만 바뀐다. 기존 history target과 counterpart source는 유지하며, 그 외 C1 조합·제품·OLD baseline·controls·interruption 프로그램·검사 기준은 그대로다. 역치환 전체 원문 일치, 해당 함수 밖 AST 일치, 전체 compile PASS다. 이 정적 점검은 실행 검증을 대신하지 않는다. 수정 전 test SHA `a91257a255b0af73d4776e920748372499e8ba29ae8026e5fe0b54f403752353`, 수정 후 `e14c0f4f9c49b3780ccd32b0adf7373822bbb7cd2e577e794ceeeacd4cf7177d`.
+
+수정 전 test/전체 patch/한 hunk diff는 private `c1-staging-fixture-recovery-04`에 보존했다. 소비자는 이번 before/after, 잔여 P2/R1와 실패 처분이며 그 의존성이 끝나면 보존 필요성을 재평가한다. 기존 네 STOP·입력·480개 step 결과를 그대로 유지한다. 새 입력 28배치의 r001은 C1-0017~0032의 16개, r002는 원 b074와 동일 75개, r003~r028은 원 b075~100과 동일 선택이다. Source digest `d78e6a0bca05f236666982ca177bb9e874bac2b682022b8399fe729b9ed252ff`. 예상 collection의 ordered IDs/occurrence는 그대로이며 실제 collect 대조 전에는 실행 PASS로 쓰지 않는다. C5 배치의 occurrence 표시도 collection 기준 75/34를 사용한다.
+
+새 실행 위치는 approved root 아래 `hv2-reference-private-colvia-p2-c1-staging-20261012-r001`~`r028`이며 등록/목적지 부재 및 ancestor 안전성을 확인했다. 아직 실행 root는 생성하지 않았다. 각 배치의 기존 6단계·runtime·격리 통제·caps를 유지하며 기존 80개와 새 root 전체를 storage 64GiB로 계산한다. Controller 560+168=728/728, batch 80+28=108/108이다. 첫 예상 밖 실패, 입력 drift, 관측 누락이나 시간/용량 위험에서 STOP하고 자동 재시도하지 않는다.
+
+고정 종료 2026-10-13 04:54:33.655857 KST, reviews 5/8회·2,434.902초와 R1 세 회 예약은 유지한다. Fixture/입력/Driver 준비 authoring 15분을 선차감해 누적 332분, 잔여 26시간28분이다(12:06 KST까지; 초과 시 실제 시간 추가 차감). 실행·기록은 기존 34시간 창에 포함한다. P2 종료 수락과 Git/STATUS/Done은 별도다. 기록 시각 `2026-10-12T02:53:30.771534+00:00`.
+
+
+### C1 Staging Recovery Focused 16 PASS — 2026-10-12 11:57 KST
+
+새 r001의 C1-0017~0032가 16/16 PASS다. Controller 41.166초, outer 41.259153초에 정상 종료했다(2026-10-12T02:57:14.177037 UTC). 선행 5단계와 smoke 20개, actual collection 대조, 전후 입력 보존, process group 부재 PASS이며 failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 0이다. 이전 실패한 C1-0021과 그 후 pending/NEW preview 거부·상태 보존 단언도 이제 통과했다. 두 staging 지점뿐 아니라 after-receipt/after-release와 preview/apply/recover-new-request/recover-old-source를 함께 확인한 결과다. 원 실패 75개 전체 검증을 대신하지 않으며 r002에서 동일 75개를 이어간다.
+
+Driver 준비 중 이전 상한 숫자 문자열이 없어야 한다는 authoring 스크립트의 정적 검사가 새 manifest hash 안의 `716`에 반응했다. 실행 Driver를 쓰거나 controller를 호출하기 전에 발생한 검사 오탐으로, 상한 코드 문맥만 검사하도록 authoring guard를 바로잡았다. 생성된 Driver는 compile·고정 입력/과거 네 세대 보존 검사를 통과했고 SHA `21733ee7fcd5f5ed3c316120c9da1d8eff9befbc6dbce5c46f5c5f7911aa6680`로 고정됐다. 제품 검증 실패나 controller 재시도가 아니다.
+
+r001 완료까지 controller 566/728회다. Authoring 332분·review 5/8회 2,434.902초와 R1 세 회 예약, 고정 종료 시각·storage 64GiB·첫 실패 STOP/retry 0은 유지한다. 기존 실패와 새 16개 결과는 before/after 근거로 보존하며 전체 선택 진행량에 중복 합산하지 않는다. P2 종료 수락과 Git/STATUS/Done은 별도다.
+
+
+### Fifth Unexpected Failure STOP — C1-0049 (2026-10-12 12:00 KST)
+
+승인한 staging fixture 3줄 수정 뒤 관련 16개는 전부 통과했다. 이어 원 b074와 동일한 75개를 검증하던 r002에서 C1-0049가 실패해 첫 실패 STOP 규칙대로 Driver exit 3으로 종료했다. 종료 시각은 `2026-10-12T03:00:48.764682+00:00`다. 75개 중 49개를 실행해 48 PASS / 1 FAIL / 26 미시작 / 0 미완료이며 errors/skips/expected failures/unexpected successes는 0이다. Controller 109.777초, outer 109.831285초이고 runner exit 1, outer exit 2로 자연 종료했다. Timeout이 아니며 이후 배치 r003(원 b075) root는 없다. 실패 뒤 새 controller·제품/fixture 수정·재현 실행·추가 리뷰는 수행하지 않았다.
+
+C1-0049는 ignore/root-pattern/preview다. 실제 essential failure output은 다음과 같다.
+
+```text
+FAIL: test_p2_c1_0049 (test_entry_window_transition.EntryProductTests.test_p2_c1_0049)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4533, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3811, in p2_c1_case
+    self.p2_c1_attempt(target,preview,invocation,expected)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3718, in p2_c1_attempt
+    self.assertEqual(expected,(caught.exception.code,caught.exception.message));result=None
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: ('HV2-WORK-CONTENT', 'truth hidden by effective Git ignore policy') != ('HV2-WORK-RECORD', 'truth hidden by effective Git ignore policy')
+
+First differing element 0:
+'HV2-WORK-CONTENT'
+'HV2-WORK-RECORD'
+
+- ('HV2-WORK-CONTENT', 'truth hidden by effective Git ignore policy')
+?              ^^^^^
+
++ ('HV2-WORK-RECORD', 'truth hidden by effective Git ignore policy')
+?            ++  ^^
+
+
+----------------------------------------------------------------------
+Ran 49 tests in 109.057s
+
+FAILED (failures=1)
+```
+
+읽기 전용 코드 대조에서 제품의 new-entry 경계는 `product.py:227`의 `_visible_truth(target, ["colvia"])`를 사용한다. `work.py:942~947`은 effective Git ignore를 검사하고 `_require`를 호출하며, 그 `_require`는 `work.py:601~607`에서 `HV2-WORK-RECORD`를 만든다. 거부 메시지는 기대와 실제가 같고 오류 코드만 다르다. 따라서 이번 관측은 `p2_c1_case` ignore 분기의 기대 코드 `HV2-WORK-CONTENT`가 현재 호출 경로와 맞지 않는 경우다. 제품 거부 결함이나 계약 변경 필요로 판정하지 않는다. 오류 tuple 비교에서 멈췄으므로 그 뒤 공통 snapshot 동일성 단언은 아직 통과 근거가 없다. 별도 재현 실행은 하지 않았다. 보존된 실패 fixture에는 실제 Git root와 `colvia\n`의 .gitignore가 있으며 entry-transition receipt는 없다.
+
+앞선 staging 실패 C1-0021은 이번 75개 배치 안에서도 통과했고 C1-0048까지 48개가 통과했다. 관련 16개 전부 PASS와 동일 75개 전체 PASS는 구분하며, 후자는 달성하지 못했다. 이번 12개 step에서 source/runtime/controls, 기존 네 STOP/manifest, Work prefix와 입력 전후 보존, 정상 종료, process group 부재를 확인했다. `2026-10-12T03:03:17.570333+00:00`의 `/bin/ps -axo pid=,ppid=,pgid=,command=`에서 정확한 82개 task root와 Driver 이름을 조회한 결과 잔여 프로세스는 0개였다(조회 자신/부모 제외).
+
+원본과 네 회복의 실행 root 82개 실할당은 51305803776 bytes로 64GiB 이내다. 실패 fixture와 원본/고정 입력/실행 결과, source와 current patch는 durable 경로에 보존한다. 미해결 실패·Owner 판단·P2/R1의 소비가 남아 있어 source worktree와 실행 root를 유지한다. 중복 제외 진행량은 4,865 PASS / 1 FAIL / 916 미시작(총 5,782 occurrence)이다. 완결 원 배치 4,817개와 이번 부분 48 PASS를 합친 값이며, 직전 부분 20개와 focused 16개를 중복 합산하지 않는다. 과거 실패 기록도 그대로 보존한다. 서로 다른 입력 신원의 실행을 합친 진행량이며 최신 입력 전체 재실행 PASS가 아니다.
+
+Controller 누적 572/728회, 남은 156회는 잔여 26배치의 156회와 정확히 같아 실패 배치 회복의 여유가 없다. Authoring 332분 사용/26시간28분 잔여, reviews 5/8회·2,434.902초 및 R1 세 회 예약은 유지한다. 기존 고정 종료는 2026-10-13 04:54:33.655857 KST이며 중단 시 잔여 16:53:44.891175다. 중지 시간도 경과한다. P2 종료 수락과 Git/STATUS/Done은 수행하지 않았다.
+
+### Proposed C1 Ignore Diagnostic Recovery And Budget Change — Unapproved
+
+다음 slice 후보는 `p2_c1_case`의 ignore 분기에서 기대 오류 코드 한 곳만 `HV2-WORK-CONTENT`에서 `HV2-WORK-RECORD`로 바꾸는 것이다. 동일 메시지와 tuple 정확 비교, snapshot/receipt 부재 단언, positive negated-pattern, 기존 staging 수정은 유지한다. 영향 범위는 세 ignore 정책 × preview/apply의 6개 ID(C1-0049~0054)다. 제품/controls/OLD baseline/계약/선택 ID를 변경하지 않는다. 아래는 미적용 후보다.
+
+```python
+if case!='negated-pattern':expected=('HV2-WORK-RECORD','truth hidden by effective Git ignore policy')
+```
+
+승인 시 새 immutable 입력과 approved root의 새 실행 위치에서 기존 C1-0049~0056의 8개(세 negative ignore 정책과 positive negated-pattern의 preview/apply)를 먼저 검증한다. PASS면 원 b074와 동일 75개, 다시 PASS면 잔여 26배치를 진행한다. 완료 기준은 8개와 75개 전부 PASS, 원 실패와 수정 후 결과 연결, 입력 보존·정상 종료·process group 부재 확인이다. 전체 P2/R1와 Owner 종료 수락은 별도다.
+
+필요 호출은 572+회복 12+잔여 156=740회다. 따라서 controller 상한 728→740(+12), batch 상한 108→110(+2) 및 해당 기대 코드 수정에 대한 명시적 Owner 승인 전에는 적용하거나 실행하지 않는다. 기존 6단계·각 hard cap·격리 경계·storage 64GiB·고정 종료 시각·첫 실패 STOP/retry 0과 R1 세 회 예약을 유지한다. 현재 새 source 수정·새 입력 freeze·추가 검증은 모두 0이다.
+
+
+### C1-0049 Ignore Diagnostic Recovery Authorized And Applied — 2026-10-12 KST
+
+Owner actual decision: “승인. 기대 코드 한 곳만 수정하고 호출 상한 740회·배치 상한 110개로 늘려서 8개 → 75개 → 잔여 26배치 순서로 계속하자. 기존 종료 시각과 첫 실패 중단 조건은 유지하고, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+승인한 `p2_c1_case` ignore 분기의 기대 오류 코드 한 곳만 `HV2-WORK-CONTENT`에서 `HV2-WORK-RECORD`로 수정했다. 같은 메시지의 정확 비교, snapshot/receipt 부재 단언, positive negated-pattern, 직전 staging 수정은 유지한다. 수정 전 test SHA `e14c0f4f9c49b3780ccd32b0adf7373822bbb7cd2e577e794ceeeacd4cf7177d`, 수정 후 `87f7f279d86c631a2d657f5ceaba01b8fe78c8f1a5ad3fc77a01293b0d7f88ee`다. 역치환 전체 원문 일치, 해당 함수 밖 AST 일치, 전체 compile PASS이며 아직 실행 검증은 아니다. 제품/OLD baseline/controls/계약/선택 ID와 caps를 바꾸지 않았다.
+
+수정 전 test/전체 patch/한 hunk diff는 private `c1-ignore-diagnostic-recovery-05`에 보존한다. 소비자는 이번 before/after와 잔여 P2/R1 및 실패 처분이고 해당 의존성이 끝나면 보존을 재평가한다. 기존 다섯 STOP·입력·492개 step 결과는 그대로다. 새 28배치의 r001은 C1-0049~0056의 8개, r002는 원 b074와 동일 75개, r003~r028은 원 b075~100과 동일 선택이다. Source digest `301894d2fb8a8a20f4befd7ee63b8f0a82dec1a2b656aa0a3b6d6efbae2452e6`이며 ordered collection과 occurrence는 기존과 같다. 실제 collect 대조 전에는 실행 PASS로 표시하지 않는다.
+
+새 실행 위치는 approved root 아래 `hv2-reference-private-colvia-p2-c1-ignore-20261012-r001`~`r028`이다. 등록/목적지 부재와 ancestor 안전성을 확인했고 실행 root는 아직 생성하지 않았다. 기존 82개와 새 root 전체를 storage 64GiB로 계산한다. Controller 572+168=740/740, batch 82+28=110/110이며 기존 6단계·runtime·격리 통제·hard caps를 유지한다. 첫 예상 밖 실패·drift·관측 누락·시간/용량 위험에서 STOP, 자동 retry 0이다.
+
+고정 종료 2026-10-13 04:54:33.655857 KST와 reviews 5/8회·2,434.902초, R1 세 회 예약을 유지한다. 중지 시간도 기존 검증 창에 경과했다. Fixture/입력/Driver 준비 authoring 10분을 선차감해 누적 342분, 잔여 26시간18분이다(12:45 KST까지; 초과 시 실제 시간 추가 차감). 실행·기록은 기존 34시간 창에 포함한다. P2 종료 수락과 Git/STATUS/Done은 별도다. 기록 시각 `2026-10-12T03:36:24.587382+00:00`.
+
+
+### C1 Ignore Recovery Focused 8 PASS — 2026-10-12 12:39 KST
+
+새 r001의 C1-0049~0056이 8/8 PASS다. Controller 20.506초, outer 20.591097초에 정상 종료했다(2026-10-12T03:39:21.617254 UTC). 선행 5단계와 smoke 20개, actual collection 대조, 전후 입력 보존 및 process group 부재도 PASS다. Failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 0이다. 이전 C1-0049 오류 코드 비교와 그 뒤 snapshot 동일성·receipt 부재 단언이 통과했다. .gitignore/info-exclude/bounded excludes file의 거부 및 negated-pattern의 정상 preview/apply를 이 8개 범위에서 확인했다. 원 실패 75개 전체를 대신하지 않으며 r002에서 동일 75개 검증을 이어간다.
+
+r001 완료까지 controller 578/740회다. Driver SHA `58a2cb0233d93902a3beab526f824c73b9e66583ebbf944034a771ab58a5272f`, source digest `301894d2fb8a8a20f4befd7ee63b8f0a82dec1a2b656aa0a3b6d6efbae2452e6`의 결과다. Authoring 342분·reviews 5/8회 2,434.902초와 R1 세 회 예약, 기존 종료 시각·storage 64GiB·첫 실패 STOP/retry 0은 유지한다. 이전 실패와 수정 후 결과를 before/after로 보존하며 회복 8개를 전체 선택 진행량에 중복 합산하지 않는다. P2 종료 수락과 Git/STATUS/Done은 별도다.
+
+
+### Sixth Unexpected Failure STOP — C1-0065 (2026-10-12 12:43 KST)
+
+승인한 ignore 기대 코드 한 곳 수정 뒤 관련 8개는 전부 통과했다. 이어 원 b074와 동일한 75개를 검증하던 r002에서 C1-0065가 실패해 첫 실패 STOP 규칙대로 Driver exit 3으로 종료했다. 종료 시각은 `2026-10-12T03:43:59.234321+00:00`다. 75개 중 65개를 실행해 64 PASS / 1 FAIL / 10 미시작 / 0 미완료이며 errors/skips/expected failures/unexpected successes는 0이다. Controller 163.014초, outer 163.09216초이고 runner exit 1, outer exit 2로 자연 종료했다. Timeout이 아니며 이후 r003(원 b075) root는 없다. 실패 뒤 새 controller·제품/fixture 수정·재현 실행·추가 리뷰는 수행하지 않았다.
+
+C1-0065는 persisted-record/work.publish.start/after-selection/pending/preview다. 실제 essential failure output은 다음과 같다.
+
+```text
+FAIL: test_p2_c1_0065 (test_entry_window_transition.EntryProductTests.test_p2_c1_0065)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4533, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3808, in p2_c1_case
+    self.assertEqual('persisted-record',kind);self.p2_c1_pending_record(target,spec)
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3703, in p2_c1_pending_record
+    _,data=self.finish(child,log,timeout=150);result=json.loads(data)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 369, in finish
+    self.assertEqual(code, expected, data.decode(errors='replace')[-8000:])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 86, in <module>
+    value=rebind if operation=='rebind' else proposal(operation);args=['work','publish']
+                                             ~~~~~~~~^^^^^^^^^^^
+  File "<string>", line 54, in proposal
+    rt=runtime(target);tree=snapshot(target,verified_launcher_sha256=rt['launcher_sha256'],verified_inventory_id=rt['inventory_id'])
+                            ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: snapshot() got an unexpected keyword argument 'verified_inventory_id'
+
+
+----------------------------------------------------------------------
+Ran 65 tests in 162.444s
+
+FAILED (failures=1)
+```
+
+읽기 전용 코드 대조 결과, 별도 내장 문자열 `P2_C1_RECORD_PENDING_PROGRAM`의 proposal 함수가 OLD의 snapshot에 `verified_inventory_id`를 전달한다. OLD `work.py:254`의 signature는 `verified_launcher_sha256`만 지원하고 NEW `work.py:265`는 추가 인자를 지원한다. 이 pending program은 `generation=='old'`를 요구하며 caller도 old를 전달한다. 앞선 B1 회복은 별도 문자열 `P2_RECORD_FIXTURE_PROGRAM`만 수정했으므로 이 pending program에는 적용되지 않았다. C1-0057~0064의 intent 경로는 proposal을 호출하지 않아 통과했고, C1-0065에서 처음 Work proposal 준비가 실패했다.
+
+실패 전 intent acceptance와 runtime 조회는 실행되었다. 실패는 의도한 Work writer 및 pending 주입 호출 이전이며, pending 상태·NEW 거부·recovery 단언의 통과 근거가 아니다. 제품 결함 또는 계약 변경 필요로 판정하지 않는다. 별도 재현 실행은 하지 않았고 해당 실패 fixture와 child log를 보존했다.
+
+앞선 ignore C1-0049도 이번 75개 배치에서 통과했다. 관련 8개 전부 PASS와 동일 75개 전체 PASS는 구분하며 후자는 달성하지 못했다. 이번 12개 step에서 source/runtime/controls, 기존 다섯 STOP/manifest, Work prefix와 입력 전후 보존, 정상 종료, process group 부재를 확인했다. `2026-10-12T03:47:36.356373+00:00`에 정확한 84개 task root와 Driver 이름으로 `/bin/ps -axo pid=,ppid=,pgid=,command=`를 조회한 결과 잔여 프로세스는 0개였다(조회 자신/부모 제외).
+
+원본과 다섯 회복의 실행 root 84개 실할당은 51593670656 bytes로 64GiB 이내다. source/current patch, 고정 입력, 과거 결과 및 실패 fixture는 durable 경로에 보존한다. 소비자는 미해결 실패의 Owner 처분과 잔여 P2/R1이며 해당 의존성이 끝날 때 보존을 재평가한다. 따라서 source worktree와 실행 root를 유지한다. 중복 제외 진행량은 4,881 PASS / 1 FAIL / 900 미시작(총 5,782 occurrence)이다. 원 b073까지 완결한 4,817개와 이번 부분 64 PASS를 합친 값이며 직전 부분 48개 및 focused 8개는 중복 합산하지 않는다. 서로 다른 입력 신원의 실행을 합친 진행량이며 최신 입력 전체 재실행 PASS가 아니다.
+
+Controller 누적 584/740회, 남은 156회는 잔여 26배치의 156회와 정확히 같아 실패 배치 회복 여유가 없다. Authoring 342분 사용/26시간18분 잔여, reviews 5/8회·2,434.902초 및 R1 세 회 예약은 유지한다. 기존 고정 종료는 2026-10-13 04:54:33.655857 KST이며 중단 시 잔여 16:10:34.421536다. 중지 시간도 경과한다. P2 종료 수락과 Git/STATUS/Done은 수행하지 않았다.
+
+### Proposed C1 Pending Record Fixture Recovery And Budget Change — Unapproved
+
+다음 slice 후보는 OLD 전용 `P2_C1_RECORD_PENDING_PROGRAM`의 snapshot 호출 한 곳에서 지원하지 않는 `verified_inventory_id` 인자만 제거하는 것이다. `verified_launcher_sha256`, runtime inventory 검증, product import origin 확인, writer 경로와 주입 지점, pending/recovered 상태 단언 및 기존 회복 수정은 유지한다. 제품/controls/OLD baseline/계약/선택 ID는 변경하지 않는다. 아래는 미적용 후보다.
+
+```python
+rt=runtime(target);tree=snapshot(target,verified_launcher_sha256=rt['launcher_sha256'])
+```
+
+승인 시 새 immutable 입력과 approved root의 새 실행 위치에서 C1-0065~0080의 16개를 먼저 검증한다. 두 Work 경로 × 각각 두 중단 지점 × pending/recovered × preview/apply의 영향 범위다. PASS면 원 b074와 동일 75개, 다시 PASS면 잔여 26배치를 진행한다. 16개와 75개 전부 PASS, 원 실패와 수정 후 결과 연결, 입력 보존·정상 종료·process group 부재 확인이 해당 회복 slice의 완료 기준이다. 전체 P2/R1와 Owner 종료 수락은 별도다.
+
+필요 호출은 584+회복 12+잔여 156=752회다. 따라서 controller 상한 740→752(+12), batch 상한 110→112(+2) 및 해당 fixture 호출 한 곳 수정에 대한 명시적 Owner 승인 전에는 적용하거나 실행하지 않는다. 기존 6단계·각 hard cap·격리 경계·storage 64GiB·고정 종료 시각·첫 실패 STOP/retry 0과 R1 세 회 예약을 유지한다. 현재 새 source 수정·새 입력 freeze·추가 검증은 모두 0이다.
+
+
+### C1-0065 Pending Record Fixture Recovery Authorized And Applied — 2026-10-12 KST
+
+Owner actual decision: “승인. 해당 fixture 호출 한 곳에서 인자만 제거하고, 회복 검증 여유를 포함해 호출 상한을 1,000회·배치 상한을 160개로 늘리자. 관련 16개 → 동일 75개 → 잔여 26배치 순서로 계속하되, 기존 종료 시각·개별 실행 제한·첫 실패 중단 조건은 유지해. 상한 확대가 추가 수정이나 자동 재시도를 승인하는 것은 아니며, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+OLD 전용 `P2_C1_RECORD_PENDING_PROGRAM` snapshot 호출 한 곳에서 `verified_inventory_id` 인자만 제거했다. `verified_launcher_sha256`, runtime inventory 검증, import origin, writer/주입 지점, pending/recovered 상태 단언 및 기존 회복 수정은 유지한다. 수정 전 test SHA `87f7f279d86c631a2d657f5ceaba01b8fe78c8f1a5ad3fc77a01293b0d7f88ee`, 수정 후 `1a0a80f755f10c9761b55dff9ea4f4e26e5a75191167d57c8b53656fe1026223`다. 역치환 전체 원문 일치, 해당 내장 문자열 밖 AST 일치, 전체 및 내장 program compile PASS이며 아직 실행 검증은 아니다. 제품/OLD baseline/controls/계약/선택 ID와 개별 caps를 바꾸지 않았다.
+
+수정 전 test/전체 patch/한 hunk diff는 private `c1-pending-fixture-recovery-06`에 보존한다. 소비자는 이번 before/after와 잔여 P2/R1 및 실패 처분이며 해당 의존성이 끝나면 보존을 재평가한다. 기존 여섯 STOP·입력·결과는 그대로다. 새 28배치의 r001은 C1-0065~0080의 16개, r002는 원 b074와 동일 75개, r003~r028은 원 b075~100과 동일 선택이다. Source digest `ca1ee392904b0ca724b32f1174013ef4def2f0f4b3751a01c1f5fdf29251a4bf`이며 전체 ordered collection/occurrence는 기존과 같다. 실제 collect 대조 전에는 실행 PASS로 표시하지 않는다.
+
+새 실행 위치는 approved root 아래 `hv2-reference-private-colvia-p2-c1-pending-20261012-r001`~`r028`이다. 등록/목적지 부재와 ancestor 안전성을 확인했고 실행 root는 아직 생성하지 않았다. 기존 84개와 새 root 전체를 storage 64GiB로 계산한다. 이번 승인 실행 계획은 controller 584+168=752/1,000회, batch 84+28=112/160개다. 여유 248회/48개는 추가 수정·새 실행 선택·자동 재시도의 승인이 아니다. Driver는 이번 28배치/168회로 고정한다. 기존 6단계·runtime·격리 통제·개별 hard cap을 유지하며 첫 예상 밖 실패·drift·관측 누락·시간/용량 위험에서 STOP, 자동 retry 0이다.
+
+고정 종료 2026-10-13 04:54:33.655857 KST와 reviews 5/8회·2,434.902초, R1 세 회 예약을 유지한다. 중지 시간도 기존 검증 창에 경과했다. Fixture/입력/Driver 준비 authoring 10분을 선차감해 누적 352분, 잔여 26시간08분이다(13:00 KST까지; 초과 시 실제 시간 추가 차감). 실행·기록은 기존 34시간 창에 포함한다. P2 종료 수락과 Git/STATUS/Done은 별도다. 기록 시각 `2026-10-12T03:51:39.225619+00:00`.
+
+
+### Seventh Unexpected Failure STOP — C1-0069 (2026-10-12 12:54 KST)
+
+승인한 OLD pending fixture의 snapshot 호출 인자 한 곳 제거 후 관련 16개 중 C1-0065~0068의 4개는 통과했으나 C1-0069가 실패했다. 첫 실패 STOP 규칙대로 Driver exit 3으로 종료했으며 종료 시각은 `2026-10-12T03:54:34.127192+00:00`다. 16개 중 5개 실행, 4 PASS / 1 FAIL / 11 미시작 / 0 미완료이고 errors/skips/expected failures/unexpected successes는 0이다. Controller 22.917초, outer 22.965182초, runner exit 1/outer exit 2로 자연 종료했다. Timeout이 아니다. 동일 75개 r002와 잔여 26배치는 시작하지 않았고 r002 root도 없다. 확대 상한을 추가 수정이나 자동 재시도 승인으로 사용하지 않았다.
+
+선행 5단계와 smoke 20개, actual collection 대조는 PASS이며 이번 여섯 step의 정상 종료·process group 부재·입력 보존·after input check를 확인했다. 기존 C1-0065의 unsupported argument 실패는 해소되었고 after-selection의 pending/recovered × preview/apply 네 조합이 통과했다. 16개 전체 회복은 아직 완료하지 못했다.
+
+C1-0069는 persisted-record/work.publish.start/after-staged-current/pending/preview다. Essential failure output은 다음과 같다.
+
+```text
+FAIL: test_p2_c1_0069 (test_entry_window_transition.EntryProductTests.test_p2_c1_0069)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4533, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3811, in p2_c1_case
+    self.p2_c1_attempt(target,preview,invocation,expected)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3718, in p2_c1_attempt
+    self.assertEqual(expected,(caught.exception.code,caught.exception.message));result=None
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: ('HV2-WORKSPACE-PRODUCT', 'pending Work blocks lifecycle') != ('HV2-WORKSPACE-CONTRACT', 'wrong file type: work-current-z1k3g6dq')
+
+First differing element 0:
+'HV2-WORKSPACE-PRODUCT'
+'HV2-WORKSPACE-CONTRACT'
+
+- ('HV2-WORKSPACE-PRODUCT', 'pending Work blocks lifecycle')
++ ('HV2-WORKSPACE-CONTRACT', 'wrong file type: work-current-z1k3g6dq')
+
+----------------------------------------------------------------------
+Ran 5 tests in 22.217s
+
+FAILED (failures=1)
+```
+
+보존된 child log는 실제 OLD writer가 after-staged-current에서 중단되어 pending selection `fence-selection-1`을 남겼음을 확인한다. 실패 target에는 `.hrn/staging/work-current-z1k3g6dq`가 regular file, mode0600, link count1, 263bytes로 남아 있다. 내용은 fence-work의 canonical work-current와 fence-selection-1 ref다. Entry-transition receipt는 없다. 다만 오류 tuple 단언에서 멈췄으므로 그 뒤 공통 snapshot/receipt 단언의 실행 PASS를 주장하지 않는다.
+
+읽기 전용 원인 대조: exact OLD `work.py:1127~1143`의 `_publish_current`는 mkstemp로 work-current 파일을 쓰고 after-staged-current에서 InjectedCrash를 발생시킨다. OLD publish의 pending selection exact retry는 새 `_publish_current` 호출로 current를 완결하며, 남겨 둔 이전 staging 파일을 삭제하는 경로는 없다(`work.py:1259~1277,1315~1327`). 후자의 recovered 동작은 이번 실행에서 아직 관측하지 않았고 정적 추론이다.
+
+NEW preview는 `product.py:1313~1335`에서 `_entry_admission`을 `_lifecycle_truth`보다 먼저 호출한다. `_entry_admission`의 staging 검사(`product.py:540~545`)는 각 member에 directory를 요구하므로 이 regular file에서 `HV2-WORKSPACE-CONTRACT / wrong file type: work-current-z1k3g6dq`가 먼저 발생한다. 반면 apply의 `_switch_preflight`는 `product.py:1373`에서 truth/pending 검사를 staging admission보다 먼저 수행한다. 따라서 pending apply의 예상값은 기존 pending Work 거부이고, recovered apply에 fixture 생성 전의 기존 preview를 사용하면 변경된 truth 거부가 예상된다. 이것은 아직 미실행 사례에 대한 정적 기대값이며 재현 완료가 아니다.
+
+기존 계약은 persisted pending records의 거부와 unknown staging의 보존·거부를 요구한다(implementation plan Required Tests And Independent Oracles의 Admission/Physical prefixes). 단순히 Work record의 pending이 해소되었다고 staging까지 없어졌다는 뜻은 아니다. 현 관측만으로 제품 수정 필요를 판정하지 않는다. 임시 파일 삭제나 제품 검증 순서 변경으로 fixture를 통과시키지 않는다. 별도 재현, 새 테스트, 추가 source 수정, review는 실행하지 않았다.
+
+`2026-10-12T03:58:20.465068+00:00`의 `/bin/ps -axo pid=,ppid=,pgid=,command=`에서 정확한 85개 task root와 Driver 이름에 해당하는 잔여 프로세스는 0개였다(조회 자신/부모 제외). 실행 root 85개의 실할당은 51628732416 bytes로 64GiB 이내다. Source/current patch, 일곱 세대 고정 입력·과거 결과 및 실패 fixture를 durable 경로에 보존한다. 소비자는 미해결 실패의 Owner 처분과 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다. Source worktree와 실행 root는 계속 사용하므로 유지한다.
+
+중복 제외 진행량은 4,885 PASS / 1 FAIL / 896 미시작(총 5,782 occurrence)이다. 원 b073까지 완결한 4,817개, 이전 C1-0001~0064의 64개와 이번 C1-0065~0068의 4개를 합친 값이다. 기존 실패 기록은 보존하고 중복 실행은 합산하지 않는다. 서로 다른 입력 신원의 진행량이며 최신 입력 전체 재실행 PASS가 아니다.
+
+Controller 누적 590/1,000회, batch root 85/160개다. Authoring 352분 사용/26시간08분 잔여, reviews 5/8회·2,434.902초와 R1 세 회 예약은 유지한다. 기존 고정 종료는 2026-10-13 04:54:33.655857 KST이고 중단 시 잔여 15:59:59.528665다. 중지 시간도 경과한다. P2 종료 수락과 Git/STATUS/Done은 수행하지 않았다.
+
+### Proposed C1 Staged Current Expectations Recovery — Unapproved
+
+다음 slice 후보는 `p2_c1_case`의 persisted-record 분기에서 after-staged-current 네 사례(C1-0069~0072)의 기대 결과를 구분하는 것이다. 기존 OLD fixture의 interruption/recovery는 유지한다. Product/OLD baseline/controls/계약/선택 ID를 수정하거나 staging 파일을 삭제하지 않는다.
+
+이 분기에서 먼저 `work.publish.start` 경로와 work-current staging 파일 정확히 1개를 확인한다. lstat으로 regular file·0600·link count1을 확인하고, canonical 내용이 fence-work의 고정 selection ref와 일치함을 실제 selection bytes의 digest로 검증한다. 오류에서 파일명을 가져오지 않고 이 사전 관측으로 정확한 파일명 진단을 구성한다. 기대 결과는 다음과 같다.
+
+| ID | 상태 / 호출 | 제안 기대 결과 | 현재 근거 |
+| --- | --- | --- | --- |
+| C1-0069 | pending / preview | HV2-WORKSPACE-CONTRACT, wrong file type: 실제 staging 파일명 | 이번 실제 실패 및 호출 순서 |
+| C1-0070 | pending / apply | HV2-WORKSPACE-PRODUCT, pending Work blocks lifecycle | 기존 값 유지, 정적 호출 순서 |
+| C1-0071 | recovered / preview | HV2-WORKSPACE-CONTRACT, wrong file type: 실제 staging 파일명 | OLD 잔여 stage와 preview 순서의 정적 추론 |
+| C1-0072 | recovered / apply | HV2-WORKSPACE-PRODUCT, truth changed since lifecycle preview | 기존 pre-fixture preview와 apply 순서의 정적 추론 |
+
+위 네 사례에서는 recovered일 때 새 preview를 무조건 성공시키려는 기존 분기를 사용하지 않는다. 동일 target에서 fixture 생성 전에 실제 승인된 preview는 그대로 유지한다. Negative tuple의 정확 비교와 공통 snapshot/receipt 보존 단언은 그대로 적용한다. C1-0072는 changed-truth 거부를 확인하는 사례이며 staging guard까지 도달했다는 증거로 사용하지 않는다. 다른 recovered 사례의 positive preview/apply는 유지한다. 이 수정안은 아직 적용하지 않았다.
+
+승인 시 새 immutable 입력과 approved root의 새 실행 위치에서 기존 C1-0065~0080 16개 → 원 b074와 동일 75개 → 잔여 26배치 순서로 검증한다. 회복 slice 완료 기준은 16개와 75개 전부 PASS, 위 상태별 기대값과 원 실패 연결, 입력 보존·정상 종료·process group 부재 확인이다. 이번 새 계획을 모두 마치면 controller 590+168=758/1,000회, batch 85+28=113/160개이므로 추가 상한 증액은 필요 없다.
+
+Owner가 명시한 첫 실패 중단과 추가 수정 별도 승인 조건 때문에, 상한 여유가 있어도 해당 기대 분기 수정과 재개는 새 승인 전까지 수행하지 않는다. 기존 종료 시각·6단계·개별 hard cap·격리·storage64GiB·첫 실패 STOP/retry0·R1 예약·P2 종료 수락과 Git 별도 조건은 유지한다.
+
+
+### C1-0069 Staged Current Expectations Recovery Authorized And Applied — 2026-10-12 KST
+
+Owner actual decision: “승인. 해당 네 사례의 기대 결과만 수정하고 16개 → 동일 75개 → 잔여 26배치 순서로 계속하자. 제품과 staging 파일은 그대로 보존하고, 호출 1,000회·배치 160개 상한과 기존 종료 시각·개별 제한·첫 실패 중단 조건은 유지해. 추가 수정이나 자동 재시도는 승인하지 않으며, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+승인한 `p2_c1_case`의 after-staged-current 네 사례(C1-0069~0072)의 기대 결과만 구분했다. 독립 사전 관측으로 work-current 파일 정확히 하나, regular0600·link1, canonical 내용과 실제 고정 selection bytes의 digest를 확인한다. Pending/recovered preview는 실제 staging 파일명의 wrong-file-type, pending apply는 기존 pending Work, recovered apply는 기존 pre-fixture preview의 changed-truth 거부를 기대한다. 네 사례에서만 recovered positive-preview 재생성을 생략하고 실제 승인된 원 preview를 사용한다. C1-0072는 changed-truth 검증이지 staging guard 실행 증거가 아니다. 다른 recovered positive와 exact tuple/snapshot/receipt 단언은 유지한다. 제품·staging 파일·OLD fixture/원본·controls·계약·선택 ID는 바꾸지 않았다.
+
+수정 전 test SHA `1a0a80f755f10c9761b55dff9ea4f4e26e5a75191167d57c8b53656fe1026223`, 수정 후 `b7c757f683ecaa890dcea6682c20f2b783855421d305aa8d45f6df160dfebd19`다. 역치환 전체 원문 일치, 해당 함수 밖 AST 일치, 영향 row 정확히 네 개 및 compile PASS다. 아직 실행 PASS가 아니다. 수정 전 test/전체 patch/한 hunk diff는 private `c1-staged-diagnostic-recovery-07`에 보존한다. 소비자는 before/after, 잔여 P2/R1와 미해결 실패 처분이며 의존성이 끝나면 보존을 재평가한다. 기존 일곱 STOP·고정 입력·결과는 그대로다.
+
+새 28배치는 C1-0065~0080의 16개 → 원 b074와 동일 75개 → 원 b075~100 동일 26배치다. Source digest `3dfbdd19bca8515fa9950e553b44f9cdd2ad5874133bbddf1b281bb56994933d`, 전체 ordered collection/occurrence는 기존과 같다. 실제 collect 대조 전에는 실행 PASS로 표시하지 않는다. 새 위치는 approved root 아래 `hv2-reference-private-colvia-p2-c1-staged-diagnostic-20261012-r001`~`r028`이다. 등록/목적지 부재와 ancestor 안전성을 확인했고 실행 root는 아직 없다.
+
+기존 85개와 새 root 전체를 storage64GiB로 계산한다. 계획 완료 시 controller 590+168=758/1,000회, batch85+28=113/160개다. 여유는 추가 수정·선택·재시도 승인이 아니며 Driver는 이번 28배치/168회에 고정한다. 6단계·runtime·격리·개별 caps와 첫 예상 밖 실패·drift·관측 누락·시간/용량 위험 STOP/retry0을 유지한다.
+
+고정 종료 2026-10-13 04:54:33.655857 KST, reviews5/8회·2,434.902초·R1 세 회 예약을 유지한다. 준비 authoring10분을 선차감해 누적362분, 잔여25시간58분이다(13:10 KST까지; 초과 시 실제 시간 추가 차감). 실행·기록과 중지 시간은 기존34시간 창에 포함한다. P2 종료 수락과 Git/STATUS/Done은 별도다. 기록 시각 `2026-10-12T04:01:08.823318+00:00`.
+
+
+### C1 Staged Current Recovery Focused 16 PASS — 2026-10-12 13:05 KST
+
+새 r001의 C1-0065~0080이 16/16 PASS다. Controller74.551초, outer74.650771초에 자연 종료했다(2026-10-12T04:05:00.354961 UTC). 선행5단계와 smoke20개, actual collection 대조, 전후 입력 보존 및 process group 부재도 PASS다. Failures/errors/skips/unstarted/unfinished/expected failures/unexpected successes는 0이다. 수정한 C1-0069~0072의 독립 staging 전제 관측, 정확한 진단 비교, 후속 snapshot/receipt 보존 단언이 모두 통과했다. Recovered에도 staging 파일이 남는다는 예상과 preview 거부가 이번 실행에서 확인되었다. C1-0072 apply는 changed-truth 거부의 증거이며 staging guard에 도달했다는 의미는 아니다. 나머지12개 기존 기대도 통과했다. 원75개 전체 PASS와는 구분한다.
+
+r001 완료까지 controller596/1,000회다. Driver SHA `58b2a9612d5d3f90a2b7cf7b66b0b145645ba3a17985339dbe36bc8713dc2189`, source digest `3dfbdd19bca8515fa9950e553b44f9cdd2ad5874133bbddf1b281bb56994933d`의 결과다. Authoring362분·reviews5/8회2,434.902초 및 R1 세 회 예약, 기존 종료·storage64GiB·개별 제한·첫 실패 STOP/retry0은 유지한다. Before/after를 보존하고 focused 중복은 전체 진행량에 합산하지 않는다. 동일75개 r002 검증을 이어가며 P2 종료 수락과 Git/STATUS/Done은 별도다.
+
+
+### C1 Same Original Batch 75 PASS — 2026-10-12 13:10 KST
+
+r002는 원 b074와 동일한75개를 모두 실행해75/75 PASS다. Controller205.055초, outer205.114353초, 종료2026-10-12T04:10:26.300874 UTC이며 자연 종료·group 부재·입력 보존·after input check PASS다. 선행5단계/smoke20/actual collection도 PASS이며 fail/error/skip/unstarted/unfinished/expected failure/unexpected success는0이다. 앞선 네 fixture/기대 회복의 C1-0021,0049,0065,0069와 이후 보존 단언이 같은 최신 입력 배치에서 통과했다. 관련16개와 동일75개라는 이번 회복 slice 실행 기준을 충족했다. P2 종료 수락은 아니다.
+
+r002까지controller602/1,000회다. r003~r028의 잔여26배치890 occurrence를 기존 고정 순차 Driver로 진행한다. 원 b073까지4,817개와 이번75개를 합친 완결 원 배치 진행은4,892/5,782다. Recovery-focused16개와 과거 부분 결과는 중복 합산하지 않는다. 이번16개에 이미 포함된 C1-0076~0080도 원래 승인 선택에 따라 원 b075에서 실행한다. 서로 다른 명시 입력의 근거이며 최신 입력 전체 재실행 PASS가 아니다. Reviews5/8·2,434.902초/R1세회예약,authoring362분,storage64GiB,기존종료/개별cap/첫실패STOP·retry0 및 P2 종료 수락과 Git/STATUS/Done 별도 조건을 유지한다.
+
+
+### C1 Admission All 80 PASS — 2026-10-12 13:12 KST
+
+r003(원 b075)의 나머지5개도5/5 PASS다. Controller40.856초, outer40.932809초, 종료2026-10-12T04:12:58.085976 UTC다. 선행5단계/smoke20/actual collection, 정상 종료·group 부재·입력 보존이 모두 PASS이며 non-pass/미시작/미완료는0이다. r00275개와 r0035개의 selection 합집합을 고정 obligation c1의80개와 대조해 누락·중복0을 확인했다. 따라서 C1전체80개는 현재 source digest `3dfbdd19bca8515fa9950e553b44f9cdd2ad5874133bbddf1b281bb56994933d`에서 통과했다. Focused16개는 별도 회복 근거이며 중복 합산하지 않는다.
+
+완결 원 배치 진행량은4,897/5,782 occurrence이며 C2이후885개·25배치가 남았다. r003까지controller608/1,000회다. 과거 A/B와 현재C1의 입력 신원은 다르므로 전체가 최신 입력 PASS라는 의미는 아니며 재사용 영향 검토는 R1에 남긴다. 현재 고정 Driver로 C2부터 계속 진행한다. 기존 비용·고정 종료·개별 제한·보존·첫 실패 STOP/retry0·R1세회예약·P2 종료 수락/Git 별도 경계는 유지한다.
+
+
+### Eighth Unexpected Failure STOP — C2-0001 (2026-10-12 13:14 KST)
+
+승인한 네 기대 사례를 수정한 뒤 관련16개와 동일75개가 모두 통과했고, 잔여 첫 배치의5개까지 통과해 C1전체80개를 현재 입력으로 확인했다. 다음 r004(원 b076)의 C2 첫 사례 C2-0001에서 실패하여 첫 실패 STOP 규칙대로 Driver exit3으로 종료했다. 종료 시각은 `2026-10-12T04:14:49.435608+00:00`다. C2 배치45개 중1개 실행, 0 PASS / 1 FAIL / 44 미시작 / 0 미완료이며 errors/skips/expected failures/unexpected successes는0이다. Controller1.505초, outer1.59321초, runner exit1/outer exit2로 자연 종료했다. Timeout이 아니다. r005(원 b077) root는 없고 잔여24배치를 시작하지 않았다. 추가 수정·재현 실행·자동 재시도·review는 수행하지 않았다.
+
+이번 회복의24개 step에서 정상 종료·process group 부재·입력 보존·after input check를 확인했다. r004 선행5단계와 smoke20 및 actual collection도 PASS다. r00116, r00275, r0035의 통과 근거는 유지하며 C2 실패를 C1 회복 실패로 바꾸지 않는다. C2-0001은 schema1/planned/no-drift의 baseline 사례다. Essential failure output은 다음과 같다.
+
+```text
+FAIL: test_p2_c2_0001 (test_entry_window_transition.EntryProductTests.test_p2_c2_0001)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 4546, in method
+    def method(self):getattr(self,helper)(index)
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3868, in p2_c2_case
+    spec=P2_C2_ROWS[index];target=self.old_target();fixture=self.p2_local_graph(target,spec)
+                                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 3830, in p2_local_graph
+    _,data=self.finish(child,log,timeout=150);result=json.loads(data)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/tests/test_entry_window_transition.py", line 369, in finish
+    self.assertEqual(code, expected, data.decode(errors='replace')[-8000:])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 198, in <module>
+    ordinary('c2-local',spec['state'])
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 149, in ordinary
+    revision(wid,progress='planned' if state=='planned' else 'active');finish_state(wid,False,state)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 90, in revision
+    current=tree();base=graph['manifests'][previous['result_refs']['manifest']['id']]['result'] if operation=='submit-result' else current
+  File "<string>", line 54, in tree
+    rt=runtime(target);return snapshot(target,verified_launcher_sha256=rt['launcher_sha256'],verified_inventory_id=rt['inventory_id'])
+                              ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: snapshot() got an unexpected keyword argument 'verified_inventory_id'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.934s
+
+FAILED (failures=1)
+```
+
+읽기 전용 원인 대조에서 별도 내장 문자열 `P2_C2_FIXTURE_PROGRAM`의 `tree()`(문자열 내부54행)가 exact OLD의 snapshot에 `verified_inventory_id`를 전달한다. 이 program은23행에서 검증한 OLD/src만 import하며 runtime()은 checkout-1을 요구한다. OLD snapshot signature(`work.py:254`)에는 해당 인자가 없다. 앞선 C1 pending-program 수정은 별도 문자열이어서 이 호출에는 적용되지 않았다. 실패 전에 OLD init과 synthetic intent acceptance는 실행되었지만 첫 Work revision용 snapshot에서 멈췄다. NEW transition의 baseline/parent 판정이나 S6 보존 검증에 도달하지 않았다. 제품 결함 또는 계약 변경 필요로 판정하지 않으며 별도 재현 실행은 하지 않았다.
+
+이 graph builder는 `p2_local_graph`를 통해 C2의192개와 X1 additional12개가 직접 사용한다. 기존 caller 및 고정 row를 읽어 확인한 영향 범위이며 새 시험을 실행한 결과가 아니다. 단일 OLD 전용 snapshot 호출을 고치는 범위로 좁혔다. C3 등 별도 program이나 제품 코드를 같이 수정하지 않는다.
+
+`2026-10-12T04:17:21.152753+00:00`의 `/bin/ps -axo pid=,ppid=,pgid=,command=`에서 정확한89개 task root와 Driver 이름에 해당하는 잔여 프로세스는0개였다(조회 자신/부모 제외). 전체 실행 root 실할당은 52075646976 bytes로64GiB 이내다. Source/current patch, 여덟 세대 고정 입력·과거 결과 및 C2 실패 fixture/log를 durable 경로에 보존한다. 소비자는 미해결 실패 Owner 처분 및 잔여P2/R1이며 의존성이 끝날 때 보존을 재평가한다. 아직 사용 중인 source worktree와 실행 root를 유지한다.
+
+중복 제외 완결 원 배치 진행은4,897 PASS / 1 FAIL / 884 미시작(총5,782 occurrence)이다. C1전체80개는 현재 입력에서 통과했고, 앞선 A/B 근거는 명시된 이전 입력 신원이다. Recovery-focused16개와 과거 부분 실행은 중복 합산하지 않는다. 최신 입력 전체 재실행 PASS가 아니다.
+
+Controller614/1,000회, batch root89/160개다. Authoring362분 사용/25시간58분 잔여, reviews5/8회·2,434.902초와 R1세회예약을 유지한다. 고정 종료2026-10-13 04:54:33.655857 KST이며 중단 시 잔여 15:39:44.220249다. 중지 시간도 경과한다. P2 종료 수락과 Git/STATUS/Done은 수행하지 않았다.
+
+### Proposed C2 OLD Graph Snapshot Recovery — Unapproved
+
+다음 slice 후보는 `P2_C2_FIXTURE_PROGRAM`의 `tree()`에서 지원하지 않는 인자 한 곳만 제거하는 것이다. OLD launcher proof와 checkout-1 runtime·import origin·baseline·graph/ref·보존 단언은 유지하며 제품·staging 파일·OLD 원본·controls·계약·선택 ID는 바꾸지 않는다. 아래는 미적용 후보다.
+
+```python
+rt=runtime(target);return snapshot(target,verified_launcher_sha256=rt['launcher_sha256'])
+```
+
+승인 시 새 immutable 입력과 approved root의 새 위치에서 기존8개(C2-0001/0002/0013/0014/0025/0026, X1-0001/0008)를 먼저 검증한다. Schema1/2의 baseline clean/drift, 복수Work clean/drift, 공유 consumer X1의 완료local 허용과 parent-own dependency 거부 및 positive counterpart를 포함한다. PASS면 원 b076과 동일45개, 다시 PASS면 원 b077~100의 잔여24배치를 진행한다. 완료 기준은8개·45개 전부 PASS, 원 실패와 수정 후 결과 연결, 입력 보존·정상 종료·process group 부재다. 이후 전체P2/R1 및 Owner 종료 수락은 별도다.
+
+계획 호출614+회복12+잔여144=770/1,000회, batch89+26=115/160개로 상한 증액은 필요 없다. 기존 고정 종료·6단계·개별caps·격리·storage64GiB·첫 실패STOP/retry0·R1예약을 유지한다. Owner의 첫 실패 중단 및 추가 수정 별도 승인 조건에 따라, 새 승인 전에는 이 수정이나 실행을 하지 않는다. 상한 여유를 자동 재시도 권한으로 사용하지 않는다.
+
+
+### C2-0001 OLD Graph Fixture Recovery Authorized And Applied — 2026-10-12 KST
+
+Owner actual decision: “승인. 해당 호출 한 곳에서 인자만 제거하고 8개 → 동일 45개 → 잔여 24배치 순서로 계속하자. 제품·staging은 보존하고 호출 1,000회·배치 160개 상한과 기존 종료 시각·개별 제한·첫 실패 중단 조건은 유지해. 추가 수정이나 자동 재시도는 승인하지 않으며, P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+OLD 전용 `P2_C2_FIXTURE_PROGRAM`의 tree() snapshot 호출 한 곳에서 `verified_inventory_id` 인자만 제거했다. Verified launcher, checkout-1 runtime, import origin, baseline/graph/ref/보존 단언을 유지한다. 제품·staging·OLD 원본·controls·계약·선택 ID·개별 제한은 바꾸지 않았다. 수정 전 test SHA `b7c757f683ecaa890dcea6682c20f2b783855421d305aa8d45f6df160dfebd19`, 수정 후 `9772b6c4f255d820eb310025b25b8cbbe2df8059c7b23f2ed45d19e4c53eba71`다. 역치환 전체 원문 일치, 내장 문자열 밖 AST 일치, 전체와 내장 program compile PASS이며 실행 검증은 아직 아니다.
+
+수정 전 test/전체 patch/한 hunk diff는 private `c2-graph-fixture-recovery-08`에 보존한다. 소비자는 이번 before/after, 잔여P2/R1와 미해결 실패 처분이며 의존성이 끝나면 보존을 재평가한다. 기존 여덟 STOP·입력·결과는 그대로다. 새26배치는 C2-0001/0002/0013/0014/0025/0026와 X1-0001/0008의8개 → 원 b076과 동일45개 → 원 b077~100 동일24배치다. Source digest `a1c7f8a950843840fda1d0d35b7710e7ad0484b7698415cb0584ff472ec9a045`, 전체 ordered collection/occurrence는 기존과 같으며 actual collect 대조 전 실행 PASS를 주장하지 않는다.
+
+새 위치는 approved root 아래 `hv2-reference-private-colvia-p2-c2-graph-20261012-r001`~`r026`이다. 등록/목적지 부재와 ancestor 안전성을 확인했으며 실행 root는 아직 없다. 기존89개와 새 root 전체를 storage64GiB로 계산한다. 계획 완료 시 controller614+156=770/1,000회, batch89+26=115/160개다. Driver는 이번26배치/156회로 고정하며 남은 예산은 추가 수정/자동 재시도 권한이 아니다. 기존6단계/runtime/격리/개별caps 및 첫 예상 밖 실패·drift·관측 누락·시간/용량 위험 STOP/retry0을 유지한다.
+
+고정 종료2026-10-13 04:54:33.655857 KST, reviews5/8회·2,434.902초와 R1세회예약을 유지한다. 준비 authoring10분을 선차감해 누적372분, 잔여25시간48분이다(13:28 KST까지; 초과 시 실제 시간 추가 차감). 실행·기록과 중지 시간은 기존34시간 창에 포함한다. P2 종료 수락과 Git/STATUS/Done은 별도다. 기록 시각 `2026-10-12T04:19:18.104016+00:00`.
+
+
+### C2 OLD Graph Recovery Focused 8 PASS — 2026-10-12 13:24 KST
+
+r001의 C2-0001/0002/0013/0014/0025/0026, X1-0001/0008이8/8 PASS다. Controller177.896초, outer177.967333초, 종료2026-10-12T04:24:39.961853 UTC이며 자연 종료·group 부재·입력 보존·after input check PASS다. 선행5단계/smoke20/actual collection도 PASS이고 fail/error/skip/unstarted/unfinished/expected failure/unexpected success는0이다. C2-0001의 unsupported argument가 해소되었고 schema1/2 clean/drift, 복수Work clean/drift, 완료local 허용과 parent-own dependency 거부 및 positive counterpart가 통과했다. 동일45개 전체 PASS를 대신하지 않는다.
+
+r001까지controller620/1,000회다. Driver SHA `76f9083a8a1cb360e90c6943e07f10e0139e698160ed10e945c1b17f603e01ba`, source digest `a1c7f8a950843840fda1d0d35b7710e7ad0484b7698415cb0584ff472ec9a045`의 결과다. Before/after를 보존하고 focused 중복을 원 배치 완료량에 합산하지 않는다. Authoring372분·reviews5/8회2,434.902초/R1세회예약·기존종료/개별cap/storage64GiB/첫실패STOP·retry0을 유지하며 동일45개 r002 검증을 이어간다. P2 종료 수락과 Git/STATUS/Done은 별도다.
+
+
+### Ninth Unexpected Failure STOP — C2 Batch Timeout And Cleanup Observation (2026-10-12 13:46 KST)
+
+관련8개 PASS 뒤 동일45개를 실행하던 r002(원 b076)가 시간 한도에 도달했다. 시작2026-10-12T04:26:27.557096 UTC, 종료04:46:07.810103 UTC, outer1,180.249399초, controller exit1/Driver exit3이다. Focused hard cap1,200초 중 cleanup용20초를 남기는 시점에 중단을 시작했다. 그 뒤 process group 확인에서 PermissionError가 발생해 controller가 최종 result.json을 쓰기 전에 종료했다. 이후 r003 및 원 b077~100의24배치는 시작하지 않았다. 추가 수정·재시험·review는 하지 않았다.
+
+stdout.log와 executed.jsonl에는 C2-0001~0039의39개 PASS가 있고, C2-0040의 START까지만 있다. 선택45개를 기준으로 로그에서 도출한 상태는39개 완료 PASS·1개 중단·5개 미시작이다. 이는 runner 최종 counts가 아니며, result.json/counts.json이 없어 배치 전체 PASS·정상 종료·controller에 의한 group 부재를 주장하지 않는다. 기록된39개에서 assertion 실패는 관측되지 않았지만 제품 전체 무결함 증거가 아니다. 가장 오래 걸린 완료 사례는66.365초였다. 관련8개 회복 PASS와 원 b075까지 완결한4,897/5,782 occurrence의 이전 근거를 유지하되 부분39개나 focused8개를 완결 원 배치량에 더하지 않는다. 잔여 원 선택은885 occurrence다.
+
+Essential controller output:
+
+```text
+File "controller.py", line 199, in run
+  while group_exists() and time.monotonic() < deadline:
+File "controller.py", line 187, in group_exists
+  os.killpg(child.pid, 0)
+PermissionError: [Errno 1] Operation not permitted
+```
+
+읽기 전용 코드 대조에서 최초 group probe와 SIGTERM 호출은 예외 없이 지나갔고, 후속 probe가 실패했다. 정확한 OS/sandbox 원인은 확정하지 않았다. PermissionError를 group 소멸로 해석하면 안 된다. 종료 관측 오류에도 비통과 결과를 남기고, group 부재를 확인하지 못하면 unknown으로 보존하는 처리가 필요하다. 예외 뒤 child.wait·최종 입력 대조·결과 기록이 실행되지 않은 것이 현재 control 결함이다.
+
+이번12개 step 중 앞선11개는 result에 execution PASS·정상 종료·group 부재·입력 보존이 기록되어 있다. 마지막 step의 Driver after input check는 PASS이며, 중단 뒤 별도 읽기 검증으로 config 및 verify_old를 수행해 source/runtime/controls/OLD 보존을 확인했다. 이 별도 검증으로 누락된 controller result를 재작성하지 않는다. 고정 Driver verify도 PASS다.
+
+2026-10-12T04:50:47.594268 UTC에 `/bin/ps -axo pid=,ppid=,pgid=,state=,command=`를 정확한91개 task root, 해당 Driver, 실패 PGID10111에 한정하여 조회했다. 조회 자신/부모를 제외한 잔여 프로세스는0개였다. 추가 signal은 보내지 않았다. r003 root도 없다. 실행 root91개의 실할당은53,640,089,600 bytes(약49.96GiB)로64GiB 이내다. 향후 용량을 보장하는 수치는 아니며 새 배치마다 기존2GiB headroom/4GiB free guard를 유지한다.
+
+원본 소스와 current patch, 아홉 세대 고정 입력/과거 STOP/결과, 이번 stdout·executed trace·parent inputs·outer log 및 중단된 C2-0040 fixture를 durable 경로에 보존한다. 중단 fixture는 r002의 exec/runs/focused-p2/work/EntryProductTests/test_p2_c2_0040에 있으며 별도 failures 디렉터리가 아니다. 소비자는 미해결 실패 처분과 잔여P2/R1이다. 해당 의존성이 끝날 때 보존을 재평가한다. 따라서 관련 source/worktree/실행 root는 아직 사용 중으로 유지한다.
+
+현재 controller626/1,000회, root91/160개, authoring372분 사용/25시간48분 잔여, reviews5/8회·2,434.902초와 R1세회 예약이다. 기존 고정 종료2026-10-13 04:54:33.655857 KST는 유지하며 중지 시간도 경과한다. P2 종료 수락과 Git/STATUS/Done은 수행하지 않았다.
+
+### Proposed Cleanup Control And C2 Partition Recovery — Unapproved
+
+Owner가 명시한 첫 실패 중단과 추가 수정·자동 재시도 금지에 따라 새 승인 전에는 아래 코드를 작성하거나 실행하지 않는다. 이미 승인된 제품·staging·OLD 기준본·P2 fixture/선택 ID·개별 hard cap은 유지한다.
+
+변경 범위는 검증용 controller.py의 종료/관측/결과 기록 부분, 동일 controls 폴더의 고정 qualification runner 한 파일, 새 recovery 입력/Driver와 이 Work 기록이다. group 관측은 present/absent/unknown을 구분하고, PermissionError 등 관측·signal 오류를 결과에 남긴다. unknown은 group_absent=true나 execution_pass=true가 될 수 없다. 최초 budget-exhausted 이유와 후속 cleanup 오류를 함께 보존하며 cleanup/wait는 기존 전체 hard cap 안에서 수행한다. 가능한 입력 재검증 뒤 비통과 result를 기록한다. 실제 group 부재가 확인되지 않으면 잔여 실행은 계속하지 않는다. 역사적 frozen base controls는 수정하지 않고, 변경 controls를 새 별도 고정 경로로 공급한다. 기존 실행 근거는 원 입력 신원을 유지한다.
+
+완료 기준과 순서는 controls 작성 → fresh R0 검토1회 → qualification14개 → C2 원45개를12/12/12/9로 검증 → 잔여 원 선택을 순차 검증 → 기존 필수 R1세회다. R0는 변경 controls·고정 runner·새 실행 계획·재사용 영향만 검토하며 no-tools,900초 상한이다. 사전 인증 경로는 기존 기대값 claude.ai/firstParty/pro를 확인하고 실제 모델/세션과 입력 revision/digest, 원문 응답, Driver 처분을 기록한다. 예상 밖 finding이나 검증 실패는 자동 수정하지 않고 STOP한다. R1을 추가 R0로 대체하지 않는다.
+
+Qualification은 새 approved-root 실행 경계에서 고정 CPython3.14.7·network off·최소 환경·기존 sandbox 정책을 사용하는 단일 고정 runner,300초 상한/outer330초다. 결과/fixture는 그 root 안에만 쓴다. 모의 clock/process로 정상·nonzero·timeout TERM·timeout KILL·output limit·surviving group·최초 probe EPERM·TERM 뒤 probe EPERM·TERM EPERM·KILL EPERM·wait timeout·입력 재검증 오류의12개를 확인한다. 별도 synthetic child의 실제 정상 종료와 짧은 timeout 종료2개도 확인한다. 이 runner의 짧은 모의/합성 budget은 qualification만 위한 입력이며 실제 mode LIMITS는 바꾸지 않는다. 총14개 모두 기대 결과와 artifact 기록, 정상 사례 PASS/비정상 사례 fail-closed, 시간 및 process 종료 경계를 확인해야 통과다. EPERM의 실제 OS 원인 재현을 주장하지 않는다. 정확한 runner·명령·권한·입력 digest는 실행 전에 고정하고 R0에 포함한다.
+
+C2 원 b076~079의45개씩은 각12/12/12/9로 분할하고 b080의12개는 그대로 두어192개를17배치로 검증한다. 원 b081~100의20배치는 기존 선택/순서 그대로 유지한다. 원45개 회복 완료 기준은 네 분할 합집합이 동일45개이며 누락·중복0, 모두 정상 종료·group 부재·입력 보존·PASS인 것이다. 전체 새 실행은37배치/222 controller 호출이며 qualification1회를 보수적으로 동일 호출 예산에 합쳐626+222+1=849/1,000회, root91+37+1=129/160개다. 과거 부분39개를 이유로 선택을 생략하지 않는다. 최대 완료 사례66.365초×12=796.38초는 분할 근거일 뿐 향후 상한 보장이 아니다.
+
+새 controls의 qualification과 각 배치의 기존6단계(actual collect/canary/smoke 포함)를 모두 요구한다. 기존8개 focused 결과는 기존 controls/input의 근거로만 유지하며 새 controls의 qualification으로 전용하지 않는다. 이전 A/B/C1 근거를 현 입력의 전체 PASS로 승격하지 않는다. 재사용 영향은 R0에서 계획을 확인하고 R1에서 누적 판정한다.
+
+필요한 유일한 예산 증액 후보는 reviewer 횟수8→9회다. 추가 R0 최대900초 + 기존 사용2,434.902초 + R1세회 각1,200초 = 최대6,934.902초로 기존 reviewer 총2시간 안이다. Authoring은 기존 잔여 예산에서 차감한다. 고정 종료·개별cap·storage64GiB·첫 예상 밖 실패STOP/retry0을 유지하며 실행 전 전체 시간/용량 여유를 다시 확인한다. 실패나 guard 중단 뒤 예산 여유를 추가 수정·재시도 권한으로 사용하지 않는다. Reversal은 새 controls/입력을 비활성 상태로 보존하고 기존 근거를 유지하는 단위이며 제품 및 역사적 controls를 되돌릴 필요가 없도록 분리한다. P2 종료 수락·Git 작업은 계속 별도다.
+
+
+### Cleanup Recovery 09 Authorized — 2026-10-12 13:56:21 KST
+
+Owner는 승인된 controller 보완·사전 리뷰1회·종료 처리14개·C2최대12개 분할·잔여 배치와R1 순서를 재개한다는 것이다. 이미 완료·검증한 단계는 반복하지 않는다. 승인된 controller 외 추가 수정·자동 재시도는 없으며 첫 실패 STOP을 유지한다.
+
+새 작업 창은2026-10-12 13:56:21~17:56:21 KST(UTC04:56:21~08:56:21),최대4시간이다. 기존 총2시간 제한과 종료 시각을 이 기준으로 대체한다. 리뷰는 기존5회를 포함한 총9회까지이며 추가R0는900초,기존R1각1,200초와 모든 개별 실행 제한을 유지한다. 새 배치는 남은 창 안에 hard cap과 종료 처리를 수용할 수 있을 때만 시작한다. 한도 도달 시 새 batch를 시작하지 않고 진행·산출물·미완료·재개 지점을 보존한다. P2 종료 수락과Git/STATUS/Done은 별도다.
+
+새 controls는 source와base 각각의 docs/development/verification/colvia-entry-cleanup-09에 둔다. 기존 controls 디렉터리와 과거 고정 입력을 유지하고 제품·fixture bytes는 변경하지 않는다. 새 controls 복사본의 소비자는 승인된 잔여P2 및R0/R1이며 새 실행 근거 의존성이 끝날 때 보존을 재평가한다. Controller 종료 처리와 qualification runner만 새 코드를 가지며 다른 controls는 exact copy다. 코드 작성 뒤 사전 리뷰와14개 실행 검증 전에는 구현의 성공을 주장하지 않는다.
+
+
+### Cleanup Recovery 09 Prepared; External Review Approval Review Block — 2026-10-12T05:06:01.638538+00:00
+
+승인된 controller 종료 처리와14개 qualification runner,37배치885 occurrence의 입력·Driver·qualification 고정 명령을 작성했다. Controller SHA `d5031b720155e788307e87de8a4579565dbd072bbb7cbd13dc63c711461e9fab`,qualification SHA `9a63eaca7acecb0c26c8ec1bad7367b9a7c8bb274549711267d98022849eb4ad`,Driver SHA `db6809d712d0720352bccdd18bea90e2c65936ad9a94fb42c5d62d48c0ee35c0`다. Compile·입력/과거 manifest 확인은 통과했으나 새controller/14개/runtime의 실행 결과는 아직 없다. 제품·test source digest는 이전과 같고 test SHA `9772b6c4f255d820eb310025b25b8cbbe2df8059c7b23f2ed45d19e4c53eba71`를 유지한다.
+
+사전R0 실행 요청은 automatic approval review에서 프로세스 생성 전에 거부됐다. 첫 사유는 비공개 packet의 구체적 payload 및 Anthropic Claude destination에 대한 사용자 승인 확인 불가였다. 같은P2의 이전 전송 승인과 이번 승인 범위를 확인해 정규 승인 심사에 다시 제출했으나, 해당 근거가 직접 trusted user content로 확인되지 않는다는 이유로 재차 거부됐다. 우회하지 않았고 reviewer 실행·인증 조회·외부 전송은0회다. 재시도한 것은 승인 심사 요청이며 reviewer call이 아니다. 실제 reviewer는 여전히5/9회,controller626/1,000회,실행root91/160개다.
+
+외부 전달 후보는 R0-F packet으로 old/newcontroller,qualification runner,변경 없는 common helpers/sandbox정책,고정 qualification·Driver·C2분할 및 입력신원(로컬경로·revision·digests)을 포함한다. 제품 원문·실제 adopter data·credentials 추가 수집은 없다. 표준 credential 표식 scan0은 비밀 부재의 완전한 증명으로 해석하지 않는다. 기존 구독 경로 claude.ai/firstParty/pro,도구0,900초,누적6번째review를 예정하며 실제 경로는 실행 직전에 확인한다.
+
+사전R0가 선행 조건이므로 qualification14와 잔여P2는 시작하지 않았다. `r0-review/started.json`,qualification-start 및 새 step-start가 없고 새qualification/runtime root도 없다. 이미 완료된 검증을 반복하지 않았다. 새controller/runner의 정확한 두 파일은 source/base controls 외에도 private bundle pending-controls에 보존했으며 frozen 입력·Driver·packet과 현재patch가 durable 경로에 남는다. 소비자는 이번 승인 대기R0와 잔여P2/R1이고 해당 의존성이 끝날 때 보존을 재평가한다. 기존 실행 및실패artifact도 유지한다. 관련checkout/실행root는 아직 사용 중이므로 정리하지 않는다.
+
+재개 지점은 새코드 작성이 아닌 고정R0-F의 최초 실행이다. 구체적 전송 승인이 확인되면 같은packet·launcher로 R0한회 → 결과처분 →14개 →37배치 →필수R1세회 순서에서 남은 단계만 진행한다. 새로운 finding·첫 실행 실패는STOP이며 자동수정/자동재시도는 없다. 현재 작업창 종료17:56:21 KST는 그대로이며 승인대기시간도 포함한다. 시간 부족이면 새배치를 시작하지 않고 정확한 다음step을 보존한다. P2수락과Git작업은 별도다.
+
+
+### R0-F Review Completed; Blocking B1 STOP — 2026-10-12T05:18:34.152839+00:00
+
+Owner actual decision after external-approval block: “해당 packet의 Anthropic Claude 전송 1회 승인”. 승인된 정확한packet202,776bytes/SHA `26e6422ba01a428ce10c88bfa8de851e2e443332938aa37c74d72b56f568f3e5`를 기존 Claude 구독 경로로1회 전달했다. 앞선 자동 승인 심사 거부는 해소됐고 reviewer 호출 자체의 재시도는 없었다. R0-F는 누적6/9회다. 시작2026-10-12T05:07:05.292264+00:00,종료2026-10-12T05:13:40.922374+00:00,실측395.629초,CLI exit0,authMethod=claude.ai/apiProvider=firstParty/subscriptionType=pro,실제모델claude-opus-5-5,session `557a4f17-3592-4a0e-90f3-5265c6f1f00c`다. Fresh no-tools static review이며tools/MCP/tool-use0,permission denial0,정상 종료·group 부재·입력 전후drift PASS다. 독립 vendor/session이지만 Driver가 구성한 고정packet의 문맥 한계가 있다. 실행시험이나 제품수락이 아니다.
+
+검토 입력은 base `a17f35cf323ffde7a8642a85501fddbec858b6de`,tracked diff SHA `929d2766565a07e9154c8e4e6d82575259c84c0fdb0612db678cbdbba6c573f3`,Work SHA `58cfd05dc21547c76071dc9479cd4dd588626100a3a49da5faa3afcafc99e2d4`(당시prefix 1575334bytes),새untrackedcontrols와private고정입력의185개 exact file identities다. Diff에 없는 실제 입력은packet의 identity 및전용controls/runner/Driver/qualification명령으로 따로 식별했다. 응답SHA `302a00c5bad97d2523cb79ef666046945a3383bd9fc98cf1d83e85d42873611f`. 종료시점원문과메타데이터를보존하며원문은아래그대로기록한다. Reviewer는blocking B1 때문에continue_allowed=true의근거가아님을명시했다. 따라서gate=false와STOP을기록하고14개qualification·C2·잔여batch·R1은시작하지않았다.
+
+#### Reviewer Response — Verbatim
+
+# R0-F 정적 리뷰 결과 (review 6/9)
+
+**판정: 차단 발견 1건(B1).** 정적 추론상 qualification 14번째 케이스 `native-timeout`이 실패할 가능성이 높아, 이 리뷰는 `r0-review-gate.json`의 `continue_allowed=true` 근거가 될 수 없습니다. Owner 규칙상 여기서 중단하고 Owner 결정이 필요합니다.
+
+패킷에 줄 번호가 없어 파일·함수·구문으로 인용합니다. 아래는 모두 읽기만으로 얻은 결론이며 실행 결과가 아닙니다.
+
+## 차단 B1 — `settle_child`가 회수(reap) 전에 그룹을 probe함 (높음, 고확률·미실행)
+
+- **위치**: 새 `controller.py`의 `settle_child` — `send(signal.SIGTERM)` 뒤 `group_state()` 대기 루프. `qualify-cleanup.py`의 `native()` — `require(result['group_absent'] is True ...)`와 `require(not result['cleanup_errors'], ...)`.
+- **근거**:
+  1. Darwin(XNU `killpg1`)은 그룹에 좀비만 남으면 `ESRCH`가 아니라 `EPERM`을 반환합니다. 이는 제 기억에 의한 것이며 이 패킷으로 확인할 수 없습니다.
+  2. 관찰된 원 장애("SIGTERM 전송 후 `os.killpg(group,0)`이 EPERM")와 정확히 일치합니다. 원 controller도 TERM과 probe 사이에 `poll`/`wait`가 없었습니다.
+  3. 새 `settle_child`도 `child.wait`를 TERM 대기 루프와 KILL 이후에만 호출합니다. 그룹 리더가 TERM으로 죽으면 회수 전까지 좀비로 남습니다.
+- **`native-timeout` 예상 경로**:
+  1. TERM 이후 0.1초 내에 자식이 좀비가 되고, probe마다 EPERM이 `group-probe` 오류로 쌓입니다.
+  2. deadline(`start+3`)까지 약 30건이 누적된 뒤 `SIGKILL`도 EPERM(`signal-9`)이 됩니다.
+  3. `child.wait`가 회수한 뒤 최종 probe는 ESRCH이지만, `absent`는 과거 probe 오류 때문에 False입니다.
+  4. `native group unresolved`로 qualification이 실패하고 launcher가 STOP을 씁니다. 재시도는 없습니다.
+- **실운영 영향**: fail-closed 자체는 유지됩니다. 원인(`budget-exhausted`)이 보존되고 `result.json`도 기록됩니다. 다만 모든 timeout이 실제로 그룹이 사라져도 `group_absent=false`와 오류 약 100건으로 기록됩니다.
+- **최소 수정안 (택1, 둘 다 controls 해시 변경과 재동결 필요)**:
+  - **A (권장)**: `group_state()` 첫 줄에 `child.poll()`을 넣고, `FakeChild`에 `def poll(self): return self.returncode`를 추가합니다.
+  - **B**: controller는 그대로 두고 `native-timeout` 기대값을 "원인 보존 + 비통과"로 낮춥니다. 실제 부재 확인 능력은 생기지 않습니다.
+- **Owner가 정할 것**:
+  - 수정안이 "승인된 controller 보완" 범위에 드는지 여부.
+  - 재리뷰를 하면 7/9가 되어 R1 필수 3회와 합쳐 10회로 상한을 넘는다는 점.
+  - 그대로 실행하면 단발 qualification 슬롯을 소모하고 STOP될 공산이 크다는 점.
+
+## 비차단 발견
+
+- **N1 (중간, Q2) — 일부 시나리오 단언이 약함.**
+  - `surviving-group`은 `returncode=None`, `natural=False`로 모델링되어 "정상 종료 0 + 그룹 잔존"을 검증하지 않습니다. `reason == 'surviving-process-group'` 단언도 없습니다.
+  - `kill-eperm`에는 `group_absent is False` 단언이 없습니다.
+  - `run()`의 호출 결선은 qualification 대상이 아닙니다. 정독상 `settle_child`/`write_result` 인자 순서는 올바릅니다.
+- **N2 (중간, Q3) — Sequential Driver는 재진입할 수 없음.** 항상 (1,1)부터 시작합니다. 진행 후 다시 실행하면 step Driver의 `serial==1` 단언(`*-start.json` 없음)이 실패하고, `__main__` 핸들러가 `STOP.json`을 씁니다. 중단 후 재개는 step Driver를 정확한 (batch, step)으로 직접 호출해야 합니다.
+- **N3 (불확실, Q3) — 후속 배치의 예산 위험.** 계획 시간이 영역별 단가로 900초에 맞춰진 것으로 보입니다(c2 45×20, c3 30×30, c4 36×25, x1 45×20). C2 실측은 약 30초/건으로 계획의 약 1.5배였습니다. 같은 오차라면 b018 이후(30~63건/배치)가 1180초 컷에 다시 걸려 STOP될 수 있습니다. 분할은 현재 승인 범위 밖이므로 위험 고지만 합니다.
+- **N4 (낮음) — launcher 관련.**
+  - qualification이 외부에서 강제 종료되면 별도 세션의 `sleep(60)` 자식은 launcher의 `absent` 검사에 잡히지 않습니다. 60초 내 스스로 끝납니다.
+  - invocation의 `timeout_seconds`/`outer_timeout_seconds`(300/330)와 launcher 하드코딩(280/300)이 다릅니다.
+  - launcher는 자기 해시를 검증하지 않습니다.
+  - 루트 수는 qualification root를 포함하면 130입니다(≤160).
+- **N5 (낮음) — 기타.**
+  - `wait-timeout` 경로에서 `reason`이 `cleanup-observation-or-operation-unavailable`이 되어, 뒤의 `"cleanup-incomplete"` 대입은 실행되지 않습니다.
+  - `write_result`는 `KeyError`/`TypeError`를 잡지 않습니다. 원본과 같고, 결과 파일 없이 비정상 종료하므로 fail-closed입니다.
+
+## 질문별 답
+
+1. **Q1 (`settle_child` + `write_result`)**: B1을 빼면 요건을 충족합니다.
+   - 첫 원인은 `reason or …`로 보존됩니다.
+   - probe·signal·wait 실패는 모두 `cleanup_errors`에 남고 비통과가 됩니다. 알 수 없는 그룹은 부재로 처리되지 않습니다.
+   - 정리 시간은 TERM 대기 ≤10초, `wait` ≤ 잔여 예산으로 묶입니다.
+   - 입력 재검증 오류는 `input_verification_error`에 따로 남습니다.
+   - 한계: 다른 세션·그룹으로 빠져나간 후손은 탐지하지 못합니다(원본과 동일).
+2. **Q2 (qualification)**: 구성은 정확히 12 + 2 = 14입니다.
+   - 모델 12건은 수동 추적상 모두 통과합니다. 가짜 시계는 정확히 11.0에서 멈추고 `wait` timeout은 39/29로 ≤40입니다.
+   - 쓰기는 WORK와 미리 열린 로그뿐이고, 네트워크·자격증명 접근은 없습니다.
+   - `test.sb`의 파라미터는 모두 공급되며 fork/exec와 same-sandbox signal이 허용됩니다.
+   - 확정적 사전 결함은 B1입니다.
+3. **Q3 (Driver)**: 산술과 게이트는 맞습니다.
+   - C2 192건은 17배치(12/12/12/9 ×4 + 12)로 ID가 0001–0192 연속이고 중복·누락이 없습니다.
+   - 후속 20배치를 합쳐 885건, 단계는 37×6 = 222, 호출 수는 627+222 = 849 ≤ 1000입니다.
+   - R0 게이트, qualification 게이트, STOP/PAUSE, 배타 슬롯, 사전·사후 `verify()`가 있고 자동 재시도는 없습니다.
+   - 시간 게이트는 단계 단위라 배치 중간에 PAUSE될 수 있습니다. 재개 지점은 `PAUSE.json`에 남습니다.
+4. **Q4 (R1 재사용)**:
+   - 기존 4897건은 구 controls 세대의 증거이고, 신규 885건과 세대 태그를 분리해 집계해야 합니다.
+   - b076의 39건 통과 trace는 `result.json`이 없으므로 증거로 세면 안 됩니다. 45건 전부를 재실행으로 대체합니다.
+   - ≤12 분할로 프로세스·픽스처 구성이 바뀌므로, R1에서 obligation-rows와 1:1로 대응하는지 확인해야 합니다.
+   - 전체 P2 통과는 주장하지 않습니다.
+
+## 한계
+
+- 확인하지 못한 파일: `execution-plan.json`의 steps·argv·`outer_wait_seconds`, `frozen-manifest.json`, `window.json`, `runner.py`, 과거 Driver, 구 controls 해시. "unchanged" 표기와 해시 일치는 검증하지 못했습니다.
+- stderr로 상속된 fd 쓰기와 `fsync`가 샌드박스에서 허용되는지는 통상 동작에 근거한 추정입니다.
+- Owner 수락과 Git 작업은 이 리뷰 범위 밖입니다.
+
+#### Driver Disposition — Separate From Reviewer And Owner
+
+| Finding | Disposition | 근거와 조치 경계 |
+| --- | --- | --- |
+| B1 | accept; needs-user for correction | 새helper가TERM 이후child.wait 전에probe하는순서를확인했다. 잠재zombie관측오류를자동수정하지않고STOP한다. 아래미적용poll/회수보정과14개검증후보를Owner에제시한다. |
+| N1 | revise proposal; unapplied | 정상exit0 뒤group잔존의natural=true조건과surviving-process-group이유,kill EPERM의group_absent=false단언을동일14개안에서보강하는후보를준비했다. 아직적용/실행하지않았다. run호출결선의직접실행범위는14개에포함되지않음을유지한다. |
+| N2 | accept limitation; defend one-shot design | 순차Driver는한번만호출하도록고정되어있다. 자동재진입하지않는다. PAUSE에정확한다음step을남기고,새승인창/입력으로재개해야한다. 현재PAUSE guard가있으므로같은Driver를그냥재호출하는방식은사용하지않는다. |
+| N3 | accept risk | C2의관측시간을다른영역의보장으로사용하지않는다. 잔여20배치의선택/분할은현재승인그대로이며timeout/첫실패STOP을유지한다. 추가분할을자동적용하지않는다. |
+| N4 | accept limits; defend root arithmetic | synthetic native child의별도session은qualification이비정상종료될때추가process확인이필요하다. 최종정상qualification은두native child회수와group부재를요구한다. 이상종료는PASS가아니며60초self-exit만으로부재를즉시주장하지않는다. 280초는300초중cleanup20초예약이며330초는outer계획한도다. launcher자체hash검증은없고review identity/Driver검증범위를초과해주장하지않는다. root는읽기전용집합대조결과기존91+새37+qualification1=129이며130주장은채택하지않는다. |
+| N5 | defend limited guarantee | wait오류는cleanup_errors의child-wait/예외type으로남고원인은보존된다. 모든예외가result를남긴다고주장하지않는다. KeyError/TypeError등범위밖예외는기존처럼부재result로STOP한다. 추가일반화수정은하지않는다. |
+
+B1의OS설명은Reviewer기억을그대로확정사실로승격하지않았다. 읽기전용으로확인한 [Apple 공개XNU kern_sig.c](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/kern_sig.c)의killpg1은group조회에서SZOMB를제외하고찾은대상이없으면POSIX경로에서EPERM을반환하는구조다. 로컬Darwin27.0.0의정확한kernelbuild와공개main을동일시하지않으며,이번실제EPERM원인의재현은아니다. 로컬CPython3.14.7 subprocess.py의_internal_poll은waitpid(WNOHANG)으로종료된직접자식을회수한다. 따라서probe전에poll하는방향은정적근거가있지만poll과probe는원자적이지않아경합/실제권한오류가능성은남는다. 그런경우unknown/비통과를유지한다. 새재현실행은하지않았다.
+
+Reviewer가확인하지못한37배치steps/argv/cap은Driver가읽기전용으로222개전부원배치와대조했다. Mode/slot/cwd/runtime/bootstrap/개별cap/outercap은같고변경은승인된controls경로와고정input/hash/output이다. 이는정적일치확인이며런타임PASS가아니다. 새controls와제품·fixture입력은review전후그대로다.
+
+#### Proposed B1 Reap And N1 Assertions Recovery — Unapproved
+
+미적용diff두개를private `reap-fix-proposal`에준비했다. Controller group_state의try안에서killpg0보다먼저child.poll()을호출한다. Qualification FakeChild에는poll대응을추가하고,N1의정상exit0/natural=true+group잔존및거부된KILL의부재false단언을보강한다. 총14개사례,실제native검증2개,unknown/EPERM비통과,원인이력·입력보존·개별cap·격리정책은유지한다. 기대값을낮춰EPERM이나관측불가를PASS로만드는Reviewer대안B는제안하지않는다.
+
+후보controller SHA `d00074844bdb1f11674808dd251a48a3eb4de64b912c048d856ab2d96deff1b7`,후보qualification SHA `6babe49238ea9472c5e5b7f4b618a0771ac13531210b85b6903cc2fa4c423916`이며syntax compile만확인했다. 실제controls는아직review된원본이다. 제품·staging·P2fixture/선택ID·다른controls수정은없다. Diff의소비자는이번Owner처분및재개이며의존성이끝나면보존을재평가한다.
+
+승인시새고정controls/입력/실행상태에서해당보정만적용하고,완료한R0-F는반복하지않는안을제안한다. R0-F의최소보정제안과Driver의정적대조를처분근거로남기되새외부reviewPASS로표현하지않는다. 이후아직미실행인14개→C2최대12개씩→잔여배치→필수R1세회를진행한다. 회복완료기준은14개모두각기대결과/정상vs비정상분류/종료및보존확인PASS이고,native-timeout은budget원인을남긴비통과controller결과와실제group부재를확인하는것이다. 첫예상밖실패STOP,추가수정/자동재시도금지를유지한다. 원45개회복과P2전체완료는그뒤단계다.
+
+현재review6/9회,실측누적2,830.531초(이는기록용누적이며이전2시간상한은대체됨)다. 남은3회는R1두영역+누적한회에유지한다. 새R0재검토를선택한다면총9회를초과하므로별도결정이필요하며자동으로늘리거나R1을생략하지않는다. 기존작업창13:56:21~17:56:21 KST와개별한도는그대로다. Controller626/1,000회와실행root91/160개이며새qualification/runtime0회다. 승인후계획완료시849/1,000회,129/160개산식도같다. 중복제외완결원배치4,897/5,782의기존근거를유지하고885 occurrence및14개/R1이미완료다.
+
+리뷰processgroup부재를실제종료metadata로확인했다. 새실행root는없다. 기존controls·고정입력·실패근거,이번원문/신원/처분·새controls두파일의checkout밖exact backup·미적용diff·현재patch를durable경로에보존한다. 소비자는미해결B1및잔여P2/R1이다. 관련checkout과기존실행root는아직사용중이므로유지한다. 재개지점은B1/N1최소보정Owner판정이며P2종료수락과Git/STATUS/Done은수행하지않았다.
+
+
+### B1 Reap And Matching Qualification Recovery 10 Authorized And Applied — 2026-10-12T05:22:38.944852+00:00
+
+Owner actual decision: “승인. child.poll()과 해당 mock·단언만 최소 보정하고, 완료한 R0는 반복하지 말고 14개 검증 → C2 최대 12개씩 → 잔여 배치와 R1 순서로 계속해. 리뷰 총 9회·오늘 17:56:21 KST 종료·개별 제한·첫 실패 중단은 유지하고, 추가 수정·자동 재시도는 하지 마. P2 종료 수락과 Git 작업은 별도로 남겨둬.”
+
+승인된두diff만새controls에적용했다. Controller는group_state의try안에서killpg0전에child.poll()을호출한다. Qualification은matching poll mock,정상exit0/natural=true+group잔존조건과원인이유,kill EPERM의group부재false단언만보강했다. Controller SHA `d00074844bdb1f11674808dd251a48a3eb4de64b912c048d856ab2d96deff1b7`,qualification SHA `6babe49238ea9472c5e5b7f4b618a0771ac13531210b85b6903cc2fa4c423916`이며제안hash와정확히같다. 구controls09와R0-F원문/입력은그대로보존한다. 제품·staging·P2fixture·다른controls·14개사례·원선택885개·개별caps·sandbox정책은변경하지않았다. Syntax compile과diff/해시일치는실행PASS가아니다.
+
+새controls는source/base각각colvia-entry-cleanup-10이며새입력은privatecleanup-reap-recovery-10이다. 새37개runtime root는approved root아래hv2-reference-private-colvia-p2-reap-20261012-r001~037이다. Qualification root는이전계획과같지만아직생성/실행된적없는위치다. 모든목적지의부재와등록worktree불포함을확인했다. 새선택은C2192개17분할+나머지20배치로885 occurrence이며완료검증단계는반복하지않는다. 각새배치의격리전제인기존6단계는수행한다.
+
+R0 gate는Owner의B1/N1최소보정수락및R0비반복승인에근거한다. 기존R0-F의차단판정을새reviewPASS로바꾸지않았다. Review6/9회와필수R1세회예약,controller626/1,000회(root91/160개),qualification포함계획849회/129개,작업종료2026-10-12 17:56:21 KST를유지한다. NewDriver SHA `63376eb0e74faae626601d67dc5b5c946172735d81ce09033b9fd7004a045eb4`,frozen manifest SHA `5e8053cc4651bc3c494ecab7165d0208cfcacd3159c5f02d9f9eb104f59d041e`다. 먼저아직미실행인qualification14개를수행하고모두통과해야C2를시작한다. 첫실패/관측불가/drift/예산위험STOP이며추가수정·자동재시도는없다.
+
+현재source/currentpatch·새두controls의checkout밖exact copy·새고정입력/Driver와과거실패/리뷰원문을durable경로에보존한다. 소비자는승인된14개및잔여P2/R1이고의존성이끝나면보존을재평가한다. P2수락과Git/STATUS/Done은별도다.
+
+
+### Cleanup Qualification 14 PASS — 2026-10-12 14:23:06 KST
+
+고정qualification14개가전부기대결과를통과했다. 모의상태12개와실제합성child2개이며,정상사례2개는controller PASS,나머지비정상12개는controller 비통과로기록되어야qualification PASS다. Native-timeout은budget-exhausted원인을보존하고child exit `-15`·실제group부재·cleanup error0·비통과result를확인했다. 실제EPERM의OS원인을재현했다는뜻은아니다. 기존09후보의B1은정적지적이며새후보의실행통과와구분한다.
+
+실행명령은cleanup-reap-recovery-10/qualification-launcher.py와frozen-inputs/qualification-invocation.json의exact argv다. 고정CPython3.14.7/-I/-S/-B,기존test.sb,합성데이터·network off·designatedWORK경계로실행했다. 시작2026-10-12T05:23:05.655464 UTC,종료05:23:06.208232 UTC,launcher0.553초/runner0.248139458초,exit0이다. 정상종료·group부재·고정입력전후보존PASS이며각14개result digest와실제native-timeout결과를별도로대조했다. 미시작0,미완료0,예상밖실패0이다. 제품matrix검증이나P2수락은아니다.
+
+현재qualification1회를보수적으로호출예산에포함해627/1,000회,실행root92/160개다. Review6/9회와R1세회는그대로이며R0를반복하지않았다. 다음은고정37배치의최초실행으로C2첫45개를12/12/12/9순으로진행한다. 동일45개의완료판정은네분할모두정상PASS·선택합집합일치후에한다. 기존개별cap·17:56:21 KST종료·첫실패STOP/retry0과P2수락/Git별도조건을유지한다.
+
+
+### Owner Time Correction And B1 Hold — 2026-10-12 KST
+
+Owner는이번재개4시간/오늘17:56:21종료조건을철회했다. 전체검증창은원래시작2026-10-11T09:54:33.655857 UTC와종료2026-10-12T19:54:33.655857 UTC(2026-10-13 04:54:33.655857 KST)로복원한다. 리뷰누적시간한도만7,200→14,400초(4시간)로늘리며실사용2,830.531초와6/9회를유지한다. 남은리뷰시간은11,569.469초다. 기존실행시간과대기시간을초기화하지않으며authoring이전누적기록도지우지않는다. 개별caps·첫실패STOP·추가수정/자동재시도금지와P2수락/Git별도조건은같다.
+
+이번지시는시간설정·기록정정과B1 STOP유지만승인한다. 현재window/E window를정정했고,이전window와gate를time-condition-correction에보존했다. 과거고정입력과시작영수증의옛시간은당시실행의역사로유지한다. 현재review gate는false이며기존STOP도남아있다. 이번정정을실행재개권한으로사용하지않는다.
+
+Owner의최신지시도착전,직전명시승인에따라B1의child.poll/mock/단언보정과14개qualification은이미완료됐다. 이사실을미실행상태로되돌려기록하지않는다. 이후첫새배치의acquire/canary/collect가정상PASS했고smoke가시작되어있었다. 최신중단지시에따라05:25:28.949076 UTC에추가dispatch를막고sequential PID34963과활성runner PGID35529에만TERM을보냈다. Controller는05:25:29.093194 UTC에정상적으로비통과result를기록했다:child exit-15,controller exit2,40.731초,group부재true,cleanup errors0,입력보존및after input check PASS다. Sequential은143으로종료했다. Controller reason null과강제중단의실제원인을구분하며Owner-stop receipt로연결했다.
+
+Smoke는로그상18개PASS·19번째시작까지이며최종counts가없다. 20개전체PASS로표시하지않는다. Entry collect/focused C2및나머지배치는미시작이다. 이번중단은Owner요청에따른실행중단이며B1재현실패로분류하지않는다. 05:27:30.917695 UTC의정확한Driver/실행경로/PGID조회에서잔여process0개였다. 현재호출은qualification포함631/1,000회,실행root93/160개다. 기존완결원배치4,897/5,782와잔여885는변하지않는다.
+
+B1근거·최소보완안은앞선R0-F원문및Driver처분에있다. 공개XNU의좀비제외/EPERM경로와로컬CPython poll의waitpid(WNOHANG)는정적근거이며,실제이전EPERM의정확한원인재현은아니다. 승인후최소보정은적용됐고14개가통과했지만새외부Reviewer확인은아직없다. 추가코드수정은이번지시후0건이다.
+
+재리뷰/횟수선택: 현재6회사용+필수영역R1두회+누적R1한회=총9회다. B1보완diff와14개실제근거를기존영역R1의원래범위를유지한채포함하면추가호출없이총9회가가능하다. 해당R1의전체필수범위가아직충족되지않았다면B1검토만하고영역R1완료로대체해서는안된다. 실행재개전별도B1후속review1회를추가하면총10회가필요하므로현재9회상한으로는실행하지않는다. 새리뷰의필요범위·시점/횟수조정은Owner판정전까지보고만하며,기존R0를자동반복하거나R1을생략하지않는다. 현재B1 hold/STOP을유지한다.
+
+Source·현재patch·과거및새고정입력·controls exact backup·R0원문·14개결과·이번부분smoke/종료result/Owner-stop기록을durable경로에보존했다. 소비자는B1처분및잔여P2/R1이고의존성이끝날때보존을재평가한다. 관련checkout/실행root는사용중으로유지한다. 재개지점은Owner의B1 hold처분이며동일smoke나순차Driver를자동재시작하지않는다.
+
+
+### Owner-Authorized Smoke Resumption — 2026-10-12T05:35:11.763696+00:00
+
+Owner가 B1 STOP을 해제하고 사용자 지시로 중단된 smoke부터 재개하도록 승인했다. 완료한 R0 및 종료 처리 14개 검증은 반복하지 않는다. B1 변경과 14개 실행 결과는 기존 영역별 R1 두 회와 누적 R1 한 회의 전체 범위에 포함하며, 총 9회를 유지한다. C2 최대 12개씩 → 잔여 배치 → R1 순서를 따른다. P2 종료 수락과 Git 작업은 별도다.
+
+전체 종료는 2026-10-13 04:54:33.655857 KST, 리뷰 누적 한도는 14,400초다. 사용한 리뷰 6회와 2,830.531초 및 기존 실행 사용량은 그대로 누적한다. 개별 한도·첫 실패 중단·추가 수정 및 자동 재시도 금지를 유지한다. 이번 smoke 재실행은 사용자 중단 지점에 대한 명시 승인이다.
+
+재개 전 고정 입력과 source/controls의 보존, qualification PASS, 선행 acquire/canary/collect PASS 및 잔여 process 0개를 확인했다. 중단 smoke는 exit -15, group 부재, 입력 보존, cleanup errors 0인 사용자 중단 기록으로 보존한다. 기존 smoke 출력과 시작/종료 영수증·STOP은 private owner-resume-11에 이동하고 파일별 내용·symlink·mode 일치를 확인했다. 과거 실패 기록을 성공으로 덮어쓰지 않는다.
+
+동일한 controls·입력·command·sandbox·개별 cap으로 b001 step4부터 실행한다. 재개용 Driver는 호출 누적값을 +1 보정하고 시작 하한을 step4로 고정했다. 제품/검증 controls나 frozen input은 변경하지 않았다. 현재 controller 631/1,000회와 root 93/160개이며 계획 완료 시 850회/129개다. Driver SHA `d715ced7071f0b83af978bb66479b4c41689e98a6607ad1f85a3f31b26cba805`. 다음 실패 시 추가 수정이나 재시도 없이 중단한다. 보존 자료의 소비자는 잔여 P2 및 전체 R1이며, 해당 검토가 끝날 때 보존 필요성을 재평가한다.
+
+
+### Resumed Smoke PASS And C2 Reference Diagnostic STOP — 2026-10-12T06:05:49.106619+00:00
+
+승인된 중단 지점에서 smoke를 재개했고 20/20 PASS, exit0, 정상 종료, group 부재, 입력 보존을 확인했다. 기존 R0와 종료 처리 14개 검증은 반복하지 않았다. 이후 C2 세 배치가 각각 12/12 PASS로 완료됐다. 네 번째 배치(9개)는 C2-0037~0041의 5개 PASS 뒤 C2-0042에서 FAIL하여 즉시 STOP했다. C2-0040은 72.567초에 통과했다. 직전 진행 메시지에서 C2-0040을 실패 위치로 말한 것은 최종 로그 확인 전의 잘못된 식별이며, 실제 실패는 C2-0042로 정정했다.
+
+실패 실행은 b004-focused-p2, controller 누적652회다. 종료2026-10-12T06:02:27.463503 UTC, controller239.694초/outer239.746247초, child exit1/controller exit2, natural completion=true다. Timeout이나 B1 종료 처리 실패가 아니다. group 부재=true, cleanup errors0, 입력 보존 및 after input check PASS다. Counts는 selected9/run6/failures1/unstarted3이며 errors/skip/expected failure/unexpected success/unfinished는0이다. 순차 Driver는 exit3으로 종료했고 이후 batch5 및 R1은 시작하지 않았다. 실제 process 조회에서도 관련 잔여 process0개를 확인했다.
+
+실제 failure는 다음과 같다.
+
+```text
+C2-0042: ordinary-work / document_refs / path=hv2 / required=true
+p2_local_graph -> OLD store.publish -> _live_external_refs -> _require
+Expected fixture child exit 0; actual exit 1
+HV2-WORK-RECORD: managed release cannot be required evidence
+```
+
+OLD의 work.py::_require는 _record_error를 통해 HV2-WORK-RECORD를 반환한다. Fixture의 checked()는 같은 메시지에 HV2-WORK-CONTENT만 허용하고, p2_c2_case의 old_refusal 단언도 같은 잘못된 코드를 기대한다. OLD intent.prepare도 동일한 _live_external_refs를 호출한다. 따라서 현재 근거는 제품 전환 전에 발생한 fixture 기대 diagnostic 불일치다. 실제 거부와 실패는 실행으로 관측했으며, 아래 보완 후 통과는 아직 검증하지 않았다.
+
+#### Minimal Unapplied Recovery Proposal
+
+수정 후보는 tests/test_entry_window_transition.py의 두 기대 코드만 HV2-WORK-CONTENT → HV2-WORK-RECORD로 바꾸는 것이다: P2_C2_FIXTURE_PROGRAM의 invalid-reference catch와 p2_c2_case의 boundary-code 단언. 정확한 메시지·거부 전후 보존·transition receipt 부재·optional positive counterpart 검사는 유지한다. 허용 코드 집합 확대나 제품/controls/timeout 변경은 제안하지 않는다. 현재 source SHA `9772b6c4f255d820eb310025b25b8cbbe2df8059c7b23f2ed45d19e4c53eba71`, 두 교체 후보 SHA `fa17e6e1bc2a663607aaf827681011459b2182405b886d7ebc1b8daab2bb9029`. 정확한 교체 문자열과 영향 row28개는 private owner-resume-11/c2-reference-diagnostic-proposal.json에 있다. 역치환 전체 원문 일치와 syntax compile만 확인했으며 source에 적용하지 않았다.
+
+승인 시 영향받는 기존28개 row를 최대12개씩(12/12/4) 실행한다. 각 row의 기존 optional positive counterpart도 함께 검사한다. 전부 PASS면 실패한 원9개를 새 고정 입력으로 완결하고, 다음33개 잔여 배치와 필수 R1세회를 진행하는 안이다. 앞선 완료36개와 과거4,897개는 의미/입력 영향 연결을 R1에 제공하며, 부분 결과를 전체 batch PASS로 바꾸지 않는다. 제안의 추가37배치/222controller를 합쳐874/1,000회, root133/160개이므로 기존 상한 증액은 필요하지 않다. 첫 실패 STOP·추가 수정/자동 재시도 금지는 그대로다. 이는 Owner 결정 전의 계획이며 실행 권한이 아니다.
+
+현재 새 C2는41 PASS/1 FAIL, 이후 전체843개 미시작이다. 이전 완결4,897개와 중복 없이 합친 진행량은4,938 PASS/1 FAIL/843 미시작(총5,782 occurrence)이다. 완결된 세 분할36개와 실패 배치의 부분5개를 구분한다. 입력 세대가 다른 결과의 진행 집계이며 최신 source 전체 PASS 또는 P2 수락이 아니다. 사용량은controller652/1,000회, root96/160개, review6/9회 및 누적2,830.531초다. Deadline2026-10-13 04:54:33.655857 KST, review상한14,400초와 모든 개별 제한은 유지한다.
+
+실행 root와 이전 사용자 중단 smoke를 포함한 실할당은55042048000 bytes로64GiB 이내다. 원본/고정 입력/과거 STOP·R0·14개 결과, 이번 실패 stdout·trace·counts·parent result·runner 보존 fixture와 현재 source/patch를 durable 경로에 보존한다. 소비자는 C2-0042 Owner 처분 및 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다. 관련 source 및 실행 checkout은 사용 중이므로 유지한다. 추가 source 수정·재실행·review·Git·STATUS·Done·P2 종료 수락은 수행하지 않았다.
+
+
+### C2 Diagnostic Fix Applied; Input Preparation STOP — 2026-10-12T06:11:06.636607+00:00
+
+Owner는 “기대 오류 코드 두 곳만 보완하고 기존28개를12/12/4로 검증한 뒤 실패 배치9개 → 잔여 배치 → R1” 진행을 승인했다. tests/test_entry_window_transition.py의 invalid-reference catch와 boundary-code 단언만 HV2-WORK-CONTENT → HV2-WORK-RECORD로 변경했다. 수정 전 SHA `9772b6c4f255d820eb310025b25b8cbbe2df8059c7b23f2ed45d19e4c53eba71`, 수정 후 `fa17e6e1bc2a663607aaf827681011459b2182405b886d7ebc1b8daab2bb9029`이며 승인된 제안과 정확히 같다. 다른 source/controls 및 역사적 입력은 보존했다. Source 전체와 내장 fixture program의 syntax compile 및 역치환 일치는 확인했으나 실행 검증은 아직 없다.
+
+새 입력 준비 중 b034에서 Driver 작성 스크립트의 `assert occ==len(selection)`이 실패했다. C5의 기존 collection은 b034의63개 ID를75 occurrence로, b035의33개 ID를34 occurrence로 발견한다. 이는 기존 고정 계획에도 각각75/34로 기록된 정상 중복 discovery다. 제가 준비 스크립트에서 unique ID 수와 occurrence 수를 같다고 가정한 것이 원인이다. 제품이나 검증 대상의 새 실패로 분류하지 않는다.
+
+첫 예상 밖 실패 중단 조건에 따라 준비를 STOP했다. b001~b033 입력 파일은 작성됐고 b034는 빈 디렉터리이며, execution-plan/manifest/Driver freeze는 완성되지 않았다. 새 runtime root 및 controller/reviewer/test 실행은0이다. 기존652/1,000회·root96/160개·review6/9회·2,830.531초 사용량을 유지한다. 완료한 R0와 종료 처리14개를 반복하지 않았다. 전체 종료2026-10-13 04:54:33.655857 KST와 review 누적14,400초 및 모든 개별 제한도 같다.
+
+최소 재개안은 준비 스크립트의 해당 단언 한 곳을 첫 세 focused group에는 선택 ID 수12/12/4, 그 뒤에는 기존 배치의 선언된 occurrence 수와 대조하도록 바로잡는 것이다. C5의 선택 ID·ordered collection·75/34 occurrence를 그대로 유지한다. 이미 적용한 두 source 보완은 재적용하지 않고, 부분 입력을 보존한 채 준비를 완성한다. 이후 승인받았던28개 → 실패9개 → 잔여33배치 → 전체 R1세회 순서를 따른다. 예상874/1,000회·root133/160개·리뷰9회는 변하지 않는다. 이 준비 보완과 재개는 새 Owner 판단 전까지 미실행이다.
+
+원래 source/patch·두 곳 diff·현재 보완 source의 checkout 밖 exact copy·부분 입력과 preparation STOP을 private c2-reference-diagnostic-recovery-12에 보존했다. 이번 원인과 현재 source/controls의 차이를 읽기 전용으로 대조해 승인된 test 두 문자열 외 변경이 없고 역사적 manifest/STOP이 보존됨을 확인했다. 해당 원인 처분 및 잔여 P2/R1이 구체적 소비자이므로 관련 checkout과 실행 root를 유지한다. P2 종료 수락·추가 source 수정·자동 재시도·Git/STATUS/Done은 수행하지 않았다.
+
+
+### C2 Reference Diagnostic Recovery Authorized And Applied — 2026-10-12T06:37:17.410883+00:00
+
+Owner가 기대 오류 코드 두 곳만 보완하고 기존28개를12/12/4로 검증한 뒤 실패 배치9개 → 잔여 배치 → R1 순서로 진행하도록 승인했다. P2_C2_FIXTURE_PROGRAM의 invalid-reference catch와 p2_c2_case의 boundary-code 단언만 HV2-WORK-CONTENT → HV2-WORK-RECORD로 바꿨다. 수정 전 SHA `9772b6c4f255d820eb310025b25b8cbbe2df8059c7b23f2ed45d19e4c53eba71`, 수정 후 SHA `fa17e6e1bc2a663607aaf827681011459b2182405b886d7ebc1b8daab2bb9029`이며 승인된 제안 hash와 일치한다. 역치환 전체 원문 일치, 전체 및 내장 program syntax compile을 확인했다. 실제 통과는 아직 아니다.
+
+정확한 메시지·거부 전후 보존·receipt 부재·optional positive counterpart 단언, 제품·controls·OLD 원본·sandbox·개별 cap을 유지했다. 수정 전 source/patch와 두 곳 diff는 private c2-reference-diagnostic-recovery-12에 보존한다. 소비자는 이번 before/after 및 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다.
+
+새37배치는 영향28개(12/12/4), 직전 실패 배치의 동일9개, 나머지33배치다. 합계877 occurrence에는 영향 검증28개가 중복 보완 근거로 포함되며 전체 진행량에 이중 합산하지 않는다. 새 root는 approved root 아래 hv2-reference-private-colvia-p2-c2-refs-20261012-r001~037이며 등록/목적지 부재를 확인했다. 계획 완료 시 controller652+222=874/1,000회, root96+37=133/160개다. 원래 C2의 최대12개 분할과 그 뒤 영역의 고정 배치를 유지한다.
+
+완료한 R0와 종료 처리14개는 반복하지 않는다. 기존14개 실제 결과와 B1 변경은 필수 전체 R1세회에 포함한다. 현재 review6/9회와 누적2,830.531초, 전체 종료2026-10-13 04:54:33.655857 KST, review상한14,400초를 유지하며 사용량을 초기화하지 않는다. 새 실패/입력 drift/관측 불가/한도 위험 시 STOP하고 추가 수정 및 자동 재시도는 하지 않는다. P2 종료 수락과 Git/STATUS/Done은 별도다.
+
+
+### Preparation Occurrence Assertion Corrected And Resumed — 2026-10-12T06:37:17.889236+00:00
+
+Owner가 준비 스크립트의 단언 한 곳만 기존 occurrence 수와 대조하도록 고치고 승인된 실행 순서로 재개하도록 승인했다. 준비 단언을 첫 세 focused group에는12/12/4, 나머지에는 기존 배치의 occurrence 수와 대조하도록 변경했다. C5의63 ID/75 occurrence 및33 ID/34 occurrence를 그대로 보존했다. 이전 준비 스크립트와 한 곳 보완 후 script, preparation STOP은 private recovery12에 유지한다.
+
+적용된 제품/테스트/controls source는 다시 수정하지 않았다. 기존 부분 입력은 byte 일치 대조로 재사용하고 미작성 입력과 plan/manifest/Driver만 완성했다. 새37개 root는 아직 없으며 controller/reviewer/test 추가 실행0회다. 고정 입력 검증과 git diff --check를 통과했고 source SHA `fa17e6e1bc2a663607aaf827681011459b2182405b886d7ebc1b8daab2bb9029`는 이전 승인 결과와 같다. 완료한 R0·14개는 반복하지 않는다. 기존 종료 시각·review9회/누적14,400초·사용량·개별 제한·첫 실패 STOP·추가 수정 및 자동 재시도 금지를 유지한다. P2 수락과 Git/STATUS/Done은 별도다.
+
+
+### C2 Reference Diagnostic Focused 28 PASS — 2026-10-12T06:55:53.244317+00:00
+
+승인된 기존28개 영향 검증을12/12/4로 실행했고 전부 PASS했다.
+
+선택 ID와 executed trace를 제안한28개와 순서까지 대조했다. 각 실행의 fail/error/skip/expected failure/unexpected success/unstarted/unfinished는0이다. OLD의 정확한 거부 코드·메시지, 거부 전후 보존과 transition receipt 부재, 기존 optional positive counterpart를 모두 해당 테스트의 assertion으로 확인했다. C2-0042의 이전 child exit1/HV2-WORK-RECORD 미처리 실패와 이번 정상 통과를 before/after로 연결한다. Before 결과는 과거 STOP으로 유지한다.
+
+세 focused 실행의 controller 시간은 244.407, 329.069, 95.809초이며 모두 exit0·normal completion·group 부재·입력 보존 및 전후 Driver input check PASS다. 각 batch는 기존 acquire/canary/base collect/smoke20/entry collect를 선행했다. 고정 CPython3.14.7/-I/-S/-B와 동일 sandbox·개별 한도로 실행했다. 28개는 보완 영향 검증이며 전체 matrix 진행량에 중복 합산하지 않는다.
+
+세 batch 종료 시 controller누적670/1,000회, root99/160개이며 review6/9회·2,830.531초는 그대로다. 다음은 이전 실패 배치와 동일 C2-0037~0045의9개다. 그 배치가 정상 완료돼야 원래45개 범위의 나머지를 완결로 판정한다. 이후 나머지33배치와 전체 R1세회를 진행한다. 첫 실패 STOP·추가 수정/자동 재시도 금지·원래 종료 시각을 유지하며 P2 수락과 Git은 별도다.
+
+
+### C2 Original First 45 Complete After Reference Recovery — 2026-10-12T07:02:34.716852+00:00
+
+직전 실패 배치와 동일한 C2-0037~0045의9개가9/9 PASS로 완료됐다. 종료 `2026-10-12T07:01:42.606546+00:00`, controller `310.639`초, exit0, 정상 종료, group 부재, cleanup errors0, 입력 보존 및 after input check PASS다. fail/error/skip/expected failure/unexpected success/unstarted/unfinished는0이다. 기존6단계 gate를 모두 거쳤고 timeout/cap이나 검증 기준을 바꾸지 않았다.
+
+이전 cleanup10에서 완결한 C2-0001~0036의36개와 이번9개의 합집합이 원 b076의45개 선택과 순서까지 정확히 같음을 확인했다. 두 source 기대 코드 변경은 invalid required-reference 분기에 한정돼 앞선36개의 baseline/multiple 경로에는 닿지 않는다. 이 정적 영향 분석과 입력 세대 차이는 최종 R1에 제공한다. 모든45개를 최신 source로 한 번에 실행했다는 뜻은 아니다. 과거 C2-0042 실패 및 사용자 중단 기록은 그대로 유지하며, 영향 검증28개와 중복 합산하지 않는다.
+
+완결 원 배치 기준 진행량은 이전4,897+45=4,942/5,782 occurrence이며 잔여840개가 남는다. 이번 실패9개는 이제 완결됐고, 다음은 고정된 나머지33개 배치(C2 최대12개 분할 뒤 나머지 영역)와 필수 전체 R1세회다. Batch4 종료까지 controller676/1,000회·root100/160개, review6/9회·2,830.531초다. 원래 deadline·review4시간·첫 실패 STOP·추가 수정/자동 재시도 금지를 유지하며 P2 수락과 Git은 별도다.
+
+
+### C2 Captured Revoked Child Baseline Premise STOP — 2026-10-12T08:21:22.304660+00:00
+
+승인된 reference diagnostic 영향28개와 이전 실패9개는 모두 통과했고, 이어진 b005~014도 모두 PASS했다. C2-0001~0159의159개가 완결됐으며 b015(C2-0160~0171)는10 PASS 뒤 C2-0170에서 FAIL했다. 첫 실패 STOP에 따라 Driver exit3으로 종료했고 b016~037 및 R1은 시작하지 않았다. 완료한 R0·종료 처리14개는 반복하지 않았고 추가 source 수정·재실행·리뷰는0이다.
+
+실패 종료는 `2026-10-12T08:14:29.112287+00:00`, controller `272.772`초/outer `272.84866`초, runner exit1/controller exit2다. Counts는 selected12/run11/10 PASS/1 FAIL/1 unstarted이며 errors/skips/expected failures/unexpected successes/unfinished는0이다. Timeout이 아니라 정상 완료한 assertion failure다. Group 부재=true, cleanup errors0, 입력 보존 및 after input check PASS다. 별도 읽기 전용 process 조회에서도 해당 실행 root/Driver의 잔여 process0개를 확인했다.
+
+```text
+C2-0170: captured-history / schema2 / child-work / document_refs
+required colvia / captured-current-revoked
+p2_c2_case -> p2_local_graph (before product transition)
+AssertionError: valid equal baseline prerequisite
+```
+
+보존된 OLD graph 결과에서 부모는 active·baseline_equal=true, child는 revoked·baseline_equal=false다. 부모가 capture한 child revision과 현재 revoked child revision은 같고 selection은 다르다. Child의 immutable result manifest에는 a와 합성 colvia(mode100644,45bytes)가 있고 현재 snapshot에는 같은 a만 있다. 두 snapshot의 차이는 해당 colvia 항목 하나뿐이며 policy/ignore fingerprint와 나머지 항목은 일치한다. Fixture가 child 완료 뒤 참조 파일을 제거하고 수락을 철회했으므로 이 역사적 차이는 구성 절차에서 생긴다. 전체 미완료 local baseline이 같다는 p2_local_graph의 일괄 사전 단언이 이 사례와 맞지 않는다. 제품 transition은 호출되지 않았고 receipt도 없다. 실제 제품의 captured dependency 거부는 아직 관측하지 않았다.
+
+정적 대조상 같은 variation은 C2-0170/0176/0182/0188 네 개다. 현재 optional positive counterpart도 child 참조 파일을 생성했다 제거하는 공통 경로라 같은 baseline 문제를 갖는 것으로 예상된다. 이는 코드 경로 분석이며 해당 positive 실행 결과가 아니다. product.py는 captured dependency를 baseline 비교보다 먼저 검사하지만, 이 소스 분석을 거부 재현 PASS로 기록하지 않는다.
+
+#### Minimal Unapplied Recovery Proposal
+
+수정 제안은 tests/test_entry_window_transition.py의 P2_C2_FIXTURE_PROGRAM과 p2_local_graph에 한정한다. Required captured-current-revoked 네 사례는 현재 child state/revision/selection과 부모가 capture한 원 revision/selection을 대조하고, immutable child baseline의 차이가 고정 합성 참조 파일 하나뿐임을 정확한 snapshot 내용으로 검증한다. Child-work 부모 baseline은 현재와 같음을, child-intent 경로는 기존 파일 제거 시점에 따른 정확한 baseline을 별도로 검증한다. 이 명시적 역사 전제가 확인된 네 사례에만 일괄 equal-baseline 사전 단언 대신 해당 전제를 사용한다. 다른 사례의 baseline 단언은 유지한다.
+
+동일 네 사례의 optional positive는 optional 참조 파일을 처음부터 생성하지 않아 모든 미완료 local baseline이 현재 snapshot과 같게 구성한다. 참조 metadata와 required=false, 부모 capture·child revoke 상태 및 selection 관계는 유지한다. Required negative의 정확한 parent/captured-child 거부 메시지, 전후 snapshot·receipt 부재와 optional positive의 실제 전환/replay 보존 검사는 그대로다. 제품·controls·OLD 원본·timeout·선택 ID나 계약은 바꾸지 않는다. 이 제안은 미적용이며 실제 통과는 보장하지 않는다.
+
+승인 시 세 상태(completed/revoked/new-selection)×두 소유자(child-work/child-intent)×두 참조 범주의 기존12개(C2-0169~0171,0175~0177,0181~0183,0187~0189)를 한 묶음으로 검증한다. 각 기존 optional positive도 포함한다. PASS면 실패한 동일12개(C2-0160~0171)를 완결하고 잔여22배치 → 필수 전체 R1세회 순서로 진행한다. 새24배치/144controller를 더하면 controller886/1,000회·root135/160개다. 각 단계의 실제 수집·canary·smoke와 입력 확인, 기존 개별 cap, 첫 실패 STOP 및 추가 수정/자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개는 반복하지 않는다. 보완12개는 전체 matrix에 중복 합산하지 않는다. 기존 종료·storage64GiB/단계 시작 여유 조건에서 완료를 보장하지 않으며 한도 위험 시 중단한다.
+
+완결 범위는 과거4,897+현재 C2의159=5,056/5,782 occurrence다. 실패 배치의 부분10개까지 구분해 합산하면5,066 PASS/1 FAIL/715 미시작이다. 입력 세대가 다른 결과의 진행량이며 최신 source 전체 PASS나 P2 수락은 아니다. 사용량은controller742/1,000회·root111/160개·review6/9회 및2,830.531초다. Review 누적14,400초와 전체 종료2026-10-13 04:54:33.655857 KST를 유지한다. R1은 아직 세 회 남았고 B1/14개를 포함한 원래 전체 범위를 유지한다.
+
+고정 source/controls/runtime/과거 manifest·STOP과 현재 입력을 다시 대조해 PASS했다. 현재 source SHA는 `fa17e6e1bc2a663607aaf827681011459b2182405b886d7ebc1b8daab2bb9029`이며 기존 checkout 밖 applied-entry-test.py와 byte 일치한다. 실패 stdout/trace/counts/parent result/OLD graph log와 보존 fixture는 r015의 durable 실행 root에 있다. 원본 및 과거 입력/현재 patch·controls backup도 유지한다. 실제 할당량은 `60148703232` bytes다. 소비자는 이번 실패의 Owner 처분과 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다. 따라서 관련 checkout과 실행 root는 사용 중으로 유지한다. 이번에는 Work 결과 기록과 current patch 갱신만 했고 P2 종료 수락·Git/STATUS/Done은 수행하지 않았다.
+
+
+### C2 Captured Revoked Fixture Recovery Authorized And Applied — 2026-10-12T08:28:52.348136+00:00
+
+Owner가 테스트 파일 한 곳의 해당 fixture만 보완하고 관련12개 → 실패 묶음12개 → 잔여22묶음 → 전체 R1세회 순서로 재개하도록 승인했다. tests/test_entry_window_transition.py의 P2_C2_FIXTURE_PROGRAM과 p2_local_graph만 변경했다. Required captured-current-revoked 네 사례는 부모 active/child revoked, 같은 captured revision·intent·manifest와 철회 직전 selection 연결을 실제 graph에서 검증한다. Child baseline은 현재 snapshot에 고정 합성 colvia 항목 하나를 더한 정확한 값으로, parent baseline은 child-work/child-intent의 기존 참조 제거 시점에 맞는 값으로 대조한다. 이 정확한 전제를 확인한 required 네 사례에만 일반 equal-baseline 전제를 대신 적용한다.
+
+동일 네 사례의 optional positive는 참조 파일을 처음부터 생성하지 않는다. Optional metadata·capture·revocation 관계와 모든 미완료 local baseline 일치 검사를 유지한다. 기존 required parent/captured-child 거부 메시지·전후 snapshot·receipt 부재 및 optional 전환/replay 검사는 그대로다. 다른 source·제품·controls·OLD·계약·선택 ID·timeout은 변경하지 않았다. 변경 전 SHA `fa17e6e1bc2a663607aaf827681011459b2182405b886d7ebc1b8daab2bb9029`, 변경 후 `bb446e063130b4c0de2b29f2d77b83daacb008c9aeca3cb9e1f41cd8b6048c49`다. 역치환 전체 일치와 전체/내장 program syntax compile은 PASS이며 runtime PASS는 아직 아니다.
+
+새24배치는 기존12개(C2-0169~0171,0175~0177,0181~0183,0187~0189), 실패한 동일12개(C2-0160~0171), 이전 b016~037의22배치다. 총738 occurrence 중 첫12개는 보완 근거라 전체 matrix에 중복 합산하지 않는다. C5의63 ID/75 occurrence 및33 ID/34 occurrence도 그대로다. 계획 완료 시controller742+144=886/1,000회,root111+24=135/160개다. 새 root는 approved root 아래 hv2-reference-private-colvia-p2-c2-revoked-20261012-r001~024이며 등록 및 목적지 부재를 확인했다. 기존 실패/부분 결과는 보존한다.
+
+완료한 R0·종료 처리14개·reference28개는 반복하지 않는다. Review6/9회·2,830.531초를 유지하고 필수 전체 R1세회에 기존 B1/14개 및 모든 P2 범위를 포함한다. 전체 종료2026-10-13 04:54:33.655857 KST, review 누적14,400초·기존 사용량·개별 cap·storage64GiB/여유 조건을 유지한다. 첫 실패·관측 불가·입력 drift·한도 위험 시 중단하며 추가 수정/자동 재시도는 하지 않는다. P2 수락과 Git/STATUS/Done은 별도다.
+
+수정 전 source/current patch·fixture diff·수정 후 exact source는 private c2-captured-revoked-recovery-13에 보존한다. 소비자는 before/after 및 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다. 기존 controls backup·모든 역사적 입력/STOP·실행 결과도 유지한다.
+
+
+### C2 Captured Revoked Related 12 PASS — 2026-10-12T08:39:41.567973+00:00
+
+승인된 관련12개(C2-0169~0171,0175~0177,0181~0183,0187~0189)가 모두 PASS했다. 보완 대상 revoked 네 사례에서 정확한 역사 baseline·부모 capture와 현재 child의 관계, required parent/captured-child 거부와 전후 보존, optional 실제 전환 및 replay 검사가 통과했다. Completed/new-selection 인접 사례도 통과했다. 이전 C2-0170의 fixture 전제 실패와 이번 통과를 before/after로 연결하며 과거 STOP은 보존한다. 이12개는 보완 검증이므로 전체 matrix 진행량에 중복 합산하지 않는다. 다음은 이전 실패 묶음과 동일한 C2-0160~0171의12개이며, 이어 잔여22묶음과 전체 R1세회를 진행한다.
+
+종료 `2026-10-12T08:38:00.697987+00:00`, controller `408.556`초/outer `408.618581`초, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. Selected/run12, failures/errors/skips/expected failures/unexpected successes/unstarted/unfinished는0이다. 고정 CPython3.14.7/-I/-S/-B, 동일 격리와 개별 cap, 실제 collection/canary/smoke20을 포함한 기존6단계로 검증했다.
+
+이 묶음 종료까지controller748/1,000회·root112/160개다. Review6/9회·2,830.531초 및 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·기존 개별 제한·첫 실패 STOP/추가 수정 및 자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개는 반복하지 않았다. 기존 실패와 exact 입력/결과를 잔여 P2/R1용으로 보존하며 P2 수락과 Git/STATUS/Done은 별도다.
+
+
+### C2 Captured Revoked Failed Batch 12 Complete — 2026-10-12T08:46:34.453492+00:00
+
+이전 실패 묶음과 동일한 C2-0160~0171의12개가 모두 PASS해 해당 묶음을 완결했다. 앞선 세대의 완결 C2-0001~0159와 이번12개를 합쳐 C2의171/192개가 완료됐다. 이번 변경은 captured-current-revoked 네 사례와 그 optional 대조 경로에 한정되어 앞선159개의 실행 경로에는 영향을 주지 않는다는 정적 분석을 R1에 제공한다. 서로 다른 입력 세대의 결과이므로 최신 source 전체를 한 번에 실행했다는 뜻은 아니다. 과거 부분10개 및 보완12개를 중복 합산하지 않는다. 전체 완결 진행은4,897+171=5,068/5,782 occurrence이며 잔여714개·22묶음과 전체 R1세회가 남았다.
+
+종료 `2026-10-12T08:45:56.990295+00:00`, controller `332.439`초/outer `332.522354`초, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. Selected/run12, failures/errors/skips/expected failures/unexpected successes/unstarted/unfinished는0이다. 고정 CPython3.14.7/-I/-S/-B, 동일 격리와 개별 cap, 실제 collection/canary/smoke20을 포함한 기존6단계로 검증했다.
+
+이 묶음 종료까지controller754/1,000회·root113/160개다. Review6/9회·2,830.531초 및 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·기존 개별 제한·첫 실패 STOP/추가 수정 및 자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개는 반복하지 않았다. 기존 실패와 exact 입력/결과를 잔여 P2/R1용으로 보존하며 P2 수락과 Git/STATUS/Done은 별도다.
+
+
+### C2 Full 192 Coverage Complete Across Preserved Inputs — 2026-10-12T09:02:45.606498+00:00
+
+C2-0001~0192의192개가 모두 완결됐다. Cleanup10의 첫36개, reference12의 다음123개(C2-0037~0159), captured-revoked13의 마지막33개(C2-0160~0192)의 actual executed trace를 순서대로 합쳐 현재 고정 P2_C2_ROWS와 대조했다.192개 ID와 순서가 정확히 일치하고 누락/중복은0이다. 해당17개 완결 실행은 모두 selected/run 일치 및 failures/errors/skips/expected failures/unexpected successes/unstarted/unfinished0, 정상 종료·전후 입력 검증 PASS다. 별도 영향 검증28개와12개, 과거 실패 배치의 부분 결과는 합산하지 않았다.
+
+마지막12개는 `2026-10-12T09:01:11.478857+00:00`에 controller `386.963`초로 종료했고 exit0·group 부재·cleanup errors0·입력 보존을 확인했다. C2 baseline/multiple/required-reference 및 alias/scope/restart/captured-history의 원래 선택을 모두 소비했다. 원래 실패한 C2-0042와 C2-0170은 각각 보완 전 실패와 보완 후 PASS로 연결했으며 기존 실패 기록은 유지한다.
+
+입력은 세 source 세대에 걸쳐 있다. Reference 오류 코드 보완은 앞선 baseline/multiple36개의 경로에 닿지 않고, captured-current-revoked fixture 보완은 앞선159개의 경로에 닿지 않는다는 정적 영향 분석을 R1에 제공한다. 결과의 의미별 재사용 판단은 전체 R1에서 검토하며 모든192개를 최신 source로 한 번에 실행했다거나 P2가 수락됐다고 주장하지 않는다.
+
+전체 원래 항목의 완결 진행은4,897+192=5,089/5,782 occurrence다. 잔여 C3/C4/C5/X1의693개·20묶음과 전체 R1세회가 남았다. 마지막 C2 종료까지controller766/1,000회·root115/160개이고 review6/9회·2,830.531초는 같다. 원래 종료 시각·review누적14,400초·storage64GiB·개별 cap·첫 실패 STOP/추가 수정 및 자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개를 반복하지 않았고 P2 수락/Git/STATUS/Done은 별도다. 모든 근거는 잔여 P2/R1 소비를 위해 보존한다.
+
+
+### C3 OLD Snapshot Signature Fixture STOP — 2026-10-12T09:07:12.607104+00:00
+
+승인된 captured-revoked fixture 보완 후 관련12개와 이전 실패 묶음12개는 모두 통과했고, 이어진 C2 나머지도 완결했다. C2 전체192개의 actual ID/순서/중복 검사는 직전 기록과 같다. 이후 C3 첫 배치 b005(C3-0001~0030)의 첫 사례 C3-0001에서 FAIL해 Driver exit3으로 즉시 중단했다. 이후19배치와 R1은 시작하지 않았다. 추가 source 수정·재실행·리뷰는 수행하지 않았다.
+
+종료 `2026-10-12T09:03:35.232064+00:00`, controller `2.118`초/outer `2.218673`초, child exit1/controller exit2다. Selected30/run1/0 PASS/1 FAIL/29 unstarted이며 errors/skips/expected failures/unexpected successes/unfinished는0이다. Timeout이 아니라 OLD fixture의 API 호출 실패다. 정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS를 확인했고 별도 process 조회의 잔여 task process도0개다.
+
+```text
+C3-0001: selected-orphan / active / normal frontier / modify
+P2_C3_FIXTURE_PROGRAM: make_baseline -> tree -> OLD snapshot
+TypeError: snapshot() got an unexpected keyword argument 'verified_inventory_id'
+```
+
+고정 OLD work.py의 snapshot signature는 verified_launcher_sha256만 받지만 NEW는 verified_inventory_id도 받는다. P2_C3_FIXTURE_PROGRAM의 tree(root)가 generation과 관계없이 두 인수를 모두 넘겼다. 실제 OLD TypeError와 두 소스의 AST signature 대조로 확인했다. 제품 transition 및 worker 검증 결과는 아직 얻지 못했다. Runtime generation 검증은 fixture에 이미 있으며 이 실패는 OLD/NEW API 차이를 반영하지 못한 테스트 helper에서 발생했다.
+
+#### Minimal Unapplied Recovery Proposal
+
+tests/test_entry_window_transition.py의 P2_C3_FIXTURE_PROGRAM 안 tree(root) 한 곳만 위 검증된 generation에 따라 분기한다. OLD에는 verified_launcher_sha256만 전달하고 NEW에는 기존 두 인수를 그대로 전달한다. 런타임 identity/launcher 검증은 유지하며 TypeError를 잡아 무시하거나 자동 fallback하지 않는다. OLD 원본·제품·controls·검증 기대·선택 ID·개별 cap은 변경하지 않는다. 보완 전 SHA `bb446e063130b4c0de2b29f2d77b83daacb008c9aeca3cb9e1f41cd8b6048c49`, 미적용 후보 SHA `1d05672f7781383c876589de0d6a08ccb9f2efcd391b21f655adc4c9aa0b00e0`다. 후보 전체/내장 program syntax compile과 정확한 역치환만 확인했으며 source 적용 및 runtime 검증은0이다. 작은 정확한 교체 제안은 private c3-snapshot-api-proposal.json에 보존한다.
+
+영향 consumer는 C3의144개(OLD로 시작126개, NEW로 시작18개)다. 승인 시 OLD modify/delete/add의 기존 C3-0001/0035/0039 및 NEW counterpart를 포함하는 C3-0094/0095/0096의6개를 먼저 실행한다. PASS면 실패한 동일30개 → 잔여19배치 → 필수 전체 R1세회 순서로 진행한다. 새21배치/126controller를 합치면controller898/1,000회·root137/160개다. 완료한 C2와 R0·14개·reference28개를 반복하지 않고 보완6개는 전체 matrix에 중복 합산하지 않는다. 모든 기존 gate/격리/개별 cap·첫 실패 STOP·추가 수정 및 자동 재시도 금지를 유지하며 한도 안의 완료를 보장하지 않는다.
+
+현재 전체 원래 항목은5,089 PASS/1 FAIL/692 미시작(총5,782 occurrence)이다. C2까지의 입력 세대별 완료와 재사용 한계는 유지한다. 사용량은controller772/1,000회·root116/160개·review6/9회/2,830.531초다. 원래 종료2026-10-13 04:54:33.655857 KST와 review누적14,400초·개별 제한·사용량을 유지한다. R1세회는 원래 전체 범위와 B1/14개 근거를 포함한 채 남아 있다.
+
+Source/controls/runtime·고정 입력·과거 STOP/manifest를 읽기 전용으로 재대조해 PASS했다. 현재 source는 checkout 밖 applied-entry-test.py와 byte 일치한다. 실패 stdout/trace/counts/result·원본 OLD fixture와 runner 보존 사본, 과거 결과 및 current patch를 durable 위치에 보존한다. 실할당은61,616,160,768 bytes이며116개 root를 확인했다. 소비자는 C3 실패의 Owner 처분과 잔여 P2/R1이고 종료 조건까지 관련 checkout을 유지한다. 이번에는 기존 Work 기록과 current patch만 갱신했으며 P2 수락·Git/STATUS/Done은 수행하지 않았다.
+
+
+### C3 Snapshot API Recovery Authorized And Applied — 2026-10-12T09:12:08.108310+00:00
+
+Owner가 제안한 helper 한 곳 보완과 관련6개 → 실패 묶음30개 → 잔여19묶음 → 전체 R1세회 순서를 승인했다. tests/test_entry_window_transition.py의 P2_C3_FIXTURE_PROGRAM 내부 tree helper만 수정했다. 검증된 generation이 old이면 기존 snapshot API에 launcher digest만 전달하고 new이면 launcher와 inventory digest를 전달한다. runtime의 generation 검증은 유지하며 TypeError catch나 fallback은 추가하지 않았다. 나머지 source·제품·controls·OLD·계약·선택 ID·timeout은 그대로다. 변경 전 SHA `bb446e063130b4c0de2b29f2d77b83daacb008c9aeca3cb9e1f41cd8b6048c49`, 변경 후 `1d05672f7781383c876589de0d6a08ccb9f2efcd391b21f655adc4c9aa0b00e0`다. 전체/내장 syntax compile 및 역치환 전체 일치는 PASS이며 runtime PASS는 아직 아니다.
+
+새21배치는 관련6개(C3-0001/0035/0039/0094/0095/0096), 실패한 동일30개(C3-0001~0030), 이전 b006~024의19배치다. 총699 occurrence 중 첫6개는 보완 근거이며 전체 matrix에 중복 합산하지 않는다. 계획 완료 시controller772+126=898/1,000회,root116+21=137/160개다. 새 root는 approved root 아래 hv2-reference-private-colvia-p2-c3-api-20261012-r001~021이며 등록 및 목적지 부재를 확인했다.
+
+완료한 R0·종료 처리14개·reference28개·C2는 반복하지 않는다. Review6/9회·2,830.531초를 유지하고 필수 전체 R1세회에 기존 B1/14개 및 누적 변경·검증 범위를 포함한다. 전체 종료2026-10-13 04:54:33.655857 KST, review 누적14,400초·기존 사용량·개별 cap·storage64GiB/여유 조건을 유지한다. 첫 실패·관측 불가·입력 drift·한도 위험 시 중단하며 추가 수정/자동 재시도는 하지 않는다. P2 수락과 Git/STATUS/Done은 별도다.
+
+수정 전 source/current patch·fixture diff·수정 후 exact source는 private c3-snapshot-api-recovery-14에 보존한다. 소비자는 before/after 및 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다. 기존 controls backup·모든 역사적 입력/STOP·실행 결과도 유지한다.
+
+
+### C3 Snapshot API Related 6 PASS — 2026-10-12T09:17:01.551598+00:00
+
+승인된 관련6개(C3-0001/0035/0039/0094/0095/0096)가 모두 PASS했다. OLD modify/delete/add와 NEW counterpart 경로를 검증했고 이전 C3-0001의 snapshot API TypeError와 이번 통과를 before/after로 연결한다. 과거 STOP은 보존하며 이6개는 보완 근거라 전체 matrix에 중복 합산하지 않는다. 다음은 실패한 동일30개와 잔여19묶음, 전체 R1세회다.
+
+종료 `2026-10-12T09:16:13.644825+00:00`, controller `114.929`초/outer `114.99045`초, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. Selected/run6, failures/errors/skips/expected failures/unexpected successes/unstarted/unfinished는0이다. 고정 CPython3.14.7/-I/-S/-B, 동일 격리와 개별 cap, 실제 collection/canary/smoke20을 포함한 기존6단계로 검증했다.
+
+이 묶음 종료까지controller778/1,000회·root117/160개다. Review6/9회·2,830.531초 및 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·기존 개별 제한·첫 실패 STOP/추가 수정 및 자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개는 반복하지 않았다. 기존 실패와 exact 입력/결과를 잔여 P2/R1용으로 보존하며 P2 수락과 Git/STATUS/Done은 별도다.
+
+
+### C3 Worker Rework Fixture Contract STOP — 2026-10-12T09:26:49.725274+00:00
+
+승인된 snapshot API helper 보완과 관련6개는 모두 PASS했다. 실패한 동일30개 묶음 b002에서 C3-0001~0009의9개가 통과한 뒤 C3-0010에서 FAIL하여 Driver exit3으로 즉시 중단했다. 이후19묶음과 R1은 시작하지 않았다. 추가 source 수정·재실행·리뷰는0이다.
+
+종료 `2026-10-12T09:23:09.928249+00:00`, controller `276.232`초/outer `276.312845`초, child exit1/controller exit2다. Selected30/run10/9 PASS/1 FAIL/20 unstarted이며 errors/skips/expected failures/unexpected successes/unfinished는0이다. 정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS를 확인했고 별도 process 조회의 잔여 task process는0개다.
+
+```text
+C3-0010: selected-orphan / rework / normal frontier / modify
+P2_C3_FIXTURE_PROGRAM: publish(proposal('rework',request['manifest'],'old-rework'))
+HV2-WORK-RECORD: baseline revision contains changes
+```
+
+실제로 재현된 오류는 변경을 포함한 submit-result manifest를 rework baseline으로 재사용해 발생했다. 읽기 전용 소스 대조에서 그 다음 guard도 확인했다. OLD work.py:789와 NEW work.py:800은 isolated-worktree의 rework 연산을 명시적으로 거부하고 human baseline refresh를 요구한다. 따라서 manifest만 바꾸는 보완은 충분하지 않다. 두 번째 guard는 이번 실행에서 도달하지 않은 정적 근거이며 재현한 오류로 표시하지 않는다. 제품 전환 전 fixture 작성 오류다.
+
+#### Minimal Unapplied Recovery Proposal
+
+테스트 파일 한 곳의 C3-0010~0012를 unsupported worker rework 상태에서 explicit baseline refresh 후 active 상태의 전환 사례로 바로잡는 안이다. 같은 세 ID와 normal/S1/S5 frontier를 유지하고 row state를 baseline-refreshed로 명시한다. Fixture는 기존처럼 submit/reject 뒤 현재 control의 단일 commit·동일 base/result manifest를 구성하고, same-intent rebind proposal 및 synthetic Owner prepare/apply로 active baseline을 선택한다. 선택 revision/decision 존재를 검사한 뒤 기존 전환·truth/Git/index 보존·receipt/replay 검사를 그대로 수행한다. 부모의 기대 상태는 이 세 행에서 active로 명시한다. 계약상 지원하지 않는 worker rework를 제품에서 허용하거나 실패를 catch하여 성공으로 바꾸지 않는다.
+
+이는 테스트 의무의 의미 정정이므로 Owner 수락 전에는 적용하지 않는다. 새 frozen obligation map의 해당 세 행만 함께 정렬하고 역사적 map은 보존한다. C3 144개·전체5,782 occurrence와 ID·frontier·controls·제품·OLD source는 유지한다. 미적용 후보 SHA `f9aa2845be1de837d0d160d1e79d3134d8110573cc19cc7547f51c2d3fa0db8b`, 현재 SHA `1d05672f7781383c876589de0d6a08ccb9f2efcd391b21f655adc4c9aa0b00e0`다. 전체/내장 syntax compile 및 정확한 역치환은 PASS했지만 fixture 실행·제품 import·discovery·재검증은0이다. 정확한 미적용 치환은 private c3-baseline-refresh-proposal.json에 보존한다.
+
+승인 시 해당3개 → 실패한 동일30개 → 잔여19묶음 → 전체 R1세회로 진행하는 안이다. 추가21배치/126controller를 합치면910/1,000회·root139/160개다. 완료한 R0·종료 처리14개·reference28개·C2·API 관련6개는 반복하지 않는다. 보완3개는 전체 진행량에 중복 합산하지 않는다. 기존 첫 실패 STOP·추가 수정/자동 재시도 금지·종료 시각·review 및 개별 제한을 유지한다.
+
+현재 전체 원래 항목의 완결 범위는5,089/5,782이며 이번 부분9개까지 구분하면5,098 PASS/1 FAIL/683 미시작이다. 입력 세대별 진행량이고 최신 source 전체 PASS가 아니다. 사용량은controller784/1,000회·root118/160개·review6/9회 및2,830.531초다. 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초 및 개별 제한은 같다. R1세회는 B1/14개와 원래 전체 범위를 포함해 남는다.
+
+현재 source는 checkout 밖 applied-entry-test.py와 byte 일치하고 source/controls/runtime·고정 입력·과거 STOP/manifest 보존 검사는 PASS했다. 실패 stdout/trace/counts/result 및 원래 fixture와 runner 보존 사본, 과거 근거·current patch를 durable 위치에 보존한다. 실행 root와 보존한 중단 smoke의 실할당은61,979,086,848 bytes다. 소비자는 C3 의무 정정 Owner 결정과 잔여 P2/R1이며 종료 조건까지 관련 checkout을 유지한다. P2 수락·Git/STATUS/Done은 수행하지 않았다.
+
+
+### C3 Baseline Refresh Preparation Serialization STOP — 2026-10-12T09:39:27.787719+00:00
+
+Owner가 해당3개 사례와 대응 map만 baseline refresh 후 active 상태로 정정하고 관련3개 → 실패30개 → 잔여19묶음 → 전체 R1세회 재개를 승인했다. 승인 범위의 준비 스크립트를1회 실행했으나 source·map·실행 root를 쓰기 전 line26에서 중단했다. 기존 미적용 제안의 P2_C3_ROWS 전체 목록을 json.dumps로 직렬화하면서 Python False가 false로 바뀌었다. ast.parse/compile은 이 이름을 문법 오류로 잡지 않지만 ast.literal_eval은 Name(false)를 거부한다. 지난 제안의 syntax PASS는 literal/실행 유효성 증거가 아니었으며 Driver 작성 오류다.
+
+```text
+ValueError: malformed node or string on line 272: Name(id='false', ctx=Load())
+```
+
+첫 실패 중단에 따라 source 적용0·map 변경0·새 runtime root0·controller/test/review 추가0이며 자동 수정·재시도는 하지 않았다. 현재 source SHA `1d05672f7781383c876589de0d6a08ccb9f2efcd391b21f655adc4c9aa0b00e0`와 이전 checkout 밖 exact copy, source/controls/runtime·과거 frozen 입력 및 STOP을 대조해 PASS했다. 준비 예정 c3-baseline-refresh-recovery-15 및21개 실행 root는 모두 없다. Controller784/1,000회·root118/160개·review6/9회/2,830.531초를 유지한다. Canonical 완결5,089/5,782와 부분 포함5,098 PASS/1 FAIL/683 미시작도 변하지 않는다.
+
+미적용 최소 정정안은 P2_C3_ROWS를 JSON으로 재직렬화하지 않고 기존 Python literal에서 해당3개의 state 문자열만 바꾸는 것이다. 나머지 Boolean·숫자·ID·row 순서와 helper/부모 기대 상태 제안은 그대로 유지한다. 수정 제안 SHA `19efad6a78c2eda5da5880679dda42b551b651715e43b7c603c1851da9ffb4d3`에 대해 전체/내장 syntax compile, ast.literal_eval 성공, 원래144행 중 해당3개 state만 달라짐, 전체 역치환 일치, 기존 map과 원래 rows 일치를 정적으로 확인했다. 실제 source 적용·제품 import·discovery·fixture 실행은 하지 않았다.
+
+정정 제안과 실패 준비 스크립트/STOP은 private c3-baseline-refresh-preparation-stop-15에 보존한다. 소비자는 Owner의 준비 오류 정정 결정 및 잔여 P2/R1이고 해당 의존 종료 때 보존을 재평가한다. 승인 시 준비 스크립트의 proposal 경로를 이 정정 제안으로 연결하고 기존 준비·검증 순서를 재개한다. 실행 범위와 계획 한도910/1,000회·root139/160개·R1세회는 변하지 않는다. 완료한 검증은 반복하지 않으며 기존 종료2026-10-13 04:54:33.655857 KST·review누적14,400초·개별 제한·첫 실패 중단 및 추가 수정/자동 재시도 금지를 유지한다. P2 수락·Git/STATUS/Done은 별도다.
+
+
+### C3 Baseline Refresh Recovery Authorized And Applied — 2026-10-12T09:41:15.231487+00:00
+
+Owner가 해당3개 사례와 대응 map만 baseline refresh 후 active 상태 검증으로 정정하고 관련3개 → 실패 묶음30개 → 잔여19묶음 → 전체 R1세회 순서로 재개하도록 승인했다. tests/test_entry_window_transition.py에서 C3-0010~0012의 row state를 baseline-refreshed로 정정하고 fixture의 submit/reject 뒤 현재 control의 동일 base/result·단일 commit으로 same-intent rebind 및 synthetic Owner prepare/apply를 수행한다. Active 상태와 정확한 선택 revision·decision 존재를 검사하며 부모 기대 상태도 이3개에서 active로 정렬했다. 기존 normal/S1/S5 frontier와 전환·truth/Git/index 보존·receipt/replay 검사는 유지한다. 새 frozen obligation map의 c3 동일3행만 정렬하고 역사적 map은 보존했다.
+
+제안된 exact 변경 전 SHA `1d05672f7781383c876589de0d6a08ccb9f2efcd391b21f655adc4c9aa0b00e0`, 적용 후 `19efad6a78c2eda5da5880679dda42b551b651715e43b7c603c1851da9ffb4d3`다. 전체/내장 syntax compile·역치환 일치·AST와 map3행 대응은 PASS이며 runtime PASS는 아직 아니다. 다른 source·제품·controls·OLD·계약·ID·timeout은 변경하지 않았다. 새21배치는3개 보완과 기존20개 잔여 배치이며696 occurrence 중 첫3개는 보완 근거라 전체 matrix에 중복 합산하지 않는다. 계획 완료 시controller784+126=910/1,000회,root118+21=139/160개다. 새 root는 approved root 아래 hv2-reference-private-colvia-p2-c3-baseline-20261012-r001~021로 등록·목적지 부재를 확인했다.
+
+완료한 R0·종료 처리14개·reference28개·C2·API 관련6개는 반복하지 않는다. Review6/9회·2,830.531초와 전체 R1세회 원래 범위를 유지한다. 전체 종료2026-10-13 04:54:33.655857 KST, review 누적14,400초·기존 사용량·개별 cap·storage64GiB/여유 조건을 유지한다. 첫 실패·관측 불가·입력 drift·한도 위험 시 중단하며 추가 수정/자동 재시도는 하지 않는다. P2 수락과 Git/STATUS/Done은 별도다.
+
+수정 전 source/current patch·fixture diff·수정 후 exact source와 새 map은 private c3-baseline-refresh-recovery-15에 보존한다. 소비자는 before/after 및 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다. 기존 controls backup·모든 역사적 입력/STOP·실행 결과도 유지한다.
+
+
+### C3 Baseline Refresh Related 3 PASS — 2026-10-12T09:46:26.420092+00:00
+
+Owner가 직렬화 오류만 정정해 기존 순서를 재개하도록 승인했다. Python literal을 유지하며 해당3개 상태 문자열만 바꾼 수정 제안을 적용했다. C3-0010~0012의 normal/S1/S5 세 경우가 모두 PASS했다. Submit/reject 후 same-intent rebind 및 synthetic Owner prepare/apply로 active baseline을 선택하고 기존 전환·truth/Git/index 보존·receipt/replay를 검증했다. 이전 C3-0010의 잘못된 worker rework fixture 실패와 연결하되, 이는 같은 rework 연산의 성공이 아니라 승인된 테스트 의미 정정이다. 보완3개는 전체 matrix에 중복 합산하지 않는다. 다음은 실패한 동일30개와 잔여19묶음, 전체 R1세회다.
+
+종료 `2026-10-12T09:45:50.185073+00:00`, controller `114.48`초/outer `114.567019`초, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. Selected/run3, failures/errors/skips/expected failures/unexpected successes/unstarted/unfinished는0이다. 고정 CPython3.14.7/-I/-S/-B, 동일 격리와 개별 cap, 실제 collection/canary/smoke20을 포함한 기존6단계로 검증했다.
+
+이 묶음 종료까지controller790/1,000회·root119/160개다. Review6/9회·2,830.531초 및 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·기존 개별 제한·첫 실패 STOP/추가 수정 및 자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개는 반복하지 않았다. 기존 실패와 exact 입력/결과를 잔여 P2/R1용으로 보존하며 P2 수락과 Git/STATUS/Done은 별도다.
+
+
+### C3 Recover Without Pending Lifecycle Diagnostic STOP — 2026-10-12T09:59:57.255211+00:00
+
+Owner 승인으로 직렬화 오류만 정정한 제안을 적용했고 관련3개(C3-0010~0012)가 모두 PASS했다. 실패한 동일30개 묶음 b002에서 C3-0001~0020의20개가 통과한 뒤 C3-0021에서 FAIL하여 Driver exit3으로 즉시 중단했다. 정정3개도 원래 묶음에서 PASS했다. 이후19묶음과 R1은 시작하지 않았다. 추가 source 수정·재실행·리뷰는0이다.
+
+종료 `2026-10-12T09:56:57.861265+00:00`, controller `524.555`초/outer `524.600393`초, child exit1/controller exit2다. Selected30/run21/20 PASS/1 FAIL/9 unstarted이며 errors/skips/expected failures/unexpected successes/unfinished는0이다. 정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS를 확인했고 별도 process 조회의 잔여 task process는0개다.
+
+```text
+C3-0021: pending Work / publish-selection / recover / modify
+Expected: HV2-WORKSPACE-PRODUCT / pending Work blocks lifecycle
+Observed: HV2-WORKSPACE-PRODUCT / no pending lifecycle to recover
+```
+
+Fixture는 lifecycle preview 뒤 OLD Work publication을 after-selection에서 중단해 pending Work를 만든다. Lifecycle receipt를 발행하지 않았으므로 pending lifecycle은 없다. NEW product.py:1370의 recover 전제 검사가 먼저 거부하고,1373의 _lifecycle_truth 및1291의 pending Work guard에는 도달하지 않는다. 실제 실패 메시지와 소스 순서를 대조했다. Preview/apply 동일 point인 C3-0019/0020의 기존 pending Work 거부·보존·Work recovery 및 후속 전환 검사는 이번 실행에서 PASS했다. 나머지 recover3개에 같은 우선순위가 적용된다는 것은 아직 정적 추론이며 실행 PASS가 아니다.
+
+#### Minimal Unapplied Recovery Proposal
+
+테스트 파일 한 곳의 p2_c3_case pending 분기에서 recover4개(C3-0021/0024/0027/0030)만 pending lifecycle=None과 transition receipt 부재를 명시적으로 확인하고 실제 선행 거부 메시지를 기대하도록 구분하는 안이다. Preview/apply8개는 기존 pending Work 거부 메시지를 유지한다. 모든 경우 exact code/message·전후 snapshot 보존 및 Work recovery 후 pending 해소·정상 전환·receipt/replay 검사는 그대로다. 제품·fixture writer·controls·ID·map 및 timeout은 변경하지 않는다. 현재 source SHA `19efad6a78c2eda5da5880679dda42b551b651715e43b7c603c1851da9ffb4d3`, 미적용 후보 SHA `3b83f49e2b670eb85eb15ec49c6dbff83c7ab7ded758c01f68ca2fcc8bf52e2f`다. 전체 syntax compile·정확한 역치환만 확인했으며 실제 적용·제품 import·discovery·추가 실행은0이다.
+
+Coverage는 구분한다. Recover4개는 pending lifecycle 없이 recover를 요청했을 때의 거부 검증이며 실제 pending lifecycle과 pending Work가 공존하는 상태의 recovery guard 검증이 아니다. 기존 pending12개 map의 invocation을 이 범위로 해석하는 정정과 coverage 한계를 전체 R1에 제공한다. 앞선 PASS나 이번 기대값 변경으로 미검증 의무를 자동 충족 처리하지 않는다.
+
+승인 시 관련 pending12개 → 실패한 동일30개 → 잔여19묶음 → 전체 R1세회로 진행하는 안이다. 추가21배치/126controller를 합치면922/1,000회·root141/160개다. 완료한 R0·종료 처리14개·reference28개·C2·API6개·baseline refresh3개 보완 검증은 반복하지 않는다. 새 보완12개는 전체 진행량에 중복 합산하지 않는다. 기존 첫 실패 STOP·추가 수정/자동 재시도 금지·종료 시각·review 및 개별 제한은 유지한다.
+
+현재 원래 항목의 완결 범위는5,089/5,782이며 이번 부분20개를 구분해 합산하면5,109 PASS/1 FAIL/672 미시작이다. 입력 세대별 진행량이며 최신 source 전체 PASS가 아니다. 사용량은controller796/1,000회·root120/160개·review6/9회 및2,830.531초다. 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초 및 개별 제한은 같다. R1세회는 B1/14개와 원래 전체 범위를 포함해 남는다.
+
+현재 source는 checkout 밖 applied-entry-test.py와 byte 일치하고 source/controls/runtime·고정 입력·과거 STOP/manifest 보존 검사는 PASS했다. 실패 stdout/trace/counts/result와 원 fixture 및 runner 사본(1,739,465 bytes), 과거 근거·현재 patch를 durable 위치에 보존한다. 실행 root 및 기존 중단 smoke의 실할당은62,592,815,104 bytes다. 소비자는 이번 진단 정정 Owner 결정 및 잔여 P2/R1이고 관련 checkout은 이 의존 종료까지 유지한다. P2 수락·Git/STATUS/Done은 수행하지 않았다.
+
+
+### C3 Pending Recover Diagnostic Recovery Authorized And Applied — 2026-10-12T10:03:26.890265+00:00
+
+Owner가 recover4개에 lifecycle 부재 확인과 실제 선행 거부 메시지만 반영하고 관련 pending12개 → 실패 묶음30개 → 잔여19묶음 → 전체 R1세회 순서로 재개하도록 승인했다. tests/test_entry_window_transition.py의 p2_c3_case pending 분기만 정정했다. Recover4개는 pending lifecycle=None과 transition receipt 부재를 확인하고 no pending lifecycle to recover를 기대한다. Preview/apply8개의 pending Work blocks lifecycle 기대, exact code/message·전후 snapshot 보존·Work recovery 후 pending 해소 및 정상 전환·receipt/replay 검사는 유지한다. Recover4개를 실제 pending lifecycle과 pending Work가 공존할 때의 recovery guard 증거로 집계하지 않으며 이 한계를 전체 R1에 제공한다.
+
+Exact 변경 전 SHA `19efad6a78c2eda5da5880679dda42b551b651715e43b7c603c1851da9ffb4d3`, 적용 후 `3b83f49e2b670eb85eb15ec49c6dbff83c7ab7ded758c01f68ca2fcc8bf52e2f`다. 전체 syntax compile·역치환 일치·동일 row/map 및 내장 fixture 확인은 PASS이며 runtime PASS는 아직 아니다. 제품·controls·OLD·계약·ID·map·fixture writer·timeout은 변경하지 않았다. 새21배치는12개 보완과 기존20개 잔여 배치이며705 occurrence 중 첫12개는 보완 근거라 전체 matrix에 중복 합산하지 않는다. 계획 완료 시controller796+126=922/1,000회,root120+21=141/160개다. 새 root는 approved root 아래 hv2-reference-private-colvia-p2-c3-pending-20261012-r001~021로 등록·목적지 부재를 확인했다.
+
+완료한 R0·종료 처리14개·reference28개·C2·API6개·baseline refresh3개 보완 검증은 반복하지 않는다. Review6/9회·2,830.531초와 전체 R1세회 원래 범위를 유지한다. 전체 종료2026-10-13 04:54:33.655857 KST, review 누적14,400초·기존 사용량·개별 cap·storage64GiB/여유 조건을 유지한다. 첫 실패·관측 불가·입력 drift·한도 위험 시 중단하며 추가 수정/자동 재시도는 하지 않는다. P2 수락과 Git/STATUS/Done은 별도다.
+
+수정 전 source/current patch·helper diff·수정 후 exact source는 private c3-pending-recover-recovery-16에 보존한다. 소비자는 before/after 및 잔여 P2/R1이며 의존성이 끝날 때 보존을 재평가한다. 기존 controls backup·모든 역사적 입력/STOP·실행 결과도 유지한다.
+
+
+### C3 Pending Recovery Related 12 PASS — 2026-10-12T10:11:50.627586+00:00
+
+승인된 C3 pending12개(C3-0019~0030)가 모두 PASS했다. 네 Work 중단 지점 각각에서 preview/apply는 pending Work 거부를, recover는 pending lifecycle과 receipt가 없는 전제의 선행 거부를 확인했다. 각 거부 전후 snapshot 보존, Work recovery 뒤 pending 해소 및 정상 전환·receipt/replay도 통과했다. Recover4개는 실제 pending lifecycle과 pending Work가 공존할 때의 recovery guard 검증이 아니다. 이전 C3-0021 진단 실패와 이번 결과를 연결하며12개 보완은 전체 matrix에 중복 합산하지 않는다. 다음은 실패한 동일30개와 잔여19묶음, 전체 R1세회다.
+
+종료 `2026-10-12T10:11:34.416628+00:00`, controller `341.29`초/outer `341.362566`초, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. Selected/run12, failures/errors/skips/expected failures/unexpected successes/unstarted/unfinished는0이다. 고정 CPython3.14.7/-I/-S/-B, 동일 격리와 개별 cap, 실제 collection/canary/smoke20을 포함한 기존6단계로 검증했다.
+
+이 묶음 종료까지controller802/1,000회·root121/160개다. Review6/9회·2,830.531초 및 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·기존 개별 제한·첫 실패 STOP/추가 수정 및 자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개는 반복하지 않았다. 기존 실패와 exact 입력/결과를 잔여 P2/R1용으로 보존하며 P2 수락과 Git/STATUS/Done은 별도다.
+
+
+### C3 Pending Recovery Failed Batch 30 Complete — 2026-10-12T10:27:45.717636+00:00
+
+이전 실패 묶음과 동일한 C3-0001~0030의30개가 모두 PASS했다. 전체 원래 항목의 완결 진행은5,089+30=5,119/5,782 occurrence이며 잔여663개·19묶음과 전체 R1세회가 남는다. Recover4개의 진단 범위 및 baseline refresh3개의 승인된 의미 정정과 source 세대 차이를 R1에 제공한다. 보완12개·baseline3개·API6개와 과거 부분20개를 중복 합산하지 않는다. 과거 실패를 삭제하거나 최신 source 전체 일괄 PASS로 바꾸지 않는다.
+
+종료 `2026-10-12T10:26:57.594968+00:00`, controller `789.233`초/outer `789.307377`초, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. Selected/run30, failures/errors/skips/expected failures/unexpected successes/unstarted/unfinished는0이다. 고정 CPython3.14.7/-I/-S/-B, 동일 격리와 개별 cap, 실제 collection/canary/smoke20을 포함한 기존6단계로 검증했다.
+
+이 묶음 종료까지controller808/1,000회·root122/160개다. Review6/9회·2,830.531초 및 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·기존 개별 제한·첫 실패 STOP/추가 수정 및 자동 재시도 금지를 유지한다. 완료한 R0·14개·reference28개는 반복하지 않았다. 기존 실패와 exact 입력/결과를 잔여 P2/R1용으로 보존하며 P2 수락과 Git/STATUS/Done은 별도다.
+
+
+### C3 Optional Document Role Fixture STOP — 2026-10-12T11:24:20.991263+00:00
+
+승인된 pending recover 진단 정정과 관련12개, 이전 실패 묶음30개가 모두 PASS했다. 이후 C3의 세 묶음90개도 아래와 같이 완료했다. 마지막24개 묶음 b006에서 C3-0121~0129의9개가 통과한 뒤 C3-0130에서 FAIL하여 sequential Driver exit3으로 즉시 중단했다. 남은15묶음 및 전체 R1은 미시작이다. 실패 후 추가 source 수정·test/controller/reviewer 실행·자동 재시도는0이다.
+
+| Batch | Canonical IDs | Result | Controller Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b003 | C3-0031~0060 | 30/30 PASS | 951.448 | 2026-10-12T10:44:50.766408+00:00 |
+| b004 | C3-0061~0090 | 30/30 PASS | 1114.381 | 2026-10-12T11:05:52.141157+00:00 |
+| b005 | C3-0091~0120 | 30/30 PASS | 403.201 | 2026-10-12T11:15:10.241208+00:00 |
+
+세 PASS 묶음 모두 고정 CPython3.14.7/-I/-S/-B 및 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused로 실행했다. 실제 collection은 frozen collection과 byte 일치하고 selected/executed ID 순서가 일치한다. 실패·error·skip·expected failure·unexpected success·unstarted·unfinished는0이며 exit0, 정상 종료, group 부재, cleanup errors0, 입력 보존 및 after input check PASS다. 과거 세대의 재사용과 보완12개는 원래 항목에 중복 합산하지 않는다.
+
+실패 묶음 종료는2026-10-12T11:20:26.874174 UTC, controller144.137초/outer144.193761초, child exit1/controller exit2다. Selected24/run10/9 PASS/1 FAIL/14 unstarted이며 error·skip·expected failure·unexpected success·unfinished는0이다. 정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS이고, 별도 host process 조회에서 관련 잔여 process0개도 확인했다. Timeout이나 종료 처리 실패가 아니다.
+
+```text
+C3-0130: preservation / orphan manifest / optional-retired-entry / normal
+P2_C3_FIXTURE_PROGRAM proposal(): role='synthetic optional history'
+OLD WorkStore.publish(start) -> validate_work_record -> _external_refs
+HV2-WORK-RECORD: unknown document role
+```
+
+Fixture의 proposal helper가 선택적 문서 참조 role에 스키마 허용값이 아닌 설명 문자열을 넣었다. OLD work.py:649 및 NEW work.py:660의 허용값은 decision/brief/plan/narrative/result다. 실제 실행은 최초 start publication에서 거부되어 전환/보존 검사에 도달하지 않았다. required=False가 role 스키마 검사를 생략하지 않는다. 동일 helper를 쓰는 나머지 optional-ref8개에 같은 문제가 있다는 것은 정적 근거이며 아직 실행한 실패로 집계하지 않는다.
+
+#### Minimal Unapplied Recovery Proposal
+
+tests/test_entry_window_transition.py의 내장 P2_C3_FIXTURE_PROGRAM proposal helper에서 해당 role 문자열 하나만 narrative로 정정한다. 경로 hv2·SHA·required=False, orphan manifest/revision/rebind, normal/S1/S5 frontier, 모든 기존 전환·truth/Git/index 보존·receipt/replay assertion을 유지한다. 제품·controls·OLD·map·ID·timeout 변경은 없다. 관련9개는 C3-0130~0132/0136~0138/0142~0144다.
+
+현재 source SHA `3b83f49e2b670eb85eb15ec49c6dbff83c7ab7ded758c01f68ca2fcc8bf52e2f`, 미적용 후보 SHA `859f1020076fb0369cabb95dc82311a676661574a6a7945dce936d5ef06ebebb`다. 전체 source 및 내장 fixture syntax compile, Python literal 추출, 동일144행/map, 정확한 단일 치환 및 역치환 일치를 정적으로 확인했다. 실제 source 적용·제품 import·discovery·fixture 실행은0이다. Exact 미적용 치환은 private c3-optional-role-proposal.json에 보존한다.
+
+코드 정정 승인 시 관련9개 → 실패한 동일24개 → 잔여15묶음 → 기존 전체 R1세회 순서가 최소 재개안이다. 완료한 C3-0001~0120·pending12·baseline3·API6 및 R0/종료 처리14/reference28/C2는 반복하지 않는다. 새17배치/102controller를 모두 수행할 경우 누적934/1,000회·root143/160개다. 보완9개는 전체 진행량에 중복 합산하지 않는다. 추가 수정/자동 재시도는 없고 첫 실패·drift·관측 불가·한도 위험 시 중단한다. 아래 storage 조건 때문에 전체 재개 가능성은 보장되지 않는다.
+
+#### Remaining Budget And Preservation
+
+현재 canonical 완결은5,209/5,782이며 부분9개를 별도로 합산하면5,218 PASS/1 FAIL/563 미시작이다. 입력 세대별 결과이며 최신 source 전체 일괄 PASS가 아니다. 사용량은controller832/1,000회·root126/160개·review6/9회 및2,830.531초다. 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·개별caps·필수영역R1두회+누적R1한회와 기존 B1/14개 포함 범위를 유지한다. P2 수락 및 Git/STATUS/Done은 별도다.
+
+실행 root와 이전 중단 smoke의 현재 실할당은66,038,321,152 bytes(약61.50GiB)다. 기존64GiB 상한과 다음 step 전2GiB 여유 조건을 유지하면 추가 할당 허용 여유는533,671,936 bytes(약0.50GiB)다. 다음 실행은 현재 preflight 조건에 들어갈 수 있지만, 잔여17배치 전체가 이 여유에 들어간다는 실측 근거는 없다. 저장 한도를 자동 확대하거나 기존 자료를 삭제하지 않는다. 이 용량 위험을 재개 판단에 명시하고 각 고정 gate에서 기존 storage 조건을 그대로 적용한다. 향후 용량 부족은 source 수정 권한과 별개인 보존/정리 또는 예산 결정을 요구하며 원본 삭제로 우회하지 않는다.
+
+현재 source/controls/runtime·고정 입력·과거 STOP/manifest 보존 대조는 PASS이고 source는 checkout 밖 applied-entry-test.py와 byte 일치한다. 실패 stdout/trace/counts/result와 원 fixture/runner 보존 사본821,200 bytes, 과거 근거 및 current patch를 durable 위치에 유지한다. 소비자는 이번 fixture 정정 Owner 결정과 잔여 P2/R1이고 관련 checkout/실행 root는 해당 의존 종료까지 유지한다. 이번에는 복구 제안과 기존 Work 기록만 추가하며 실제 정정·재실행·리뷰는 수행하지 않았다.
+
+
+### C3 Optional Role Recovery Authorized And Applied — 2026-10-12T11:31:29.334848+00:00
+
+Owner가 role 한 곳만 정정하고 관련9개 → 실패 묶음24개 → 잔여15묶음 → 전체 R1세회 순서로 진행하도록 승인했다. 기존 한도·첫 실패 중단 조건을 유지하며 저장 공간 부족을 자료 삭제나 한도 확대로 우회하지 않는다. P2 수락과 Git은 별도다.
+
+tests/test_entry_window_transition.py의 내장 P2_C3_FIXTURE_PROGRAM proposal helper에서 role='synthetic optional history'만 role='narrative'로 정정했다. 경로 hv2·SHA·required=False·orphan 종류·frontier·모든 assertion, map/ID 및 제품/controls/OLD/timeout은 그대로다. 수정 전 SHA `3b83f49e2b670eb85eb15ec49c6dbff83c7ab7ded758c01f68ca2fcc8bf52e2f`, 적용 후 `859f1020076fb0369cabb95dc82311a676661574a6a7945dce936d5ef06ebebb`다. 전체/내장 syntax compile, AST literal·144행/map 동일성·정확한 단일 치환/역치환은 PASS이며 실행 PASS는 아직 아니다.
+
+새17배치는 관련9개 보완과 기존16개 잔여 배치이며582 occurrence 중 첫9개는 보완 근거라 canonical 집계에 중복 합산하지 않는다. 모두 완료하면 controller832+102=934/1,000회·root126+17=143/160개다. 새 실행 root는 approved root 아래 hv2-reference-private-colvia-p2-c3-optional-role-20261012-r001~017이며 등록 목록과 목적지 부재를 확인했다. 실행 root 생성은 아직0이다.
+
+준비 전 실할당은66038321152 bytes이고64GiB 상한·다음 step 전2GiB 여유·host free4GiB 조건을 확인했다. 전체 잔여 실행이 남은 용량에 들어간다고 보장하지 않으며 각 고정 gate가 같은 storage 조건을 검사한다. 자료 삭제와 한도 확대는0이다. 전체 종료2026-10-13 04:54:33.655857 KST, review6/9회·2,830.531초 사용 및 누적14,400초/개별caps·전체 R1 원래 범위와 B1/14개 포함 조건을 유지한다. 완료한 검증을 반복하지 않으며 추가 수정·자동 재시도는 없다.
+
+수정 전 source/current patch·한 곳의 fixture diff·적용 후 exact source 및 새 입력을 private c3-optional-role-recovery-17에 보존한다. 소비자는 승인된 before/after 및 잔여 P2/R1이고 의존 종료 때 보존을 재평가한다. 과거15세대의 입력·STOP·결과를 유지한다. P2 수락·Git/STATUS/Done은 수행하지 않았다.
+
+
+### C3 Role Recovery PASS And Storage Gate STOP — 2026-10-12T11:51:01.840594+00:00
+
+Owner가 승인한 role 한 곳을 narrative로 정정했고 관련9개 및 이전 실패 묶음과 동일한24개가 모두 PASS했다. 이후 첫 잔여 묶음 b003의 acquire 실행 전 storage gate에서 중단했다. 실제 테스트 실패·timeout·입력 drift로 인한 중단이 아니다. Owner가 명시한 기존 한도/중단 조건에 따라 자료 삭제·한도 확대·자동 재시도는0이다. 잔여15묶음과 전체 R1세회는 미시작이다.
+
+| Batch | Scope | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 | Optional reference 관련9개 | 9/9 PASS | 228.563 / 228.613338 | 2026-10-12T11:38:03.723790 UTC |
+| b002 | C3-0121~0144 동일 실패 묶음 | 24/24 PASS | 521.982 / 522.069006 | 2026-10-12T11:49:09.421874 UTC |
+
+두 묶음 모두 고정 CPython3.14.7/-I/-S/-B, 기존 격리·개별caps 및 acquire/canary/base collect/smoke20/entry collect/focused6단계를 사용했다. Actual collection은 frozen collection과 byte 일치하며 selected/executed ID와 순서도 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished는0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. C3-0130의 과거 unknown document role 실패와 수정 후 관련 검증/동일 묶음 통과를 before/after로 연결한다. 과거 실패 기록은 그대로 유지한다.
+
+C3 canonical144개는 이전 세대의 C3-0001~0120 PASS와 이번24개 PASS로 모두 실행 완료했다. 최신 source 전체 일괄 재실행을 뜻하지 않으며 baseline-refresh3개 의미 정정·recover4개 범위 한계와 source 세대 재사용은 전체 R1에서 검토해야 한다. 전체 canonical 완결은5,209+24=5,233/5,782 occurrence, 잔여549개/15묶음이다. 보완9개와 과거 부분9개를 중복 합산하지 않는다. 이 실행 결과만으로 P2 완료나 Owner 수락을 선언하지 않는다.
+
+#### Storage Stop And Unchanged Limits
+
+2026-10-12T11:49:28.744637 UTC(20:49:28.744637 KST), b003 step1의 preflight에서 다음 조건이 거부됐다.
+
+```text
+allocated = 66,770,976,768 bytes (62.18531799316406 GiB)
+required next-step margin = 2,147,483,648 bytes (2 GiB)
+budget = 68,719,476,736 bytes (64 GiB)
+allocated + margin = 68,918,460,416 bytes
+shortfall = 198,983,680 bytes
+host free = 70,461,648,896 bytes
+```
+
+Host 전체 disk가 가득 찬 것이 아니라 승인된 검증 저장 예산 안의2GiB 여유 조건이 충족되지 않은 것이다. 이 단계는 controller 호출·새 root 생성 전에 중단됐으며 sequential Driver exit1이다. 기존 stopped-slot을 재사용하거나 자료를 삭제하거나 한도를 늘려 우회하지 않는다. 남은15묶음/전체R1의 실행 권한은 이 저장 조건을 무시할 권한이 아니다. 현 조건에서는 STOP을 유지한다.
+
+현재 controller844/1,000회, 실행 root128/160개, review6/9회 및2,830.531초다. 이 재개에서 새 root2개/controller12회만 사용했다. 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·개별caps·원래 전체 R1세회 범위와 B1/14개 포함 조건은 그대로다. P2 수락·Git/STATUS/Done은 별도이며 수행하지 않았다.
+
+#### Verification And Preservation
+
+Storage STOP, 실행 입력·결과·trace/counts 및 source/controls/runtime·과거15세대 frozen manifest/STOP 보존을 확인했다. 현재 source는 checkout 밖 applied-entry-test.py와 byte 일치하며 정정한 role 외의 새 source 수정은0이다. 별도 host process 조회에서 관련 잔여 process0개를 확인했다. 실패였던 이전 fixture 자료와 이번 PASS 결과를 모두 유지하고 현재 Work 및 source diff를 기존 durable 보존 위치에 갱신한다.
+
+소비자는 남은 P2/R1 및 저장 조건에 대한 Owner 판단이다. 관련 checkout과 실행 root는 아직 이 후속 검증의 사용 대상이므로 유지하며 cleanup/deletion은 수행하지 않는다. 문서 검증과 보존 확인은 실행 재시도나 검증 범위 확장이 아니다.
+
+
+### Storage Budget Only Resume Authorized — 2026-10-12T12:09:49.038494+00:00
+
+Owner가 저장 상한만64→96GiB(103,079,215,104 bytes)로 조정하고 잔여15묶음549 occurrence → 원래 전체 R1세회 순서로 재개하도록 승인했다. 자료 보존·기타 한도·첫 실패 STOP·추가 한도 확대/자동 재시도 금지를 유지하고 P2 수락과 Git 작업은 별도로 남긴다.
+
+산정 당시 실측62.185317993GiB에 추가 계획31.5GiB와 기존 필수 여유2GiB를 더한95.685317993GiB를 정수 GiB로 올린96GiB다. 추가 계획은 C4 detach240×80MiB=18.75GiB, 기타C4144×64MiB=9GiB, C5109개0.5GiB, X156개3GiB, 고정 root/입력/R1세회0.25GiB다. 미실행 C4 등의 추정치이며 완료 보장이 아니다. R1 자료는 기존 gate 밖의 별도 산출물이나 보수적인 계획 여유에 포함했으며 storage 계측 범위를 변경하지 않는다.
+
+재개 직전 실할당66770976768 bytes, host free70425288704 bytes다. 96GiB 상한 외에 다음 step 전2GiB 여유·host free4GiB·controller1,000회·root160개·review9회/누적14,400초·개별 cap·전체 종료2026-10-13 04:54:33.655857 KST는 그대로다. 현재controller844/root128/review6 및2,830.531초다. 잔여90controller/15root를 마치면934/143이다.
+
+기존 c3-optional-role-recovery-17의 b003 step1은 controller 호출 전 STOP한 기록으로 보존한다. 새로운 storage-resume-18의 Driver 기록만 분리하고 b003~017의 기존 exact 실행 입력·선택·runtime·환경·출력 목적지를 그대로 사용한다. 목적지는 모두 부재하며 새 root를 생성한 적이 없다. 완료한 b001/b002 및 이전 PASS 검증은 반복하지 않는다. 제품·테스트·controls 수정은0이고 source는 applied-entry-test.py와 byte 일치한다. 이전 STOP/frozen 입력/결과를 보존하며 이 자료의 소비자는 잔여 P2/R1과 Owner 판단이다.
+
+
+### C4 Detach Receipt Mode Assertion STOP — 2026-10-12T12:16:41.578348+00:00
+
+승인된 저장 상한96GiB를 적용하고 잔여 첫 묶음 b003(C4-0001~0036)을 시작했다. Acquire/canary/base collection/smoke20/entry collection의5단계는 PASS했지만 focused 첫 사례 C4-0001에서 FAIL하여 Driver exit3으로 즉시 중단했다. 이후14묶음과 전체 R1세회는 미시작이며 추가 정정·자동 재시도·한도 확대는0이다.
+
+실행 종료2026-10-12T12:12:51.831945+00:00, controller15.805초/outer15.88327초, child exit1/controller exit2다. Selected36/run1/FAIL1/unstarted35이며 PASS0, error/skip/expected failure/unexpected success/unfinished0이다. 고정 CPython3.14.7/-I/-S/-B와 기존 격리·개별caps를 사용했다. 두 actual collection은 frozen bytes와 일치하며 input/after check PASS, 정상 종료·group 부재·cleanup errors0이다. 별도 host process 조회에서 관련 잔여 process0개를 확인했다. Timeout·storage gate·입력 drift가 원인이 아니다.
+
+실패 지점은 tests/test_entry_window_transition.py:4062의 snapshot 비교다. C4-0001은 unlink-before colvia witness에 정확히1회 도달했고 colvia는 남아 있다. 새 .hrn/detached.json의 내용은 요청으로 재구성한 정확한 canonical receipt23,923 bytes/SHA4f0e0a3174fbe28b6ebcae31ab52228e55739f715032afb0b4609f9584b76aab와 일치하나 실제 mode0644와 테스트 기대0600이 다르다. 제품의 workspace_detach_apply→_write_exact→write_new_bytes는 Path.open('xb')로 생성하고, 기록된 parent umask0022에서는0644가 된다. 테스트용 write_file 기본0600을 제품 receipt 기대값으로 사용한 오류로 판단한다. 첫 snapshot에서 중단했으므로 뒤의 recovery/replay assertion은 실행되지 않았다. 관측한 mode 불일치 외에 모든 전후 상태가 동일하다고 이 기록만으로 확대 주장하지 않는다.
+
+#### Minimal Unapplied Recovery Proposal
+
+p2_c4_detach_frontier의 expected/final receipt tuple 두 곳만0600→0644로 정정하는 후보를 제시한다. 제품/controls/umask와 정확한 receipt bytes·파일/디렉터리 removal frontier·truth 보존·recovery/replay 검사는 유지한다. 동일 helper의 detach-frontier240개에 공통되며 나머지 C4144개를 포함한384행/map은 그대로다. 후보 syntax·exact 두 치환 및 역치환·map 동일성을 정적으로 확인했으며 적용·import·테스트 실행은0이다.
+
+현재 source SHA859f1020076fb0369cabb95dc82311a676661574a6a7945dce936d5ef06ebebb, 미적용 후보 SHA74b41a33446fdab8341bb112187457ad8746fae62e761d13eada048cfd6c9e1c다. Exact 두 줄 diff는 private c4-detach-mode-proposal.json에 보존한다. 별도 승인 시 이 두 기대값 정정 → 실패한 동일36개 → 잔여14묶음 → 원래 전체 R1세회가 최소 재개안이다. 새 보완 묶음이나 이미 통과한 검증의 반복은 제안하지 않는다. 새15묶음90controller를 수행하면 누적940/1,000회·root144/160개다. 이 제안은 실행 승인이 아니며 현재 STOP을 유지한다.
+
+#### Remaining Budget And Preservation
+
+전체 canonical 완결은5,233/5,782로 변하지 않았다. 잔여549개는 이번 FAIL1개와 미시작548개이며 실패 묶음 포함15묶음이 남는다. 누적controller850/1,000회·root129/160개·review6/9회 및2,830.531초다. 저장 실할당66846515200 bytes(62.255669GiB), 상한96GiB 및2GiB 여유·host free4GiB 조건을 유지한다. 전체 종료2026-10-13 04:54:33.655857 KST, review누적14,400초·기존 개별caps·첫 실패 STOP은 그대로다. P2 수락·Git/STATUS/Done은 수행하지 않았다.
+
+실패 stdout/trace/counts/result와 원 fixture 및 runner가 보존한 사본34692669 bytes를 유지한다. Source는 checkout 밖 applied-entry-test.py와 byte 일치하며 새 source 수정0이다. 이전 storage STOP과 과거16세대 frozen/STOP, 현재 입력·결과 및 current patch를 보존한다. 소비자는 이 기대값 정정에 대한 Owner 판단과 잔여 P2/R1이며 관련 checkout/실행 root를 유지한다. 자료 삭제·압축·정리·리뷰 호출은0이다.
+
+
+### C4 Detach Receipt Mode Recovery Authorized And Applied — 2026-10-12T12:21:19.176202+00:00
+
+Owner가 권한 기대값 두 곳만0644로 정정하고 실패한36개 → 잔여14묶음 → 전체 R1세회 순서로 재개하도록 승인했다. 기존 자료와96GiB를 포함한 나머지 한도·첫 실패 STOP을 유지하며 추가 수정·한도 확대·자동 재시도는 하지 않는다. P2 수락과 Git 작업은 별도다.
+
+tests/test_entry_window_transition.py의 p2_c4_detach_frontier 안 expected/final receipt tuple 두 곳만0600→0644로 바꿨다. 수정 전 SHA859f1020076fb0369cabb95dc82311a676661574a6a7945dce936d5ef06ebebb, 수정 후 SHA74b41a33446fdab8341bb112187457ad8746fae62e761d13eada048cfd6c9e1c다. Syntax compile·정확한 두 치환/역치환·C4384행/map 동일성은 PASS다. 제품·controls·umask·파일/디렉터리 경계·receipt bytes·truth 보존·recovery/replay assertion은 그대로다. 실행 PASS는 아직 아니다.
+
+동일 실패36개와 잔여14묶음549 occurrence의 선택/순서/개별caps는 그대로이고 source identity와 새 출력 root만 갱신했다. 새 root15개는 approved root 아래 hv2-reference-private-colvia-p2-c4-mode-20261012-r001~015이며 등록 목록과 목적지 부재를 확인했다. 생성된 실행 root는 아직0개다. 완료한 이전 검증과 R0는 반복하지 않는다. 현재controller850/1,000회·root129/160개에서 전체 수행 후940/144가 된다.
+
+재개 전 실할당66846515200 bytes/host free70306754560 bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB·전체 종료2026-10-13 04:54:33.655857 KST·review6/9회와2,830.531초 사용/누적14,400초·기존 개별 cap을 유지한다. 공간·시간 내 완료는 보장하지 않으며 gate가 같은 조건으로 중단한다. 원래 전체 R1세회 범위와 B1/14개·세대별 근거/기존 coverage 한계도 유지한다.
+
+수정 전 source/current patch와 두 줄 diff·적용 후 exact source/새 실행 입력은 private c4-detach-mode-recovery-19에 보존한다. 과거17세대 입력·STOP과 실패 원본/runner 사본을 유지하며 소비자는 승인된 before/after 및 잔여 P2/R1이다. Source checkout과 기존 실행 root는 이 의존 종료까지 유지한다. P2 수락·Git/STATUS/Done은 수행하지 않았다.
+
+
+### Owner Removes Overall Wall Deadline — 2026-10-12T12:35:39.048838+00:00
+
+Owner actual decision: “4:54 KST는 초과해도 상관없어. 모자라면 한도없이 연장해. 미리 얘기할게.” 전체 작업의 종료 시각2026-10-13 04:54:33.655857 KST를 해제하고, 필요 시 전체 wall-clock 시간 제한 없이 계속할 권한을 부여했다. 이 승인은 저장96GiB·controller1,000회·root160개·review9회/누적14,400초·개별 실행 timeout을 늘리지 않는다. 첫 예상 밖 실패 STOP·추가 source 수정/자동 재시도 금지·P2 수락/Git 별도 조건은 그대로다.
+
+현재 실행 중인 고정 입력과 기존 window 기록을 덮어쓰거나 child를 중단하지 않는다. 기존 Driver의 시간 preflight가 해당 시각에 PAUSE하면, 이미 시작한 단계를 다시 실행하지 않고 다음 미실행 단계의 새 고정 재개 입력에 이번 시간 승인을 반영한다. 후속 R1 wrapper에도 전체 wall deadline을 적용하지 않되 개별/누적 review cap은 유지한다. 이 시간 전 재개 입력들은 당시 조건의 역사이며 새 Owner 결정이 전체 종료 시각 판단을 대체한다. 기계 판독용 승인 연결은 private c4-detach-mode-recovery-19/owner-overall-time-authorization.json에 보존하며 소비자는 잔여 실행과 R1의 시간 gate다.
+
+Owner는 원격·모바일로 필요한 승인만 할 예정이며, 이후 승인 요청은 범위·재개 순서·한도·중단 조건을 하나의 구체적인 제안으로 묶어 단순 “승인” 답변으로 실행할 수 있게 한다. 이번 시간 승인은 새로운 source 정정이나 실패 후 자동 재시도 권한이 아니다.
+
+
+### C4 Initial Transition Classification STOP And Diagnostic Proposal — 2026-10-12T12:45:54.027011+00:00
+
+권한 기대값 두 곳을0644로 정정한 후 동일36개 중 C4-0001~0032는 PASS했으나 C4-0033의 준비 fixture 초기 전환에서 FAIL하여 첫 실패 STOP을 유지한다. 정정 전 C4-0001 실패와 정정 후 해당 사례의 detach/recovery/replay PASS를 구분해 연결한다. 36개 묶음 전체 PASS를 주장하지 않는다. C4-0034~0036 및 잔여14묶음과 전체 R1세회는 미시작이다. 이번 실패 뒤 source/controls 정정과 재실행은0이다.
+
+앞선 acquire/canary/base collect/smoke20/entry collect는 PASS다. Focused selected36/run33/PASS32/FAIL1/unstarted3이며 error/skip/expected failure/unexpected success/unfinished는0이다. 종료2026-10-12T12:38:33.585980+00:00, controller876.533초/outer876.638332초, child exit1/controller exit2/Driver exit3이다. 정상 종료·group 부재·cleanup errors0·before/after input check PASS다. 별도 host process 조회에서도 관련 잔여 process0개를 확인했다. Timeout이나 storage gate 중단은 아니다.
+
+실패 위치는 tests/test_entry_window_transition.py:4011의 p2_c4_base('transition')에서 초기 update apply의 예상 exit0/실제65 비교다. JSON은 HV2-WORKSPACE-TARGET / target classification unavailable이다. Fault=None이며 두 번째 update와 detach 실행 전이다. src/hv2ref/workspace.py:264의 classify_target이 OSError/UnicodeError/ValueError를 이 메시지로 감싸며 현재 CLI 출력은 내부 cause를 포함하지 않는다. 보존된3-product.log/6391개 event에서도 원 예외의 type·errno·발생 줄을 확인할 수 없다. 따라서 일시적 OS 장애나 제품 결함 중 어느 쪽도 확정하지 않는다. 과거32개 PASS는 이번 실패 원인의 증명이 아니다.
+
+전체 canonical 완결은5,233/5,782 occurrence, 미완료 계획549개/15묶음으로 유지한다. 이번 미완결 묶음의 부분 PASS32개를 별도로 기록하며 완결 묶음 합계에 중복 합산하지 않는다. 현재controller856/1,000회·root130/160개·review6/9회 및2,830.531초 사용이다. 저장 실할당68481576960 bytes(63.778439GiB), host free68403200000 bytes다. Storage96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별caps·첫 실패 STOP은 유지한다. Owner가 전체 wall deadline을 해제한 결정은 유효하며 다시 시간 연장 승인을 요청하지 않는다.
+
+#### One-Run Diagnostic Proposal — Unapplied
+
+추측에 따른 제품 정정 대신 C4-0033 한 건만 새 격리 실행 root에서1회 진단한다. 기존 controls의 별도 진단 복사본에서 observer.py에만 제한된 trace를 추가하는 후보이며 제품·테스트 source, 기존 controls와 sandbox/network 권한은 바꾸지 않는다. 원 observer SHA0a82418e7638923fd4ad9918e15c24e2b02d5b8ee55a56804187c438ccc67870, 미적용 후보 SHA820a361508961d68fad05ba54c3936cc85941f1ca8f5c817bcf94847932c85d6다. 후보 exact diff와 bytes·scope는 private c4-detach-mode-recovery-19/classification-diagnostic-proposal.json에 보존했고 syntax compile/AST는 PASS다. 진단 controls 생성·적용·import·제품/test 실행은 아직0이다.
+
+진단은 C4-0033의 fault 없는 첫 new-source update에만 활성화한다. classify_target에서 동일 오류가 발생하면 원 cause type·errno·최대16개 traceback 위치를 기존 synthetic WORK 내부 sidecar에 기록한다. Start/finished marker로 관측 활성화와 종료를 확인하고 제품 stdout·기존 event 흐름·assertion은 그대로 둔다. Trace는 timing과 한 개의 로그 descriptor에 영향을 줄 수 있으므로 동일 실행 의미나 실패 재현을 사전에 보장하지 않는다. 통과하면 미재현으로만 보고하며 원 실패 해결이나 일반 P2 PASS로 합산하지 않는다.
+
+예정 root는 /Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-target-diagnostic-20261012-r001이며 등록 목록과 목적지 부재를 확인했다. Controls 목적지는 /Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition/docs/development/verification/colvia-target-diagnostic-20다. 승인 후 기존 고정 CPython3.14.7/-I/-S/-B 및 같은 controller allowlist로 acquire-base → canary-base → collect-base → smoke-base20 → collect-p2 → focused-p2(선택은 test_entry_window_transition.EntryProductTests.test_p2_c4_0033 하나) 순서를 새 입력/digest에 고정한다. 개별caps는 acquire/canary/collect300초, smoke/focused1,200초 그대로다. 각 단계는 기존 격리/입력·collection/저장 gate와 새 출력 슬롯을 사용한다. Controller최대6회로862/1,000회·root1개로131/160개가 되며 review는 호출하지 않는다. 전체 wall deadline은 명시적 null로 처리하고 기존 한도는 유지한다.
+
+이 진단은 결과와 관계없이 보고 후 멈춘다. 첫 실패·timeout·drift도 즉시 중단하며 자동 재시도·새 정정·잔여 P2/R1 재개를 포함하지 않는다. 원인에 맞는 복구안은 진단 후 Owner에게 단일 승인 요청으로 제시한다. 기존 Owner가 추가 수정·자동 재시도 금지와 첫 실패 STOP을 명시했으므로 이 추가 진단1회는 별도 승인이 필요하다.
+
+#### Preservation And Retention
+
+Runner가 보존한 실패 fixture 사본2,071,893 bytes는 원본과 경로별 kind/mode/content hash가 일치한다. 현재 source는 checkout 밖 applied-entry-test.py와 byte 일치한다. 현재 STOP·counts·실행 trace·result 및 과거17세대 frozen manifest/STOP을 검증했고 source/controls/runtime의 frozen identity도 그대로다. 현재 Work를 포함한 current-changes.patch를 갱신한다.
+
+소비자는 C4-0033의 원인 진단·복구 및 남은 P2/R1이다. 새 진단 후보와 실패 자료는 이 의존 종료 때 보존을 재평가한다. 관련 source checkout과 실행 root는 구체적인 후속 사용이 남아 유지하며 자료 삭제·정리·Git/STATUS/Done·P2 수락은 수행하지 않았다.
+
+
+### One-Run C4 Classification Diagnostic Authorized — 2026-10-12T12:49:29.547375+00:00
+
+Owner가 직전 제안에 “승인”으로 동의했다. C4-0033 한 건을1회 진단하고 결과와 관계없이 보고 후 멈춘다. 잔여 P2/R1 재개·추가 정정·자동 재시도는 포함하지 않는다. 기존 first failure STOP과 storage96GiB/controller1,000/root160/review9회·14,400초/개별caps를 유지하며 overall wall deadline은 null이다.
+
+승인된 exact observer 후보 SHA820a361508961d68fad05ba54c3936cc85941f1ca8f5c817bcf94847932c85d6를 별도 colvia-target-diagnostic-20 controls에 적용했다. 기존6단계의 base/entry phase 간 동일 controls identity 검사를 유지하기 위해 base fixture source와 현재 source 각각의 docs/development/verification 아래에 같은12개 controls 파일을 복사했다. 각 복사본은 observer.py만 승인된 내용으로 바뀌었고 제품·테스트·기존 controls·sandbox policy는 그대로다. 단일 사례의 fault 없는 초기 update에서 내부 cause type/errno/traceback 위치만 WORK sidecar에 기록하며 timing/descriptor 영향 가능성을 유지한다. Syntax compile은 PASS지만 진단 실행은 아직 아니다.
+
+새 root /Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-target-diagnostic-20261012-r001의 부재/등록 목록을 확인했다. 기존 고정 runtime과6단계 acquire/canary/base collect/smoke20/entry collect/focused(C4-0033 하나), 입력·collection·격리·저장 gates를 유지한다. Controller856→최대862,root130→최대131이다. 실행 전 할당68481576960 bytes/host free68565499904 bytes이며 여유 gate는 동일하다. Source digest316f88bc779d8d08de1bb9099a58d7b700a1268b4ced5bff7b4a540ab502aaaf는 그대로다.
+
+기존 실패/STOP/부분32PASS·과거18세대 입력, 현재 source와 Work patch를 보존한다. 새 controls/input/sidecar의 소비자는 이번 원인 진단과 후속 Owner 판단/R1이며 의존 종료 때 보존을 재평가한다. 진단 PASS는 미재현이며 원인 해결·일반 P2 합산·Owner 수락을 뜻하지 않는다. Git/STATUS/Done은 별도다.
+
+
+### C4 Single Diagnostic PASS Without Failure Reproduction — 2026-10-12T12:56:17.829442+00:00
+
+승인된 C4-0033 단일 진단은 PASS했으며 결과와 관계없이 멈추는 조건에 따라 종료했다. 앞선 acquire/canary/base collect/smoke20/entry collect도 PASS다. Focused selected1/run1/PASS1, fail/error/skip/expected failure/unexpected success/unstarted/unfinished는0이다. Controller86.466초/outer86.545107초, 종료2026-10-12T12:53:46.392581+00:00, exit0·정상 종료·group 부재·cleanup errors0·before/after input check PASS다. 별도 host process 조회에서도 관련 잔여 process0개를 확인했다. 두 collection과 focused의 collection은 고정 기대 bytes와 일치하고 실행 ID/occurrence는 선택한 한 건과 일치한다.
+
+기존 실패가 발생했던 fault 없는 첫 update에 diagnostic-start/diagnostic-finished가 각각1개 기록됐고 classification-cause event는0개다. Sidecar SHA4b472faa9c0f52f9a6167fc72c59197f13006024aef0d9be50212e22331d16fc다. 따라서 기록 장치가 비활성화돼 놓친 결과로 처리하지는 않지만, 원 오류가 이번 실행에서 재현되지 않아 type/errno/발생 위치를 얻지 못했다. 단일 사례의 통과는 기존36개 묶음의 실행 조건과 같지 않으며 trace의 timing/descriptor 영향도 있다. 제품 결함 해결·일시적 OS 장애 확정·기존 실패 무효화를 주장하지 않는다.
+
+제품·테스트 source는 그대로이고 기존 controls도 보존됐다. 진단 PASS를 canonical P2에 합산하지 않으므로 완결5,233/5,782, 미완료 계획549개/15묶음은 그대로다. 이전36개 중 부분 PASS32개/FAIL1개/미시작3개도 원 기록으로 유지한다. 진단 approval은 소비됐으며 execution-state/STOP.json의 b001-diagnostic-complete-owner-gate는 실패 표시가 아니라 승인 범위 종료를 나타낸다. 이후 잔여 P2/R1은 아직 실행하지 않았다.
+
+#### Ordinary Controls Resume Proposal — Not Executed
+
+제품·테스트 및 원래 colvia-entry-cleanup-10 controls를 수정하지 않고, 실패했던 같은36개 묶음을 새 root에서1회 재검증한다. 이 묶음이 PASS하면 나머지14묶음, 모두 PASS하면 원래 전체 R1세회 순서로 진행하는 한 번의 승인안을 제시한다. 이번 진단 observer는 일반 재개 실행에 사용하지 않는다. 원인이 해결됐다는 가정 대신 원래 controls/동일 선택 조건의 관측을 얻고 원인 미확정 사실을 R1에 전달한다. 어느 단계든 첫 예상 밖 실패·timeout·drift·저장 gate 거부 시 중단하며 추가 정정·한도 확대·자동 재시도는 없다. 새로운 실패를 기존 오류와 같은 원인으로 단정하지 않는다.
+
+c4-detach-mode-recovery-19에 고정된 잔여15묶음의 exact 선택/순서549 occurrence를 유지한다. 새 root 후보는 hv2-reference-private-colvia-p2-target-resume-20261012-r001~015이며 부재와 등록 목록을 확인했다. Controller현재862/1,000회에서90회 사용 시952회,root131/160개에서146개다. Review6/9회·2,830.531초 사용/누적14,400초 및 기존 개별caps, 원래 R1세회 범위와 B1/14개·C3 검증 범위 한계는 유지한다. Overall wall deadline은 null이다. P2 수락·Git/STATUS/Done은 별도다.
+
+현재 실할당68537991168 bytes(63.830978GiB),host free68388704256 bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB는 그대로이며 잔여 완료를 보장하지 않는다. 공간 부족을 삭제나 한도 확대로 우회하지 않는다. 기계 판독용 제안은 private target-classification-diagnostic-20/ordinary-resume-proposal.json이다. 이 제안과 입력 점검은 재실행 권한이 아니며 Owner 승인을 기다린다.
+
+#### Preservation
+
+과거18세대 frozen 입력/STOP과 현재 source·원래 controls·runtime의 identity를 확인했다. 새 진단 controls와 입력·result/counts/실행 trace/sidecar를 보존하며 Work를 포함한 current patch를 갱신한다. 소비자는 미해결 오류에 대한 Owner 판단과 후속 ordinary P2/R1이며 관련 source/실행 root를 유지한다. 복구 원인 확정이나 검증 재사용 판단이 끝날 때 보존을 재평가한다. 삭제·압축·정리·Git·P2 수락은 수행하지 않았다.
+
+
+### Original Controls Resume Authorized After Single Diagnostic — 2026-10-12T13:07:35.983319+00:00
+
+Owner가 직전 단일 재개안에 “승인”으로 동의했다. 제품·테스트 수정 없이 원래 colvia-entry-cleanup-10 controls로 실패했던36개를1회 재검증하고, PASS하면 잔여14묶음, 모두 PASS하면 원래 전체 R1세회를 진행한다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 즉시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+단일 진단 C4-0033 PASS는 오류 미재현이며 원인은 미확정이다. 이 사실과 trace timing/descriptor 한계를 후속 R1에 유지한다. 이번 ordinary 재개에서는 진단 observer를 사용하지 않고 원 observer SHA0a82418e7638923fd4ad9918e15c24e2b02d5b8ee55a56804187c438ccc67870를 사용한다. 제품/테스트 source SHA74b41a33446fdab8341bb112187457ad8746fae62e761d13eada048cfd6c9e1c, source digest316f88bc779d8d08de1bb9099a58d7b700a1268b4ced5bff7b4a540ab502aaaf 및 원래 controls/개별caps/선택549 occurrence는 그대로다.
+
+새15개 root 후보 hv2-reference-private-colvia-p2-target-resume-20261012-r001~015의 부재와 등록 목록을 확인했다. 준비 과정의 실행 root 생성은0이다. Controller현재862/1,000회에서90회 사용 시952회,root131/160개에서146개다. Review6/9회·2,830.531초 사용/누적14,400초와 개별caps, 전체 R1의 원래 범위 및 B1/14개·C3 baseline-refresh3개/pending recover4개 한계를 유지한다. Overall wall deadline은 null이며 새 Driver는 명시적으로 종료 시각을 적용하지 않는다.
+
+준비 직전 실할당68537991168 bytes/host free68380336128 bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB를 유지하며 공간 내 완료를 보장하지 않는다. 자료 삭제나 한도 확대로 우회하지 않는다. 기존19세대 입력/STOP/결과와 원래 실패·단일 진단을 보존하고 current Work/source patch를 갱신한다. 소비자는 이번 승인된 ordinary P2/R1과 Owner 판단이며 관련 checkout과 실행 root는 유지한다.
+
+
+### C4 Original Controls Same Failed 36 PASS After Diagnostic — 2026-10-12T13:26:44.645431+00:00
+
+원래 controls에서 C4-0001~0036 동일36개가 PASS했다. 이전 C4-0033 초기 전환 오류는 이 묶음에서도 재현되지 않았지만 원인은 미확정이다. 제품·테스트·controls 수정0이며 단일 진단 PASS는 중복 합산하지 않는다. 권한 두 곳 정정 후 C4-0001의 detach/recovery/replay 통과도 유지한다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 | C4 | 36/36 PASS | 926.245 / 926.296917 | 2026-10-12T13:26:05.640104+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5269/5,782 occurrence이고 잔여513개/14묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller868/1,000회·root132/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거19세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### C4 Child Spawn Resource Error STOP — 2026-10-12T13:40:36.648695+00:00
+
+원래 controls로 C4-0001~0036의 첫36개는 모두 PASS했다. 이어진 두 번째 묶음에서 C4-0037~0053의17개가 PASS했으나 C4-0054에서 자식 프로세스 생성 오류가 발생해 sequential Driver exit3으로 중단했다. 첫 예상 밖 실패 STOP 조건에 따라 이후13묶음과 전체 R1세회는 미시작이며 추가 수정·재실행·한도 확대는0이다. 두 번째 묶음 전체를 PASS로 합산하지 않는다.
+
+종료2026-10-12T13:36:04.672173+00:00, controller437.579초/outer437.626834초, child exit1/controller exit2다. Selected36/run18/17PASS/1ERROR/18미시작이며 assertion failure·skip·expected failure·unexpected success·unfinished는0이다. Controller는 정상 종료, process group 부재, cleanup errors0, 입력 보존 및 after input check PASS를 기록했다. 별도 host 조회에서도 실패 그룹 PGID81309의 잔여 프로세스는0개였다.
+
+```text
+C4-0054: detach-frontier / unlink-after / occurrence1
+p2_c4_detach_frontier -> self.call -> FixtureBase.spawn -> subprocess.Popen -> _fork_exec
+BlockingIOError: [Errno 35] Resource temporarily unavailable
+```
+
+오류는 detach 실행 child를 만드는 tests/test_entry_window_transition.py:353에서 발생했다. 준비 단계의 초기 OLD→NEW 전환과 두 번째 NEW update 응답은 각각 updated다. 실패 child용 stdin/scenario는 있지만 product log는0bytes, 해당 observer event와 detached receipt는 없다. 따라서 이 사례의 detach 실행·unlink-after 오류 주입·복구 단언은 미실행이다. 기존 제품 거부나 selector 동작 실패로 해석하지 않는다.
+
+중단 뒤 읽기 전용 host snapshot에서 전체748/user539 프로세스, user zombie0, RLIMIT_NPROC soft4000/hard6000, kern.maxproc6000/maxprocperuid4000을 관측했다. 이는 실패 순간의 표본이 아니므로 일시적 자원 부족의 종류나 원인을 확정하지 못한다. 테스트/controls source에는 별도 RLIMIT_NPROC 설정이 없으며 sandbox는 process-exec/process-fork를 허용한다. 최초 sandboxed ps/sysctl 조회는 권한 거부였고, 허용된 읽기 전용 host 조회로 위 값을 얻었다. 프로세스 종료·OS 한도 변경·제품 재실행은 하지 않았다. 이전 C4-0033 초기 분류 오류와 같은 원인이라는 증거는 없다.
+
+#### Bounded Unchanged-Input Resume Proposal — Not Executed
+
+제품·테스트·colvia-entry-cleanup-10 controls와 기존 선택/개별 cap을 그대로 두고, 실패한 동일36개(C4-0037~0072)를 새 경계에서1회 재검증한다. PASS하면 나머지13묶음477 occurrence, 모두 PASS하면 원래 전체 R1세회 순서로 진행하는 단일 재개안이다. 완료 기준은 동일36개와 잔여 전체 selected/executed 일치·비정상 결과0·정상 종료·입력/근거 보존 및 원래 전체 R1/Driver 처분이다. 통과하더라도 이번 자원 오류의 원인을 해결했다고 주장하지 않는다. 첫 예상 밖 실패·timeout·drift·저장 gate 거부 시 다시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 결과 수락·Git/STATUS/Done은 별도다.
+
+새14개 root 후보는 approved root 아래 hv2-reference-private-colvia-p2-spawn-resume-20261012-r001~014다. 등록 목록과 목적지 부재를 확인했으나 root·새 frozen invocation을 생성하거나 실행하지 않았다. 기존 frozen b002~b015의 exact 선택/순서513 occurrence를 이어받는 안이며 완료한 첫36개·과거 보완/진단/R0/14개 qualification은 반복하지 않는다. Controller874/1,000회에서84회 사용 시958회, root133/160개에서14개 추가 시147개다. 이 제안은 실행 승인이 아니다. 직전 Owner가 첫 실패 STOP과 자동 재시도 금지를 명시했으므로 재개 승인이 필요하다.
+
+#### Remaining Evidence And Preservation
+
+완료 묶음 기준 canonical 완결은5,269/5,782 occurrence이고 미완료 계획513개/14묶음이다. 이번 부분17개를 별도 계산하면5,286PASS/1ERROR/495미시작이다. 서로 다른 입력 세대와 미완료 묶음의 부분 결과를 최신 source 전체 일괄 PASS로 바꾸지 않는다. Review6/9회·2,830.531초 사용, 누적14,400초/개별1,200초, storage96GiB·다음 step 전2GiB 여유·host free4GiB를 유지한다. Overall wall deadline은 null이다. 원래 전체 R1의 B1 통제 보완/14개 qualification, C3 의미 정정 및 검증 범위 한계, C4-0033과 이번 오류의 원인 미확정을 모두 유지한다.
+
+Source/controls/runtime·현재 frozen input·과거19세대 manifest/STOP 재대조는 PASS다. Source test는 checkout 밖 original-entry-test.py와 byte 일치한다. 실패 fixture 원본과 runner 보존 사본은179개 entry의 bytes/mode/link 대조가 일치했고 보존 계측29,918,412bytes다. Stdout/result/counts/실행 trace/실패 fixture와 기존 exact 입력을 유지하며 current Work/source patch를 갱신한다. Storage 실할당71,296,294,912bytes, host available65,536,000,000bytes를 관측했다. 소비자는 이번 미해결 오류에 대한 Owner 판단과 남은 P2/R1이다. Source checkout과 실행 root는 이 후속 사용 때문에 유지한다. 삭제·정리·Git 게시·P2 수락은 수행하지 않았다.
+
+
+### Unchanged Controls Resume After Child Spawn Error Authorized — 2026-10-12T14:07:23.635733+00:00
+
+Owner가 직전 단일 재개안에 “승인”으로 동의했다. 제품·테스트·원래 colvia-entry-cleanup-10 controls를 바꾸지 않고, 실패한 동일36개(C4-0037~0072)를 새 실행 경계에서1회 재검증한다. PASS하면 잔여13묶음477 occurrence, 모두 PASS하면 원래 전체 R1세회를 진행한다. 완료한 첫36개와 과거 보완·단일 진단·R0·14개 qualification은 반복하지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+C4-0054의 process spawn errno35와 이전 C4-0033 분류 오류의 원인은 미확정이다. 새 PASS로 원인을 해결했다고 주장하지 않으며 R1에 두 관측의 한계를 유지한다. Test SHA74b41a33446fdab8341bb112187457ad8746fae62e761d13eada048cfd6c9e1c, source digest316f88bc779d8d08de1bb9099a58d7b700a1268b4ced5bff7b4a540ab502aaaf, 원 observer SHA0a82418e7638923fd4ad9918e15c24e2b02d5b8ee55a56804187c438ccc67870 및 기존 개별caps/선택513 occurrence는 그대로다. 진단 observer는 사용하지 않는다.
+
+새14개 root 후보 hv2-reference-private-colvia-p2-spawn-resume-20261012-r001~014의 부재·등록 목록·실행 중복 부재를 확인했다. 준비 과정의 실행 root 생성은0이다. Controller874/1,000회에서84회 사용 시958회, root133/160개에서14개 추가 시147개다. Review6/9회·2,830.531초 사용/누적14,400초·개별1,200초, 원래 전체 R1세회와 B1/14개·C3 의미 정정 및 검증 범위 한계를 유지한다. Overall wall deadline은 null이다.
+
+준비 직전 실할당71296294912bytes/host free65583489024bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB를 유지하며 완료를 보장하지 않는다. 자료 삭제·한도 확대로 우회하지 않는다. 기존20세대 frozen/STOP·완료/실패 근거와 현재 source/Work patch를 보존한다. 소비자는 승인된 잔여 P2/R1과 Owner 판단이며 관련 source checkout과 실행 root를 유지한다.
+
+
+### C4 Spawn Failure Same Failed 36 PASS With Unchanged Controls — 2026-10-12T14:26:41.287596+00:00
+
+제품·테스트·원래 controls를 변경하지 않고 C4-0037~0072 동일36개가 PASS했다. C4-0054의 process spawn errno35는 이번 묶음에서 재현되지 않았지만 원인은 미확정이다. 이전 C4-0033 분류 오류와 같은 원인이라고 단정하지 않는다. 완료한 첫36개·진단·과거 보완 결과는 중복 합산하지 않는다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 | C4 | 36/36 PASS | 932.042 / 932.142351 | 2026-10-12T14:25:53.806132+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5305/5,782 occurrence이고 잔여477개/13묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller880/1,000회·root134/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거20세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### Full Scope R1 Preparation And Evidence Binding — 2026-10-12T14:31:50.828008+00:00
+
+실행과 병행한 R1 준비는 제품/test import·실행 없이 기존 소스와 고정 결과를 읽는 정적 작업이다. 원래 영역 A(T0/A1/A2/B1/B2)4,817 occurrence, 영역 B(C1/C2/C3/C4/C5/X1)965 occurrence 및 전체 누적 R1의 세 범위를 유지한다. 모든 실행 통과 전에 리뷰를 호출하지 않는다. B1 통제 보완/14개 qualification, C3 의미 정정/범위 한계, C4 두 오류의 원인 미확정과 source 세대별 재사용 판단을 각 관련 packet에 연결한다.
+
+이 시점 완료 PASS115개 실행 root의 기존6단계690개 기록에서 정상 종료·입력 hash/collection 결속 및 각 smoke20개 선택/실행 일치를 읽기 전용으로 확인했다. 이는690개 검증의 새 실행이나 추가 P2 고유 사례가 아니다. 과거 controller schema에 없는 cleanup/error 상세 필드는 관측된 빈 값으로 바꾸지 않고 부재로 표시한다.21세대 frozen source map에서 entry test 외101개 source identity는 동일하며,16개 test 버전 간15개 변경은 별도로 대조한다. 이 동일성만으로 이전 assertions의 최신 적용성을 수락하지 않는다.
+
+반복 literal 표는 원래 값·순서·dictionary key order를 보존하는 정적 표현으로 제공하고, 검사 본문·상속/속성·등록 코드와 변경 이력을 함께 제공한다. 영역 B는 C5의 모든 선택 test와 해당 모듈 fixture helper를 포함한다. 누적 R1은 앞선 영역별 exact packet identity·원문 응답·Driver 처분을 연결하며, 그곳에서 이미 전체를 제공한 OLD module/C5 helper body의 중복을 생략한다. 전체 평가 범위를 줄이거나 생략한 본문을 독립적으로 재검토했다고 주장하지 않는다.
+
+리뷰 입력 생성·정적 대조·bounded wrapper 등 재사용할 준비 스크립트12개를 private full-r1-preparation-22에 보존했다. 소비자는 승인된 전체 R1세회와 Owner 결과/미해결 finding 처분이며 의존 종료 때 보존을 재평가한다. 재생성 가능한 scratch draft packet은 최종 리뷰 입력이 아니다. 실제 packet은 전체 실행 PASS 후 결과와 현재 diff를 다시 대조해 고정한다. Authentication/Claude 호출·새 테스트·코드/통제 변경은 이 준비에 포함하지 않았다. 현재 Work와 source patch는 별도로 갱신해 보존한다.
+
+
+### C4 Noncanonical Receipt Fixture Mismatch STOP — 2026-10-12T16:03:44.136131+00:00
+
+이번 재개는 b001~b006의216개를 통과했고, b007에서 C4-0253~0255의3개가 PASS한 뒤 C4-0256의 기대 오류 코드 불일치로 sequential Driver exit3 STOP했다. 첫 실패 중단 조건에 따라 b008~b014와 원래 전체 R1세회는 미시작이다. 제품·테스트·controls 수정, 추가 실행, 자동 재시도 및 한도 확대는0이다. 이전 C4-0033 분류 오류와 C4-0054 spawn 오류는 이번 통과로 원인이 해결됐다고 주장하지 않는다.
+
+| Batch | Scope | Result | Controller / Outer Seconds |
+| --- | --- | --- | --- |
+| b001 | C4-0037~0072 | 36/36 PASS | 932.042 / 932.142351 |
+| b002 | C4-0073~0108 | 36/36 PASS | 909.375 / 909.480496 |
+| b003 | C4-0109~0144 | 36/36 PASS | 911.322 / 911.398844 |
+| b004 | C4-0145~0180 | 36/36 PASS | 929.23 / 929.326221 |
+| b005 | C4-0181~0216 | 36/36 PASS | 937.922 / 938.018333 |
+| b006 | C4-0217~0252 | 36/36 PASS | 792.241 / 792.297614 |
+
+위 여섯 묶음의 모든6단계는 exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서도 일치한다. Focused 각36개는 fail/error/skip/expected failure/unexpected success/unstarted/unfinished0이다. 이미 기록한 b001 결과는 중복 합산하지 않는다.
+
+실패 묶음의 기본 acquire/canary/collect/smoke20/entry collect도 PASS했다. Focused 종료2026-10-12T15:58:25.009204+00:00, controller53.848초/outer53.942753초, child exit1/controller exit2다. Selected36/run4/3PASS/1FAIL/32미시작이며 errors·skip·expected failure·unexpected success·unfinished0이다. 정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check는 PASS다. 고정 CPython3.14.7/-I/-S/-B 및 기존 colvia-entry-cleanup-10 sandbox/observer를 사용했다.
+
+```text
+C4-0256: detach-negative / noncanonical-receipt / occurrence1
+p2_c4_detach_negative -> workspace_detached_status -> expected error-code assertion
+AssertionError: 'HV2-JSON-NONCANONICAL' != 'HV2-JSON-EOF'
+```
+
+#### Read-Only Diagnosis
+
+tests/test_entry_window_transition.py:4103은 canonical detached receipt 끝에 LF를 하나 더 붙인다. 실패 fixture의 target/.hrn/detached.json은23,924bytes, SHA abe27adb9ece4a7c5dafee216e6b0fdefe049c464d58b5579a721634ed8c38d0이며 끝 LF가 정확히 두 개다. 내장 JSON 파싱/직렬화로 대조한 결과 canonical bytes에 LF 하나를 더한 입력과 일치한다. 이는 제품을 호출한 새 재현 실행이 아니라 보존된 실제 실패 입력의 읽기 전용 대조다.
+
+기존 src/hv2ref/jsonio.py:54~55는 EOF LF가 하나가 아니면 HV2-JSON-EOF를 먼저 낸다. require_canonical 비교는 그 뒤92행에서 수행된다. 이 parser 파일은 현재 HEAD와 byte 일치한다. 따라서 관측된 EOF 거부는 기존 계약에 맞으며, 테스트가 구성한 입력이 기대한 NONCANONICAL 분기에 도달하지 못하는 fixture 불일치다. 제품 결함이나 이전 두 환경 오류와 같은 원인이라는 근거는 없다. 실패한 기대 코드 단언 이후의 plain auditor degraded·전체 snapshot 보존·recover 거부 단언은 이 사례에서 미실행이다.
+
+#### Bounded Fixture Correction And Resume Proposal — Not Executed
+
+C4-0256의 noncanonical-receipt fixture 한 줄만 아래와 같이 정정하는 안이다. 끝 LF 하나와 JSON 값을 유지하면서 선행 공백으로 canonical emission만 어긋나게 한다. HV2-JSON-NONCANONICAL 기대값 및 뒤의 거부/보존 단언을 그대로 유지한다. 제품·parser·controls·나머지 사례/선택/한도는 바꾸지 않는다. 제안 bytes의 동일 JSON 값·단일 EOF LF·canonical bytes 불일치는 내장 JSON을 이용한 정적 대조만 했으며 수정 후 제품 실행 PASS는 아직 없다.
+
+```diff
+-if case=='noncanonical-receipt':receipt_path.write_bytes(receipt_path.read_bytes()+b'\n')
++if case=='noncanonical-receipt':receipt_path.write_bytes(b' '+receipt_path.read_bytes())
+```
+
+Owner 승인 시 변경 전 입력/실패 fixture를 보존하고 이 한 줄만 수정한다. 새 frozen 입력에서 실패한 동일36개(C4-0253~0288)를1회 재검증하고, PASS하면 나머지7묶음261 occurrence, 모두 PASS하면 원래 전체 R1세회 순서로 진행한다. 완료 기준은 selected/executed 일치·비정상 결과0·정상 종료·입력/근거 보존과 원래 전체 R1/Driver 처분이다. 과거 완결5,485개는 다시 실행하지 않고 입력 세대별 재사용 근거로 유지한다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 결과 수락·Git/STATUS/Done은 별도다.
+
+이 제안은 실행 승인이 아니다. 기존 승인은 무수정 재개와 첫 실패 STOP이므로 위 fixture 정정 및 재실행에 새 Owner 승인이 필요하다. CONTRIBUTING의 Review And Execute는 테스트 변경에도 별도 R0/R1을 기본으로 요구한다. 현재6/9회 사용과 남은 전체 R1세회를 유지하려면, 이번 한 줄 fixture 정정에 한해 별도 R0를 면제하고 수정/실패 전후 근거를 원래 전체 R1 영역B 및 누적 검토에 포함하는 예외도 명시적으로 승인받는 안이다. 기술 계약을 바꾸지 않고 fixture를 의도한 분기에 맞추는 좁은 정정이라는 이유이며, Owner가 이 예외를 승인하기 전 실행하지 않는다. 별도 R0를 원하면 review 횟수/계획에 대한 별도 결정을 받아야 하며 자동 확대하지 않는다.
+
+새8개 root 후보는 approved root 아래 hv2-reference-private-colvia-p2-noncanonical-resume-20261013-r001~008이다. 등록 목록과 목적지 부재를 확인했으나 생성하지 않았다. 기존 frozen b007~b014의 exact 선택/순서297 occurrence를 이어받는다. Controller916/1,000회에서48회 추가 시964회, root140/160개에서8개 추가 시148개다. 전체 wall deadline null, storage96GiB·다음 step 전2GiB 여유·host free4GiB·review9회/누적14,400초/개별1,200초와 모든 기존 개별caps를 유지하며 공간 내 완료를 보장하지 않는다.
+
+#### Progress And Preservation
+
+완료 묶음 기준 canonical 완결은5,485/5,782 occurrence, 미완료 계획297개/8묶음이다. 이번 부분3개를 별도 계산하면5,488PASS/1FAIL/293미시작이다. 실패 묶음 전체를 PASS로 바꾸거나 중복 보완/진단 결과를 합산하지 않는다. Review6/9회·2,830.531초 사용으로 전체 R1은 미시작이다. 앞서 준비한 전체 R1 packet 생성기는 이 STOP 때문에 실행될 수 없고, 재개 승인 시 새 결과·source 세대를 반영해 다시 고정해야 한다. 원래 범위·B1 통제 보완/14개 qualification·C3 baseline-refresh3개/pending recover4개 한계·C4 이전 두 오류의 원인 미확정을 유지한다.
+
+Source/controls/runtime·현재 frozen input·과거20세대 manifest/STOP 재대조는 PASS다. Source test는 checkout 밖 original-entry-test.py와 byte 일치한다. 실패 fixture 원본과 runner 보존 사본180개 entry의 bytes/mode/link 대조는 일치했고 보존 계측29,930,463bytes다. Storage 실할당82,057,355,264bytes, host available54,476,800,000bytes를 관측했다. Stdout/result/counts/실행 trace/실패 fixture와 기존 exact 입력을 유지하고 current Work/source patch를 갱신한다. 소비자는 이번 fixture 불일치 수정 전후 대조, 남은 P2/R1 및 Owner 판단이며 해당 의존 종료 시 보존을 재평가한다. Source checkout과 실행 root는 후속 사용 때문에 유지한다. 삭제·정리·Git 게시·P2 수락은 수행하지 않았다.
+
+
+### C4 Noncanonical Receipt Fixture Correction And Resume Authorized — 2026-10-12T17:38:44.795606+00:00
+
+Owner가 직전 fixture 한 줄 정정·동일36개 재검증·잔여261개·전체 R1세회 재개안 및 이번 한 줄 수정에 한정한 별도 R0 면제에 “승인”으로 동의했다. JSON 값과 EOF LF 하나를 유지한 선행 공백으로 noncanonical-receipt 입력을 정정했고 HV2-JSON-NONCANONICAL 기대값과 후속 거부/보존 단언은 그대로다. 제품·parser·controls·선택 사례·개별 한도는 변경하지 않았다. 수정/실패 전후 근거를 원래 전체 R1 영역B 및 누적 검토에 포함하며, 이번 면제를 다른 변경의 R0 면제로 확대하지 않는다.
+
+기존 실패36개(C4-0253~0288)를 새 경계에서1회 재검증하고 PASS하면 나머지7묶음261 occurrence, 모두 PASS하면 원래 전체 R1세회를 진행한다. 완료한5,485개와 과거 보완·단일 진단·R0·14개 qualification은 반복하지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+정정 전 test SHA74b41a33446fdab8341bb112187457ad8746fae62e761d13eada048cfd6c9e1c·정정 후 SHA99d0abaff2eba5f9b70e0e4a013650a90fd70243ef7abb635a60fc344eebd3dc, 새 source digest0a8f1b8e7f903f4d16bc0791e59d28892b1448bb8af493736df2405cfad0316e다. 원 observer SHA0a82418e7638923fd4ad9918e15c24e2b02d5b8ee55a56804187c438ccc67870와 controls 및 actual collection 대조 기준은 유지한다. 정정 전후 source 입력과 patch를 구현 checkout 밖 noncanonical-receipt-resume-23에 보존했다. 변경된 source identity는 entry test 하나이며 실제 diff는 승인된 한 줄이다. 이전 C4-0033 분류 오류와 C4-0054 spawn 오류의 원인 미확정, B1/14개·C3 의미 정정/범위 한계를 전체 R1에서 유지한다.
+
+새8개 root 후보 hv2-reference-private-colvia-p2-noncanonical-resume-20261013-r001~008의 부재·등록 목록·실행 중복 부재를 확인했다. 준비 과정의 실행 root 생성은0이다. Controller916/1,000회에서48회 사용 시964회, root140/160개에서8개 추가 시148개다. Review6/9회·2,830.531초 사용/누적14,400초·개별1,200초와 원래 전체 R1세회를 유지한다. Overall wall deadline은 null이다.
+
+준비 직전 실할당82057355264bytes/host free54657368064bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB를 유지하며 완료를 보장하지 않는다. 자료 삭제·한도 확대로 우회하지 않는다. 기존21세대 frozen/STOP·완료/실패 근거 및 새 source/Work patch를 보존한다. 소비자는 승인된 이번 정정 전후 대조·잔여 P2/R1과 Owner 판단이며 해당 의존 종료까지 관련 source checkout과 실행 root를 유지한다.
+
+
+### Full Scope R1 Preparation Rebound To Noncanonical Fixture Resume — 2026-10-12T17:40:55.616296+00:00
+
+기존 전체 R1 준비 스크립트의 현재 입력을 noncanonical-receipt-resume-23의8개 고정 묶음에 연결하고, C4-0256 fixture 정정·명시적 한 줄 R0 면제·실제 실패 전후 및 후속 보존/거부 단언을 영역B와 누적 검토 질문에 포함했다. 원래 두 영역과 누적 R1의 전체 범위, 각 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 기록 조건은 그대로다. 모든 실행 PASS와 앞선 review 처분 확인 전 다음 단계 호출은 허용하지 않는다.
+
+이 준비는 제품/test import·실행 없는 정적 읽기다. 현재 source의 영역별 test/fixture slice를 갱신했고22개 입력 세대·17개 test 버전 간16개 변경에 이번 한 줄 정정을 포함했다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper 범위는 유지한다. Source 변화가 없는 과거 묶음의 적용성은 전체 R1에서 판단하며 현재 소스로 전부 다시 실행했다고 주장하지 않는다.
+
+준비 스크립트12개를 private full-r1-preparation-23에 별도로 보존하며 이전 full-r1-preparation-22는 바꾸지 않았다. 소비자는 승인된 전체 R1세회와 Owner 결과/미해결 finding 처분이고 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니며 전체 실행 PASS 뒤 현재 결과·diff와 다시 대조해 고정한다. Reviewer 호출·새 테스트·추가 제품/통제 수정은 이 준비에 포함하지 않는다. Current Work/source patch를 갱신해 보존한다.
+
+
+### Collection Source Identity Preparation Error STOP — 2026-10-12T17:44:15.085311+00:00
+
+Owner 승인에 따른 C4-0256 fixture 한 줄 수정과 이번 수정에 한정한 별도 R0 면제 기록은 적용했다. 그러나 Driver가 entry-collection-expected.json을 준비하면서 수정 후 source_digest로 갱신하지 않고 이전 값을 복사했다. 첫 묶음의 실제 entry collect와 frozen expectation 대조에서 이 준비 오류가 검출되어 sequential Driver exit4로 중단했다. 이는 새 제품 결함이나 검사 목록 변경이 아니며 Driver의 입력 준비 누락이다.
+
+Acquire/canary/base collect/smoke20/entry collect 다섯 단계 자체는 exit0·정상 종료·group 부재·cleanup errors0·입력 보존·after input check PASS다. Entry collect는2026-10-12T17:41:36.751940+00:00 종료, controller0.707초/outer0.770666초다. 그 뒤 목록 대조가 거부되었으므로 전체 준비 gate를 PASS로 보고하지 않는다. Focused C4 검사는0개이고 b002 이후와 전체 R1세회도 미시작이다. 첫 실패 STOP을 유지하며 추가 제품/테스트/통제 수정, 재실행, 한도 확대는 하지 않았다.
+
+실제 수집과 고정 기준의 일곱 필드를 대조하면 controls/default_ids/duplicates/factory_ids/ordered/source_root_entries는 동일하고 source_digest 하나만 다르다. 실제 source_digest는 새 entry input의 source_files map digest와 일치한다. 따라서 다음 정정은 관측된 임의 변경을 받아들이는 것이 아니라 승인된 한 줄 수정의 기존 source identity에 기준값을 맞추는 것이다.
+
+| Item | Retained frozen value | Correct value for approved source |
+| --- | --- | --- |
+| source_digest | 316f88bc779d8d08de1bb9099a58d7b700a1268b4ced5bff7b4a540ab502aaaf | 0a8f1b8e7f903f4d16bc0791e59d28892b1448bb8af493736df2405cfad0316e |
+| collection SHA256 | c79f1b83ce640396a7e1b8173bbb9a8010121b45530d3aac4dd72d230f0a60ab | 1c3b570c1571f4fe28ae04880869cf5a9c18e0705162f467c8f81770e34d8934 |
+
+위 source_digest의 실제 이전값은 `316f88bc779d8d08de1bb9099a58d7b700a1268b4ced5bff7b4a540ab502aaaf`다. 이 값은 source test 단일 파일 SHA와 다르다. 기존 frozen/STOP을 수정하거나 지우지 않고 보존한다.
+
+#### Bounded Collection Identity Correction Proposal — Not Executed
+
+새 frozen expectation의 source_digest만 승인된 현재 source map digest로 바꾸고, 이에 따른 entry focused input의 collection SHA와 파생 invocation/manifest identity를 다시 고정하는 안이다. 테스트 ID·선택·순서·중복·controls 및 제품/테스트 본문은 그대로다. 기준 JSON을 이 한 필드만 바꾼 결과가 이번 actual collection bytes와 완전히 일치함을 읽기 전용으로 확인했다. 기존 실패/수정 전후·R0 면제 기록은 유지하며 이 정정으로 제품 검사가 통과했다고 주장하지 않는다.
+
+Owner 재개 승인 시 새 실행 경계에서 동일36개(C4-0253~0288)를1회 검증하고, PASS하면 잔여7묶음261 occurrence, 모두 PASS하면 원래 전체 R1세회로 진행한다. 새 경계마다 기존6단계와 동일 caps를 사용한다. 완료 기준은 actual collection과 source identity 결속, selected/executed 일치·비정상 결과0·정상 종료·입력/근거 보존 및 원래 전체 R1/Driver 처분이다. 기존5,485개 완결 검사는 다시 실행하지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+직전 승인의 첫 실패 STOP이 발생했으므로 이 수정된 frozen 입력으로의 재개에는 새 Owner 승인이 필요하다. 이미 승인된 fixture 한 줄 및 그 한정된 R0 면제는 그대로이며, 새 제품/테스트/통제 변경이나 별도 reviewer 호출을 제안하지 않는다. 새8개 root 후보는 approved root 아래 hv2-reference-private-colvia-p2-collection-resume-20261013-r001~008이고 부재/미등록을 확인했지만 생성하지 않았다. Controller921/1,000회에서48회 추가 시969회, root141/160개에서8개 추가 시149개다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB·review6/9회 사용/2,830.531초 사용·누적14,400초/개별1,200초·전체 wall deadline null과 기존 모든 한도를 유지한다.
+
+읽기 전용 저장 계측은 실할당82,061,586,432bytes/host available54,476,800,000bytes였다. 완료 묶음 기준5,485/5,782 occurrence 및 잔여297개는 변함없다. C4-0256의 정정 후 runtime 결과는 아직 미확인이다. Source test99d0abaff2eba5f9b70e0e4a013650a90fd70243ef7abb635a60fc344eebd3dc는 구현 checkout 밖 applied-entry-test.py와 byte 일치한다. Source/controls/runtime·현재 frozen 및 과거21세대 identity 재대조는 PASS이며 Work/source patch를 다시 보존한다. 현재 source checkout과 실행 root, 원래 C4-0256 실패 fixture, R1 준비 스크립트의 소비자는 승인된 정정 전후 비교·P2/R1 및 Owner 판단으로 유지한다. 해당 의존 종료 전 삭제·정리·Git 게시·수락은 하지 않는다.
+
+
+### Collection Source Identity Correction And Resume Authorized — 2026-10-12T18:44:10.128588+00:00
+
+Owner가 직전 수집 기준의 source_digest와 파생 해시 정정·동일36개·잔여261개·전체 R1세회 재개안에 “승인”으로 동의했다. 실제 이전 수집의 검사 ID·순서·중복·controls·source_root_entries·default_ids·factory_ids와 기존 기준이 같고 source_digest 하나만 다른 것을 재확인했다. 새 기대값은 승인된 현재 source_files map에서 계산한 digest와 일치하며, 이 한 필드를 정정한 기대 JSON bytes는 보존된 actual collection과 완전히 일치한다.
+
+제품·테스트 본문·parser·controls는 변경하지 않았다. Test SHA99d0abaff2eba5f9b70e0e4a013650a90fd70243ef7abb635a60fc344eebd3dc, source digest0a8f1b8e7f903f4d16bc0791e59d28892b1448bb8af493736df2405cfad0316e를 유지한다. 기존 C4-0256 fixture 한 줄 정정과 그 한정된 별도 R0 면제는 이전 승인의 범위로 유지하며 정정 전후 실제 근거를 전체 R1 영역B 및 누적 검토에 포함한다. 새 collection SHA는1c3b570c1571f4fe28ae04880869cf5a9c18e0705162f467c8f81770e34d8934다. 기존 frozen/STOP은 바꾸지 않고 새 fixed input의 expected collection, focused collection SHA 및 파생 invocation/manifest identity를 갱신했다.
+
+C4-0253~0288 동일36개를 새 경계에서1회 검증하고 PASS하면 잔여7묶음261 occurrence, 모두 PASS하면 원래 전체 R1세회를 진행한다. 완료한5,485개·과거 보완/진단/R0/14개 qualification은 반복하지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다. 이전 C4-0033/0054 원인 미확정과 B1/14개·C3 의미 정정/범위 한계를 유지한다.
+
+새8개 root 후보 hv2-reference-private-colvia-p2-collection-resume-20261013-r001~008의 부재·등록 목록·실행 중복 부재를 확인했다. 준비 과정의 실행 root 생성은0이다. Controller921/1,000회에서48회 사용 시969회, root141/160개에서8개 추가 시149개다. Review6/9회·2,830.531초 사용/누적14,400초·개별1,200초와 원래 전체 R1세회, 전체 wall deadline null을 유지한다.
+
+준비 직전 실할당82061586432bytes/host free54684307456bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB와 모든 기존 개별cap을 유지하며 완료를 보장하지 않는다. 자료 삭제·한도 확대로 우회하지 않는다. 기존22세대 frozen/STOP·완료/실패 근거와 현재 source/Work patch를 보존한다. 소비자는 승인된 정정 전후 대조·잔여 P2/R1 및 Owner 판단이며 해당 의존 종료까지 관련 source checkout과 실행 root를 유지한다.
+
+
+### Full Scope R1 Preparation Rebound To Collection Identity Resume — 2026-10-12T18:45:02.604882+00:00
+
+기존 전체 R1 준비 스크립트의 현재 입력을 collection-identity-resume-24의8개 고정 묶음에 연결하고, C4-0256 fixture 정정·명시적 한 줄 R0 면제·실제 실패 전후 및 후속 보존/거부 단언을 영역B와 누적 검토 질문에 포함했다. Driver의 collection source_digest 준비 누락 STOP과 필드 하나만 바로잡은 새 기준, 당시 focused 실행0도 원문 Work를 통해 전달한다. 원래 두 영역과 누적 R1의 전체 범위, 각 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 기록 조건은 그대로다. 모든 실행 PASS와 앞선 review 처분 확인 전 다음 단계 호출은 허용하지 않는다.
+
+이 준비는 제품/test import·실행 없는 정적 읽기다. 현재 source의 영역별 test/fixture slice를 갱신했고23개 입력 세대·17개 test 버전 간16개 변경에 이번 한 줄 정정을 포함했다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper 범위는 유지한다. Source 변화가 없는 과거 묶음의 적용성은 전체 R1에서 판단하며 현재 소스로 전부 다시 실행했다고 주장하지 않는다.
+
+준비 스크립트12개를 private full-r1-preparation-24에 별도로 보존하며 이전 full-r1-preparation-23는 바꾸지 않았다. 소비자는 승인된 전체 R1세회와 Owner 결과/미해결 finding 처분이고 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니며 전체 실행 PASS 뒤 현재 결과·diff와 다시 대조해 고정한다. Reviewer 호출·새 테스트·추가 제품/통제 수정은 이 준비에 포함하지 않는다. Current Work/source patch를 갱신해 보존한다.
+
+
+### C4 Mixed History Schema Assertion STOP — 2026-10-12T18:56:25.730653+00:00
+
+Collection identity 정정 후 사전5단계와 실제 collection bytes 대조는 PASS했다. C4-0253~0288 동일36개 focused에서22 PASS 뒤 C4-0275가 실패해 첫 실패 STOP으로 종료했다. Selected36/run23/failures1/errors0/skips0/expected failure0/unexpected success0/unstarted13/unfinished0이다. C4-0256은13.266초에 PASS해 앞선 noncanonical fixture 한 줄 정정 후 정확한 NONCANONICAL code·plain auditor degraded·snapshot 보존·recover 거부 단언까지 실행됐다. 이 부분 결과를 완결 묶음의 coverage로 더하지 않는다.
+
+고정 CPython3.14.7/-I/-S/-B의 기존 focused 명령은 execution-plan.json의 b001.steps[-1].argv에 보존했다. 종료 UTC는2026-10-12T18:52:26.210146+00:00, controller295.71초/outer295.79334초, test exit1/controller wrapper exit2/sequential Driver exit3이다. 정상 종료·group 부재·cleanup errors0·입력 보존·after input check PASS며 timeout이나 source drift가 아니다. B002 이후와 원래 전체 R1세회는 미시작이다. Controller927/1,000회·root142/160개·review6/9회 및2,830.531/14,400초 사용이다.
+
+실패 단언은 tests/test_entry_window_transition.py:4118의 `all(r['schema_version']==2 for r in state['history'][1:])`다. C4-0275는 kind=mixed/history=old-counterpart-history/action=update/executor=new-source다. 실패 fixture의 receipt 연결은 `fixture-x-init(schema1) → fixture-to-predecessor(schema1) → entry-transition(schema2) → second-new(schema2)`이며 각 prior/result binding ref가 다음 항목으로 이어진다. 이전 OLD update receipt까지 schema2라고 가정한 test 기대값이 잘못됐다. Product observer는 schema1/2 혼합 이력을 받아 원래 binding chain 순서로 반환하며, OLD counterpart 생성 contract도 schema1 receipt 두 개를 요구한다. 현재 실패는 이 단언의 반례이며 제품 변경 필요성을 보여주지 않는다.
+
+실제 보존된 mixed 사례19개(C4-0257~0275)의 receipt JSON을 제품/test import 없이 읽어 연결 순서를 확인했다. Fresh는 [1,2], transition/local은 [1,2,2], OLD counterpart는 [1,1,2,2]다. 이미 rollback까지 PASS한 사례는 마지막 schema2 rollback receipt를 제외한 시점이 해당 단언 시점이다. 이는 기존 실행 산출물에 대한 정적 대조이며 수정 테스트 실행이나 C4-0276~0280 성공을 뜻하지 않는다. C4-0275는 이 단언 뒤의 잔여 단언에 도달하지 못했다.
+
+#### Bounded Mixed History Assertion Correction Proposal — Not Executed
+
+제품·fixture·controls를 유지하고 p2_c4_mixed의 포괄 schema 단언 하나를 이력 유형별 정확한 전체 sequence 단언으로 교체하는 안이다. 적용 범위는 기존 mixed24개(C4-0257~0280)이며, 원래 검사 ID·선택·순서·수량·후속 rollback/replay 및 보존 단언은 그대로다. 기존 blanket 검사를 제거해 단순 허용하는 것이 아니라 schema 개수와 순서까지 고정한다.
+
+```python
+expected_schemas={'fresh':[1,2],'transition':[1,2,2],'local':[1,2,2],'old-counterpart-history':[1,1,2,2]}
+self.assertEqual(expected_schemas[spec['history']],[r['schema_version'] for r in state['history']]);self.assertFalse((target/'hv2').exists())
+```
+
+위 제안 diff는 collection-identity-resume-24/mixed-history-proposed.diff에 보존했다(SHA256 ea23a92ce968cffb051137807c295547d041bb375df2d521aed1e6fa9397a01a). 현재 test SHA99d0abaff2eba5f9b70e0e4a013650a90fd70243ef7abb635a60fc344eebd3dc를 변경하지 않았다. 이미 승인된 C4-0256 한 줄 R0 면제는 이 새 단언 정정에 적용하지 않는다. 권고안은 이 정확한 schema 단언 정정에 한정해 별도 R0 면제를 명시적으로 승인하고, 실제 실패/정정/재검증 및 mixed24개 전체를 원래 R1 영역B와 누적 검토에 포함하는 것이다. 새 R0 호출을 선택하면 현재 남은3회를 전체 R1세회로 유지하기 위해 review-call cap에 대한 별도 결정이 필요하므로 자동 호출하지 않는다.
+
+Owner 승인 시 위 최소 단언 정정과 파생 source/collection/invocation/manifest identity를 새로 고정하고, 새 경계에서 동일36개(C4-0253~0288)를1회 실행한다. PASS하면 남은7묶음261 occurrence, 모두 PASS하면 원래 전체 R1세회로 진행한다. 기존6단계와 같은 runtime/controls/개별 cap을 사용한다. 완료 기준은 exact collection/selection/실행 일치·비정상 결과0·정상 종료·입력 보존 및 전체 R1 응답/Driver 처분이다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대를 하지 않는다. P2 수락·Git/STATUS/Done은 별도다.
+
+새 root 후보는 approved root 아래 hv2-reference-private-colvia-p2-mixed-history-resume-20261013-r001~008이며 부재/미등록만 확인했다.8개 실행을 모두 마치면 controller975/1,000회·root150/160개다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB·review 개별1,200초/누적14,400초·전체 wall deadline null을 유지한다. 현재 읽기 전용 실할당82779926528bytes/host available53894819840bytes이며 공간 부족 시 삭제나 한도 확대로 우회하지 않는다.
+
+완결 묶음 기준5,485/5,782 occurrence, 잔여297개는 변함없다. 현재 STOP/실패 fixture·source backup·기존22세대 frozen/STOP·R1 준비12개를 유지하고 Work/source patch를 checkout 밖에 갱신한다. 소비자는 이번 실패/정정 비교, 잔여 P2/R1과 Owner 판단이며 해당 의존이 남아 source checkout과 관련 실행 root를 유지한다. C4-0033/0054 원인 미확정, B1/14개 qualification과 C3 의미 정정/범위 한계는 그대로 전체 R1에 전달한다.
+
+
+### C4 Mixed History Schema Assertion Correction And Resume Authorized — 2026-10-12T19:03:51.205424+00:00
+
+Owner가 직전 p2_c4_mixed의 정확한 schema sequence 단언 정정·동일36개 재검증·잔여261개·원래 전체 R1세회 재개안 및 이번 단언에 한정한 별도 R0 면제에 “승인”으로 동의했다. 기존 첫 항목 제외 schema2 일괄 단언을 fresh=[1,2], transition/local=[1,2,2], old-counterpart-history=[1,1,2,2]의 전체 개수/순서 단언으로 교체했다. 제안 diff와 적용 bytes가 일치하며 제품·fixture·controls·검사 ID/선택/순서·후속 단언은 그대로다. 이번 별도 R0 면제를 다른 수정에 확대하지 않는다.
+
+실제 C4-0275 실패와 schema1/1/2/2 receipt 근거, 기존 partial22 PASS 및 C4-0256 PASS는 보존한다. mixed24개 전체와 이 정정 전후 근거를 원래 전체 R1 영역B 및 누적 검토에 포함한다. 정정 전 test SHA99d0abaff2eba5f9b70e0e4a013650a90fd70243ef7abb635a60fc344eebd3dc·정정 후 SHA981e3cd909f9592cf57769fe406468116913c53dedc696198f41f216e13e21c1, 새 source digestb09e0fdf8eedebdfda33a100a056bd4504b3fb2b40c7f17b08b669531f3a0d0d 및 새 collection SHA305640b668733cea222ea61101d3b5bc9721e96cce095fd765746d326af35245다. 기존 collection의 source_digest 이외 모든 필드를 유지하고, 각8개 input에서 source_files map digest·collection source_digest·focused collection SHA 및 파생 identity 결속을 미리 대조했다.
+
+C4-0253~0288 동일36개를 새 경계에서1회 검증하고 PASS하면 잔여7묶음261 occurrence, 모두 PASS하면 원래 전체 R1세회를 진행한다. 완료한5,485개·과거 partial/보완/진단/R0/14개 qualification은 반복하거나 중복 합산하지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다. 이전 C4-0033/0054 원인 미확정과 B1/14개·C3 의미 정정/범위 한계를 유지한다.
+
+새8개 root 후보 hv2-reference-private-colvia-p2-mixed-history-resume-20261013-r001~008의 부재·등록 목록·실행 중복 부재를 확인했다. 준비 과정의 실행 root 생성은0이다. Controller927/1,000회에서48회 사용 시975회, root142/160개에서8개 추가 시150개다. Review6/9회·2,830.531초 사용/누적14,400초·개별1,200초와 원래 전체 R1세회, 전체 wall deadline null을 유지한다.
+
+준비 직전 실할당82779926528bytes/host free53890174976bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB와 모든 기존 개별cap을 유지하며 완료를 보장하지 않는다. 자료 삭제·한도 확대로 우회하지 않는다. 기존23세대 frozen/STOP·완료/실패 근거와 정정 전후 source/Work patch를 checkout 밖 mixed-history-resume-25에 보존한다. 소비자는 승인된 정정 전후 대조·잔여 P2/R1 및 Owner 판단이며 해당 의존 종료까지 관련 source checkout과 실행 root를 유지한다.
+
+
+### Full Scope R1 Preparation Rebound To Mixed History Assertion Resume — 2026-10-12T19:05:04.443514+00:00
+
+기존 전체 R1 준비 스크립트의 현재 입력을 mixed-history-resume-25의8개 고정 묶음에 연결하고, C4-0256 fixture 정정·명시적 한 줄 R0 면제·실제 실패 전후 및 후속 보존/거부 단언을 영역B와 누적 검토 질문에 포함했다. Driver의 collection source_digest 준비 누락 STOP과 필드 하나만 바로잡은 새 기준, 당시 focused 실행0도 원문 Work를 통해 전달한다. 이번 C4-0275 mixed-history schema 단언 정정·별도 한정 R0 면제·실제 실패 전후와 mixed24개 전체도 영역B 및 누적 검토에 명시했다. 원래 두 영역과 누적 R1의 전체 범위, 각 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 기록 조건은 그대로다. 모든 실행 PASS와 앞선 review 처분 확인 전 다음 단계 호출은 허용하지 않는다.
+
+이 준비는 제품/test import·실행 없는 정적 읽기다. 현재 source의 영역별 test/fixture slice를 갱신했고24개 입력 세대·18개 test 버전 간17개 변경에 이번 schema 단언 정정을 포함했다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper 범위는 유지한다. Source 변화가 없는 과거 묶음의 적용성은 전체 R1에서 판단하며 현재 소스로 전부 다시 실행했다고 주장하지 않는다.
+
+준비 스크립트12개를 private full-r1-preparation-25에 별도로 보존하며 이전 full-r1-preparation-24는 바꾸지 않았다. 소비자는 승인된 전체 R1세회와 Owner 결과/미해결 finding 처분이고 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니며 전체 실행 PASS 뒤 현재 결과·diff와 다시 대조해 고정한다. Reviewer 호출·새 테스트·추가 제품/통제 수정은 이 준비에 포함하지 않는다. Current Work/source patch를 갱신해 보존한다.
+
+
+### C4 Mixed History Schema Same Failed 36 PASS — 2026-10-12T19:14:31.104598+00:00
+
+승인된 p2_c4_mixed의 schema 단언 정정 후 C4-0253~0288 동일36개가 PASS했다. Mixed24개 전체(C4-0257~0280)에서 fresh=[1,2], transition/local=[1,2,2], old-counterpart-history=[1,1,2,2]의 정확한 schema 개수/순서 및 후속 update/rollback/replay·보존 단언을 통과했다. 기존 C4-0275 실패는 OLD update receipt를 schema2로 요구하던 테스트 기대값 오류이며 제품·fixture·controls는 변경하지 않았다. 이번 schema 단언에 한정한 별도 R0 면제와 실제 실패 전후 근거를 원래 전체 R1 영역B 및 누적 검토에 포함한다. 앞선 C4-0256 noncanonical fixture 정정도 정확한 code·auditor·보존·recover 단언을 통과했다. 과거 C4-0033 분류 오류와 C4-0054 spawn 오류의 원인 미확정은 유지하며 과거 부분 실행·진단·보완 결과를 중복 합산하지 않는다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 | C4 | 36/36 PASS | 436.944 / 437.040291 | 2026-10-12T19:14:12.739606+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5521/5,782 occurrence이고 잔여261개/7묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller933/1,000회·root143/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거23세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### C4 Same Entry Interleaving Hook Target STOP — 2026-10-12T19:33:50.864827+00:00
+
+승인된 mixed-history schema 단언 정정 후 b00136개(C4-0253~0288)와 b00236개(C4-0289~0324)가 모두 PASS했다. Mixed24개 전체의 정확한 schema sequence와 update/rollback/replay·후속 보존 단언이 통과했고, C4-0256도 PASS했다. B003(C4-0325~0360)는15 PASS 뒤 C4-0340에서 ERROR로 첫 실패 STOP했다. Selected36/run16/errors1/failures0/unstarted20이며 skips/expected failure/unexpected success/unfinished0이다.
+
+| Batch | Run/Selected | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 / original 93 | 36/36 | 36 PASS | 436.944 / 437.040291 | 2026-10-12T19:14:12.739606+00:00 |
+| b002 / original 94 | 36/36 | 36 PASS | 428.081 / 428.135054 | 2026-10-12T19:24:16.804645+00:00 |
+| b003 / original 95 | 16/36 | 15 PASS / 1 ERROR / 20 unstarted | 167.96 / 168.059564 | 2026-10-12T19:30:02.838799+00:00 |
+
+각 실행은 고정 CPython3.14.7/-I/-S/-B와 기존6단계/controls를 사용했다. 실제 collection bytes, selected/executed ID·occurrence·순서를 대조했고, b001/b002는36개 모두, b003은 오류까지16개 prefix가 일치한다. B003 사전5단계는 PASS했다. Test exit1/controller wrapper exit2/sequential Driver exit3이며 정상 종료·group 부재·cleanup errors0·입력 보존·after input check PASS다. Timeout·source drift는 아니며 B004 이후와 전체 R1세회는 미시작이다. Controller945/1,000회·root145/160개·review6/9회 및2,830.531/14,400초 사용이다.
+
+#### Cause And Preserved Counterexample
+
+C4-0340은 kind=same-entry/history=fresh/case=late-stage-collision이다. 부모의 json.loads 오류는2차 증상이고, child 로그의 직접 오류는 `RuntimeError: seam not observed exactly once`다. P2_C4_SAME_ENTRY_PROGRAM은 product._write_exact를 patch하지만, 실제 workspace_switch_apply는 product.py:1403에서 workspace._write_exact를 함수 내부로 import한 뒤 same-entry 분기에서 사용한다. 따라서 member/receipt 주입 hook이 호출되지 않는다. 이 symbol binding 불일치는 source 정적 읽기로 확인했다.
+
+실패 fixture에는 second-new receipt와 binding이 완성돼 있고 active release는 요청 candidate와 일치하며, 주입하려던 root hv2 충돌 파일은 없다. Child가 API 호출 후 seam 단언에서 멈춰 JSON envelope를 출력하지 않았고 부모가 traceback을 JSON으로 읽다가 ERROR가 났다. 이 실행은 충돌이 주입된 제품 거부 동작을 검증하지 못했다. 제품 결함을 재현했다고 주장하지 않으며, hook 수정 후 예상 거부·보존·recover 결과는 아직 실행하지 않았다.
+
+#### Bounded Same Entry Hook Correction Proposal — Not Executed
+
+P2_C4_SAME_ENTRY_PROGRAM 내부의 세 참조만 실제 함수 사용처로 바꾸는 안이다. `from hv2ref import product`를 `from hv2ref import product,workspace`로, original_write의 product._write_exact를 workspace._write_exact로, mock.patch.object의 해당 target을 product에서 workspace로 바꾼다. 기존 original_entry/product._entry_write_exact와 binding replace hook, 주입 시점/내용·단일 호출 단언·예상 code/message·snapshot/recover 단언은 유지한다. 제품·controls·검사 목록은 변경하지 않는다.
+
+이 helper를 쓰는 기존14개는 same-entry10개와 transition-seam4개이며, 모두 실패한 동일36개(C4-0325~0360)에 포함된다. 이미 PASS한 C4-0253~0324는 이 helper를 호출하지 않는다. 제안된 decoded helper diff는 mixed-history-resume-25/same-entry-hook-proposed.diff(SHA256 6c510dbe321f0cbe2ccb038790756f2461830e49fe70956ff789ee5f616ec8e8)에 보존했고 Python 구문만 정적으로 확인했다. 현재 test SHA981e3cd909f9592cf57769fe406468116913c53dedc696198f41f216e13e21c1는 변경하지 않았다. 변경 전 child program SHA312fb782352578e82c5ac0ec65f646e6368770693ca6d7ed6d91236a67666b45, 제안 program SHA69daf49548bce0b86224e68c2d8e2af7a3cd09c92e12555e629e440c96f12fd3다.
+
+권고안은 이 세 참조 정정에 한정한 별도 R0 면제를 명시적으로 승인하고, helper14개와 실제 실패/정정/재검증을 원래 전체 R1 영역B 및 누적 검토에 포함하는 것이다. 이전 schema 단언 또는 C4-0256 R0 면제는 이번 정정에 적용하지 않는다. 별도 R0를 선택할 경우 남은3회가 원래 전체 R1세회로 예약돼 있으므로 review-call cap에 대한 별도 결정이 필요하며 자동 호출하지 않는다.
+
+Owner 승인 시 최소 hook 정정 및 파생 source/collection/invocation/manifest identity를 새로 고정하고, 새 경계에서 실패한 동일36개(C4-0325~0360)를1회 검증한다. PASS하면 나머지5묶음189 occurrence, 모두 PASS하면 원래 전체 R1세회를 진행한다. 완료 기준은 helper14개를 포함한 exact selection/실행·비정상 결과0·정상 종료·입력 보존 및 전체 R1 응답/Driver 처분이다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+새 root 후보는 approved root 아래 hv2-reference-private-colvia-p2-same-entry-hook-resume-20261013-r001~006이며 부재/미등록만 확인했다.6개 묶음/36controller 호출을 모두 마치면981/1,000회·root151/160개다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB·review 개별1,200초/누적14,400초·전체 wall deadline null을 유지한다. 현재 읽기 전용 실할당85147668480bytes/host available51426856960bytes이며 저장 부족 시 삭제나 한도 확대로 우회하지 않는다.
+
+완결 묶음 기준5,557/5,782 occurrence, 잔여225개다. 이번 partial15 PASS는 중복 합산하지 않는다. 현재 source·원본/적용 backup·23개 과거 frozen/STOP·실패 fixture/log·R1 준비12개와 제안 diff를 보존하고 Work/source patch를 checkout 밖에 갱신한다. 소비자는 승인된 정정 전후 대조·미해결 hook 실패·잔여 P2/R1 및 Owner 판단이므로 관련 checkout/root를 유지한다. C4-0033/0054 원인 미확정, B1/14개 qualification과 C3 의미 정정/범위 한계도 유지한다.
+
+
+### C4 Same Entry Hook Correction And Resume Authorized — 2026-10-12T22:02:38.808753+00:00
+
+Owner가 직전 P2_C4_SAME_ENTRY_PROGRAM의 세 참조 정정·동일36개·잔여189개·원래 전체 R1세회 재개안 및 이번 정정에 한정한 별도 R0 면제에 “승인”으로 동의했다. Child program의 import·original_write·mock.patch target을 실제 same-entry 함수가 가져오는 workspace._write_exact로 바꿨다. 제안된 decoded diff와 적용 변화가 일치하며 기존 다른 hook·주입 내용/시점·단일 호출·예상 code/message·snapshot/recover 단언과 제품/controls/검사 ID·선택은 그대로다. 이번 면제를 다른 수정으로 확대하지 않는다.
+
+C4-0340의 주입 미발생 오류와 이전72개 완결 PASS, C4-0256/0275 정정 전후 근거는 보존한다. 이 helper를 호출하는14개 전체와 이번 실제 실패/정정/재검증을 원래 전체 R1 영역B 및 누적 검토에 포함한다. 정정 전 test SHA981e3cd909f9592cf57769fe406468116913c53dedc696198f41f216e13e21c1·정정 후 SHAac3bd45689e27a441a4843a79c43a5cae66aba12b1d55b2b0251739332a0833a, 새 source digest958c7c450228c04a3371582b2196e82cb5ae2ddc4eaaaeb43e52bb9ea6392a8a·collection SHA309eec7447dd1f07dc87583a59c9e7a6843d151a587418145d1c08d8eca726da다. Collection source_digest 이외 필드와 기존 source 중 entry test 이외 파일은 동일하며, 새6개 묶음마다 source map digest·collection source_digest·focused collection SHA 및 파생 identity를 대조했다.
+
+C4-0325~0360 동일36개를 새 경계에서1회 검증하고 PASS하면 잔여5묶음189 occurrence, 모두 PASS하면 원래 전체 R1세회를 진행한다. 완료한5,557개·과거 partial/보완/진단/R0/14개 qualification은 반복하거나 중복 합산하지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다. 이전 C4-0033/0054 원인 미확정과 B1/14개·C3 의미 정정/범위 한계를 유지한다.
+
+새6개 root 후보 hv2-reference-private-colvia-p2-same-entry-hook-resume-20261013-r001~006의 부재·등록 목록·실행 중복 부재를 확인했다. 준비 과정의 실행 root 생성은0이다. Controller945/1,000회에서36회 사용 시981회, root145/160개에서6개 추가 시151개다. Review6/9회·2,830.531초 사용/누적14,400초·개별1,200초와 원래 전체 R1세회, 전체 wall deadline null을 유지한다.
+
+준비 직전 실할당85147668480bytes/host free51503054848bytes다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB와 모든 기존 개별cap을 유지하며 완료를 보장하지 않는다. 삭제·한도 확대로 우회하지 않는다. 기존24세대 frozen/STOP·완료/실패 근거와 정정 전후 source/Work patch를 checkout 밖 same-entry-hook-resume-26에 보존했다. 소비자는 승인된 정정 전후 대조·잔여 P2/R1 및 Owner 판단이며 해당 의존 종료까지 관련 source checkout과 실행 root를 유지한다.
+
+
+### Full Scope R1 Preparation Rebound To Same Entry Hook Resume — 2026-10-12T22:03:28.493569+00:00
+
+기존 전체 R1 준비 스크립트의 현재 입력을 same-entry-hook-resume-26의6개 고정 묶음에 연결하고, C4-0256 fixture 정정·명시적 한 줄 R0 면제·실제 실패 전후 및 후속 보존/거부 단언을 영역B와 누적 검토 질문에 포함했다. Driver의 collection source_digest 준비 누락 STOP과 필드 하나만 바로잡은 새 기준, 당시 focused 실행0도 원문 Work를 통해 전달한다. 이번 C4-0275 mixed-history schema 단언 정정·별도 한정 R0 면제·실제 실패 전후와 mixed24개 전체도 영역B 및 누적 검토에 명시했다. 이번 C4-0340 helper의 세 참조 정정·별도 한정 R0 면제·실제 실패 당시 주입 부재와 관련14개 전체도 영역B 및 누적 검토에 명시했다. 원래 두 영역과 누적 R1의 전체 범위, 각 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 기록 조건은 그대로다. 모든 실행 PASS와 앞선 review 처분 확인 전 다음 단계 호출은 허용하지 않는다.
+
+이 준비는 제품/test import·실행 없는 정적 읽기다. 현재 source의 영역별 test/fixture slice를 갱신했고25개 입력 세대·19개 test 버전 간18개 변경에 이번 hook 참조 정정을 포함했다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper 범위는 유지한다. Source 변화가 없는 과거 묶음의 적용성은 전체 R1에서 판단하며 현재 소스로 전부 다시 실행했다고 주장하지 않는다.
+
+준비 스크립트12개를 private full-r1-preparation-26에 별도로 보존하며 이전 full-r1-preparation-25는 바꾸지 않았다. 소비자는 승인된 전체 R1세회와 Owner 결과/미해결 finding 처분이고 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니며 전체 실행 PASS 뒤 현재 결과·diff와 다시 대조해 고정한다. Reviewer 호출·새 테스트·추가 제품/통제 수정은 이 준비에 포함하지 않는다. Current Work/source patch를 갱신해 보존한다.
+
+
+### C4 Same Entry Hook Same Failed 36 PASS — 2026-10-12T22:12:08.719384+00:00
+
+승인된 P2_C4_SAME_ENTRY_PROGRAM의 세 참조 정정 후 C4-0325~0360 동일36개가 PASS했다. Same-entry10개와 transition-seam4개, helper14개 전체에서 기존 단일 주입 관측·예상 code/message·보존·해당 recover 단언을 통과했다. 기존 C4-0340 실행은 사용되지 않는 product._write_exact를 patch해 주입 없이 끝난 fixture 오류였고, 실제 함수가 import하는 workspace._write_exact를 patch하도록 정정했다. 제품·controls·주입 내용/시점·기존 기대 단언은 변경하지 않았다. 이번 세 참조에 한정한 별도 R0 면제와 실제 실패 전후·helper14개를 원래 전체 R1 영역B 및 누적 검토에 포함한다. 앞선 C4-0256/0275 정정 결과는 이전 frozen 입력의 PASS로 보존하며 이번에 재실행했다고 주장하지 않는다. 과거 C4-0033/0054 원인 미확정 및 기존 보완/partial 근거는 중복 합산하지 않는다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 | C4 | 36/36 PASS | 315.055 / 315.13458 | 2026-10-12T22:11:01.739700+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5593/5,782 occurrence이고 잔여189개/5묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller951/1,000회·root146/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거24세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### C4 Full 384 Coverage Complete — 2026-10-12T22:18:09.849988+00:00
+
+이 결과는 각 frozen 입력에서 실행한 해당 범위를 뜻한다. 앞선 세대의 결과를 최신 source 전체 일괄 실행으로 바꾸지 않는다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b002 | C4 | 24/24 PASS | 214.02 / 214.10405 | 2026-10-12T22:17:33.750853+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5617/5,782 occurrence이고 잔여165개/4묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller957/1,000회·root147/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거24세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### C5 Downgrade Schema Window Error Assertion STOP — 2026-10-12T22:25:55.264537+00:00
+
+승인된 same-entry hook 세 참조 정정 후 C4-0325~0360 동일36개와 마지막 C4-0361~0384의24개가 모두 PASS했다. Helper14개 전체의 주입·거부·보존·해당 recover 단언이 통과했고 C4 전체384개가 각 frozen 입력에 걸쳐 완결됐다. C5 첫75개 묶음은25 PASS 뒤 test_downgrade_plan_refused_before_any_write에서 FAIL로 첫 실패 STOP했다. Selected75/run26/failures1/errors0/unstarted49, skips/expected failure/unexpected success/unfinished0이다.
+
+| Batch | Run/Selected | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 / original 95 | 36/36 | 36 PASS | 315.055 / 315.13458 | 2026-10-12T22:11:01.739700+00:00 |
+| b002 / original 96 | 24/24 | 24 PASS | 214.02 / 214.10405 | 2026-10-12T22:17:33.750853+00:00 |
+| b003 / original 97 | 26/75 | 25 PASS / 1 FAIL / 49 unstarted | 72.703 / 72.808534 | 2026-10-12T22:21:44.645949+00:00 |
+
+고정 CPython3.14.7/-I/-S/-B와 기존6단계/controls를 사용했다. Actual collection bytes와 selected/executed ID·occurrence·순서를 대조했고, b001/b002는 전체, b003은 실패까지26개 prefix가 일치한다. B003 사전5단계는 PASS했다. Test exit1/controller wrapper exit2/sequential Driver exit3이며 정상 종료·group 부재·cleanup errors0·입력 보존·after input check PASS다. Timeout/source drift가 아니며 b004 이후와 원래 전체 R1세회는 미시작이다. Controller963/1,000회·root148/160개, review6/9회·2,830.531/14,400초 사용이다.
+
+#### Cause And Evidence Limit
+
+실패 테스트는 entry-1 update preview(schema2)의 candidate inventory를 human-1로 바꾸고 action을 rollback으로 바꾼다. 예상 문구는 `new source switches only schema-2 entry-1; use retained old source for old pending operations`지만 실제 오류는 `HV2-WORKSPACE-PRODUCT: switch schema/window pair`다. Product.py의 workspace_switch_apply가 _switch_preflight 전에 _switch_plan_shape를 호출하며, schema2와 human-1의 조합은 schema/window pair 검사에서 먼저 거부된다. 실행 로그와 정적 source 순서를 대조한 결과, 현재 fixture의 오류 우선순위와 regex 불일치다. 제품이 malformed pair를 거부한 것은 관측했지만 마지막 exact_snapshot 동등성 단언에 도달하지 않았으므로 이 실패 실행으로 no-write가 검증됐다고 주장하지 않는다.
+
+이 fixture는 schema/window가 불일치하는 downgrade 요청을 다루며, 잘 구성된 historical downgrade 전반의 증거로 넓히지 않는다. 별도 history_binding_cannot_regress_window 테스트는 이번 실패 이후라 미실행이다. 제품 source는 수정하지 않았다.
+
+#### Bounded C5 Error Assertion Correction Proposal — Not Executed
+
+해당 test의 assertRaisesRegex 기대 문자열 한 줄만 `switch schema/window pair`로 정정하는 안이다. 요청 변조·확인 token·예외 타입·최종 exact_snapshot 동등성 단언은 유지한다. Proposal은 same-entry-hook-resume-26/c5-downgrade-proposed.diff(SHA256 ae3f06873a82ac276054cb73f799e80961f0db4f294e155d1feec02dd7152c9e)이며 정적 Python 구문만 확인했다. Current test SHAbf2b329cdc65ebc6bd2250a01644058a839c7154f9e1203f191145e8cf594dd6, proposed SHA5b20a41a8f6a8af72032e97df9f517c4b3dd4ccec60a1cf24b8b9d034abb0896다. 적용 또는 재실행은 하지 않았다.
+
+권고안은 이 한 줄 정정에 한정한 별도 R0 면제를 명시적으로 승인하고 실제 실패·정정·재검증 및 malformed pair 범위 한계를 원래 전체 R1 영역C와 누적 검토에 포함하는 것이다. 이전 hook/schema 정정의 면제를 이번 C5 변경에 재사용하지 않는다. 별도 R0를 선택하면 남은3회가 원래 전체 R1세회에 예약돼 있으므로 review-call cap 별도 결정이 필요하다.
+
+Owner 승인 시 이 한 줄과 파생 source/collection/invocation/manifest identity를 새 세대로 고정하고, 실패한 동일75개를 새 경계에서1회 검증한다. PASS하면 잔여90개(C5 34 + X1 45 + X1 11), 모두 PASS하면 원래 전체 R1세회를 진행한다. C5 test가 이번에 처음 변경되므로 generation inventory/audit에서 해당 파일의 정확한 전후 delta를 별도 식별하고, 나머지 non-entry 파일 동일성 및 runtime/controls 불변 검사를 유지한다. R1 C5 source slices도 갱신한다. 이는 증거 binding 갱신이며 runtime 변경이나 검토 범위 축소를 허용하지 않는다.
+
+완료 기준은 동일75개와 잔여90개의 exact selection/실행·비정상 결과0·정상 종료·입력 보존, 그리고 원래 전체 R1 응답/Driver 처분이다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다. 새 root 후보 hv2-reference-private-colvia-p2-c5-downgrade-resume-20261013-r001~004는 approved root 아래 부재/미등록만 확인했다.4묶음/24controller 호출 후987/1,000회·root152/160개다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB·review 개별1,200초/누적14,400초·전체 wall deadline null을 유지한다. 현재 읽기 전용 실할당86380503040bytes/host available50169860096bytes다.
+
+완결 묶음 기준5,617/5,782 occurrence, 잔여165개다. 이번 partial25 PASS는 중복 합산하지 않는다. 현재 C5 test 원본은 checkout 밖 original-productization-safety.py로 보존했고 source/Work patch를 갱신한다. 기존 frozen/STOP·실패 로그·원본/적용 입력과 전체 R1 준비는 유지한다. 소비자는 다음 승인 시 정확한 한 줄 전후 대조·미해결 C5 실패·잔여 P2/R1 및 Owner 판단이며, 완료/수락까지 관련 checkout/root를 유지한다. C4-0033/0054 원인 미확정, B1/14개 qualification 및 C3 의미 정정/범위 한계도 유지한다.
+
+
+### C5 Downgrade Assertion Correction And Resume Authorized — 2026-10-12T23:14:05.973833+00:00
+
+Owner가 직전 C5 기대 문구 한 줄 정정·이번 변경에 한정한 별도 R0 면제·동일75개와 잔여90개 및 원래 전체 R1세회 재개안을 승인했다. test_downgrade_plan_refused_before_any_write의 예상 regex만 switch schema/window pair로 정정했다. 잘못된 schema/window 입력·예외 타입·확인 token·최종 exact_snapshot 동등성 단언은 유지한다. 기존 제안 diff와 적용 변화가 일치하며 제품·controls·검사 ID와 선택은 그대로다. 정정 전 test SHAbf2b329cdc65ebc6bd2250a01644058a839c7154f9e1203f191145e8cf594dd6, 정정 후 SHA5b20a41a8f6a8af72032e97df9f517c4b3dd4ccec60a1cf24b8b9d034abb0896, source digest7fdbe103407ce7ebbb78bc27fdadc8a74440be71b74325bf7e6f4070e190dd67, collection SHAa0dab741ff55316da0ea387eadfdd5d0aeb3436858f2d02087c65e20e011aab3다.
+
+이 테스트는 malformed schema/window pair 거부를 다루며 잘 구성된 historical downgrade 전반으로 의미를 확대하지 않는다. 이전 실패는 최종 no-write 단언에 도달하지 않았으며 이번 실행 결과를 확인할 때까지 보존 검증은 미완료다. 실제 실패·정정·재검증 및 범위 한계를 원래 전체 R1 영역C와 누적 검토에 포함한다. C5 파일의 전후 한 줄 차이를 generation inventory/audit에 명시하고, 나머지 non-entry source 및 runtime/controls 불변 검사를 유지하며 C5 source slices를 갱신한다. 이전 R0 면제를 재사용하거나 이번 면제를 다른 변경으로 확대하지 않는다.
+
+새 경계에서 동일75개를1회 검증하고 PASS하면 잔여90개(C5 34 + X1 45 + X1 11), 모두 PASS하면 원래 전체 R1세회를 진행한다. 완결5,617/5,782개와 이전 partial/보완 결과는 반복하거나 중복 합산하지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다. C4-0033/0054 원인 미확정, B1 qualification14개 및 C3 의미 정정/검증 범위 한계도 유지한다.
+
+새4개 root 후보 hv2-reference-private-colvia-p2-c5-downgrade-resume-20261013-r001~004는 approved root 아래 부재·미등록·실행 중복 부재를 확인했다. 준비 단계 root 생성0이다. Controller963/1,000회에서24회 사용 시987회, root148/160개에서4개 추가 시152개다. Review6/9회·2,830.531초 사용/누적14,400초·개별1,200초·전체 R1세회와 overall wall deadline null을 유지한다. 실할당86380503040bytes/host free50172633088bytes이며 storage96GiB·다음 step 전2GiB 여유·host free4GiB를 유지한다.
+
+이전25세대 frozen/STOP·완료/실패 근거 및 정정 전후 입력과 Work/source patch를 checkout 밖 c5-downgrade-resume-27에 보존했다. 소비자는 정확한 C5 전후 비교·잔여 P2/R1 및 Owner 판단이며 의존 종료까지 source checkout/실행 root를 유지한다.
+
+
+### Full Scope R1 Preparation Rebound To C5 Assertion Resume — 2026-10-12T23:16:17.048714+00:00
+
+전체 R1 준비를 c5-downgrade-resume-27의4개 고정 묶음에 연결했다. 이번 C5 한 줄 regex 정정·별도 한정 R0 면제·실제 실패/정정/재검증 및 malformed schema/window 범위 한계를 영역B와 누적 검토 질문에 포함한다. 원래 영역A 4,817개, 영역B 965개 및 누적5,782개의 전체 범위와 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 조건은 유지한다. 전체 실행 PASS와 앞선 review 처분 전 다음 검토 호출은 하지 않는다.
+
+정적 generation 비교는26개 입력 세대·19개 entry test 버전·별도2개 C5 test 버전을 식별한다. C5는 이전25세대에서 동일하고 최신 세대의 승인된 한 줄 diff만 예외로 명시하며, 그 외 source/runtime 불변 검사를 유지한다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper source slices를 현재 파일로 갱신했다. 과거 결과의 의미적 재사용 가능성은 전체 R1의 판단 대상이며 현재 source로 모두 다시 실행했다고 주장하지 않는다. 기존 C4 오류/정정 전후, B1 qualification14개 및 C3 범위 한계도 유지한다.
+
+준비 스크립트12개를 private full-r1-preparation-27에 보존하고 이전 준비본은 유지한다. 소비자는 승인된 전체 R1세회 및 Owner 판단/미해결 finding 처분이며 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니고 전체 실행 PASS 후 실제 결과·diff를 다시 고정한다. 이 준비는 source/test import·실행 없는 정적 읽기이며 reviewer 호출0이다. Current Work/source patch를 갱신한다.
+
+
+### Driver Sequential Step Count Preparation STOP — 2026-10-12T23:18:20.054156+00:00
+
+승인된 C5 한 줄 regex 정정과 전후 보존·새 입력 고정은 완료했다. Source test SHA5b20a41a8f6a8af72032e97df9f517c4b3dd4ccec60a1cf24b8b9d034abb0896와 모든 입력 검증은 PASS다. 그러나 Driver가 sequential launcher의 묶음 수를6에서4로 줄이면서 range(1,7)을 전역 치환하여, 각 묶음의 단계 반복도 잘못4개로 줄였다. 이는 Driver 준비 오류이며 제품 또는 C5 테스트 실패가 아니다.
+
+| Step | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- |
+| acquire-base | PASS | 0.672 / 0.776627 | 2026-10-12T23:14:44.438356+00:00 |
+| canary-base | PASS | 0.707 / 0.784651 | 2026-10-12T23:15:05.037264+00:00 |
+| collect-base | PASS | 0.495 / 0.562175 | 2026-10-12T23:15:26.003837+00:00 |
+| smoke-base | PASS | 57.609 / 57.673706 | 2026-10-12T23:16:43.410143+00:00 |
+
+첫 묶음 acquire/canary/base collect/smoke20까지 PASS했다. 다음 b002 step1에서 선행 b001 focused 완료 기록을 요구하는 기존 gate가 FileNotFoundError로 STOP시켰다. B001 entry collect와 focused는 호출0, b002 root 생성0이며 후속 묶음/전체 R1도 미시작이다. Sequential exit1이며 이미 실행된4개 controller는 exit0·정상 종료·group 부재·cleanup errors0·입력 보존·after input check PASS다. 기존 선행 단계 gate가 누락을 차단했고 이를 완화하지 않는다. 이번 실행으로 C5 정정 후 거부/최종 no-write 단언을 검증했다고 주장하지 않는다.
+
+완결5,617/5,782개·잔여165개는 그대로다. Controller967/1,000회·root149/160개, review6/9회·2,830.531/14,400초 사용이다. C5 한 줄 정정에 대한 별도 R0 면제는 승인된 범위로 유지하지만 본 검증 결과는 아직 없다.
+
+#### Exact Driver Correction And Resume Proposal — Not Executed
+
+Sequential launcher의 outer number loop는 range(1,5) 그대로 두고, inner step loop 한 줄만 range(1,7)로 정정한다. 제안 diff SHAefa967119745ab745611eaed8d996be3d475e56dd1b44fe0b72d7a9f5e3f97ed를 c5-downgrade-resume-27/sequential-six-steps-proposed.diff에 보존했다. AST로 outer4 × inner6의24개 (batch,step) 순서를 정적으로 확인했다. Controller·제품·테스트·assertion·선행 gate·선택·한도는 변경하지 않는다. 전체 R1에도 이번 Driver 준비 오류와 본 검증0을 명시한다.
+
+Owner 승인 시 이전 frozen/STOP을 유지한 새 입력 세대와 새4개 실행 경계에서 동일75개1회 → 잔여90개 → 원래 전체 R1세회를 수행한다. 실행 전 outer4/inner6과 각 batch의6개 step 목록이 정확히 일치하는지 확인한다. 새 root 후보 hv2-reference-private-colvia-p2-sequence-resume-20261013-r001~004는 approved root 아래 부재/미등록만 확인했다.24controller 호출 후991/1,000회·root153/160개다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB·개별 cap·overall wall null 및 첫 실패 STOP을 유지한다. 추가 수정·자동 재시도·한도 확대는 없다. 현재 실할당86383407104bytes/host free50167906304bytes다. P2 수락·Git/STATUS/Done은 별도다.
+
+Work/source patch를 checkout 밖에 갱신하고 현재 source/수정 전후 backup·실패 launcher/STOP·사전4단계 결과·전체 R1 준비12개를 보존한다. 소비자는 미해결 Driver 오류의 정확한 수정 전후 대조·잔여 P2/R1 및 Owner 판단이며 관련 checkout/root를 유지한다. 복제 가능한 검증용 실행 경계를 최종 산출물로 취급하지 않으며 의존 종료 때 정리 여부를 재평가한다.
+
+
+### Driver Six Step Sequence Correction And Resume Authorized — 2026-10-12T23:49:44.447390+00:00
+
+Owner가 직전 Driver 내부 반복 한 줄 정정·새 경계의 동일75개 및 잔여90개·원래 전체 R1세회 재개안을 승인했다. Outer batch 반복은4개를 유지하고 inner step 반복만6개로 정정했다. 적용된 제안 diff SHAefa967119745ab745611eaed8d996be3d475e56dd1b44fe0b72d7a9f5e3f97ed가 보존된 승인안과 일치한다. AST로 outer4/inner6의24개 호출 순서를 추출해 모든 batch의 acquire/canary/base collect/smoke/entry collect/focused 목록과 정확히 대조했다. 이전4단계 종료 후 focused 기록 없이 다음 batch로 넘어간 Driver 오류와 본 검증0을 숨기지 않고 전체 R1에 전달한다.
+
+제품·테스트·controls·선행 완료 gate·검사 선택·collection bytes는 변경하지 않았다. C5 test SHA5b20a41a8f6a8af72032e97df9f517c4b3dd4ccec60a1cf24b8b9d034abb0896 및 entry test SHAac3bd45689e27a441a4843a79c43a5cae66aba12b1d55b2b0251739332a0833a는 이전 승인 후 그대로다. 이번 세대는 실행 경로와 파생 입력 identity만 새로 고정한다. 앞선 C5 한 줄 R0 면제는 그 정정에만 적용하며 기존 malformed pair 범위·최종 보존 단언 미검증 경계도 재검증 결과가 나올 때까지 유지한다.
+
+새4개 root hv2-reference-private-colvia-p2-sequence-resume-20261013-r001~004의 부재·미등록·실행 중복 부재를 확인했다. 준비 중 root 생성0이다. 동일75개를1회 검증하고 PASS하면 잔여90개(C5 34 + X1 45 + X1 11), 모두 PASS하면 원래 전체 R1세회를 진행한다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다. Canonical5,617/5,782개는 유지하고 partial/사전 결과를 중복 합산하지 않는다. P2 수락·Git/STATUS/Done은 별도다.
+
+Controller967/1,000회에서24회 후991회, root149/160개에서4개 후153개다. Review6/9회·2,830.531/14,400초·개별1,200초와 overall wall deadline null을 유지한다. 실할당86383407104bytes/host free50136723456bytes이며 storage96GiB·다음 step 전2GiB 여유·host free4GiB를 유지한다. 기존26세대 frozen/STOP·전후 입력·부분/완료 결과는 보존하고 Work/source patch를 checkout 밖에 갱신한다. 소비자는 미해결 Driver 정정 확인·잔여 P2/R1 및 Owner 판단이며 의존 종료까지 관련 checkout/root를 유지한다.
+
+
+### Full Scope R1 Preparation Rebound To Six Step Sequence Resume — 2026-10-12T23:50:30.385289+00:00
+
+전체 R1 준비를 sequence-resume-28의4개 고정 묶음에 연결했다. 이전 Driver inner step 반복 준비 오류·focused 실행0·승인된 inner6/outer4 정정 및 실제24개 호출 순서 대조를 포함한다. 이번 C5 한 줄 regex 정정·별도 한정 R0 면제·실제 실패/정정/재검증 및 malformed schema/window 범위 한계를 영역B와 누적 검토 질문에 포함한다. 원래 영역A 4,817개, 영역B 965개 및 누적5,782개의 전체 범위와 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 조건은 유지한다. 전체 실행 PASS와 앞선 review 처분 전 다음 검토 호출은 하지 않는다.
+
+정적 generation 비교는27개 입력 세대·19개 entry test 버전·별도2개 C5 test 버전을 식별한다. C5는 이전25세대에서 동일하고 27차 실행 준비의 승인된 한 줄 diff만 예외로 명시하고 28차 입력 source가 27차와 동일함을 확인하며, 그 외 source/runtime 불변 검사를 유지한다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper source slices를 현재 파일로 갱신했다. 과거 결과의 의미적 재사용 가능성은 전체 R1의 판단 대상이며 현재 source로 모두 다시 실행했다고 주장하지 않는다. 기존 C4 오류/정정 전후, B1 qualification14개 및 C3 범위 한계도 유지한다.
+
+준비 스크립트12개를 private full-r1-preparation-28에 보존하고 이전 준비본은 유지한다. 소비자는 승인된 전체 R1세회 및 Owner 판단/미해결 finding 처분이며 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니고 전체 실행 PASS 후 실제 결과·diff를 다시 고정한다. 이 준비는 source/test import·실행 없는 정적 읽기이며 reviewer 호출0이다. Current Work/source patch를 갱신한다.
+
+
+### C5 Downgrade Same Failed 75 PASS — 2026-10-12T23:59:34.012888+00:00
+
+승인된 Driver inner6/outer4 정정 뒤 실제6단계를 모두 실행했다. 이전 Driver 준비 오류 시 사전4단계만 PASS했고 C5 본 검증0이었다. 승인된 C5 기대 문구 한 줄 정정 후 동일75개가 PASS했다. test_downgrade_plan_refused_before_any_write의 schema2/human-1 불일치 요청이 switch schema/window pair로 거부되고, 마지막 exact_snapshot 동등성 단언까지 통과했다. 이전 실패는 regex 불일치로 이 보존 단언에 도달하지 못했다. 이는 malformed schema/window pair 거부 및 이 fixture의 보존 증거이며, 잘 구성된 historical downgrade 전반으로 넓히지 않는다. 제품/controls/입력/예외 타입/확인 token/마지막 보존 단언은 바꾸지 않았다. 별도 한 줄 R0 면제와 실제 실패/정정/재검증을 원래 전체 R1 영역B와 누적 검토에 포함한다. 이전 C4 전체384개 PASS는 각 frozen 입력의 결과로 유지하며 이번에 다시 실행했다고 주장하지 않는다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 | C5 | 75/75 PASS | 356.601 / 356.682895 | 2026-10-12T23:59:11.383929+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5692/5,782 occurrence이고 잔여90개/3묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller973/1,000회·root150/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거26세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### C5 Candidate Window Refusal Lock Anchor STOP — 2026-10-13T00:07:09.936403+00:00
+
+승인된 Driver inner6/outer4 정정 뒤 b001 동일75개가 모두 PASS했다. C5 downgrade regex 정정의 실제 거부 및 마지막 exact_snapshot 단언까지 통과했다. B002의34개 중1 PASS 뒤 test_candidates.CandidateContractTests.test_old_checkout_candidate_writer_refuses_without_publication에서 FAIL로 첫 실패 STOP했다. Selected34/run2/failures1/errors0/unstarted32, skips/expected failure/unexpected success/unfinished0이다.
+
+| Batch | Run/Selected | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 / original 97 | 75/75 | 75 PASS | 356.601 / 356.682895 | 2026-10-12T23:59:11.383929+00:00 |
+| b002 / original 98 | 2/34 | 1 PASS / 1 FAIL / 32 unstarted | 1.316 / 1.377128 | 2026-10-13T00:02:24.941891+00:00 |
+
+고정 CPython3.14.7/-I/-S/-B 및 기존6단계/controls를 사용했다. Collection bytes와 selected/executed ID·occurrence·순서를 확인했고 b001 전체75개 및 b002 실패까지2개 prefix가 일치한다. B002 사전5단계는 PASS했다. Test exit1/controller wrapper exit2/sequential Driver exit3이며 정상 종료·group 부재·cleanup errors0·입력 보존·after input check PASS다. B003 이후와 원래 전체 R1세회는 미시작이다. Controller979/1,000회·root151/160개·review6/9회 및2,830.531/14,400초 사용이다.
+
+#### Observed Failure And Static Cause
+
+실패는 line231의 전체 파일 byte map 동등성 검사다. 바로 앞 HV2-CANDIDATE-WINDOW 코드 검사는 통과했고, 출력에는 새 빈 .hrn/locks/writer.lock이 나타난다. CandidateContractTests는 SerialWriterTests의 bootstrap root와 수동 authority fixture를 쓰며 runtime callback을 checkout-1로 대체한다. 실제 installed old launcher 또는 retained OLD source 실행이 아니다. CandidateStore.mutate는 기존 공통 writer_guard 안에서 runtime/window를 검사한다. Writer_guard는 .hrn/locks와 jsonio.exclusive_file_lock의 O_CREAT/0600 빈 writer.lock을 만든 뒤 callback을 호출한다. Candidates.py는 현재 HEAD 대비 변경이 없으며, shared guard 아래 재검증 순서는 WORKSPACE-CONTRACT Layer Responsibilities 및 REFERENCE Candidate Planning과 일치한다.
+
+이 새 unit test의 전체 무변경 기대는 최초 guard scratch 생성을 포함하지 못했다는 정적 원인 판단이다. 로그 diff는 잘렸고 runner preservation은 no-reachable-root/unavailable이므로 실패 당시 전체 before/after tree를 보존했다고 주장하지 않는다. 관측된 것은 WINDOW 거부 뒤 byte-map 불일치와 빈 lock 항목이며, 다른 경로 보존 전부가 통과한 결과는 아니다. 제품의 guard 순서를 바꾸거나 모든 거부에 lock 예외를 일반화하지 않는다. 기존 actual OLD/installed writer와 late-lock 결과는 별도 근거다.
+
+#### Exact Candidate Test Correction Proposal — Not Executed
+
+이 테스트 함수 안에서만 기대값을 명시적으로 정정한다. 기존 runtime double·요청·WINDOW 코드 단언은 유지한다. 기존 모든 파일 바이트와 모든 기존 경로의 종류·모드를 보존하도록 비교하고, 새 경로는 정확히 .hrn/locks 디렉터리와 빈 regular writer.lock 두 개만 허용한다. 디렉터리0755, 파일0600·symlink 아님·link count1과 planning 디렉터리 미생성을 추가 단언한다. 고정 umask0022 안의 이 fresh fixture에 한정하며 기존 malformed lock 허용, scratch wildcard, candidate publication 또는 제품 변경을 허용하지 않는다.
+
+제안 diff는 sequence-resume-28/candidate-lock-anchor-proposed.diff(SHA256 a22a150ef52ee51a355438daf8a7c108dade0d455a4077b82e020e6b3338607e)에 보존했다. Current test SHA2fb18aba9afc341ab9d41e5d57757d4a15a6321a397209f6574ba569e58381e4, proposed SHA6f54babab83c6df748e3283def50c1ead14eab395219f74ee5c864984701c2ed이며 AST 구문만 확인했다. Source에는 아직 적용하지 않았다. 권고안은 이 한 함수의 lock-anchor 기대값 정정 및 추가 보존 검사에 한정한 별도 R0 면제를 명시적으로 승인하고, 실제 실패/정정/재검증과 synthetic runtime 한계를 원래 전체 R1 영역B 및 누적 검토에 포함하는 것이다. 앞선 C5 regex 면제는 이번 변경에 적용하지 않는다. 별도 R0 검토를 선택하면 남은3회가 원래 전체 R1세회로 예약돼 있으므로 review-call cap 별도 결정이 필요하다.
+
+Owner 승인 시 해당 함수와 파생 입력 identity만 새로 고정하고, 같은34개를 새 경계에서1회 검증한다. PASS하면 잔여 X1 56개(45+11), 모두 PASS하면 원래 전체 R1세회를 진행한다. 새 candidates test 전후 bytes/delta를 generation history에 추가하고 그 외 runtime/controls/source 동일성 검사를 유지하며 C5 source slices를 갱신한다. 이미 PASS한75개는 현재 candidates fixture 변경에 대한 적용성을 R1에서 검토하고 무조건 최신 source 재실행으로 바꾸지 않는다. First unexpected failure/timeout/drift/storage gate 거부 시 중단하며 추가 수정·자동 재시도·한도 확대는 없다.
+
+새 root 후보 hv2-reference-private-colvia-p2-candidate-lock-resume-20261013-r001~003은 approved root 아래 부재/미등록만 확인했다.3묶음/18controller 호출 후997/1,000회·root154/160개다. Storage96GiB·다음 step 전2GiB 여유·host free4GiB·review개별1,200초/누적14,400초·전체 wall deadline null을 유지한다. 실할당86395731968bytes/host free50314285056bytes다. 성공 후 controller 여유는3회이며 추가 실패 시 자동 예산 확대나 재시도는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+완결5,692/5,782 occurrence·잔여90개다. 이번 partial1 PASS는 중복 합산하지 않는다. 현재 candidates test exact bytes와 제안 diff·기존 원본/적용 입력·과거 frozen/STOP·실패 로그·R1 준비12개를 보존하고 Work/source patch를 checkout 밖에 갱신한다. 소비자는 unresolved candidate lock expectation·정확한 수정 전후 대조·잔여 P2/R1 및 Owner 판단이며 관련 checkout/root를 유지한다. C4-0033/0054 원인 미확정, B1 qualification14개와 C3 의미 정정/범위 한계도 유지한다.
+
+
+### C5 Candidate Lock Anchor Correction And Resume Authorized — 2026-10-13T00:13:53.274800+00:00
+
+Owner가 직전 candidate 테스트 한 함수의 lock anchor 기대값 정정 및 추가 보존 검사, 이번 변경에 한정한 별도 R0 면제, 동일34개 → 잔여56개 → 원래 전체 R1세회 재개안을 승인했다. 보존된 제안 diff SHAa22a150ef52ee51a355438daf8a7c108dade0d455a4077b82e020e6b3338607e와 적용 변화가 일치한다. 기존 runtime double·요청·HV2-CANDIDATE-WINDOW 단언은 유지한다. 기존 파일 바이트와 경로 종류·모드를 보존하고, 새 경로는 정확히 .hrn/locks 및 빈 regular writer.lock만 허용하며 directory0755/file0600·symlink 아님·link count1·planning 미생성을 단언한다. 고정 umask0022 안의 해당 fresh unit fixture에만 적용한다.
+
+정정 전 candidates test SHA2fb18aba9afc341ab9d41e5d57757d4a15a6321a397209f6574ba569e58381e4·정정 후 SHA6f54babab83c6df748e3283def50c1ead14eab395219f74ee5c864984701c2ed, 새 source digest779e0d5479856cc9df5b2ec75d3ca8e9c9943f3bf8f1ab6e50ea8a475bf2f708·collection SHA23f7a8e4a8fcde1d259335fa70d979dd9062cecc34daa38c8301bae6d05a5e0f다. 제품·controls·다른 source 파일·검사 ID/선택은 그대로다. 이전 실패는 WINDOW 거부 이후 byte-map 불일치이며 전체 tree 보존이 unavailable이었다는 한계를 유지한다. 실제 OLD/installed writer 검증으로 오인하지 않으며 원래 전체 R1 영역B와 누적 검토에 이 변경·별도 R0 면제·실제 전후 결과를 포함한다. 이전 C5 regex 면제를 재사용하거나 이번 면제를 다른 변경으로 확대하지 않는다.
+
+새3개 root hv2-reference-private-colvia-p2-candidate-lock-resume-20261013-r001~003의 부재·미등록·실행 중복 부재를 확인했다. Outer3/inner6의18개 호출 순서를 AST에서 추출해 계획의6단계 목록과 대조했다. 준비 단계 root 생성0이다. 동일34개를1회 검증하고 PASS하면 잔여 X1 56개(45+11), 모두 PASS하면 원래 전체 R1세회를 진행한다. 이미 완결한5,692개는 입력 세대별 결과로 유지하며 최신 source 전체 재실행으로 바꾸지 않는다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하고 추가 수정·자동 재시도·한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+Controller979/1,000회에서18회 후997회, root151/160개에서3개 후154개다. Review6/9회·2,830.531/14,400초·개별1,200초와 overall wall deadline null을 유지한다. 실할당86395731968bytes/host free50315935744bytes이며 storage96GiB·다음 step 전2GiB 여유·host free4GiB를 유지한다. 기존27세대 frozen/STOP·원본/적용 입력과 현재 Work/source patch를 checkout 밖에 보존한다. 소비자는 candidate anchor 정정 전후 확인·잔여 P2/R1 및 Owner 판단이며 의존 종료까지 관련 checkout/root를 유지한다.
+
+
+### Full Scope R1 Preparation Rebound To Candidate Anchor Resume — 2026-10-13T00:15:59.766465+00:00
+
+전체 R1 준비를 candidate-lock-resume-29의3개 고정 묶음에 연결했다. 이번 candidate WINDOW 단위 테스트의 정확한 guard anchor 기대값 정정·추가 보존 검사·별도 한정 R0 면제·실제 실패/정정/재검증·원래 tree 보존 unavailable 및 runtime double 범위를 영역B와 누적 검토 질문에 포함한다. 앞선 Driver 준비 오류/본검증0과 C5 regex 정정 후75개 PASS도 전달한다. 원래 영역A 4,817개, 영역B 965개 및 누적5,782개의 전체 범위와 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 조건은 유지한다. 전체 실행 PASS와 앞선 review 처분 전 다음 검토 호출은 하지 않는다.
+
+정적 generation 비교는28개 입력 세대·19개 entry test 버전·별도2개 productization test 버전·별도2개 candidates test 버전을 식별한다. 승인된 C5 regex와 candidate 한 함수의 정확한 delta만 각각 식별하고 나머지 source/runtime 불변 검사를 유지한다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper source slices를 현재 파일로 갱신한다. 과거 결과의 의미적 재사용 가능성은 전체 R1 판단 대상이며 최신 source로 모두 다시 실행했다고 주장하지 않는다. 기존 C4 오류/정정 전후, B1 qualification14개 및 C3 범위 한계도 유지한다.
+
+준비 스크립트12개를 private full-r1-preparation-29에 보존하고 이전 준비본은 유지한다. 소비자는 승인된 전체 R1세회 및 Owner 판단/미해결 finding 처분이며 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니고 전체 실행 PASS 후 실제 결과·diff를 다시 고정한다. 이 준비는 source/test import·실행 없는 정적 읽기이며 reviewer 호출0이다. Current Work/source patch를 갱신한다.
+
+
+### C5 Detach Membership Diagnostic Expectation STOP — 2026-10-13T00:22:35.649841+00:00
+
+승인된 candidate lock anchor 정정 후 동일34개 묶음에서25 PASS/1 FAIL/8 unstarted로 첫 실패 STOP했다. 앞선 test_old_checkout_candidate_writer_refuses_without_publication은 PASS했고 WINDOW 거부·기존 바이트/종류/모드 보존·정확한 두 scratch 경로/0755/0600/nonsymlink/nlink1/planning 미생성 단언을 통과했다. 이는 해당 unit-runtime-double fixture의 결과이며 실제 installed OLD 실행이나 모든 거부의 lock 예외를 뜻하지 않는다. 묶음 전체는 실패했으므로 partial25개를 canonical 완결에 더하지 않는다.
+
+실패한 검사는 test_umbrella_lifecycle.InstalledUmbrellaLifecycleTests.test_detach_missing_umbrella_member_refuses_apply_and_resume다. Selected34/run26/failures1/errors0/unstarted8, skips/expected failure/unexpected success/unfinished0이며 controller149.176초/outer149.246761초, 종료2026-10-13T00:19:55.805613+00:00다. 고정 CPython3.14.7/-I/-S/-B와 기존6단계를 사용했고 사전5단계 PASS·collection bytes 일치·실행26개 prefix 순서/identity 일치를 확인했다. Test exit1/controller wrapper exit2/sequential Driver exit3, 정상 종료·group 부재·cleanup errors0·입력 보존·after input check PASS다. X1 두 묶음 및 원래 전체 R1세회는 미시작이다.
+
+#### Observed Failure And Static Cause
+
+현재 entry-1 설치 fixture에서 candidates.py를 remove 목록에서 제외한 malformed schema-3 detach plan이 HV2-WORKSPACE-PRODUCT: detach incomplete removal/binding set으로 거부됐다. Line169는 예전 detach plan changed since preview를 기대해 실패했다. 같은 함수의 앞선 umbrella 반복은 apply 거부/바이트 보존·after-receipt 중단·손상 receipt의 status/recover 거부와 마지막 바이트 보존까지 완료한 뒤 candidates 반복으로 넘어갔다. Candidates 반복은 첫 apply 거부 문구 비교에서 중단했으므로 바로 뒤 보존 비교, receipt 생성/손상, status/recover 및 마지막 보존 단언은 아직 실행되지 않았다.
+
+Product _detach_plan_shape는 payload/colvia가 있는 schema-3 release에 ENTRY_MANAGED_PATHS 전체를 요구한다(product.py:1776–1786). Candidates.py 누락은 과거 membership 추론으로 다음 preview 비교나 unknown-member 검사에 도달하지 않고 이 exact membership gate에서 먼저 거부된다. Apply는 line1922에서, detached status는 _detach_observe_records line1866에서 동일 shape 검사를 수행한다. 따라서 같은 candidates tuple의 apply/recover 기대 문구 두 값이 모두 오래됐다는 정적 판단이다. Recover 경로는 이번 실행으로 재현된 것이 아니며 수정 후 검증 대상이다. WORKSPACE-CONTRACT Receipt-Bound Detach의 complete release membership 및 exact remove 요구와 일치한다. 제품의 거부 동작을 바꾸거나 예외를 넓히지 않는다.
+
+Runner가 실패 fixture1,221,094bytes를 reachable-root로 복사했고 test cleanup의 fixture.tar.gz331,346bytes도 보존됐다. Archive에서 missing-umbrella의 schema3 손상 receipt 및 missing-candidates의 detached.json 부재를 확인했다. 이는 실패 후 fixture 보존이며 before/after 전체 동등성 증거는 아니다. 별도 실행 없이 정적 source/보존 입력만 읽었다.
+
+#### Exact Two Diagnostic Expectations Proposal — Not Executed
+
+Tests/test_umbrella_lifecycle.py:163의 candidates tuple에서 apply_error와 recover_error 두 문자열만 detach incomplete removal/binding set으로 변경한다. Module, source/installed fixture, 요청/confirm token, ContractError 타입, 두 exact_snapshot 동등성 검사, crash injection, damaged receipt, status/recover 호출은 그대로 유지한다. 제안 diff SHA788c105be72898e5c6613045af9cc5d54a56c80b9f6c29af66b303cea27dad29, current test SHA01d145d90eb18403df22dc65f7c20feb960a102532d1771f6cb60057d1b56017, proposed SHAefb7feb8c835bea3c6cf7827c46c50688e393541c7f1f7bf87f1e5674a33cb2c다. candidate-lock-resume-29/detach-membership-proposed.diff 및 original-umbrella-test.py에 보존했으며 AST 구문만 확인했고 source에 적용하지 않았다.
+
+이번 두 문자열 정정에 한정한 별도 R0 면제를 명시적으로 승인하고 실제 실패/정정/재검증 및 아직 미실행인 candidates recovery/preservation 범위를 원래 전체 R1 영역B와 누적 검토에 포함하는 안을 권고한다. 앞선 candidate lock/C5 regex 면제는 재사용하지 않는다. 별도 R0를 원하면 남은3회가 원래 전체 R1용이므로 review-call cap에 대한 별도 결정이 필요하다.
+
+Owner 승인 시 해당 두 값 및 파생 입력 identity만 새로 고정하고 동일34개를 새 경계에서1회 실행한다. PASS하면 잔여 X1 56개(45+11), 전부 PASS하면 원래 전체 R1세회로 이어간다. Umbrella test 전후 bytes를 별도 source-generation family로 기록하고, 기존 entry/productization/candidates 변화와 구분해 나머지 source/runtime/controls 불변 검사를 유지한다. C5 source slices와 R1 준비에는 정확한 정정과 실제 결과를 반영한다. 과거 PASS를 최신 source 전체 재실행으로 취급하지 않으며 partial25개를 중복 합산하지 않는다.
+
+현재 controller985/1,000회·root152/160개다. 새3개 경계/18controller 호출에는1,003회가 필요하므로 controller 총한도만1,000→1,003회(+3)의 별도 승인이 필요하다. 자동 확대하지 않는다. 새 root 후보 hv2-reference-private-colvia-p2-detach-membership-resume-20261013-r001~003은 approved root 아래 부재/미등록을 확인했으며 아직 만들지 않았다. 실행 후 root155/160개다. Review6/9회·2,830.531/14,400초·개별1,200초, storage96GiB·다음 step 전2GiB 여유·host free4GiB·overall wall null 및 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 STOP을 유지한다. 추가 수정/자동 재시도/추가 한도 확대는 없다. 현재 실할당86403657728bytes/host free46644084736bytes다.
+
+Canonical 완결5,692/5,782·잔여90개를 유지한다. Work CHORE-20261009-002에 실패와 제안을 기록하며 P2 수락·Git/STATUS/Done은 별도다. 현재 source bytes·제안 diff·STOP/로그·기존 frozen 세대·R1 준비와 current patch를 보존한다. 실패 fixture archive를 candidate-lock-resume-29/detach-failure-fixture.tar.gz(SHA20e6bc4ac296a8ff8f74b79cd0bd191505ffc1421cff8df4d6abf4f1bae078d3)로 checkout 밖에 복사/동일성 확인했다. 소비자는 미해결 detach membership 기대값 정정의 전후 대조·전체 R1 및 Owner 판단이고 해당 의존 종료 때 보존/checkout 정리를 재평가한다. 관련 구현 checkout과 실행 root는 이 후속 사용 때문에 유지한다. C4-0033/0054 원인 미확정, B1 qualification14개 및 C3 의미/범위 한계도 유지한다.
+
+
+### C5 Detach Membership Expectations And Resume Authorized — 2026-10-13T00:29:13.794552+00:00
+
+Owner가 직전 detach 테스트의 candidates tuple 오류 기대 문자열 두 값 정정, 이번 두 값에 한정한 별도 R0 면제, controller 총한도1,000→1,003회(+3) 및 동일34개 → 잔여56개 → 원래 전체 R1세회 재개안을 승인했다. 적용 diff SHA788c105be72898e5c6613045af9cc5d54a56c80b9f6c29af66b303cea27dad29가 보존된 승인안과 일치한다. 두 기대값을 detach incomplete removal/binding set으로 고쳤으며 module/fixture/요청/token/ContractError 타입/두 exact_snapshot 비교/crash injection/손상 receipt/status 및 recover 호출은 그대로다. 제품·controls는 변경하지 않았다.
+
+정정 전 umbrella test SHA01d145d90eb18403df22dc65f7c20feb960a102532d1771f6cb60057d1b56017, 정정 후 SHAefb7feb8c835bea3c6cf7827c46c50688e393541c7f1f7bf87f1e5674a33cb2c, 새 source digesta21e1930b1a4aaf0378d4022d30156a9974d88d96d0ea9e4b3855ef8000dae43, collection SHAdb1de7f97b4a94599b0bf83d6b7565907268d302bcce53f12d8fff90290a4d13다. Source generation의 네 번째 테스트 변경 계열로 정확한 전후 bytes를 유지하고 기존 entry/productization/candidates 계열과 구분한다. 이전 실행은 malformed schema3 candidates 누락 plan의 거부 문구 비교에서 실패했고 이후 preservation/recovery 단언에는 도달하지 않았다. Recover 기대값 정정의 근거는 같은 shape 검사라는 정적 분석이며 실제 PASS는 재검증 전까지 주장하지 않는다. 앞선 umbrella 반복과 candidate lock 테스트 PASS는 각 실행 입력의 부분 증거로 보존하며 전체34개 완료로 합산하지 않는다. 실패 후 fixture는 보존됐으나 before/after 전체 동등성 증거로 취급하지 않는다.
+
+새3개 root hv2-reference-private-colvia-p2-detach-membership-resume-20261013-r001~003의 부재·미등록·중복 실행 부재를 확인했다. Outer3/inner6의18개 호출 순서를 AST와 모든 batch의6개 step 목록으로 대조했고 준비 중 root 생성0이다. 동일34개1회가 PASS하면 X1 45+11개를 실행하며 모두 PASS하면 원래 영역A4,817/영역B965/누적5,782의 전체 R1세회로 이어간다. 기존완결5,692/5,782 및 잔여90개이고 partial25개는 더하지 않는다.
+
+Controller985/1,003회에서18회 후1,003회, root152/160개에서155개다. Review6/9회·2,830.531/14,400초·개별1,200초, storage96GiB·다음step전2GiB여유·hostfree4GiB 및 overall wall null은 그대로다. 실할당86403657728bytes/host free46616559616bytes다. 첫 예상 밖 실패/timeout/drift/저장 gate 거부 시 중단하며 추가 수정·자동 재시도·추가 한도 확대는 없다. P2 수락·Git/STATUS/Done은 별도다.
+
+이전28세대 frozen/STOP·실패 fixture·원본/적용 source와 Work/source patch를 checkout 밖에 보존한다. 소비자는 이번 detach expectation의 정확한 전후 대조·잔여 P2/R1 및 Owner 판단이며 해당 의존 종료까지 구현 checkout/실행 root를 유지한다. 전체 R1에서 별도 한정 R0 면제와 실제 전후 결과, 이전 candidate lock/C5 정정 및 다른 기존 한계를 함께 평가한다.
+
+
+### Full Scope R1 Preparation Rebound To Detach Membership Resume — 2026-10-13T00:30:36.848073+00:00
+
+전체 R1 준비를 detach-membership-resume-30의3개 고정 묶음에 연결했다. 이번 schema3 detach 테스트 candidates tuple의 오류 기대값 두 문자열 정정·별도 한정 R0 면제·controller 한도1,000→1,003회 및 실제 실패/정정/재검증을 영역B와 누적 검토 질문에 포함한다. 이전 candidates 반복은 첫 apply 오류 문구 비교에서 중단돼 이후 보존/recovery 단언은 미실행이었음을 구분한다. 실패 후 fixture archive는 보존됐으나 before/after 동등성을 입증하지 않는다. 앞선 candidate lock 정정 검사의 실제 PASS와 unit-runtime-double 범위도 유지한다. 앞선 Driver 준비 오류/본검증0과 C5 regex 정정 후75개 PASS도 전달한다. 원래 영역A 4,817개, 영역B 965개 및 누적5,782개의 전체 범위와 원문 응답/Driver 처분·실제 모델/세션·인증 경로·입력 identity·실행 한도 조건은 유지한다. 전체 실행 PASS와 앞선 review 처분 전 다음 검토 호출은 하지 않는다.
+
+정적 generation 비교는29개 입력 세대·19개 entry test 버전·별도2개 productization test 버전·별도2개 candidates test 버전·별도2개 umbrella test 버전을 식별한다. 승인된 C5 regex와 candidate 한 함수 및 umbrella 두 기대 문자열의 정확한 delta만 각각 식별하고 나머지 source/runtime 불변 검사를 유지한다. C5 전체 선택96개ID/109occurrence와22개 모듈 helper source slices를 현재 파일로 갱신한다. 과거 결과의 의미적 재사용 가능성은 전체 R1 판단 대상이며 최신 source로 모두 다시 실행했다고 주장하지 않는다. 기존 C4 오류/정정 전후, B1 qualification14개 및 C3 범위 한계도 유지한다.
+
+준비 스크립트12개를 private full-r1-preparation-30에 보존하고 이전 준비본은 유지한다. 소비자는 승인된 전체 R1세회 및 Owner 판단/미해결 finding 처분이며 의존 종료 때 보존을 재평가한다. Scratch draft는 최종 리뷰 입력이 아니고 전체 실행 PASS 후 실제 결과·diff를 다시 고정한다. 이 준비는 source/test import·실행 없는 정적 읽기이며 reviewer 호출0이다. Current Work/source patch를 갱신한다.
+
+
+### C5 Detach Membership Same Failed 34 PASS — 2026-10-13T00:39:07.796170+00:00
+
+승인된 detach 오류 기대값 두 문자열 정정 후 동일34개가 PASS했다. Candidates 누락 malformed schema3 plan의 apply 거부/바이트 보존, after-receipt 중단 후 손상 receipt의 status/recover 거부 및 마지막 바이트 보존 단언까지 모두 통과했다. 앞선 umbrella 반복과 candidate lock unit-runtime-double 검사도 포함한다. 최초 candidates 실패는 apply 오류 문구 비교에서 멈췄으므로 이후 단언의 이번 PASS를 과거에 소급하지 않는다. 실패 후 fixture 보존은 before/after 동등성 증거와 구분한다. 제품/controls/fixture/token/예외타입/보존 및 recovery 단언을 바꾸지 않았으며 두 기대 문구의 별도 R0 면제·actual before/after를 전체 R1 영역B와 누적 검토에 포함한다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b001 | C5 | 34/34 PASS | 314.056 / 314.120533 | 2026-10-13T00:38:33.206021+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5726/5,782 occurrence이고 잔여56개/2묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller991/1,003회·root153/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거28세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### X1 Complete And Full P2 Execution Awaiting R1 — 2026-10-13T00:59:08.263244+00:00
+
+각 결과는 실행 당시 frozen 입력에 묶인다. 이전 세대의 결과를 최신 source 전체 일괄 재실행으로 바꾸지 않는다. 전체5,782 occurrence의 실제 선택/실행과 입력 세대별 재사용 관계를 전체 R1세회에서 검토한다. 아직 P2 완료·수락이나 coverage 계약 충족 판정을 대신하지 않는다. B1 통제 보완14개, C3 baseline-refresh3개 의미 정정 및 pending recover4개의 검증 범위 한계를 함께 전달한다.
+
+| Batch | Area | Result | Controller / Outer Seconds | End UTC |
+| --- | --- | --- | --- | --- |
+| b002 | X1 | 45/45 PASS | 683.13 / 683.185088 | 2026-10-13T00:53:14.979302+00:00 |
+| b003 | X1 | 11/11 PASS | 134.149 / 134.257399 | 2026-10-13T00:58:35.297611+00:00 |
+
+각 묶음은 고정 CPython3.14.7/-I/-S/-B와 기존6단계 acquire/canary/base collect/smoke20/entry collect/focused를 사용했다. Actual collection은 frozen bytes와 일치하며 selected/executed ID·occurrence·순서가 일치한다. Fail/error/skip/expected failure/unexpected success/unstarted/unfinished0, exit0·정상 종료·group 부재·cleanup errors0·입력 보존 및 after input check PASS다. 관측된 개별 결과는 upstream runner의 예외/거부 조건을 축소하지 않는다.
+
+해당 묶음까지 canonical 완결은5782/5,782 occurrence이고 잔여0개/0묶음이다. 중복 보완·과거 부분 실행은 더하지 않는다. 해당 묶음까지controller1003/1,003회·root155/160개, review는6/9회·2,830.531초 사용이다. 저장96GiB·2GiB 여유·host free4GiB·review누적14,400초·개별 cap·첫 실패 STOP과 추가 수정/한도 확대/자동 재시도 금지를 유지한다. Owner가 전체 wall deadline을 해제했으나 다른 한도는 그대로다.
+
+전체 R1세회와 P2 수락·Git/STATUS/Done은 아직 수행하지 않았다. Source backup·새 결과·과거28세대 frozen/STOP을 보존하고 current patch를 갱신한다. 소비자는 잔여 P2/R1과 Owner 판단이며 관련 checkout/실행 root를 유지한다.
+
+
+### Full P2 R1 Domain A Timed Out Without Final Response — 2026-10-13T01:27:10.566731+00:00
+
+전체5,782 occurrence의 실행 결과는 입력 세대별PASS로 유지한다. 원래 전체 R1 영역A는 최종 응답 없이 timeout으로 실패했고, 영역B와 누적R1은 시작하지 않았다. 이 실패를 리뷰통과·P2수락·제품결함 판정으로 바꾸지 않는다. 추가 reviewer 호출은 하지 않는다.
+
+#### Actual Owner Transmission Authorization
+
+처음 전송 요청은 automatic approval review에서 프로세스 생성 전에 거부됐으며 auth/전송/reviewer실행0이었다. 이후 Owner가 다음과 같이 직접 승인했다.
+
+> 승인. 고정된 영역 A 자료 2,280,048바이트와 이후 영역 B·누적 리뷰의 비공개 소스·테스트·계약·실행 결과·앞선 리뷰 응답 및 Driver 처분을 Anthropic Claude 기존 구독 경로로 전송해 원래 R1 3회를 진행해. 도구 없는 정적 검토와 기존 한도·중단 조건을 유지하고, P2 수락과 Git 작업은 별도로 남겨둬.
+
+같은 고정A packet을 기존 first-party 구독 경로로 최초 실행했다. 승인 심사 거부는 review-call 소비가 아니며 실제 CLI 실행은 이번1회다.
+
+#### Fixed Input And Actual Failed Execution
+
+- Base revision a17f35cf323ffde7a8642a85501fddbec858b6de; reviewed diff SHA256 b6ca750b5cf013b002ce705d93e68e4484f8882e94adfad8ef13ce00a37e8f2d; packet2,280,048bytes/SHA256 36789b033ab42c0387a02d8dfb668de5cdff84305d107ff3a95cb9220d72be5e; source/control/evidence3287개 신원은 full-r1/domain-a/review-identity.json에 있다.
+- 명령 python3 /Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/p2-full-execution-01/full-r1/domain-a/run-review.py, cwd /Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition. 고정 argv는 started.json에 있다. Fresh no-tools static --model opus/--effort high, safe/restricted, empty strict MCP, no session persistence로 실행했다. 실제 모델 claude-opus-5-5, session dc27668c-7679-4de6-8947-eae45610a977, auth claude.ai/firstParty/pro, loggedIn=true다. Key/token/account email은 기록하지 않는다.
+- 시작 2026-10-13T01:03:16.489455+00:00, 종료 2026-10-13T01:22:57.829325+00:00, 실측1181.335초, CLI exit-9, wrapper exit1, status timeout/execution_pass=false다. Tools/MCP/tool-use0, invalid lines0, group absent=true, input drift PASS다.
+- 감시기는1,200초 전체 여유 안에 종료하려고1,180초에서 SIGKILL하도록 구현돼 있었다. CLI stream에는 output token limit 후 자동 continuation 및 context compaction 상태가 있었지만 final result/최종 사용자 응답은 없었다. Assistant text block0이며 response.md도 없다. 내부 thinking/compaction 내용을 최종 리뷰나 finding으로 취급하지 않고 Work에 옮기지 않는다.
+- Owner는01:22:57.278794UTC에 “시간 초과해도 끝날때 까지 기다리자.”라고 지시했다. 종료 기록은01:22:57.829325UTC이며, 감시기 시간제한을 멈추기 위한 제어가 실행됐을 때는 이미 result.json과 종료 상태가 존재했다. 보호 assertion에서 종료해 SIGSTOP은 전달하지 않았다. 종료 처리와 지시 도착이 겹쳤으며 현재 프로세스를 계속 기다릴 수 없다. --no-session-persistence로 실행했으므로 같은 CLI 세션의 지원되는 resume도 제공되지 않는다. 새 호출은 실행하지 않았다.
+
+#### Driver Assessment And Owner Report
+
+Driver는 강제 종료 감시기 설계와 문맥 압축 중 quota 소비·최종 결과 미확보 위험을 충분히 드러내지 못한 대응에 책임이 있음을 인정했다. Owner가 단일 호출 뒤5시간 한도의82%를 사용했다고 보고했다. 로컬 stream은2%와45% 관측만 남아 최종82%를 별도 측정한 기록은 아니며, Owner 보고를 최신 관측으로 구분해 보존한다. API token 비용이나 구독의 실제 청구 금액으로 환산하지 않는다.
+
+최종 Reviewer 응답/판정은 unavailable이므로 findings accept/revise/defend 처분을 할 수 없다. Driver 처분은 이번실행의 timeout failure를 인정하고 전체R1 완료 판정을 보류하는 것이다. 이미PASS한 테스트는 반복하지 않는다. 영역A재호출·영역B·누적R1 또는 새packet전송을 자동 진행하지 않는다. 기존 review9회 중7회, 누적4011.866/14,400초를 사용했으며 original3개 결과를 모두 얻으려면 호출예산 판단이 필요하지만 아직 새한도/호출안 승인을 요청하거나 적용하지 않았다. Owner의 시간제한 해제 지시는 기록하되 이미 종료된 프로세스를 이어갔다고 주장하지 않는다.
+
+#### Preservation And Pending Work
+
+Packet/identity/launcher/started/result/stderr/stream은 full-r1/domain-a에 보존한다. Exact 입력을 고정한 뒤에는 source를 바꾸지 않았고, 이번 append 직전 reviewed diff와 모든 파일 hash의 동일성을 다시 확인했다. 이 append는 기존 reviewed Work prefix1812722bytes/SHA256 2e612b6ef86dd536b0ea2dcb31daf04a9dc9a8a636effc3a82ab33eb13964edc 밖의 실패 기록이다. 따라서 과거 입력 identity를 현재 Work 전체 hash로 소급 변경하지 않는다. 기존 wrapper는 완료된 시도라 재사용하지 않는다.
+
+Raw stream의 한정 소비자는 이번 quota 손실·timeout 원인 확인과 Owner의 후속 판단이며, 해당 의존 종료 때 보존을 재평가한다. 내부 중간 사고 과정은 리뷰 산출물이나 독립 검증 근거가 아니다. Work/source current patch를 checkout 밖에 갱신했다. 중요한 source·고정 검증 입력·실제PASS/실패 기록은 유지하며, 구현 checkout과 검증root는 미완료R1/Owner판단 의존 때문에 유지한다. Controller1,003/1,003회·root155/160개, P2수락·Git·STATUS·Done은 수행하지 않았다.
+
+
+### P2 Review Recovery Preparation — 2026-10-13, Before 14:00 KST
+
+#### Owner Instruction And Current Boundary
+
+Owner가 Opus 5.5 medium을 선택하고, 리셋 전 검증 공백 대조·수정/국소 재검증 계획·축소 리뷰 입력·종료 방식 준비를 승인했다. 화면의 모델 설정은 변경하지 않으며 실행기가 `--model claude-opus-5-5 --effort medium`을 명시한다. Claude 호출은 2026-10-13 14:00 KST 이후 실제 구독 리셋 확인 뒤에만 가능하다. 시각 도래는 quota 확인이 아니다. 제품/테스트/실행 controls 수정과 검증 실행은 계획 보고 후 Owner 승인 대상으로 남긴다. 기존 R0/R1 절차는 유지하며, 수정안 R0 또는 명시적인 한정 면제 없이 실행하지 않는다. 이번 준비는 reviewer 호출, 제품/테스트 import·실행, Git 변경, P2 수락을 포함하지 않는다.
+
+#### Source-Based Gap Disposition
+
+로그는 검토 대상을 찾는 단서로만 사용했다. 아래는 Driver가 현행 계약과 소스에서 다시 확인한 사실이며 Claude 최종 finding이나 재현 결과가 아니다.
+
+| ID | 대조 결과 | 처분 및 남은 범위 |
+| --- | --- | --- |
+| G1 S3b | DR-0004는 완성된 N/0600. p2_state_snapshot, p2_prepare_state, p2_b_advance, p2_b_late_fault, p2_b_runtime_boundary가 1바이트/0600을 사용한다. A2 100+B1 62+B2 27=189행 | 수정 제안. 기존 PASS 실행 사실은 유지하되 계약상 S3b coverage로 수락하지 않는다. 별도 launcher full/0600 회복 검사는 writer/sync 조합을 대신하지 않는다. |
+| G2 A1 existing-member recovery | Work의 R-12 accept는 existing-member read/fsync/parent-sync map을 요구했다. p2_a1_case의 fault는 최초 실행뿐이며 이후 recovery는 무주입이다. _entry_write_exact의 기존 파일 분기는 read_bytes, open rb, os.fsync, parent sync다. A2 fault는 _entry_sync 디렉터리 경로를 대상으로 한다 | file fsync 전후 중단 공백을 보완 제안. 읽기 경로는 정적 map으로 먼저 명시하고 실제 read-before/after fault 관측으로 부풀리지 않는다. 31개 파일×fsync 전후=62개와 trace1개 제안. Reviewer가 별도 read interruption을 필수로 판단하면 범위를 재보고하며 observer를 자동 확대하지 않는다. |
+| G3 OLD init/repair | p2_b_source_precondition의 init은 다른 initialization plan으로 lock 전에 거부된다. p2_b2_lifecycle은 init/repair 선행조건 충돌과 lock recheck 미주장을 이미 명시한다 | 기존 한계 유지. 이를 OLD의 모든 exact-init replay 검증이라고 주장하지 않는다. 이번 근거만으로 새 제품 결함이나 새 lifecycle 범위를 만들지 않는다. |
+| G4 early D3 bridge | 기존 d3_fault/remaining_recovery_fault는 legacy selector를 검사한다. p2_a2_case의 신규 map은 exact D3 selector equality·prefix sequence·주입1회·이후 sync0을 검사한다. Work는 신규2700 의무에서 bridge를 차감하지 않는다 | 기존8 bridge의 수락 범위를 보존한다. 2700 전부를 대체하는 증거로 쓰지 않는다. 현재 G1 때문에 2700의 의미 충족은 별도로 보류한다. |
+| G5 입력 세대 재사용 | 29개 frozen 세대와 여러 test/controller 버전의 실행을 현재 일괄 실행으로 바꾸면 안 된다. 과거 schema의 cleanup 필드 부재는 새 관측이 아니다 | R1에서 영향 함수/fixture/선택 행별 재사용 관계를 판단한다. 카운트와 hash만으로 의미적 동치를 주장하지 않는다. 이번 수정 영향 밖 결과를 자동 재실행하지 않는다. |
+| G6 cleanup 통제 | qualification14개는 모델12+native2. 원래 host EPERM 원인이나 프로세스 그룹을 벗어난 자식 처리까지 증명하지 않는다 | 기존 제한 유지. 이번 리뷰 실행기의 종료 정책과 제품 테스트 controller를 분리한다. 제품 controller·sandbox는 이번 수정 대상이 아니다. |
+
+#### Bounded Correction Proposal
+
+G1: tests/test_entry_window_transition.py의 위5개 helper만 수정한다. S3b 준비는 `write-after/colvia/occurrence1/write_bytes=None`으로 완성된 바이트 직후, chmod 이전에 중단한다. 기대 snapshot은 candidate의 전체 launcher bytes와0600을 검사한다. installed-new 직접 exec는 완성본0600에서 EACCES를 검사하며 incomplete/non-executable 분류와 의미를 명확히 한다. S3a의0바이트, S4의0755, OLD 파일과 B0/truth 보존 단언은 유지한다. 모호한 크기만 비교하거나 실제 실패 snapshot을 기대값으로 복사하지 않는다.
+
+G2: 같은 test 파일에 S2-full에서 시작하는 기존31개 파일의 recovery fsync 전후 중단 검사를 추가한다. 기존 observer의 fsync-before/after를 사용하며 runtime·observer·controller를 수정하지 않는다. 먼저 trace1개로 각 파일의 목표 fsync occurrence와 관련 parent-sync map을 확인한다. 사전에 고정한 예상 map과 다르면 STOP이며 실제 결과에 맞춰 기대값을 자동 수정하지 않는다. 각 중단은 준비된 complete prefix/B0/truth의 byte/mode 보존, SIGKILL witness·lock 해제, 같은 요청/token의 단1회 정상 recovery와 최종 상태를 검사한다. 경계당 새 test ID/실행 순서는 구현 승인 후 작성 완료 시 첫 실행 전에 고정한다. 이62개는 현재 소스에서 실제 실행하지 않은 제안이며 기존 PASS에 더하지 않는다.
+
+G2의 read_bytes/open rb는 정적 호출 map에 포함한다. 현재 observer의 io.open은 xb만 감싸므로 rb의 정확한 전후를 직접 관측했다고 주장하지 않는다. read hook 추가는 이번 최소안에 포함하지 않으며 R0가 요구하면 재계획한다. 제품 결함이 관측되면 테스트 기대값 완화 없이 STOP하고 제품 수정안을 별도로 보고한다.
+
+#### Local Verification Proposal And Budget Gate
+
+제안 focused 선택은262개다: G1의189행, S3a/S4의 A2·B1 installed-new reader·B2 writer 각1개씩6행, 기존 full/0600 launcher4개, G2의62개와 trace1개. 첫 G1 canary3개는189개 안의 부분집합이며 이중 합산하지 않는다. 선택 ID와31개 파일 경로는 preparation31의 selection-proposal.json에 있다.
+
+실행 순서는 다음6묶음을 상한으로 제안한다. (1) G1 canary3+인접 상태/launcher10+G2 trace1=14, (2)(3) 나머지 A2 99행을50/49로 분할, (4) 나머지 B1 61+B2 26=87, (5)(6) G2 62개를31/31로 분할. 전체14+50+49+87+31+31=262. 실제 trace/기존 실행시간 기반 projection이 묶음별900초 여유 목표를 충족하지 않으면 controller 호출 전에 다시 보고한다. 묶음당 기존1200초 test-controller hard cap, child 제한, no-network/no-credential, umask0022, CPython3.14.7/-I/-S/-B 및6단계 acquire/canary/base collect/smoke20/entry collect/focused는 유지한다. 여기의 hard cap은 테스트 실행 통제이며 아래 reviewer soft-warning과 다르다.
+
+현재 controller1003/1003은 소진됐다.6묶음×6단계=36회를 위해 총1039회로, root155/160은6개를 위해161개로 한정 확대하는 안이다. 아직 승인/적용하지 않았다. Storage96GiB·경계별2GiB 여유·host free4GiB는 유지한다. 실행 root는 approved agent-worktrees root만 사용하며 이번 준비에서는 생성하지 않았다. 실시간 공간과 고정 명령/선택/출력 위치는 승인 후 첫 실행 전 재확인한다. 첫 예상 밖 실패·drift·selector 불일치·한도 위험에서 중단하며 자동 수정/재시도/한도 확대하지 않는다. 나머지 기존 전체5,782개 재실행은 제안하지 않는다.
+
+#### Reduced Review Input And Review Budget Proposal
+
+14:00 이후 첫 검토는 전체 R1을 서둘러 재호출하는 대신 이 복구 계획의 좁은 R0다. 해당 범위의 계약, R-12 accept, 정확한5개 helper·A1/A2/경계 검사, _entry_write_exact, 기존 launcher 검사, observer 관측 경계를 한 패킷에 넣는다. 과거 전체 Work, 전 모듈, 수천 행의 반복 literal과 원본 thinking은 넣지 않는다. 이 패킷은 원래 영역A/B/누적 R1을 대체하지 않는다.
+
+최종 R1은 수정/국소 실행이 끝난 뒤 실제 입력 신원과 결과를 다시 고정한다. 영역A는 T0/A1/A2/B1/B2와 G1/G2, 영역B는 C1~C5/X1 및 모든 승인된 이전 정정/범위 한계, 누적은 두 영역의 원문 응답·Driver 처분과 E1~E7/D1~D4 관계를 유지한다. 준비한 작은 R1 entry packet은 검토 질문·범위·필수 근거 위치의 초안이며, 누락된 관련 source/helper를 hash나 Driver 요약으로 대체해 full R1 승인에 사용하지 않는다. 기존553669/450362바이트 영역별 entry slice와385369바이트 C5 closure를 그대로 붙이면 다시 커진다. 최종 assembly 때 관련 closure와 matrix의 동치 확인 가능한 표현을 재구성하고, 부족한 근거는 unavailable로 남긴다. 20k~40k 입력 토큰 목표와60k 초과 시 재분할 원칙은 운영 제안이며 아직 실제 tokenizer로 측정하지 않았다. byte count를 토큰 수로 표시하지 않는다.
+
+현재 review7/9회 중 잔여2회로는 R0 1회+원래 R1 3회를 완료할 수 없다. 최소 총11회가 필요하며, 이는 추가 호출4회에 대한 예산 제안이다. 추가 packet 분할이 필요하면 호출 전에 revised count/전체 입력 크기를 보고한다. 기존 누적14400초는 다음 호출 admission 기준으로 유지하되 실행 중 reviewer를 시간만으로 종료하지 않는다. 다음 호출 전 누적 사용4011.866초와 실제 남은 quota를 확인하고 충분하지 않으면 다음 호출을 시작하지 않는다. 자동 model fallback·effort 변경·재시도·후속 라운드 연쇄는 없다. R0 이후 결과를 반영해 실행 계획을 Owner에게 보고하며, 실제 수정은 승인을 받은 뒤만 수행한다.
+
+#### Reviewer Runner Draft
+
+실행 argv는 `claude --print --model claude-opus-5-5 --effort medium`을 고정하고 기존 safe/restricted/no-tools/empty strict MCP/setting-sources empty/no-chrome을 유지한다. --no-session-persistence는 제거한다. session ID·model·effort·인증 경로·packet digest·input digests·exit·최종 응답을 남긴다. 비밀 값과 계정 이메일은 기록하지 않는다. 기존 first-party 구독 경로가 아니거나 모델이 다르면 다음 호출을 중단한다. 세션 저장은 지원되는 재개의 전제일 뿐 현재 토큰 생성의 무손실 복구를 보장하지 않는다.
+
+새 draft runner는 기본 inspect 전용이고 별도 승인 기록 및 fresh quota-confirmation gate 없이는 auth 또는 Claude 프로세스를 생성하지 않는다. 14:00 이후에도 확인 없이 진행하지 않는다.1200초는 경고일 뿐 kill 조건이 아니며 tool wait/yield도 종료 조건이 아니다. Owner의 기다리기 지시는 별도의 고정 timer와 충돌하지 않는다. 취소는 Owner 요청을 기록한 명시적 control file만 수용한다: graceful은 SIGINT1회 후 기다림, force는 손실 가능성을 인지한 별도 명시 요청일 때만 SIGKILL. 경고·출력 증가·compaction·통신 대기는 다음 라운드 금지/상태 보고 신호이며 곧바로 kill하지 않는다. 실제 OS 안전 위협은 별도로 보고/처리한다. CLI 자체 output-limit continuation은 발생할 수 있어 effort가 hard quota cap이라고 주장하지 않는다.
+
+최종 result event와 final text가 없으면 incomplete로 기록하고 다음 호출은 막는다. 종료된 실패 세션의 자동 재호출/자동 resume는 하지 않는다. 이후 명시적으로 허용된 동일 세션 resume도 모델·effort·tools 경계를 다시 지정하며, 세션 기록에서 현재 입력과 변경분을 대조한다. 이번 준비에서는 live Claude 또는 신호 전송 시험을 하지 않는다. draft의 문법/inspect/gate 동작만 로컬에서 확인하며 실제 CLI 종료/세션 복구 보장은 미검증이다.
+
+#### Preservation
+
+단일 진행 기록은 이 기존 Work다. preparation31은 다음 R0와 Owner 실행 계획 판단, 최종 R1 입력 재구성의 준비 자료이며 별도 Work/상태 장부가 아니다. 해당 판단과 최종 R1 의존이 종료되면 보존을 재평가한다. 과거 timeout stream·실행 결과·원본/적용 source는 그대로 유지한다. 구현 checkout과 검증root는 미완료 검토/수락 의존 때문에 유지하며 이번 cleanup은 없다. current-changes.patch에 이 준비 기록과 기존 미커밋 변경의 recoverable 사본을 갱신한다.
+
+준비 산출물은 private bundle의 review-recovery-preparation-31에 있다. 계획 R0 packet 99055bytes/SHA256 f5332ca4d9be9988a14fc68cfa426a85e6cf93d357b295bd839cf7bd87e1aa27, 실행기 draft SHA256 1f98969215d54506f3be534d476e41ccdfe12f88b7fd168ecb77ac3376b14882다. 실제 토큰 수는 측정하지 않았다. R1 A/B/C entry draft는 각각15896/14586/1522bytes이나 필수 원문/수정 후 결과가 아직 빠져 있어 호출 가능한 full R1 packet이 아니다. 이 작은 크기를 완료된 전체 리뷰 입력 축소 성과로 계산하지 않는다. R0 첫 패킷만 해당 계획 범위의 소스와 실행기까지 포함해 준비했다.
+
+준비 검증은 AST로189행 선택·10개 기존 회귀 ID의 실제 존재를 확인하고 source import 없이262개 제안 산식을 대조했다. 실행기 compile, inspect, 합성 launch gate 6개 거부와1개 통과를 확인했다. 실제 Claude/제품 테스트/신호 전송은0이다. 준비 helper 최초 실행에서 두 legacy test의 이름을 잘못 지정한 assertion이 발생했으며 실제 소스의 file_sync 이름으로 정정해 정적 준비를 완료했다. 제품 테스트 실패나 reviewer 호출로 세지 않는다. 모델/effort는 정확히 claude-opus-5-5/medium이며 UI 설정과 무관하다.
+
+### P2 Plan R0 Owner Authorization — 2026-10-13, After Preparation
+
+Owner가 2026-10-13 11:17 KST에 다음과 같이 승인했다.
+
+> 좋아. 리뷰 호출 상한은 11회로 늘리고, 14:00 리셋 확인 후 준비한 99KB 패킷으로 Opus 5.5 medium 계획 R0를 진행해줘. 결과와 Driver 처분을 보고한 뒤 수정·국소 검증 및 관련 한도 변경은 별도로 승인받아.
+
+리뷰 호출 상한은9→11회로 변경한다. 현재 실제 사용7회이며 다음 계획 R0는8번째 호출이다. 한도 확대 자체는 추가 라운드 자동 호출 승인이 아니다. 이번 실행 승인은 preparation31의 고정99055bytes 계획 R0 packet(SHA256 f5332ca4d9be9988a14fc68cfa426a85e6cf93d357b295bd839cf7bd87e1aa27) 1회다. 기존 first-party Claude 구독 경로로 전송하며 실행기는 `--model claude-opus-5-5 --effort medium`을 명시한다. 화면 설정에 의존하지 않는다. 승인된 준비안의 세션 저장·시간 경고 후 대기·도구 없는 정적 검토 경계를 유지한다.
+
+14:00 KST 이후 실제 구독 리셋 관측이 필요하다. 현재 quota 확인은 없으며 armed=false를 유지한다. 예약은 실제 리셋을 확인한 뒤 이 승인 범위의 R0를 실행하도록 갱신한다. 시각만으로 확인을 대신하지 않으며 fresh 관측을 얻을 수 없으면 그 사실을 보고하고 실행을 보류한다. 입력 drift·인증 경로·모델·호출 예산을 재확인하며 이전 실패 wrapper는 재사용하지 않는다. 실행 중 시간 경과만으로 reviewer를 강제 종료하지 않는다.
+
+완료 시 최종 Reviewer 응답 원문과 Driver accept/revise/defend/needs-user 처분을 이 Work에 분리 기록하고 Owner에게 보고한다. 제품/테스트 수정·262개 국소 검증·controller1003→1039 및 root160→161 확대는 별도 승인 전 실행하지 않는다. 원래 전체 R1은 이 R0로 대체하지 않으며 후속 호출을 연쇄 실행하지 않는다. P2 수락·Git 작업·STATUS/Done 변경도 별도다.
+
+기존 packet과 source 입력 bytes는 그대로 유지하며 이번 승인만 Work 끝에 추가한다. 실행기 설정에 실제 승인 참조와11회 한도를 반영하고 current-changes.patch를 갱신한다. 구현 checkout과 준비 산출물은 예정된 R0·Owner 결정·미완료 R1의 소비 대상이므로 유지한다.
+
+### P2 Plan R0 Result And Driver Disposition — 2026-10-13
+
+#### Owner Reset Observation And Actual Execution
+
+Owner가 현재 세션·주간 한도 확인 질문에 다음과 같이 답했다.
+
+> 리셋 확인됨
+
+이 답변을 2026-10-13 14:06:24 KST에 읽고 실제 리셋에 대한 Owner 관측으로 기록했다. 정확한 사용률 수치는 제공되지 않았으며 임의로 채우지 않았다. 앞서 연결된 브라우저는 로그아웃 상태여서 사용량을 확인하지 못했다. 기존 11:17 승인에 따라 같은 R0 승인을 다시 요청하지 않았다.
+
+중복 실행용 run 디렉터리가 없고 활성 reviewer supervisor가 없음을 실행 전에 확인했다. Runner inspect의 고정 패킷/입력 검사가 통과했고, 실제 auth는 loggedIn=true, authMethod=claude.ai, apiProvider=firstParty, subscriptionType=pro였다. 계정 이메일·credential 값은 이 기록에 넣지 않았다. 호출 전 누적 시간 4011.866/14400초와 7/11회를 Driver가 수동 확인했다. 시간·승인 참조의 진위는 runner 단독 검증이 아니라 이 수동 admission도 포함한다.
+
+| 항목 | 실제 관측 |
+| --- | --- |
+| 실행 | preparation31에서 `python3 runner-draft.py --run`, 내부 `claude --print --model claude-opus-5-5 --effort medium` 및 고정 no-tools/empty-MCP argv |
+| 시작 | 2026-10-13 14:07:01.937 KST |
+| CLI / 모델 / effort | CLI 2.1.296; 실제 init model `claude-opus-5-5`; 요청 및 저장 세션의 effort/perTurnEffort `medium` |
+| 세션 | `88914c67-8383-44a3-814f-64f750665136`; 새 세션, resume 없음 |
+| 검토 경계 | tools=[], mcp_servers=[]; 도구/테스트 실행 없는 정적 Reviewer. Codex Driver와 다른 모델·새 세션이지만 CLI 자동 문맥 때문에 완전한 packet-only 문맥 독립성을 주장하지 않음 |
+| 입력 | `packet-r0-plan.md`, 99055 bytes, SHA-256 `f5332ca4d9be9988a14fc68cfa426a85e6cf93d357b295bd839cf7bd87e1aa27` |
+| Runner | SHA-256 `1f98969215d54506f3be534d476e41ccdfe12f88b7fd168ecb77ac3376b14882` |
+| Source base / 검토 직전 tracked diff | HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`; diff SHA-256 `1daf42b43c4c6432a909836e6f4a9466bf08cfb2f206e845371139087908a9c9` |
+| 입력 범위와 한계 | 패킷에 실제 포함된 발췌만 검토. preparation-identity의 source_inputs와 Work의 고정 1818710-byte prefix를 전후 대조. Diff에 없는 private packet·runner·config 및 원본 발췌 신원은 preparation31에 따로 식별되어 있음. Digest는 내용 보존을 대신하지 않음 |
+| 종료 | exit 0, execution_complete=true, 142.6006655초, 최종 응답 있음, process group 부재, input_drift=null |
+| 강제 종료 / 재호출 | Owner cancel·force·자동 boundary stop 없음. 추가 리뷰 0회. 실행 시작 직후 armed=false로 복귀해 중복 호출 차단 |
+| 예산 | review 8/11회, 누적 4154.4666655/14400초. 남은 3회는 원래 영역A/영역B/누적 R1에 필요한 수와 같으며 추가 R0·재시도 여유가 아님 |
+| 최종 응답 | preparation31/run-88914c67-8383-44a3-814f-64f750665136/response.md, SHA-256 `40903814ba77e3a103e1ab65a3057806bc9b59419cb1cd33971eb394673fe00f` |
+
+최종 응답만 아래에 원문으로 옮겼다. Thinking·중간 assistant 분석은 finding으로 옮기지 않았다. 이번 실행에서 이 플래그 조합과 auth/result 형식은 정상 동작했지만, SIGINT·오류 control·세션 resume·다른 CLI 버전의 동작을 시험한 것은 아니다. CLI 저장물의 metadata에 cwd·gitBranch·attachment·effort 등의 필드가 있는 것만 확인했다. Reviewer가 보고한 추가 계정 식별 문맥은 그대로 한계로 남기며, 이번 Driver 점검은 해당 값이나 전체 hidden context를 복사·검증한 것이 아니다.
+
+#### Reviewer Final Response — Verbatim
+
+# R0 리뷰: P2 검증 공백 복구 계획 (정적 검토, 실행 없음)
+
+## 판정
+
+**조건부 적합(계획 한정).** 진단 G1~G6은 패킷 소스와 일치하고, 262개 산식과 예산 산술도 맞습니다. 아래 F1~F4가 계획에 반영되기 전에는 수정·실행 승인을 권하지 않습니다. 이 판정은 제품 수락, R1 대체, 기존 PASS의 재확인이 아닙니다.
+
+## 확인된 사항
+
+- **G1 진단 타당.** DR-0004:112 표는 S3b를 "complete N at 0600"으로 정의합니다. 그런데 `p2_state_snapshot`(:3221, `1 if label=='S3b'`), `p2_prepare_state`(:3242), `p2_b_advance`(:3402), `p2_b_late_fault`(:3495)의 `('write-after','colvia',1)`, `p2_b_runtime_boundary`(:3416, `size=0 if state=='S3a' else 1`)는 모두 1바이트입니다. 계약상 이는 S3a의 strict prefix이므로 189행은 S3b를 검증하지 않았습니다.
+- **G1 수정 방향 타당.** `launcher_prefix_case`(:1534) flow는 `write-after/colvia/1`에서 full/0600(384)을 기록합니다. 따라서 `write_bytes=None`은 완성본·chmod 이전 상태가 됩니다. legacy 4개(n02, n03×2, n04)는 flow 인덱스 3~6과 일치합니다.
+- **G2 진단 타당.** `_entry_write_exact`(product.py:586)의 기존 파일 분기는 `read_bytes → open rb → os.fsync → _entry_sync(phase=recovery)`입니다. `p2_a1_case`(:3144)의 recovery 호출은 fault가 없습니다.
+- **산술 일치.** A2 1771~1870은 100개, B1은 58+4=62개, B2는 27개로 합계 189입니다. 189+6+4+62+1=262, 묶음 14+50+49+87+31+31=262, 6×6=36으로 1039, 155+6=161입니다. 31개 경로는 receipt 1+inventory 1+payload 29입니다.
+
+## Findings
+
+**F1 (높음) "5개 helper만 수정"의 충분성이 미확인입니다.**
+- 위치: `p2_a2_case`:3309가 `P2_D3_MODELS`, `P2_A2_STATE_MODELS`, `P2_D3_STATES`, `p2_assert_sync_prefix`를 참조합니다. D3 프로그램의 `facts()`, `p2_b_late_run`, `p2_native_entry_unavailable`도 관련됩니다.
+- 문제: 이들 본문은 패킷에 없습니다. 1바이트 가정이나 append 경로 전제가 들어 있는지 알 수 없습니다. 완성본 0600에서는 복구가 append가 아니라 sync→chmod→sync로 바뀌므로 D3 기대 행과 prefix 판정이 달라질 수 있습니다.
+- 최소 조치: 구현 전에 S3b와 colvia 크기 소비처 전수 목록을 고정합니다. 5개 밖 수정이 필요하면 STOP하고 재보고합니다. diff는 `label/state=='S3b'` 조건 분기로 제한하고, 그 밖의 변경은 회귀 6+4 선택을 무효로 봅니다.
+
+**F2 (높음) G2의 실행 가능성이 fd→경로 해석에 달려 있습니다.**
+- 위치: observer 발췌의 `emit("fsync-before", fd)`와 io.open 래퍼.
+- 문제: 래퍼는 `xb/bx`만 선택하고 `rb` 핸들은 그대로 반환합니다. `emit`이 미등록 fd를 대상 상대경로로 해석하는지는 발췌에 없습니다. 해석하지 못하면 selector가 일치하지 않아 kill이 일어나지 않습니다.
+- 최소 조치: trace 1개를 G2의 독립 gate로 둡니다. 판정 기준은 31개 경로 각각의 `fsync-before/after`가 예상 occurrence로 관측되는지입니다. 실패하면 observer를 고치지 않고 STOP합니다. trace 실패가 같은 묶음의 G1 canary 결과 처분에 미치는 영향도 미리 적어 두십시오.
+- 추가 단언: 각 62행에서 kill 이전 해당 경로에 `create-*`/`raw-write-*`가 0회임을 단언해야 기존 파일 분기 진입이 증명됩니다.
+
+**F3 (중간) recovery edge map의 범위가 닫히지 않았습니다.**
+- (a) `workspace_switch_apply`:1401의 `elif transition: _entry_resync_release(...)`(S3 이후 recovery)는 본문이 없습니다. 파일 fsync edge가 있는지 알 수 없습니다.
+- (b) recovery phase의 parent-sync는 A2가 EIO/unavailable 반환만 주입합니다. 디렉터리 fsync 전후 SIGKILL은 62개에 없습니다.
+- (c) receipt의 기존 파일 분기는 S1~S5 모든 recovery에서 실행되지만 S2-full 한 상태로만 대표됩니다.
+- (d) `immutable mismatch` 분기는 A1 torn 행에서 앞선 검사(`torn or changed init bytes`, JSON 오류)에 가려 도달하지 않을 수 있습니다.
+- 최소 조치: 정적 map에 (a)~(d)를 "포함 / 기존 행 ID로 대체 / 미검증 한계" 중 하나로 명시합니다. 자동 확대는 필요 없습니다.
+
+**F4 (중간) Runner 초안의 견고성과 정책 불일치.**
+- **자동 SIGINT가 정책과 다릅니다.** init 불일치 시 실행 중인 리뷰에 SIGINT를 보냅니다. 본문은 "취소는 Owner control file만", "모델이 다르면 다음 호출 중단"이라고 적었습니다. 예외로 명문화하거나 코드를 맞추십시오. 모델 문자열에 접미사가 붙으면 정상 호출을 잃습니다.
+- **`modelUsage` 검사가 과하게 엄격할 수 있습니다.** `not(models-{MODEL})`은 CLI 보조 모델이 잡히면 유효한 응답도 invalid로 처리합니다. 여유가 없는 11회 예산에서는 "응답 있음+경계 이상"을 별도 상태로 두고 Owner 처분으로 넘기는 편이 안전합니다.
+- **감독 루프가 죽을 수 있습니다.** control JSON이 dict가 아니면 `AttributeError`가 납니다. `OSError`와 `killpg`의 `PermissionError`도 잡지 않습니다. 이 경우 reviewer는 고아로 남고 result.json이 없습니다. 루프 안에서는 넓게 잡아 기록하고 계속 기다려야 합니다.
+- **invalid control 로그가 무한히 쌓입니다.** 파일이 잘못된 채 남으면 매초 fsync 기록이 추가됩니다.
+- **gate에 빠진 항목이 있습니다.** `launch_gate`는 누적 4011.866/14400초 admission을 검사하지 않습니다. `owner_review_approval_ref`는 truthy 여부만 봅니다. 수동 절차로 둘 것이면 그렇게 명시하십시오.
+- **패킷 밖 문맥이 주입됩니다.** 이번 리뷰 입력에는 고정 패킷 외에 CLI가 자동 첨부한 계정 식별 문맥과 작업환경 정보가 있었습니다. 세션 저장을 켜면 "계정 이메일 미기록"과 "고정 패킷만"이 저장물 수준에서 보장되지 않을 수 있습니다. 한계로 적거나 저장물을 점검하십시오.
+- **플래그와 출력 형식이 미검증입니다.** `--safe-mode`, `--restricted`, `--permission-prompts`, `--effort`의 유효성, `auth status` JSON 형식, SIGINT 시 `--print`의 동작은 패킷으로 확인할 수 없습니다. 플래그 오류로 즉시 종료될 때 호출 1회로 계상할지 정해 두십시오.
+
+**F5 (낮음~중간) 통제 수치와 예산.**
+- 신규 63개(62+trace)가 추가되면 base/entry collect 기대 수가 5,782에서 달라집니다. 이 controller 기대값 변경이 승인 대상에 명시돼 있지 않습니다.
+- controller +36, root +6, review 11회는 모두 여유가 0입니다. STOP 한 번이나 재R0 한 번이면 재승인이 필요하다는 점을 Owner 보고에 적으십시오.
+- 묶음 안 첫 실패에서 즉시 중단하는지(fail-fast) 불명확합니다.
+- B1 ID는 0519와 0566 사이에서 9 간격이 끊깁니다. 0520~0565에 S3b 행이 없는지는 selection-proposal 원본으로만 확인할 수 있습니다.
+
+**F6 (낮음) 기존 189 PASS의 지위.**
+- 실질은 "S3a 1바이트 prefix × A2/B1/B2" 실행입니다. 수정 후 현행 소스에서는 재현할 수 없고, 0이 아닌 strict prefix의 매트릭스 coverage도 사라집니다. `launcher_prefix_case`의 short 3종만 남습니다.
+- 최소 조치: S3a 근거로 재분류할지, 폐기할지, 한계로 둘지를 G5 처분에 한 줄로 고정합니다. 자동 재분류는 하지 않습니다.
+
+## A1 read 관측 한계에 대한 판단
+
+**별도 read interruption은 필수가 아닙니다.** 기존 파일 분기에서 `_exists`부터 `os.fsync` 직전까지는 변이 호출이 없습니다. `fsync-before` kill은 read_bytes와 open rb가 끝난 뒤의 지점이므로, 디스크 상태 보존 주장에서는 read 전후 kill을 포괄합니다.
+
+조건은 세 가지입니다.
+- 정적 map에 "해당 구간 무변이"를 근거 행 번호와 함께 적습니다.
+- 주장 문구를 "read 전후 관측"이 아니라 "정적 map + fsync 경계 관측"으로 유지합니다.
+- F2의 분기 진입 단언을 추가합니다.
+
+read hook을 추가하지 않는 최소안에 동의합니다.
+
+## G3~G6
+
+기존 한계를 유지하는 처분은 패킷 근거(`p2_b_source_precondition`:3598, `p2_b2_lifecycle`:3659 주석, `identify_entry_sync`/`observe`)와 모순되지 않습니다. 새 주장으로 확대된 곳도 없습니다. G4의 "2700 의미 충족 보류"는 G1과 일관됩니다.
+
+## 미검증 범위
+
+- **패킷에 없는 소스:** `P2_A2_ROWS`, `P2_D3_MODELS`, `P2_D3_STATES`, `P2_A2_STATE_MODELS`, `p2_assert_sync_prefix`, `p2_b_late_run`, `_entry_append_file`, `_entry_resync_release`, `_switch_preflight`, `_init_partial_tree`, observer `emit`/`path_of`.
+- **패킷에 없는 자료:** selection-proposal.json 원본, controller, preparation-identity.
+- **확인하지 못한 값:** 실행시간 projection, 토큰 수, 파일 해시의 실제 일치, quota 상태.
+- **실행하지 않은 것:** 어떤 테스트도, runner의 실제 CLI·신호·세션 재개 동작도 실행하거나 재현하지 않았습니다.
+
+#### Driver Disposition — Plan Only
+
+아래 accept/revise/defend는 Driver의 finding 처분이며 Owner 실행 승인이나 제품 결과 수락이 아니다. Reviewer의 “조건부 적합”은 계획 한정으로 유지한다. 모든 추가 대조는 소스·AST 읽기만 했으며 제품 import·테스트·새 counterexample 실행은 0이다.
+
+| Finding | 처분 | 근거와 계획 반영 |
+| --- | --- | --- |
+| F1 영향 범위 | accept | 다섯 helper와 `p2_a2_case`, `p2_assert_sync_prefix`, `p2_b_late_run`, `p2_native_entry_unavailable`, D3 `facts()`, P2_A2_CELLS/ROWS·STATE_MODELS·D3_STATES·MODEL_INDICES/POSITIONS/MODELS를 영향 목록으로 고정한다. 직접 S3b 상태 분기를 가진 helper는 기존 다섯 개다. D3 facts는 launcher size를 판정하지 않으며 모델은 namespace/mode/sync 위치를 사용한다. `_entry_append_file`은 기존 완성본이면 append loop를 건너뛰고 file sync·chmod·parent sync로 진행한다. 정적 대조가 실제 189행 통과를 대신하지 않는다. 수정이 다섯 helper의 S3b 조건 밖으로 필요하면 STOP·범위 재보고; 6+4 회귀 선택을 그대로 충분하다고 주장하지 않음 |
+| F2 rb fd와 trace | accept, 정적 근거 보완 | observer.py:209–220 `path_of`는 fd를 `F_GETPATH`로 상대경로에 대응시키고 :221–243 `emit`이 selector에 사용한다. rb wrapper 등록이 없어도 가능한 구조임을 확인했으나 실제 관측은 미실행. G2 trace를 독립 통과 조건으로 두고 31개 모든 경로의 before/after·사전 occurrence·parent map을 확인한다. 각 62행에서 목표 경로의 kill 전 create/raw-write 0회도 단언하도록 제안 |
+| F3 recovery edge map | revise | 아래 네 구분으로 닫는다. 새 syscall/상태 검사를 자동 추가하지 않으며 미검증 한계를 PASS로 바꾸지 않음 |
+| F4 runner | accept / needs-user | 현재 호출은 경계 이상 없이 정상 완료했지만 오류 경로·정책 불일치는 남는다. 아래 runner 보완안을 별도 실행 승인 범위에 명시. 현재 실행기 원본은 이 결과 기록에서 수정하지 않음 |
+| F5 수치·fail-fast·선택 | revise / defend | 현재 5,782는 Work에 기록된 여러 세대 P2 선택 실행 occurrence이며 고정 base/entry collection 기대값이 아니다. runner.py:75–110은 실제 discovery/factory ID를 수집하고 collection SHA를 결속하며, :237은 이미 failfast=True다. 신규 63개 ID·수집 신원 갱신은 승인 범위에 명시하되 5,845를 실측 collection 수나 최신 전체 PASS라고 쓰지 않음. AST에서 B1 S3b 62개와 0520–0565 구간의 S3b 0개를 확인해 ID 간격의 누락 의심은 정적으로 해소. 한도 여유 없음·첫 실패 STOP은 유지 |
+| F6 과거 189 PASS | revise | 당시 frozen 입력에서 실행한 사실은 보존한다. “S3b로 명명됐으나 실제 1-byte/0600”로 설명하고 계약 S3b 수락에서 제외한다. S3a 매트릭스 검증으로 자동 재분류하거나 폐기하지 않는다. 수정 후 nonzero strict-prefix 전체 조합의 현재 coverage는 미검증 한계이며 legacy short-prefix 검사를 그 대체물로 주장하지 않음 |
+| A1 read 경계 | accept | product.py:591–596의 `_exists`→kind/read/open→fsync 전 구간에 제품 변이 호출이 없다는 정적 근거와 F2 분기 진입 단언을 유지한다. 주장은 “정적 read map + fsync 경계 관측”이며 실제 read 전후 interruption 관측이 아님. Read hook 추가를 제안하지 않음 |
+| G3–G6 / R1 | accept | OLD init/repair 선행 거부, bridge 한계, 입력 세대 재사용 및 cleanup 증거 한계를 유지. 원래 전체 R1과 Owner 결과 수락을 이 R0로 대체하지 않음 |
+
+F3의 네 범위는 다음과 같다.
+
+1. `_entry_resync_release`(product.py:668–679): source에서 directory 집합의 `_entry_sync`만 호출하고 file fsync는 없음을 확인했다. 정적 map에 포함한다. 기존 A2 directory 오류 관측과 새 62개 file-fsync kill은 서로 다른 증거다.
+2. Recovery parent-directory fsync의 before/after SIGKILL: 이번 62개에는 포함하지 않는다. A2 EIO/unavailable 반환 검사를 해당 SIGKILL 검증으로 대체하지 않으며 미검증 한계로 둔다.
+3. 기존 receipt 분기: S2-full의 1개 상태로 대표 검증한다. S1~S5 모든 상태에서 동일 receipt branch가 호출된다는 정적 관계와, 상태별 kill 조합을 실행하지 않는 한계를 각각 기록한다.
+4. `_entry_write_exact`의 immutable-mismatch 분기: A1 torn fixture가 더 이른 검사에서 거부될 수 있으므로 해당 branch 직접 도달·거부는 이번 안의 미검증 한계로 둔다. 기존 torn PASS를 이 branch의 직접 검증으로 올리지 않는다.
+
+Runner 보완 제안은 제품 test-controller 변경과 구별한다. Config control은 dict·허용 key/type을 먼저 검사하고, 무효 control을 내용별 1회 기록하며, I/O/권한 예외로 supervisor만 죽고 reviewer를 방치하지 않도록 처리한다. 예외 기록 자체가 실패한 경우도 stderr 등 명시된 관측으로 남기며 시간만으로 종료하지 않는다. Model/tools/MCP 불일치 시의 자동 SIGINT는 기존 “Owner control만 취소” 문안과 충돌하므로, 승인받을 보완안에 **실행 경계 위반에 대한 graceful stop 예외를 명시한다.** 모델 접미사·보조 모델을 자동 허용하지 않는다. 최종 응답이 있더라도 경계 이상이면 원문을 보존하고 별도 Owner 처분 대상으로 표시하며 정상 리뷰로 수락하거나 재호출하지 않는다. 누적 시간과 실제 승인 참조 대조는 수동 admission임을 명시한다. CLI 시작을 실제 시도한 뒤 옵션 오류로 종료되면 보수적으로 호출 1회를 사용한 것으로 계상한다; CLI 실행 전 gate 거부는 0회다. CLI 자동 첨부 문맥과 로컬 세션 저장 한계를 명시하고 task 기록에는 계정 식별자·credential을 넣지 않는다. 보완 검사는 가짜 subprocess/신호/파일 이벤트를 쓰는 offline 검사만 제안하며 live Claude 호출이나 실제 signal 시험은 포함하지 않는다.
+
+#### Concrete Next Scope — Pending Owner Approval
+
+다음 실행 승인은 아직 없다. 제안 범위는 아래와 같으며, Reviewer 조건을 계획에 반영한 것이 실행을 허용하지는 않는다.
+
+- **수정 파일:** `tests/test_entry_window_transition.py`의 지정 다섯 helper S3b 조건과 신규 G2 trace 1개·interruption 62개. 제품 runtime·observer·product test-controller 소스는 그대로 둔다. 별도 preparation31 reviewer runner와 안내 문안의 위 F4 보완 및 offline 검사도 명시된 범위로 제안한다. 추가 파일·동작이 필요하면 STOP한다.
+- **실행 순서:** 첫 묶음에서 G1 canary3+기존 회귀10을 먼저 실행하고 G2 trace1을 독립 마지막 gate로 실행하도록 실제 collection/selection 순서를 고정한다. Trace가 실패하면 앞서 끝난 G1 개별 PASS는 보존하되 묶음 전체는 non-pass이며 다음 묶음과 G2 62개를 실행하지 않는다. 순서를 기존 loader로 보장할 수 없으면 실행 전에 재보고한다. 성공한 경우 기존 제안의 50/49/87/31/31 묶음으로 이어가 총262개다. 새 G2 ID와 actual collected ordering/digest를 첫 focused 실행 전에 고정한다.
+- **한도:** controller 1003→1039, root 160→161(현재155 사용), 기존 6묶음×6단계. 저장96GiB·root별2GiB 여유·host free4GiB·test-controller 1200초 및 child 제한 유지. 이번 요청에 추가 리뷰 호출·리뷰 상한 확대·제품 전체 재실행을 포함하지 않는다. 실제 시간 projection 또는 collection 순서가 이 6묶음을 벗어나면 한도를 자동 늘리지 않고 재보고한다.
+- **완료 기준:** G1 189행의 계약상 full/0600과 인접/legacy10개, G2 trace gate+62개 결과를 exact input/ID에 연결하고 F3/F6 한계를 유지한다. Driver가 전후 증거를 대조해 보고하며 P2 수락·최종 R1 호출·Git·STATUS/Done은 별도다.
+- **Stop rule:** 첫 예상 밖 실패, 입력 drift, trace/path/occurrence 불일치, 다섯 helper 밖 수정 필요, 미승인 observer/runtime/control 변경 필요, 시간·저장·호출 상한 위험에서 멈춘다. 자동 재시도·예산 확대·후속 reviewer 호출은 없다.
+
+#### Preservation
+
+Reviewer 원문과 위 처분은 이 기존 Work가 소유한다. preparation31의 response/result/supervisor·stream과 CLI 저장 세션은 이번 R0 신원·F4 문맥/오류 경로 확인 및 후속 R1 준비의 소비 대상이다. 해당 사실 확인과 Owner 처분이 끝나면 재생성 가능한 raw 기록의 보존 필요를 재평가하며 영구 기본 산출물로 늘리지 않는다. 계정 식별 문맥을 다른 패킷에 복사하지 않는다. 구현 checkout은 미완료 P2/R1과 별도 Owner 결정에 계속 필요하므로 유지한다. 기존 frozen 입력과 복구 자료를 삭제하지 않았다. 이 append 외 제품·테스트·원본 adapter/manual·P3 초안은 변경하지 않았다.
+
+### P2 Correction And Focused Execution Owner Authorization — 2026-10-13
+
+Owner가 2026-10-13 14:19 KST에 다음 범위를 명시 승인했다.
+
+> 좋아. 제안한 수정과 offline 검사, 262개 국소 검증을 승인해. controller 1039회·실행 root 161개로 한도를 늘리고, 첫 예상 밖 실패에서 멈춰 보고해줘. 자동 재시도나 추가 리뷰는 하지 마.
+
+직전 `Concrete Next Scope`의 지정 S3b helper 5개 수정, G2 trace1+경계62개 추가, reviewer runner 보완과 offline 검사, 총262개·6묶음 국소 검증을 실행 범위로 확정한다. Controller 상한은1003→1039회, 실행 root 상한은160→161개이며 시작 사용량은controller1003회·root155개다. Review는8/11회·4154.4666655초 사용 상태로 유지하고 이번 승인으로 추가 호출하지 않는다.
+
+G1 canary3+기존 회귀10 다음 G2 trace1을 첫 묶음의 독립 gate로 두고, 실제 collection 순서와 입력을 실행 전에 고정한다. 그 뒤50/49/87/31/31개를 실행한다. Gate·selector·입력·시간/저장 한도·수정 범위의 첫 예상 밖 실패에서 멈춰 결과를 보존하고 보고한다. 자동 수정/재시도/추가 리뷰/한도 확대는 하지 않는다. 앞 절의 F3·F6 미검증 한계와 제품 runtime/observer/test-controller 소스 유지 조건을 그대로 적용한다. P2 결과 수락·최종 R1 호출·Git·STATUS/Done은 포함하지 않는다.
+
+Offline 검사는 실제 Claude 호출이나 실제 프로세스 신호 전송 없이 가짜 입력·subprocess/신호 이벤트로 수행한다. 실행 산출물과 정확한 수정 전후 입력은 기존 private verification bundle에서 보존하며, 실행 root는 승인된 `/Users/kyungseo/dev-home/agent-worktrees/` 아래에만 준비한다. 새 Work나 별도 진행 장부를 만들지 않는다.
+
+
+### P2 Correction Preparation Stopped Before Implementation — 2026-10-13
+
+승인된 수정 전에 Driver의 read-only 정적 map 조회 스크립트가 두 번 실패했다. 제품 실행이나 제품 검증 실패가 아니라 Driver 준비 도구의 잘못된 AST 처리와 key 선택이다. 첫 오류 뒤 조회 방식을 바꾸어 한 번 더 실행한 것은 Owner의 엄격한 첫 실패 중단 조건을 즉시 적용하지 못한 행동으로 기록한다. 이후 수정·offline 검사·focused 실행을 중단했으며 추가 재시도·review 호출은 없다.
+
+| 항목 | 관측 |
+| --- | --- |
+| 명령 / runtime | 두 번 모두 `python3 -I -S -B -`의 stdin 정적 AST 조회, CPython 3.14.7, cwd Toolstead; 제품 import·subprocess·signal 없음 |
+| 첫 조회 / exit | `ast.literal_eval`로 `P2_D3_MODELS` 대입값을 읽으려 함; exit 1; `ValueError: malformed node or string on line 285: DictComp(...)` |
+| 두 번째 조회 / exit | literal 상수 `P2_D3_POSITIONS`, `P2_D3_MODEL_INDICES`, `P2_A1_PATHS`를 읽은 뒤 `v['P2_D3_MODEL_INDICES']['S2-full']` 조회; exit 1; `KeyError: 'S2-full'` |
+| 원인 | `P2_D3_MODELS`는 literal이 아닌 comprehension이다. 상태 label과 내부 model key도 같지 않다. 실패 후 source line 265를 읽어 `P2_A2_STATE_MODELS['S2-full']`이 `S2-complete:payload/src/hv2ref/workspace.py`를 가리키는 것을 확인했다. 올바른 map 연결을 실행하거나 결과를 검증하지는 않았다 |
+| 이번 변경·검증 | 승인/중단 Work 기록 외 제품·테스트·reviewer runner 수정 0; 새 offline 검사 0; focused 0/262; 새 controller 0; 새 실행 root 0; 새 review 0 |
+| 한도 | controller 1003/1039, root 155/161; review 8/11 및 누적 4154.4666655초 유지 |
+| 보존 확인 | preparation31 source_inputs의 다섯 항목과 Work 고정 prefix, reviewer runner SHA가 기존 신원과 일치한다. 기존 dirty 작업은 유지한다. 이번 중단 뒤 기존 current-changes.patch를 갱신해 Work 기록을 checkout 밖에 보존한다 |
+
+재개 제안은 준비 조회만 바로잡고 이미 승인된 수정·offline 검사·262개 실행을 같은 한도에서 이어가는 것이다. `P2_A2_STATE_MODELS`를 포함한 literal 상수를 읽어 state→model→position 연결을 명시적으로 구성하고, G2 trace의 경로·occurrence·parent 기대값을 실행 전에 고정한다. 제품 runtime·observer·test-controller 변경이나 새 검증 조합은 제안하지 않는다. 첫 예상 밖 실패에서 중단하고 자동 재시도·추가 review를 하지 않는 조건을 유지한다. 이번 중단 이후 실행 재개는 Owner 결정 전까지 보류한다.
+
+이 기록은 실패 보고이며 PASS/checkpoint/수락/Done 판정이 아니다. 정확한 두 조회의 핵심 연산·예외·exit를 위에 남겼고 원본 입력은 기존 frozen source와 구현 checkout에 남아 있어 별도 source copy나 새 장부를 만들지 않는다. 구현 checkout과 기존 실행 root는 미완료 P2/R1의 실제 소비 대상이므로 유지한다. STATUS·Git·P3 초안은 변경하지 않는다.
+
+
+### P2 Correction Resume Authorized And Test Changes Applied — 2026-10-13
+
+Owner가 조회 오류만 바로잡고 기존 수정·offline 검사·262개를 같은 controller1039/root161 한도에서 재개하도록 승인했다. 첫 예상 밖 실패 즉시 중단, 자동 재시도·추가 review 금지를 유지한다. 직전 STOP 이후 이번 새 승인 전에 수정이나 검증 재개는 없었다.
+
+정적 조회는 literal 상수 네 개를 읽고 `P2_A2_STATE_MODELS['S2-full']` → `S2-complete:payload/src/hv2ref/workspace.py` → position 목록으로 연결해 정상 완료했다. D3 recovery 모델의 `_entry_write_exact` 31개와 사전 고정 31개 파일 경로의 부모를 대응하고 전체 선행 directory sync를 세어 parent fsync occurrence를 실행 전에 고정했다. 이 정적 계산은 실제 syscall 관측을 대신하지 않는다.
+
+승인된 helper 다섯 곳의 S3b를 완성 launcher/0600으로 변경했다. 신규 G2 trace `test_p2_z_g2_existing_file_trace` 한 개와 `test_p2_g2_0001`–`0062`를 추가했다. Trace는 실제 collection에서 첫13개 선택 뒤에 위치하도록 이름을 고정한다. 31개 경로의 file before/after 순서·중복·parent 경로와 occurrence, 대상 create/raw-write 부재를 단언한다. 62개 interruption은 S2-full의 SIGKILL·정확한 bytes/mode/B0/truth·lock 해제와 동일 request의 정상 recovery 한 번을 확인한다. Parent SIGKILL·다른 receipt 상태별 kill·immutable-mismatch 직접 도달·full strict-prefix 매트릭스는 기존 미검증 한계를 유지한다.
+
+준비 소비자는 국소262개와 이후 별도 R1/Owner 판단이다. 수정 전후 테스트·차이·고정 G2 map과 reviewer runner 원본은 기존 private bundle의 s3b-fsync-correction-32에 보존하며 이 의존 종료 후 보존 필요를 재평가한다. 제품 runtime·observer·product test-controller 변경은 없다. 이번 기록 시점에 실제 offline 검사 및 제품 검증 실행은 아직 0이다.
+
+
+### P2 Offline Checks And Frozen Focused Schedule — 2026-10-13T05:46:23.583066+00:00
+
+Reviewer runner 보완 뒤 `python3 -I -S -B .../s3b-fsync-correction-32/offline-checks.py`를 CPython3.14.7에서 failfast로 한 번 실행했다. 14개 검사 PASS, failure0/error0, 0.012536초, exit0다. Dict/key/type 거부·무효 control 내용별 중복 기록 방지·graceful/force 신호 단발·실행 경계 불일치의 승인된 SIGINT 예외·I/O/permission/log 오류·host interruption·최종 modelUsage 이상과 원문 유지·prelaunch0회/실제 invocation 실패1회 계상을 가짜 객체로 검사했다. Live CLI·실제 subprocess·실제 signal은 0이며 실제 OS/CLI의 취소 동작을 검증했다고 주장하지 않는다. 원래 R0 입력 신원은 원본 runner에 유지하고, 수정 runner SHA는 c8467e27ceeb431f0b0280965694d804cd12da50518a6aae1f6b90b96f8b5913다. 현재 config armed=false와 사용량8은 유지한다. 새 리뷰 승인은 없으며 누적 시간과 실제 Owner 승인 참조는 수동 admission임을 명시했다.
+
+262개를 14/50/49/87/31/31의 여섯 묶음과 묶음당 acquire/base-canary/base-collect/base-smoke/entry-collect/focused 여섯 단계로 고정했다. 첫14개는 기존13개 뒤 새 G2 trace가 마지막이다. 기존 collection6587개에 새63개를 추가한 정적 기대 collection은6650개이며 actual collection과 정확히 같아야 focused를 실행한다. 이 숫자는 PASS나 P2 실행 corpus 총계가 아니다. 새 source digest 37d5c59b10f380219d94df5c7c1c69db04b1f44f106c8ff7c1436f788bec8e5e, entry collection SHA d6b2bcf93e0351b1752b808e8b46f5715698d2983228c10cb4e4ae9a53793b6f. 모든 selected ID는 단일 occurrence이며 새 trace 순서를 정적 기대 목록과 대조했다.
+
+Controller1003→1039·root155→161의 승인 한도 안에서 진행한다. 실행 root6개는 승인된 worktree root 아래의 고유한 bounded 실행 copy이며 기존 root/등록 worktree와 충돌하지 않음을 확인했다. 준비 단계에서 실제 실행 root 생성은0이다. 현재 할당87403114496bytes/96GiB, host free39801188352bytes다. 매 단계에2GiB 여유·hostfree4GiB 및 기존 timeout을 다시 확인한다. Root별 projected focused 시간215/750/735/870/465/465초는 실행 전 추정이며 실제 경과/각 결과는 별도 기록한다. Overall deadline은 기존 null을 유지한다. 이전 generation과 원본 frozen evidence는 수정하지 않았다.
+
+실행기는 첫 실패/입력 drift/collection mismatch/저장·시간 한도 거부 시 STOP을 기록하고 이후 단계를 실행하지 않는다. 첫 묶음의 G2 trace가 실패하면 앞선 개별 PASS만 보존하고 다음 묶음은 실행하지 않는다. 제품 test-controller·observer·loader는 변경하지 않았다. Frozen 입력, 선택 순서 및 실행 결과의 소비자는 이번262개 확인과 후속 별도 R1/Owner 판단이다.
+
+
+### P2 Correction And Focused Verification Result — 2026-10-13
+
+Owner 재개 승인 범위의 수정·offline 검사·국소262개 검증을 완료했다. 이번 재개 이후 예상 밖 실패0, 자동 재시도0, 추가 review0이다. 먼저 발생했던 정적 조회 준비 오류와 당시 중단은 앞 절의 이력으로 보존하며 소급 PASS 처리하지 않는다.
+
+#### Actual Execution
+
+실행 명령은 `/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14 -I -S -B`와 `s3b-fsync-correction-32/frozen-inputs/p2-run-recovery-sequential.py`의 조합이다. 이 고정 launcher가 같은 폴더의 step launcher를 batch1–6/step1–6으로 한 번씩 호출했다. 각 controller의 정확한 argv·cwd·격리 환경·input SHA·출력 위치·timeout은 frozen execution-plan 및 execution-state의 start/finish 기록에 있다. Runtime CPython3.14.7, macOS native constrained execution, test-controller1200초/outer1230초, child 제한·격리 경계는 기존 설정 그대로다. Acquire/canary/collect는 기존300초/outer330초 한도를 유지했다. Reviewer offline 검사 명령·14개 결과는 직전 절과 offline-check-results에 따로 기록했다.
+
+첫 controller 시작 2026-10-13T05:46:59.668694+00:00, 마지막 종료 2026-10-13T06:52:43.124907+00:00, 전체 경과 3943.456초다. 이는 준비·단계 사이의 입력/저장 확인을 포함한 실행 구간이며 test-case CPU 시간이나 review 시간과 다르다. Main sequential launcher는 모든 단계 완료 후 exit0으로 끝났고 추가 리뷰를 호출하지 않았다.
+
+| 묶음 | 범위 | 실제 PASS/선택 | Focused controller 경과초 |
+| --- | --- | --- | --- |
+| 1 | g1-canary-regression-then-g2-trace | 14/14 | 128.594 |
+| 2 | g1-a2-first50 | 50/50 | 342.233 |
+| 3 | g1-a2-last49 | 49/49 | 362.056 |
+| 4 | g1-b1-b2 | 87/87 | 947.422 |
+| 5 | g2-first31 | 31/31 | 486.877 |
+| 6 | g2-last31 | 31/31 | 551.502 |
+
+총262개 모두 PASS이며 unique test ID262개·각 occurrence1이다. Failure/error/skip/expected-failure/unexpected-success/unfinished/unstarted는 모두0이다. S3b 대상 A2 100개+B1 62개+B2 27개=189개, 기존 인접 회귀6개+완성0600 legacy4개=10개, G2 trace1개+interruption62개로 승인된 선택과 일치한다. 실제 실행된 ID와 순서는 각 executed.jsonl 및 frozen selected-order.json을 전부 대조했다. 첫 묶음13개 뒤 G2 trace가 마지막으로 실행됐으며 PASS 뒤에만 다음 묶음으로 진행했다. 기대/실제 collection은6650개로 모든 묶음에서 일치했으며 이를 전체6650개 실행 PASS로 확대하지 않는다.
+
+각 root의 기본 smoke20개도 통과했다. 총120회 실행 occurrence이며 동일20개를 서로 다른6개 root에서 반복한 것이므로 unique120개로 표시하지 않는다. 전체36개 controller가 자연 종료했고 input verification PASS, group_absent=true, cleanup_errors=[]였다. 종료 후 이6개 root를 사용하는 Python 실행과 step/sequential 프로세스가 없음을 확인했다. Post-run 조회·기록은 추가 controller/test 호출이 아니다.
+
+#### Driver Disposition And Remaining Limits
+
+- F1: 지정5개 helper의 S3b를 full bytes/0600으로 보정했고189개 및 인접/legacy10개가 통과했다. 제품 runtime·observer·product test-controller 변경은0이다. 수정 테스트 SHA `f9303e1a8c66ca3800889197c30f5b935c3aea519c997a9dc1ae8b00c60ba3ad`, source digest `37d5c59b10f380219d94df5c7c1c69db04b1f44f106c8ff7c1436f788bec8e5e`, collection SHA `d6b2bcf93e0351b1752b808e8b46f5715698d2983228c10cb4e4ae9a53793b6f`.
+- F2: G2 trace에서31개 기존 파일의 fsync before/after·경로·순서·단일 occurrence와 parent map을 실제 관측했다. 62개 SIGKILL 검사에서 목표 create/raw-write 부재, exact S2-full snapshot·B0·truth·mode 보존, lock 해제와 동일 request 정상 recovery1회를 확인했다. 이는 정적 read map+fsync 경계 검증이며 read/open 전후 native interruption이나 전원 손실 내구성 증거가 아니다.
+- F4: reviewer runner 보완의 offline14개 PASS를 유지한다. 실제 CLI·실제 신호 테스트나 추가 review는 실행하지 않았다. 기존 R0를 수행한 runner 원본과 수정 runner를 구분해 보존했다. CLI 자동 문맥으로 인한 packet-only 독립성 한계, 실제 Owner 승인·누적 시간의 수동 admission, model anomaly의 별도 Owner 처분 경계는 유지한다.
+- F3/F6: parent-directory SIGKILL, receipt의 다른 상태별 kill, immutable-mismatch branch 직접 도달, nonzero strict-prefix 전체 매트릭스는 이번 검증으로 닫지 않는다. 과거189개는 당시1-byte/0600 입력에서 실행한 역사로 남기며 계약상 S3b PASS 또는 S3a 매트릭스 PASS로 소급 변경하지 않는다.
+
+이번 결과는 승인된 국소 검증 완료다. P2 전체 결과 수락·원래 영역별/누적 R1·Git commit/push/merge·STATUS/Done 판정은 별도다. 현재 R1 초안은 이번 테스트/runner 입력 generation을 반영해 신원을 갱신하기 전까지 launch-ready가 아니다. 추가 리뷰를 자동 실행하지 않는다.
+
+#### Budget And Preservation
+
+Controller1039/1039회(이번36회), 실행 root161/161개(이번6개)다. 추가 호출이나 root 생성 여유를 추정하지 않는다. Review는8/11회·4154.4666655초로 그대로다. 종료 시 전체 지정 root/추가 보존 경로의 할당은 90959650816bytes/96GiB, host free는 36026773504bytes다. 각 단계의 저장 admission이 통과했으며 한도를 늘리지 않았다.
+
+기존 private bundle의 수정 전후 테스트·runner·frozen 선택/입력·실행 결과와 기존 current-changes.patch를 보존했다. 수정된 테스트와 runner의 checkout 밖 복사본이 현재 bytes와 같음을 확인했고, 변경하지 않은 untracked controls는 별도 base source의 동일 bytes와 대조했다. 소비자는 정확한 입력 generation을 사용하는 후속 R1 준비와 Owner 결과 판단이며 그 의존 종료 시 보존/정리 필요를 재평가한다. 구현 worktree는 미커밋 변경과 해당 후속 작업 때문에 유지하고, 실행 root도 이 근거 소비가 끝나기 전까지 유지한다. 새 전체 source copy·별도 Work·자동 cleanup 일정은 만들지 않았다. Git/STATUS/Done/P3 초안은 변경하지 않았다.
+
+
+### P2 Original R1 Packet Refresh And Remaining Review Plan — 2026-10-13
+
+Owner 요청: “좋아. 이번 수정과 검증 결과를 반영해 원래 영역별·누적 R1 패킷을 갱신하고, 남은 리뷰 한도와 실행 계획을 보고해줘. 리뷰 호출은 아직 하지 마.” 이번 범위는 기존 R1 준비 자료와 이 Work의 갱신이며 reviewer/auth/제품 테스트 실행은 포함하지 않는다.
+
+#### Updated Packets
+
+기존 private preparation31의 packet-r1-a-draft.md / packet-r1-b-draft.md / packet-r1-c-draft.md를 갱신했다. 원래 A의 T0/A1/A2/B1/B2, B의 C1/C2/C3/C4/C5/X1, 누적 C의 P2 전체·E1–E7·D1–D4 범위는 유지한다. A에는 최신 다섯 S3b helper와 관련 assertion/late-lock/G2 본문, _entry_write_exact/_entry_resync_release, 고정31개 map을 넣었다. B에는 기존 C3/C4/C5 정정·R0 한정 면제·전후 결과의 요구를 유지하고 최신 product 본문을 결속했다. C에는 아직 없는 새 A/B 최종 원문과 Driver 처분을 명시적 대기 입력으로 남겼다. 과거 실패한 A의 중간 분석을 최종 응답으로 사용하지 않았다.
+
+공통으로 이번262개 결과·여섯 묶음 순서/시간, offline14와 cleanup14의 차이, 기존5,782 occurrence의 세대 재사용, 실제collection6,650과 PASS의 구분, 과거189개1-byte/0600과 현재189개full/0600, F3/F6 및 OLD/bridge/cleanup 한계를 반영했다. “수정/재검증 전” 및 수정 전 code excerpt를 현재 상태로 갱신했다. 원래 R0 packet·응답·source_inputs와 과거 실패 기록은 변경하지 않았다.
+
+| 패킷 | Bytes | SHA256 |
+| --- | ---: | --- |
+| A | 51,869 | `de2c12470cc3fd0a633fbbc493d32c7c88fba4aeb7c124d051e2784e6f58b9af` |
+| B | 23,111 | `f249a9ed4d2c6a8b2425a5e8032811539ccc995b65081ac64191f2a039e709aa` |
+| C | 9,779 | `72f542301f69f82254bf42cec3457fb52a8f96e6cbe9ec12f5abf12bd3250f15` |
+
+이 세 파일은 갱신된 entry draft다. 원래 전체 범위를 검토할 관련 source/helper closure·matrix의 동치 표현·선택/실행/세대 관계를 최종 전달 본문에 결합하는 작업이 남아 있어 launch-ready로 표시하지 않는다. Local 입력 index의 경로/hash만으로 no-tools Reviewer에게 본문을 제공했다고 취급하지 않는다. 입력 token 수는 미측정이며 위 byte를 token으로 환산하지 않는다. 이전2MB대 패킷과 preparation30 builder는 과거 입력·한도·timeout 조건을 포함하므로 그대로 실행하지 않는다.
+
+#### Remaining Budget And Proposed Sequence
+
+- Review: 8/11회 사용, 잔여3회. Call9 영역A → 결과 원문/Driver 처분 → call10 영역B → 결과 원문/Driver 처분 → call11 누적C에 각각1회다. 추가 R0·retry·추가 분할 호출 여유는 없다.
+- 누적 review 시간: 4,154.4666655/14,400초, 다음 호출 admission 여유10,245.5333345초(약2시간50분45초). 실제 서비스 quota 잔여와 다른 값이다. 다음 호출 전에 fresh quota/auth 경로를 확인한다. 과거14:07 관측은 현재 잔여 증거가 아니다.
+- Reviewer는 Opus5.5(`claude-opus-5-5`)·medium·fresh session·no-tools/empty MCP로 유지한다.1,200초는 경고이며 시간만으로 종료하지 않는다. 누적14,400초는 다음 호출 admission 기준이며 실행 중 kill 기준이 아니다.
+- 다음 준비는 전체 관련 본문을 축소 구성하고 실제 입력 크기를 확인하는 것이다. 기존20k–40k token 목표/60k 초과 재분할 원칙을 유지하며, 추가 call이 필요하면 먼저 한도/분할 계획을 다시 보고한다. R1 전용 inactive runner binding은 R0에 고정된 현행 wrapper를 그대로 쓰지 않고 따로 결속해야 한다. 현재 runner/config 수정·arm은 하지 않았다.
+- 별도 Owner 호출 승인 후에만 실행한다. 각 호출 전 정확한 packet/diff/source·실제 승인·누적 시간·quota/auth를 확인하며 자동 연쇄는 없다. 결과 anomaly/incomplete/drift/blocker·범위 변경에는 다음 호출을 중단하고 보고한다. 자동 fallback/retry/resume/제품 수정은 없다. Control·신호·실행 경계 위반 graceful stop의 승인된 조건은 기존 보완안을 유지한다.
+- 제품 test-controller1,039/1,039 및 root161/161은 소진됐다. 새 제품 검증·root·한도 확대는 이 준비에 없다. P2 수락·Git·STATUS/Done·P3/P4 처리는 별도다.
+
+#### Validation And Preservation
+
+정적 읽기로36개 finish의 정상 종료/input PASS/group absence/cleanup0과262개 실제ID·순서·단일occurrence·PASS를 고정 selection과 대조했다. 새 테스트나 controller 호출은0이다. 갱신 패킷·README의 GFM render에서 code 밖 literal emphasis 잔여가 없음을 확인했다. Source/input digest와 기존 reviewer config의 armed=false/used8/cap11 불변을 검사했다. 이 Work append 후 git diff --check와 Work GFM을 확인하고 기존 current-changes.patch에 checkout 밖 보존 사본을 갱신한다.
+
+r1-input-index.json은 이번 준비에 사용한 Work prefix·base revision·preparation diff·현재/추가 untracked 입력과 여섯 묶음의 결과/정확한ID·packet digest를 기록한다. 이는 입력 index이며 새 Work나 호출 장부가 아니다. 원래 R0 identity는 보존한다. 기록 append 뒤의 최종 diff는 index의 preservation 값으로 별도 식별하며 과거 preparation diff와 혼동하지 않는다. 소비자는 원래R1 assembly와 Owner 결과 판단이며 의존 종료 시 보존을 재평가한다. 구현/실행 worktree는 이 후속 소비가 남아 있어 유지한다. 이번 새 reviewer/auth 호출0, 제품/테스트/runner 변경0이다.
+
+
+### P2 Full R1 Body Assembly And Inactive Binding — 2026-10-13
+
+Owner는 “남은 소스 본문 구성, 입력 token 측정, R1용 실행기 결속까지 마쳐서 영역 A/B 패킷을 호출 가능한 상태로 준비해줘. 누적 패킷은 A/B 응답 대기 상태로 두고, 리뷰는 아직 호출하지 마.”라고 요청했다. Token 경로 질문에는 “구독 경로 유지: 로컬 참고치와 실측 불가를 명시”를 선택했다. 이 요청은 준비 범위이며 실제 reviewer 호출 승인이 아니다.
+
+#### Preparation Outcome And Unmet Readiness Condition
+
+A/B 전체 본문과 각 packet에 결속된 inactive R1 실행기를 준비했다. 하지만 완성 입력의 로컬 token 참고치가 앞선20k–40k 목표/60k 초과 재분할 운영 계획을 크게 넘는다. 따라서 요청된 “호출 가능한 상태”를 완료했다고 표시하지 않는다. 이60k는 이전 준비에서 제안·유지한 입력 크기 기준이며, Owner가 명시한11회 review 상한과는 다른 조건이다. 입력을 잘라 범위를 줄이거나, 이 기준을 조용히 높이거나, 원래3회 대신 추가 reviewer를 자동 배정하지 않았다. 원래 A/B/누적 범위는 그대로다.
+
+산출물은 private preparation31/r1-assembly의 domain-a 및 domain-b 아래 packet.md, review-identity.json, run-review.py, runner-config.json, token-reference.json이다. 기존 작은 A/B entry draft는 이전 준비본이며 호출에 사용하지 않는다. 누적 C는 A/B 실제 최종 응답·Driver 처분 대기 상태와 최신 본문/크기 pointer를 갱신했다. 새 Reviewer 응답은0이다.
+
+#### Actual Local Token Reference
+
+| 영역 | Packet bytes | System+packet cl100k_base | System+packet o200k_base | Packet SHA256 |
+| --- | ---: | ---: | ---: | --- |
+| A | 2,168,755 | 620,840 | 593,178 | `8ec9ba17bc2b77b9f3ea8b6d5966483cc5711af69e24446d31b68ff8eafe49fc` |
+| B | 2,691,124 | 726,526 | 692,600 | `72b91467cc358e17ef3a6adb3c61047984d1778d763b08df2a9390bcf4f28aaa` |
+
+js-tiktoken@1.0.21의 두 tokenizer로 실제 계수하고 encode/decode roundtrip을 확인했다. 이는 이름을 표시한 OpenAI tokenizer의 계수이며 Opus5.5 tokenizer의 실측이나 상한이 아니다. System prompt와 두 newline 및 packet을 합친 text를 계수했으며 API framing·CLI 자동 문맥은 포함하지 않았다. Opus token 수는null/미확인으로 남긴다. Node18.20.5에서 수행했고 API/reviewer 호출0, packet 외부 전송0이다. 공개 package 설치만 수행했으며 첫 sandbox 네트워크 조회 실패 후 scoped 설치로 완료했다. API key/auth 경로는 새로 사용하지 않았다. Claude --help 로컬 조회는 reviewer/auth 호출이 아니며 count-only CLI 옵션은 확인되지 않았다. 공식 방법과 모델별 tokenizer 차이는 [Anthropic Token Counting](https://platform.claude.com/docs/en/build-with-claude/token-counting)에 명시돼 있다.
+
+#### Body And Evidence Composition
+
+각 영역에 accepted DR-0004와 phase 계획, 원래 P2 종료 의무·E1–E7·D1–D4 및 관련 원문 R0/Driver/Owner 기록, 현재 runtime 모듈·root launcher·controls, 원래 선택/실행 mapping과30개 입력 generation·20개 entry test 버전의 변경을 제공했다. 과거29세대 뒤 correction32의 추가 generation을 연결했으며 current full5782 재실행이라고 주장하지 않는다. Historical coverage aggregation은 원래5,782 occurrence,128개 완료PASS root와23개non-pass root, 선행 768개 기록을 읽어 확인한 결과다. Correction32의6개root/36controller/262개는 별도로 결합했고 새 실행하지 않았다.
+
+A에는 현재 관련 entry test/helper closure와 G2 trace/62개, B에는 C1~C5/X1 helper와 C5 선택96개ID/109occurrence·22개 모듈의 선택test/변경method/fixture helper 본문을 넣었다. 반복 literal은 값·type·순서 동치 검사를 거친 표현으로 줄였다. Body를 생략하고 hash만 대신 제공하지 않았다. OLD 모듈은 전체 CURRENT 본문에 적용하는 CURRENT→OLD 정확한 diff로 중복을 줄였고 동일 모듈 신원을 별도로 제공했다. 원래 source/review 범위 밖의 test body 생략 목록과 동적 closure의 정적 한계는 남겼다. 대형raw trace/fixture는 미첨부이며 Driver가 읽은 실행 evidence를 Reviewer가 재실행했다고 쓰지 않는다.
+
+본문 구성·중복 감소 후에도 크기가 크게 남는다는 것이 이번 측정 결과다. 이것이 두 호출에 적합하다는 주장이나 모델 context 수용 보장이 아니다. Required closure를 삭제해60k를 맞추지는 않았다. 다음 단계는 의무별 재분할과 필요 호출 수를 실제 본문 기준으로 다시 설계하거나, 큰 입력을 유지하는 선택을 Owner가 판단하는 것이다. 어느 쪽도 이번 준비에서 호출 권한이나11회 상한 변경으로 처리하지 않았다.
+
+#### R1 Binding And Checks
+
+R1 실행기는 각 domain/packet/model/effort와 call9 또는10에 결속하고 armed=false로 저장했다. 기본 inspect는 local input과 Git 신원만 읽는다. --run은 실제 Owner 호출 승인, fresh quota, claude.ai/firstParty 구독 auth, 정확한 누적 count/time, 앞선 60k 기준과 B의 선행 A 응답/Driver 처분을 검사한다. 이번 입력은 auth 전에 size gate에서 거부된다. 고정 launch-admission marker는 동시·반복 시도를 막으며 자동 retry/resume/fallback은 없다. 실제 invocation 시도 뒤 옵션·실행 실패는1회, prelaunch 거부는0회로 계상한다. 1200초 soft warning, 시간만으로 kill하지 않는 정책, 명시적 Owner control 및 실행 경계 위반 시 graceful stop 예외를 유지한다. 기존 R0 runner/config와8회 사용량은 변경하지 않았다.
+
+Control parsing/report/signalling/supervise/classify의 다섯 함수는 기존 offline14 검사 대상과 AST가 같음을 확인했다. 새 결속 검사는 처음7개 PASS, 8번째 FAIL이었다. 8번째 검사에서 가짜 subprocess.run이 실제 Git 조회까지 가로채 HEAD 비교가 실패했다. 실제 HEAD와 code diff는 고정값과 같았다. 테스트 harness가 Git 읽기만 실제로 수행하도록 mock을 정정한 뒤 그 항목만 재실행해 A/B 신원 검증 PASS를 확인했다. 마지막 metadata 설명 보완 뒤에도 같은 항목을 확인했다. 실패를 삭제하거나 단일8/8 실행으로 표현하지 않는다. 최초 결과에 계획값4회로 하드코딩했던 Git 실행 수는 실제0회로 정정해 first-result에 남겼다. 제품 test/controller, 실제 Claude/auth 및 실제 signal 호출은 모두0이다.
+
+Packet·README·누적 초안은 GFM render를 확인했다. 이 Work 기록 뒤에는 git diff --check와 Work GFM을 확인하고 source/code diff 및 Work prefix를 다시 대조한다. 이는 수정 이후 입력 generation의 일치 검사이며 Reviewer 판정이 아니다.
+
+#### Limits, Preservation And Next Decision
+
+Review8/11회·4154.4666655/14400초, controller1039/1039회·root161/161개를 유지한다. 추가 R0/retry/분할 call 여유는 없으며 A/B/누적에 각각1회씩 남는다. 60k 기준과 전체 검토 범위를 함께 유지하려면 본문 분할 및 필요한 호출 수를 다시 산정해야 한다. 현재 크기의 입력을 그대로 호출하는 선택도 Owner의 명시적 판단 없이 진행하지 않는다. 누적 리뷰·P2 수락·Git·STATUS/Done·P3/P4는 실행하지 않았다.
+
+정확한 packet, input/runner/token identity와 결속 검사 기록은 checkout 밖의 기존 private bundle에 있다. current-changes.patch를 갱신해 이번 Work 기록도 보존한다. Tokenizer의 임시 설치본은 재생성 가능한 runtime이며 packet·측정값의 유일한 사본이 아니다. 새 전체 source tree나 Work/진행 장부는 만들지 않았다. 구현 worktree와 기존 실행 root는 R1/Owner 판단에 계속 필요하므로 유지한다. 이번 assembly와 결속 검사 전후 기록의 소비자는 입력 크기·분할에 대한 Owner 판단과 이후 승인된 R1이며, 해당 의존이 끝나면 보존을 재평가한다.
+
+
+### P2 R1 Read-Only Transition And A Admission — 2026-10-13
+
+Owner는 패킷 압축·추가 재분할 중단, 기존 자료의 짧은 안내와 필요한 소스·증거 파일 읽기 전용 접근, 실행기 최소 변경을 승인했다. 인증·입력 무결성·누적 예산 확인 뒤 A부터 시작하고 A/B/누적 C 최대3회 안에서 각 실제 응답·Driver 처분과 기존 중단 조건에 따라 다음 호출을 판단하도록 지시했다. 자동 재시도·추가 호출·제품 수정은 금지했다. 이 지시는 이전 no-tools/60k 재분할 및 별도 매 호출 승인 대기 조건을 이번 순차 리뷰에 한해 대체한다. 기존 모델·effort·시간/신호·결과 무결성 조건은 유지한다.
+
+A/B 각5.6KB대 read-guide.md와 read-review.py/read-identity.json/read-config.json을 기존 r1-assembly/domain-a,b에 준비했다. 이전 대형 packet과 no-tools 실행기·신원은 역사 자료로 보존하며 자동 전송하지 않는다. Read/Glob/Grep만 제공하고 --restricted로 source checkout 및 기존 증거 디렉터리130개에 파일 접근을 제한한다. --safe-mode, empty MCP, 설정 source 공백, dontAsk, permission prompts none을 유지한다. Bash/쓰기/웹/agent/제품테스트 도구는 제공하지 않는다. Reviewer는 필요한 구간을 읽고 실제 확인 범위와 미검토를 보고한다. 전체 의무는 유지하되 미검토를 완료로 바꾸지 않는다. 전체 source copy·압축·재분할·새 제품 검증은0이다.
+
+인증은 sandbox에서 false였으나 macOS Keychain 접근을 허용한 비밀 없는 조회에서 loggedIn=true/authMethod=claude.ai/apiProvider=firstParty/subscriptionType=pro를 확인했다. 대체 API/provider 환경변수는 모두 미설정이다. Owner의 최초 기억에 따른 약96% 보고 뒤, 현재 5시간4% 사용/96% 잔여·19:00 KST 리셋 예정과 주간11% 사용을 명시적으로 확인받았다. 이는 Owner의 현재 관측이며 Driver 직접 UI 측정이나 API 잔여값이 아니다.
+
+A 호출 전8/11회·4154.4666655/14400초다. Opus5.5(claude-opus-5-5)/medium/fresh session으로 call9를 시도한다.1200초는 경고이고 시간만으로 kill하지 않는다. 승인된 실행 경계 위반과 Owner control의 신호 의미는 유지한다. CLI 자동 문맥으로 인해 완전한 context 독립성을 주장하지 않는다. 다음 호출 전 실제 사용량·시간·결과·Driver 처분을 다시 확인한다.
+
+전환 검사는 A/B 기존 input/hash와 Git HEAD/code diff 모두PASS, Read/Glob/Grep argv 확인PASS, 허용 도구 final event 수용 및 Bash 추가 event 거부PASS다. 제어/신호 함수3개는 이전 함수와 AST 동일하다. 가짜 event 검사이며 실제 CLI·signal·제품 테스트를 실행한 증거가 아니다. 새 live reviewer 호출은 이 기록 시점0이다. 상태/Done/P2수락/Git 작업은 하지 않는다.
+
+
+### P2 R1 A Read-Only Result And Driver Disposition — 2026-10-13
+
+Call9는 정상 종료했다. 실제 모델claude-opus-5-5, 요청effort medium, session751c258a-ddf1-45d3-8a16-04fa594a2d5b, 구독claude.ai/firstParty/pro, exit0, elapsed212.814967초다. Read21/Grep23/Glob3 호출만 관측됐으며 MCP0, 제품 테스트/수정0, 신호0이다. 고정 입력과 Git HEAD/code diff의 호출 전후 대조PASS, group_absent=true, boundary/supervision anomaly=false다. CLI 실행 완료와 독립 검토 범위 완료를 구분한다. Verdict는conditional이며 원래4,817행 전체 독립 검토 완료가 아니다.
+
+Guide SHA `c6e27f28c555756558becc7726f86ca837aac4d429ec120d92c46866d66fe320`, response SHA `546c07c871a0190af724aab1df3a4e54c1cfd0795f5d624c78cd33ed8f9f4b0d`. 마지막 CLI rate event는5시간11%/주간11% 사용·5시간19:00KST리셋이며 다음 호출 admission에 사용한다. 누적9/11회·4367.281633/14400초, 남은B/C2회다.
+
+#### Reviewer Response — Verbatim
+
+# P2 R1 영역 A 정적 검토 보고
+
+## Verdict: **conditional** (범위: T0/A1/A2/B1/B2 + G1/G2, 읽은 구간 한정)
+
+읽은 범위에서 G1/G2 수정이 계약과 어긋나는 blocker는 찾지 못했습니다. 다만 F1은 실행 증거가 없는 공백이고, F2·F3은 Owner의 명시 처분이 필요합니다. 이 판정은 Owner의 P2 수락이 아니며, 영역 A 전체 4,817 occurrence의 최신 PASS 확인도 아닙니다.
+
+## Findings
+
+### R1-A-F1 (중간) 완성본 S3b에서 installed-new의 writer fence가 실행으로 확인되지 않음
+- **위치:** `tests/test_entry_window_transition.py:3476-3482` (`p2_b_runtime_boundary`), 주석 `:3471-3472`; `observer.py:46-47, 504`.
+- **근거(정적):** S3b가 1바이트에서 완성 bytes/0600으로 바뀌었습니다. 테스트는 여전히 native exec의 errno 13만 확인하고 `'entry-incomplete'`로 반환합니다. 주석은 "missing/truncated executor는 availability만 닫는다"고 전제하지만, 이제 S3b는 truncated가 아닙니다.
+- **왜 문제인가:** 0600 완성본은 인터프리터 경유로 읽어 실행할 수 있습니다. observer도 installed entry를 `runpy.run_path`로 실행합니다(`:504`). DR의 "never admitted"(`DR-0004:122,159`)는 S3b에서 EACCES 한 가지로만 실행 관측됩니다.
+- **추론과 한계:** B0가 유지되므로 S4/S5와 같은 `launcher-window-mismatch` 거부(`:3485-3487`)가 날 것으로 추정합니다. 다만 launcher 본문과 bootstrap이 mode에 무관한지는 읽지 않았습니다.
+- **최소 조치:** 둘 중 하나를 택합니다.
+  - S3b 완성본을 observer 경유로 dispatch해 lock-attempt 없는 거부와 snapshot 불변을 확인하는 행을 추가합니다.
+  - "S3b installed-new는 native-exec 불가만 실행 관측, 인터프리터 경유 fence는 S4/S5 정적 유추"를 한계로 Work에 명시하고 Owner 처분을 받습니다.
+- **영향 의무:** 계획 `:90` Four executors "at every S state", B1 62행 중 S3b installed-new 행.
+
+### R1-A-F2 (중간, 처분 필요) nonzero strict-prefix N의 matrix coverage가 수정으로 사라짐
+- **위치:** `test-change.diff:75-76, 84-85, 93-94, 102-103, 111-112`; 현행 `:3289-3290, 3310, 3463, 3480, 3555`.
+- **근거:** 다섯 helper 수정은 계약과 일치합니다(`DR-0004:122,141`: S3b는 complete N at 0600). 그 결과 S3a 대표는 zero-length(`open-after`)뿐입니다.
+- **왜 문제인가:** DR `:140`은 S3a를 "zero or a strict leading prefix"로 정의하고, 계획 `:96`은 "short-write/0600/reopen/append"를 요구합니다. A2/B1/B2 문맥에서 nonzero prefix는 더 이상 실행되지 않습니다.
+- **판단:** 필수 의무 누락으로 보지 않습니다. 계획 `:96`은 primitive 경로의 short-write/append를 요구하고, `:90`의 "every S state"는 상태 대표로 충족된다고 해석할 수 있습니다. 다만 이 해석은 Owner가 확정해야 합니다.
+- **미확인:** R0 F6이 말한 "`launcher_prefix_case` short 3종 잔존"은 본문을 직접 확인하지 않았습니다(`:2244` 부근 존재만 확인).
+- **최소 조치:** 과거 189개(1-byte/0600)를 "이전 test generation의 S3a nonzero-prefix 보조 이력, canonical 아님"으로 한 줄 처분합니다. `launcher_prefix_case`의 실제 PASS 행 ID도 그 처분에 연결합니다.
+
+### R1-A-F3 (낮음~중간) G2 미검증 네 항목은 수용 가능한 한계이나 근거 행이 Work에 없음
+- **위치:** `src/hv2ref/product.py:586-605` (`_entry_write_exact`), `:668-679` (`_entry_resync_release`), `:1451, 1468-1473`.
+- **Parent-directory SIGKILL:** `:596`의 file fsync 뒤부터 `:605`의 parent sync까지 변이 호출이 없습니다. 디스크 상태는 `fsync-after` kill과 같으므로 62개가 상태 보존 주장을 포괄합니다. DR `:149`의 "each … directory prefix"는 namespace 변이 지점에 대한 요구로 읽으면 한계로 수용할 수 있습니다.
+- **Receipt의 다른 상태별 kill:** `:1451`은 상태와 무관하게 같은 분기(`:591-597`)를 탑니다. S2-full 대표로 충분합니다.
+- **Immutable mismatch 직접 도달:** `:593-594`는 staging member에서 `_init_partial_tree`(`:1468`)가 먼저 걸러냅니다. A1 torn 단언도 그 메시지를 기대합니다(`tests:3187`). receipt에서는 preflight의 JSON·plan 검사가 먼저 걸러냅니다. 사실상 방어 분기이며 직접 도달 테스트 부재는 수용할 수 있습니다.
+- **Read/open 전후 interruption:** `:590-595` 구간은 무변이이므로 R0의 판단과 같이 필수가 아닙니다.
+- **`_entry_resync_release` (R0 F3a):** 본문을 읽은 결과 directory sync만 있고 file fsync edge는 없습니다(`:677-679`). 따라서 G2 file map 밖입니다. 이 경로의 실패 주입은 A2가 담당합니다.
+- **최소 조치:** 위 무변이 근거 행 번호를 Driver 처분(Work 12297행 부근)에 연결하고, Owner가 "한계 수용"을 명시합니다. 자동 확대는 필요 없습니다.
+
+### R1-A-F4 (낮음, 증거 지위) correction32의 262 PASS는 집계 수준에서만 독립 대조됨
+- **직접 읽은 실행 기록:** `execution-state/b001-focused-p2-finish.json`과 `b006-focused-p2-finish.json`. 두 파일 모두 `execution_pass: true`, exit 0, `group_absent: true`, `cleanup_errors: []`, source_digest `37d5c59b…`이며 초(128.594/551.502)가 Work와 일치합니다. `b004-focused-p2-start.json`의 argv·controller_call 1027·umask도 확인했습니다.
+- **공백:** finish 기록에는 per-test counts와 executed ID가 없습니다. correction32 실행 root의 `counts.json`·`executed.jsonl`은 읽지 못했습니다. 262 unique, occurrence 1, trace가 14번째라는 주장은 Driver 제공 관측입니다.
+- **최소 조치:** 수락 전에 6개 root의 counts·executed 경로와 SHA를 `r1-input-index.json`에 명시적으로 결속했는지 확인합니다.
+
+### R1-A-F5 (정보) 기존 파일 recovery의 sync 강도 비대칭
+- **위치:** `product.py:595-596`은 `os.fsync`만 호출하고, 신규 publication(`:601`)은 `_sync_fd`(`jsonio.py:100-113`, F_FULLFSYNC)를 씁니다. `_sync_fd`의 fullfsync 오류 반환값은 `:601, 718, 721`에서 무시됩니다.
+- **판단:** 기존 `workspace.py:375-383`과 같은 형태입니다. DR `:340`이 file-sync 강화를 금지하고 전원 손실은 비주장이므로 계약 위반이 아닙니다.
+- **최소 조치:** G2가 관측한 것은 "fsync 경계"이지 fullfsync가 아니라는 점을 문구에 유지하면 됩니다.
+
+## 정적으로 확인한 사항(결함 없음)
+
+- **G1 helper 다섯 곳:** diff가 `S3b` 분기에 한정돼 있습니다. `write_bytes=None`이면 `observed_write`가 데이터를 자르지 않고(`observer.py:296-301`), `p2_prepare_state`가 시작 상태를 full size/0600으로 단언합니다(`:3329`).
+- **S3b recovery 경로:** `_entry_append_file`은 완성본/0600에서 write loop를 건너뛰고 sync, fchmod 0755, sync, parent sync 순으로 진행합니다(`:713-728`). DR `:141`과 일치합니다.
+- **G2 테스트 단언:** `p2_g2_case`(`:3250-3273`)는 마지막 이벤트가 selector와 같은지, 단일 occurrence인지, create/raw-write가 없는지(기존 파일 분기 진입), snapshot이 완전히 같은지, lock이 해제됐는지, 동일 request의 recovery가 1회 `updated`인지를 단언합니다. R0 F2의 추가 단언이 반영됐습니다.
+- **G2 map:** `g2-static-map.json` 앞부분과 `P2_G2_MAP`(`:286`) 앞부분이 일치합니다. 전체 31행 대조는 하지 않았습니다.
+- **Late-lock:** `p2_b_late_run`(`:3560-3581`)과 `installed_old_writer_late_lock`(`:3031-3065`)은 다음을 증인으로 둡니다.
+  - NEW가 lock 보유 중 정지하고 그 시점 snapshot이 initial과 같음
+  - OLD의 lock-attempt는 있고 acquired는 없음
+  - 같은 lock inode
+  - acquired 시각이 NEW의 마지막 이벤트 이후
+  - OLD가 schema 거부로 끝나고 bytes 불변
+  
+  계획 `:100, 318-324`의 증인 요구에 부합합니다. OLD에는 fault를 주입하지 않습니다(`observer.py:58`).
+- **Writer fence와 under-lock 재검증:** `workspace_switch_apply`는 lock 안에서 `_switch_preflight`를 다시 실행하고 변이 지점마다 `checkpoint()`를 둡니다(`:1433-1436, 1453-1457`).
+- **A1 torn 처리:** `p2_a1_case`(`:3146-3198`)는 torn이면 exit 65, 정확한 bytes 보존, 변이 이벤트 금지를 단언합니다. T-A(`DR:149`)와 일치합니다.
+- **A2:** `p2_a2_case`(`:3363-3405`)는 D3 selector 정확 일치, 주입 1회, prefix 독립 predicate, recovery 결과를 단언합니다.
+
+## 실제 확인한 영역
+
+- **패킷과 Work:** packet-r1-a-draft 1–60행, Work 12200–12320행.
+- **계약:** DR-0004 112–170행과 grep 결과, 계획 85–102행과 grep 결과.
+- **제품 소스:** `product.py` 404–733행, 1353–1536행; `jsonio.py` 100–129행; `workspace.py` 375–384행.
+- **테스트:** 3028–3077행, 3113–3603행.
+- **Observer:** 24–59행, 205–308행.
+- **증거:** R0 response 14–62행, `test-change.diff` 변경 행, evidence-review 1–90행(batch 구성만), read-identity 1–120행, finish 2개와 start 1개, outer.log 1개 앞부분.
+
+## 미검토·잔여 위험
+
+- **대형 상수 행:** `P2_A1_CELLS`, `P2_A2_CELLS`, `P2_B1_ROWS`, `P2_B2_ROWS`, `P2_D3_*`는 한 행이 지나치게 커서 읽지 못했습니다. 따라서 A1 1,233행, A2 2,700 sync 의무, B1 62행, B2 27행의 구성과 완전성은 미검토입니다.
+- **Early bridge 8개:** batch 27의 ID 목록만 확인했고 본문은 읽지 않았습니다.
+- **T0:** buffered/raw 위임 본문(`observed_io_open`, `observer.py:347-434`)과 `EntryControlTests`는 읽지 않았습니다.
+- **네 executor 중 OLD init/repair/detach, lifecycle route:** `p2_lifecycle_*`(`:3588` 이후)와 repair/detach 소스는 읽지 않았습니다. OLD init/repair 선행조건 거부 한계는 Driver 서술을 그대로 유지합니다.
+- **B 영역 C1–C5/X1과 source/helper 관계:** 전부 미검토입니다. 안내문 3항은 B를 함께 언급하지만, 이번 보고는 영역 A에 한정됩니다.
+- **역사 4,817 occurrence:** 원본 result/counts/executed는 한 건도 직접 대조하지 않았습니다. 세대 간 product runtime의 동일성도 확인하지 않았습니다. 역사 collection SHA(`d18e4b48…`)와 현재(`d6b2bcf9…`)가 다르다는 점만 확인했습니다. 세대 재사용의 의미적 타당성은 판정하지 않습니다.
+- **history-review, prerequisite-audit, E1–E7/D1–D4, cleanup 14, offline 14:** 읽지 않았습니다.
+- **Launcher(`colvia`) 본문:** 읽지 않았습니다. F1의 추론은 이 본문에 의존합니다.
+- **Identity:** SHA 대조는 Driver 몫이며, 저는 해시를 계산하지 않았습니다.
+- **전원 손실 내구성과 실제 CLI 취소:** 어떤 증거로도 입증되지 않은 상태입니다.
+
+
+#### Driver Disposition
+
+- R1-A-F1 — revise: S3b native EACCES만 실행 관측한 공백은 인정한다. Driver가 colvia:51-64,95-119를 읽어 B0의 checkout-1 ref와 entry-1 launcher 상수 비교가 runtime import/lock 전에 거부됨을 확인했다. 이는 정적 근거이며 S3b interpreter dispatch 실행 PASS가 아니다. 후속: 새 테스트나 제품 수정 없이 관측 한계로 기록; 최종 P2 수락에서 Owner 판단.
+- R1-A-F2 — revise: 과거189개는 S3b로 명명됐지만 실제1-byte/0600인 당시 실행 이력으로 유지한다. S3a matrix 근거로 재분류하지 않는다. test_launcher_n02_write_one/middle/last 본문과 기존 executed PASS를 확인했지만 전체 nonzero-prefix 조합을 대체하지 않는다. 이 제한은 이미 승인된 correction 범위에 포함돼 있다. 후속: 기존 한계 유지; 추가 matrix 실행 없음.
+- R1-A-F3 — revise: product.py:591-605 무변이 구간과668-679 directory-only 경로를 정적으로 대조했다. Parent directory kill/다른 receipt 상태/immutable branch 직접 도달/read-open kill 미검증은 기존 승인 검증 범위 그대로다. Reviewer의 충분성 해석을 Owner의 한계 수락으로 취급하지 않는다. 후속: 정적 이유를 기록하고 최종 Owner 수락에서 판단.
+- R1-A-F4 — defend: r1-input-index.json.focused_results의 여섯 counts/executed/result/inputs 경로 모두 inputs SHA와 현재 bytes가 일치한다. counts의14/50/49/87/31/31 run=selected 및 오류0을 재확인했다. Reviewer가 읽지 못했다는 한계는 유지하지만 요청한 결속은 이미 있다. 후속: no-action; 새 테스트 없음.
+- R1-A-F5 — accept: G2 주장은 fsync 경계이며 F_FULLFSYNC나 전원 손실 내구성으로 확대하지 않는다. 후속: 현행 주장 한계 유지.
+
+F2 관련 legacy short3개의 실제 ID는 test_entry_window_transition.EntryProductTests.test_launcher_n02_write_one/middle/last다. 기존 hv2-reference-private-colvia-p2-detach-membership-resume-20261013-r002의 executed.jsonl에서 one/middle 각PASS, r003에서 last PASS를 확인했다. 새로운 실행이 아니며 최신 전체 matrix 증거로 확대하지 않는다.
+
+Reviewer의 큰 matrix 상수, T0 본문, bridge8개, OLD lifecycle, 역사4,817행·세대 재사용, E1–E7/D1–D4 미검토를 그대로 남긴다. 최종 결과 수락은 Owner에게 남는다. F1의 관측 공백과 F2/F3의 한계 수용은 P2 수락 판단 사항이며 현재 source 수정이나 B의 독립 검토 범위 변경을 요구하지 않는다. Driver는 현재 승인된 순차 검토의 B 진행을 허용하되 최종 Owner 수락을 대신하지 않는다.
+
+검토 중 추가로 읽은 자료 중 기존 R0 원문·b001/b006 finish·G2 map은 이전 input index hash와 일치한다. 집계 report/read-identity 및 b004 start/outer는 A의 직접 input map에 포함되지 않았으며 모든 보조 파일의 사전·사후 hash 고정을 했다고 주장하지 않는다. 핵심 source·원본 counts/executed는 고정 입력 검사 대상이다. B부터 이미 참조하는 안내·집계·최신 start/finish를 직접 identity에 결속한다. 추가 대형 archive나 source copy를 만들지 않는다.
+
+Review stream의 한정 소비자는 실제 모델/도구/quota/미검토 범위 확인과 B/C 및 Owner 처분이다. 그 의존 종료 시 보존 필요를 재평가한다. Reviewer 원문과 Driver 처분은 이 기존 Work에 기록하며 계정 식별자·비밀은 복사하지 않는다. 구현 checkout과 기존 증거 root는 미완료R1/Owner판단에 계속 필요해 유지한다.
+
+
+### P2 R1 B Read-Only Result And Driver Disposition — 2026-10-13
+
+Call10 정상 종료, 모델claude-opus-5-5/요청effort medium, session a290e1d9-d981-4656-9d42-e21c7056df56, claude.ai/firstParty/pro, exit0, elapsed252.851085초다. 실제 도구{'Read': 33, 'Grep': 25, 'Glob': 4}, MCP0, 제품 테스트/수정0, 신호0이다. 고정 입력/Git 호출 전후 일치PASS, group_absent=true, boundary/supervision anomaly=false다. Verdict conditional은 읽은 범위에 한정하며 B965행 전체 독립 검토 완료나 Owner 수락이 아니다. Response SHA `98e4178d9c9d025e8bcf597be4d6127bf6a2e69aee64e707b9a2b8be99ab0889`.
+
+누적10/11회·4620.132718/14400초로 C1회만 남는다. 마지막 CLI quota는{"five_hour": {"utilization": 0.23, "resetsAt": 1791885600}, "seven_day": {"utilization": 0.12, "resetsAt": 1792368000}}이다. A 원문에서 유래한 빈 줄의 trailing spaces1건 때문에 일반 git diff --check가 경고했다. 원문 보존을 위해 그대로 유지하며 전체 whitespace 검사PASS로 보고하지 않는다. 제품 source 변경이나 review input drift는 아니다.
+
+#### Reviewer Response — Verbatim
+
+# P2 R1 영역 B 정적 검토 보고
+
+## Verdict: **conditional** (범위: C1/C2/C3/C4/C5/X1, 읽은 구간 한정)
+
+읽은 범위에서 제품이 계약을 어기고 변이를 허용한다는 재현 반례나 P0/P1 blocker는 찾지 못했습니다. 다만 F1–F3은 Owner의 명시 처분이 없으면 P2 수락 근거로 쓸 수 없습니다. 이 판정은 Owner의 P2 수락이 아니며, B 965 occurrence의 최신 source PASS 확인도 아닙니다.
+
+## Findings
+
+### R1-B-F1 (중간, 처분 필요) OLD 복구 완료 뒤에도 남는 staged-current 잔여 파일이 전환을 막고, 통과 경로 증거가 없음
+- **위치:** `src/hv2ref/product.py:540-545` (`_entry_admission`), `:1373-1377` (`_switch_preflight`); `tests/test_entry_window_transition.py:3863-3877` (`p2_c1_case`); Work `:10462-10468, 10482-10489`.
+- **근거(정적 + Work 기록):**
+  - admission은 `.hrn/staging`의 모든 member에 디렉터리를 요구합니다. OLD가 남긴 regular file `work-current-*`는 의도된 "unresolved staging; retain old source and preserve"(`:545`)가 아니라 일반 오류 `HV2-WORKSPACE-CONTRACT / wrong file type`으로 거부됩니다.
+  - Work `:10464`는 OLD의 pending 재시도가 이전 staging 파일을 지우는 경로가 없다고 적습니다. 이는 Driver의 정적 추론이며, 저는 OLD source를 읽지 않았습니다.
+  - 테스트는 pending이든 recovered든 파일이 정확히 1개 남아 있음을 단언합니다(`:3865-3866`). C1-0071(recovered/preview)도 거부를 기대합니다.
+- **왜 문제인가:**
+  - 정상적으로 복구된 OLD target이 전환 불가 상태로 남고, 진단 문구는 원인(OLD 잔여 staging)을 가리키지 않습니다.
+  - 다른 recovered 행(0059/0060 등)은 성공 대조군이 있지만 이 지점에는 없습니다.
+  - C1-0072는 `truth changed since lifecycle preview`로 먼저 끝나므로 staging guard에 도달하지 않습니다(Work `:10489`도 인정).
+  - preview는 admission을 먼저, apply는 truth를 먼저 검사해 같은 상태에서 거부 사유가 다릅니다.
+- **판단:** fail-closed이므로 보존 위반은 아닙니다. 그러나 계획 `:91`의 "reject … persisted record transactions"는 pending 거부를 요구할 뿐, 복구 후 영구 거부까지 요구하지 않습니다. 수용 가능한 운영 한계인지는 Owner가 정해야 합니다.
+- **최소 조치:** 둘 중 하나를 택합니다.
+  - "OLD after-staged-current 이력이 있는 target은 운영자가 잔여 파일을 처리하기 전까지 전환 불가, 진단 문구는 일반형"을 Work 한계로 명시하고 Owner 처분을 받습니다.
+  - P3 이후 과제로 넘기는 결정을 기록합니다.
+  - 어느 쪽이든 C1-0072를 staging guard 증거로 세지 않습니다.
+- **영향 의무:** 계획 `:91` Admission, `:96` unknown staging member.
+
+### R1-B-F2 (중간, 처분 필요) C3 pending-recover 4행은 "pending lifecycle + pending Work 공존" 복구 guard를 실행하지 않음
+- **위치:** `product.py:1367-1373`; `tests:4007-4021`; history-review `:400-426`; Work `:11113-11119`.
+- **근거:** C3-0021/0024/0027/0030은 lifecycle receipt가 없는 상태에서 `--recover`를 호출합니다. `:1370`의 "no pending lifecycle to recover"에서 끝나고 `:1373 → :1291`의 pending Work guard에는 도달하지 않습니다. 테스트도 이를 명시적으로 단언합니다(`:4011-4012`).
+- **정적 추론:** 공존 상태에서는 `:1368` 통과 뒤 `:1373`의 `_lifecycle_truth(target)`이 `allow_pending` 없이 호출됩니다. 따라서 `pending Work blocks lifecycle`로 거부될 것으로 보입니다. 실행 관측은 없습니다.
+- **별도 확인:** baseline-refresh 3행(C3-0010~0012)은 `rework`에서 `baseline-refreshed`로 의미가 바뀌었습니다(history-review `:328-383`). Work `:11051`은 isolated-worktree rework를 OLD와 NEW 모두 거부한다고 적지만, 저는 `work.py:789/800`을 읽지 않았습니다. 이 행들은 "worker rework 상태 전환" 증거가 아닙니다.
+- **최소 조치:** 공존 복구 guard를 "정적 유추, 실행 미검증"으로 Owner가 수용하거나 1행 보강을 결정합니다. 계획 `:93` "quiescence and pending refusal" 충족 범위를 preview/apply 8행으로 한정해 적습니다.
+
+### R1-B-F3 (중간, 처분 필요) C4-0033/0054 원인 미확정: 공통 원인 가능성이 기록에서 배제되지 않음
+- **위치:** `src/hv2ref/workspace.py:264-269` (`classify_target`); `product.py:219`; Work `:11307, 11343, 11392-11400`.
+- **근거:**
+  - `classify_target`은 `OSError`/`UnicodeError`/`ValueError`를 모두 `target classification unavailable`로 감싸고 cause를 출력에서 버립니다.
+  - C4-0054의 직접 오류는 `_fork_exec`의 `BlockingIOError [Errno 35]`이며, 이것도 `OSError`입니다.
+  - C4-0033은 약 1시간 앞선 같은 실행 캠페인에서 발생했습니다. 제품 child 안의 Git probe fork가 같은 EAGAIN을 받았다면 정확히 C4-0033의 메시지가 됩니다.
+- **한계:** 이는 정적 가설일 뿐입니다. 진단 1회와 재실행 36개는 미재현 기록이며(`:11343, 11373`), 원인 확정이 아닙니다. Work의 "같은 원인이라는 증거는 없다"(`:11400`)는 맞지만, 다르다는 증거도 없습니다.
+- **잔여 위험:**
+  - C4-0033 실패 시점의 target 무변이는 단언되지 않았습니다. exit 비교(`tests:4065`)에서 멈췄기 때문입니다.
+  - C4-0054는 detach 실행·주입·복구가 그 시도에서 미실행이었습니다.
+- **최소 조치:** 두 건을 "환경 자원 의심, 원인 미확정, 비재현으로 닫지 않음"으로 유지합니다. Owner가 수용 여부를 명시합니다. cause 은닉은 진단성 한계로 기록합니다.
+
+### R1-B-F4 (낮음~중간) C5 정정 3건은 각각 증거 범위를 좁혔으므로 범위 문구를 유지해야 함
+- **Downgrade regex** (Work `:11737, 11756, 11822`): 이 테스트는 schema2/human-1 **malformed pair** 거부만 입증합니다. 잘 구성된 historical downgrade는 `test_history_binding_cannot_regress_window`에 의존하는데, 그 본문은 읽지 않았습니다.
+- **Candidate lock anchor** (Work `:11848-11854, 11867`): new-source candidate writer가 window 거부 전에 `.hrn/locks`와 빈 `writer.lock`을 만듭니다. 계획 `:90`의 "refuse … without mutation"에 대한 한정 예외입니다. unit-runtime-double이며 실제 installed OLD가 아닙니다. 최초 실패 시 tree 전체 보존 증거는 없습니다.
+- **Detach membership 2문자열** (Work `:11893-11895, 11936`): recover 기대값은 정정 당시 정적 근거였고, 이후 34/34 PASS로 실행됐습니다.
+- **직접 대조:** `…detach-membership-resume-20261013-r001/exec/runs/focused-p2/work/counts.json`은 selected 34 / run 34, 비정상 항목 0입니다. 같은 폴더 `result.json`은 exit 0, `group_absent: true`, `cleanup_errors: []`, source_digest `a21e1930…`(S19)입니다.
+- **최소 조치:** 세 면제를 서로 재사용하지 않는다는 기존 문구와 위 한정을 최종 수락 기록에 그대로 옮깁니다.
+
+### R1-B-F5 (낮음, 증거 지위) B 965는 S7–S19의 13개 source 세대에 걸친 이력이며, 이후 공통 helper가 바뀜
+- **근거:** evidence-review `:381-483`에 따르면 C1은 S7, C2는 S8–S10, C3는 S11–S14, C4는 S15–S17, C5는 S18–S19, X1은 S19에서 실행됐습니다. history-review 절 목록(`:70-832`)의 변경은 모두 test/fixture 대상이고 `product.py` 절은 없습니다. 단, 제목만 확인했고 runtime digest 동일성은 직접 대조하지 않았습니다.
+- **G1 영향(정적):** correction32가 바꾼 `p2_b_advance`는 B의 `p2_local_success`(`tests:3907`)와 `p2_c3_transition`(`:3980`)이 호출합니다. C2/C3 행의 frontier는 `normal`/`S1`/`S5`뿐입니다(`tests:271-272` grep). 변경된 분기는 `S3b`뿐이므로(history-review `:630-631`) B의 과거 결과에는 의미 영향이 없다고 판단합니다. G2 추가는 신규 메서드와 map이며 B helper를 건드리지 않습니다.
+- **판단:** 세대 재사용은 수용 가능해 보입니다. 다만 "최신 source 일괄 PASS"로 표기하면 안 됩니다. 262개는 B의 재실행이 아닙니다.
+
+### R1-B-F6 (정보) C4 same-entry seam의 비대칭 기대값
+- **위치:** `tests:4263-4269, 4277`.
+- **내용:** same-entry에서는 `sibling-debris`와 `source-snapshot-drift`가 `updated` 성공을 기대하고, cross-window에서는 같은 주입이 거부를 기대합니다. same-entry update가 operation staging 안의 미지 sibling을 남긴 채 완료하는 것이 DR `:335`("not permission for unknown staging")와 맞는지는 계약 본문으로 확정하지 못했습니다.
+- **추가:** 이 seam은 `mock.patch`로 내부 함수를 가로채는 API 수준이며 native 경계가 아닙니다(history-review `:518-546`).
+- **조치:** Owner 또는 누적 검토에서 의도된 차이인지 한 줄로 확인합니다.
+
+## 정적으로 확인한 사항(결함 없음)
+
+- **C1 admission:** `_entry_admission`은 predecessor allowlist, old pending, umask, alias/추적 경로/ignore, predecessor launcher 이름·mode, staging, local baseline 순으로 검사합니다(`product.py:529-546`, `:212-227`). 테스트는 거부 시 snapshot 동일과 receipt 부재를 공통 단언합니다(`tests:3782-3783`).
+- **C2/X1 local·parent:** `_entry_local_baselines`는 미완료 selected local Work만 대상으로 하고 worker는 건너뜁니다. scope와 required ref의 `hv2`/`colvia` 의존을 거부하고, schema2는 **직접** captured child의 required ref만 검사합니다(`:470-513`). child scope와 nested는 검사하지 않습니다. 이는 D2 한계와 일치하며, X1이 `nested-unsupported` 관측을 단언합니다(`tests:4345-4348`). 성공 경로는 직렬화 후 재적재한 request로 실행하고 S6 실제 snapshot을 OLD snapshot과 비교합니다(`tests:3906-3921`).
+- **C3:** old-proof 36행은 전환 뒤 `active binding changed` 또는 `commit lacks verified executable managed launcher` 거부와 snapshot 불변을 단언합니다(`tests:4022-4029`). new-baseline 24행은 명시적 refresh 뒤 `new-result` 선택을 단언합니다(`:4030-4035`).
+- **C4:** detach frontier는 SIGKILL 후 정확한 prefix, native와 plain auditor의 일치, recover, lock 없는 replay를 단언합니다(`:4108-4126`). mixed는 history별 정확한 schema 열을 단언합니다(`:4172-4173`). collision은 여러 operation에 걸쳐 snapshot 불변을 단언합니다(`:4216-4243`).
+
+## 실제 확인한 영역
+
+- **패킷과 A 결과:** packet-r1-b-draft 1–60행, A response 전문, driver-disposition 전문.
+- **계약:** 계획 84–139행. DR-0004는 staging grep 결과 행만.
+- **제품 소스:** `product.py` 196–231, 384–403, 466–565, 1268–1297, 1353–1382행; `workspace.py` 225–269행.
+- **테스트:** 3740–4356행, 4600–4659행; C1 old-pending/persisted-record 행, C3 pending/old-proof/new-baseline/negative 일부 행, 모든 frontier 값.
+- **Driver 집계:** evidence-review 1–60, 165–220, 380–624행; history-review 66–160, 296–547, 620–643행과 절 목록; prerequisite-audit 1–80행.
+- **Work:** 10426–10508, 11039–11063, 11101–11125, 11300–11404, 11640–11681, 11720–11793, 11818–11965, 12215–12314행.
+- **원본 실행 기록(직접 읽음):** detach-membership r001의 `result.json`과 `counts.json`, c3-pending r002의 `result.json`(exit 0, source_digest `7c99212f…` = S13).
+
+## 미검토·잔여 위험
+
+- **대형 상수 본문:** `P2_C1_ROWS`의 predecessor/root/index/ignore 행, `P2_C2_ROWS` 192행, `P2_C4_MAP` 384행, `P2_X1_MAP` 12행은 전체를 읽지 못했습니다. 행 구성의 완전성(다중 baseline, alias 종류 등)은 미검토입니다.
+- **Fixture program:** `P2_C1_*_PROGRAM`, `P2_C2_FIXTURE_PROGRAM`, `P2_C3_FIXTURE_PROGRAM`, `P2_C4_SAME_ENTRY_PROGRAM` 본문은 history diff 조각 외에 읽지 않았습니다.
+- **C5:** 96 ID / 109 occurrence와 22개 외부 모듈의 테스트·helper 본문은 한 건도 읽지 않았습니다. C5 proof caller와 E1–E7/D1–D4 연결은 미검토입니다.
+- **X1 legacy 44개와 `p2_lifecycle_*`, repair/detach 제품 소스**(`product.py` 1776 이후 등)는 읽지 않았습니다.
+- **C4-0256/0275:** 정정 diff만 확인했고 Work의 처분 원문(`:11452-11623`)은 읽지 않았습니다.
+- **원본 대조:** B의 PASS root 약 50개 중 2개만 직접 읽었습니다. `executed.jsonl`·selected-order와 ID 순서는 대조하지 않았습니다. 실패 root의 로그와 fixture도 읽지 않았습니다.
+- **`r1-input-index.json`, `read-identity.json`:** 본문을 읽지 않았고 해시도 계산하지 않았습니다. Identity 대조는 Driver 몫입니다.
+- **observer.py, cleanup 14, offline 14, early bridge 8, OLD source:** 읽지 않았습니다. A의 한계와 실제 CLI 취소·전원 손실 미입증은 그대로 유지됩니다.
+
+
+#### Driver Disposition
+
+- R1-B-F1 — accept: OLD staged-current 잔여와 일반 wrong-file-type 진단, recovered preview 거부는 기존 Work에 공개된 운영 한계다. C1-0072는 changed-truth 선행 거부이며 staging guard 증거로 쓰지 않는다. 후속: 한계와 최종 Owner 수락 필요를 유지; P3 자동 이관/파일 처리/제품 수정 없음.
+- R1-B-F2 — accept: Recover4행은 no-pending-lifecycle 거부다. 실제 공존 상태 guard는 실행 미검증이며 preview/apply8행과 구별한다. Baseline-refresh3행을 worker rework 상태 전환으로 부르지 않는다. 후속: 기존 한계 유지; 추가1행 실행이나 검증 완료 선언 없음.
+- R1-B-F3 — revise: C4-0033과0054의 공통 환경자원 원인은 가능한 정적 가설이며 확정도 배제도 하지 않는다. 미재현/재실행 PASS는 원인 해결 증거가 아니다. 최초 실패의 보존/실행 관측 공백도 유지한다. 후속: 원인 미확정과 진단성 한계를 최종 Owner 판단에 전달.
+- R1-B-F4 — accept: Malformed downgrade, unit-double candidate lock anchor, detach membership 기대값의 서로 다른 범위와 한정 면제를 유지한다. 후속: 면제 확대나 서로의 대체 없음.
+- R1-B-F5 — accept: 여러 source generation의 실행 이력을 최신 source 일괄 PASS로 표시하지 않는다. G1의 S3b 분기 변경이 B frontier normal/S1/S5에 영향을 주지 않는다는 것은 정적 관계이며 B재실행이 아니다. 후속: 세대 재사용의 검토 범위와 미검토를 누적 C에 전달.
+- R1-B-F6 — revise: DR:335는 transition B1의 exact-current replay 문맥이며 same-entry 전체에 자동 확대하지 않는다. 다만 same-entry unknown staging 허용이 현행 계약과 맞는지 누적 C에서 관련 구현/계약을 대조하도록 요청한다. 후속: C에 미해결 해석 전달; 지금 제품 결함으로 확정하거나 Owner 수락으로 처리하지 않음.
+
+최종 Owner 판단 사항을 C 전에 수락하지 않는다. 현재 지시는 각 결과·Driver 처분 뒤 중단 조건에 따라 다음 검토를 판단하도록 승인했으며, 추가 제품 실행·의미 변경을 하지 않는 누적 C 진행에는 별도 한계 수락을 선행시키지 않는다. C5 외부22모듈, 큰 matrix/fixture, C4 정정 원문 일부, 원본ID 순서 등 B의 미검토는 명시적으로 C에 전달한다. 새 reviewer invocation은 C1회까지만 가능하다.
+
+
+### P2 R1 C Result And Final Review Disposition — 2026-10-13
+
+승인된 읽기 전용 A/B/누적 C 세 호출을 모두 마쳤다. 추가 압축·재분할·테스트·제품 수정·재시도는0이다. C는 call11, 모델claude-opus-5-5/요청effort medium, session75cea9e1-423d-4526-a287-49e9f77621df, claude.ai/firstParty/pro, exit0, elapsed220.773032초다. 도구{'Read': 34, 'Grep': 21, 'Glob': 2}, MCP0, signal0, group_absent=true다. 고정 input/Git HEAD/code diff 호출 전후 대조PASS이며 boundary/supervision anomaly=false다. 도구 거부 및 읽기 크기 제한은 아래의 실제 검토 공백으로 분리한다. 실행 완료는 전체 P2 독립 검토 완료를 뜻하지 않는다. Response SHA `d2205b843c9e64c5ecb396a3a4ffba8d25034db9101bb24e9da3fbeb8b72a2b5`.
+
+#### Reviewer Response — Verbatim
+
+# P2 R1 C 누적 정적 검토 보고
+
+## Verdict: **conditional** (범위: P2 전체 누적, 읽은 구간 한정)
+
+읽은 범위에서 계약을 어기는 제품 결함, 재현 반례, P0/P1 차단은 찾지 못했습니다. B-F6은 계약상 의도된 차이로 확인했습니다. 다만 아래 한계들은 Owner의 명시 처분 없이는 P2 수락 근거가 되지 않습니다. 이 판정은 P2 수락, P3 이관, Git/STATUS/Done 승인이 아니며 테스트를 재현하지 않았습니다.
+
+## Findings
+
+### R1-C-F1 (정보, B-F6 해소) same-entry 허용과 cross-window 거부의 차이는 Owner가 수락한 계약
+- **Owner 수락:** Work `:8918-8922`에서 "D2 revision 1.1과 M1 적용"을 수락했습니다. M1은 sibling/debris guard와 source 반복 검사를 transition에 한정합니다(`:8858`, `:8895`).
+- **수락 전 공개:** R0-C 표가 "`switch-<op>` 미지 sibling: 무시하고 보존", "apply 중 source 변경: 계획된 바이트로 완료"를 명시했습니다(`:8810-8811`). 검증 의무에도 "same-entry 허용 및 transition 거부"가 들어 있습니다(`:8833`, `:8903`).
+- **제품 일치(정적):** `product.py:1456`, `:1464-1465`, `:1488-1490`이 모두 `transition` 조건 아래입니다. staged candidate 내부는 same-entry에서도 `_init_partial_tree`가 검사합니다(`:1468`).
+- **테스트 일치(정적):** `tests/test_entry_window_transition.py:4263-4270`, `:4277`이 이 기대값과 sibling 바이트 보존을 단언합니다.
+- **DR335 문맥:** `DR-0004:331-335`는 transition B1 exact-current replay의 디렉터리 집합 정의입니다. same-entry는 `WORKSPACE-CONTRACT.md:182`("may retain interrupted debris")가 적용됩니다.
+- **남는 운영 한계(결함 아님):** same-entry 완료 뒤 미지 sibling이 `switch-<op>` 안에 무기한 남습니다. 증거는 `mock.patch` API seam이며 native 경계가 아닙니다(B 보고 인용, 직접 미확인).
+- **조치:** 없음. 수락 기록에 Work `:8918` 인용 한 줄이면 됩니다.
+
+### R1-C-F2 (중간, 처분 필요) M1이 요구한 후속 의무 중 한 항목의 이행 기록을 찾지 못함
+- **위치:** Work `:8857`, `:8904`.
+- **근거:** "wider test module과 과거 D1 qualification에 same-entry 중간 충돌/lock assertion이 있는지 연결"이 후속 의무로 남았습니다. `:8603`은 당시 열거한 테스트에 그런 단언이 없다고만 적습니다.
+- **확인한 것:** 현행 테스트에 late-stage/late-binding/truth-priority 사례는 있습니다(`tests:4260-4281`).
+- **확인하지 못한 것:** 과거 qualification 대조 결과 기록, same-entry 완료 replay의 lock anchor 부재 단언.
+- **최소 조치:** Driver가 해당 대조의 Work 행을 지목하거나, "미이행, 한계"로 Owner 처분을 받습니다.
+
+### R1-C-F3 (낮음~중간, 증거 지위) E1–E7은 현재 제품 바이트의 실행 증거가 아님
+- **근거:** E 표(`:7528-7534`)의 "제품 바이트는 당시와 같고"는 `product.py` `7c5797f7…` 시점 서술입니다(`:8572`). 이후 M1+D2로 `c81fb4e9…`가 됐습니다(`:8922`).
+- **연결 상태:** Work `:9658-9664`가 "기존 결과를 새 SHA 실행으로 표기하지 않는다"고 하고 현재 의무를 A1/A2/B1/B2/C/X1에 재배치했습니다. T0 이후 전 세대가 `c81fb4e9…`로 기록돼 있고(`:9677`, `r1-input-index.json:12`), Driver 집계는 30개 세대의 제품 runtime 동일을 적습니다(`p2-r1-prerequisite-audit.md:267`). 해시는 제가 계산하지 않았습니다.
+- **한계:** transition 경로 AST 동치는 `workspace_switch_apply` 한 함수의 정적 대조입니다. D2는 전환 경로의 `_entry_local_baselines`를 실제로 바꿉니다(`:8619`, `:8824`).
+- **판단:** 재사용 구조는 일관됩니다. E1–E7은 "이전 바이트의 한정 이력"으로만 인용해야 합니다.
+- **최소 조치:** 수락 기록에 그 문구를 고정합니다.
+
+### R1-C-F4 (중간, 처분 필요) OLD init/repair의 fence는 선행조건 거부로만 관측됨
+- **위치:** `tests:3652-3668`, `:3713-3721`.
+- **근거:** OLD init은 상태와 무관하게 `different initialization plan`으로 거부됩니다(`:3660`). OLD repair는 S0에서 `active release needs no repair`입니다(`:3663`). 테스트 주석이 "no lock recheck is claimed"를 명시합니다(`:3717-3719`).
+- **충족된 부분:** S1 이후 OLD repair/rollback/detach는 `invalid receipt identity/schema`로 거부되고, snapshot 동일과 lock-attempt 부재를 단언합니다(`:3661`, `:3666-3667`).
+- **판단:** 계획 `:90`의 "old init … refuse after S1 without mutation"은 형식상 충족입니다. window fence나 late-lock 재검사 증거는 아닙니다. 기존 공개 한계와 일치하며 새 결함이 아닙니다.
+- **최소 조치:** Owner가 init/repair late-lock 미주장을 명시 수락합니다.
+
+### R1-C-F5 (낮음) well-formed historical downgrade 증거는 helper 단위뿐
+- **위치:** `tests/test_productization_safety.py:2651-2673`.
+- **근거:** `test_downgrade_plan_refused_before_any_write`는 변조된 plan의 `switch schema/window pair` 거부와 snapshot 불변을 단언합니다. `test_history_binding_cannot_regress_window`는 합성 dict로 `_switch_binding_receipt`를 직접 호출하며 target, apply 경로, 보존 단언이 없습니다.
+- **정적 추론:** apply에서 이 helper는 receipt 쓰기(`product.py:1451`) 전인 `:1437`에서 호출됩니다. 다만 guard 획득 뒤이므로 lock anchor는 생길 수 있습니다. 실행 관측은 아닙니다.
+- **미확인:** 이 테스트가 C5 96 ID에 포함되는지.
+- **최소 조치:** B-F4의 범위 문구에 "helper-level"을 추가합니다.
+
+### R1-C-F6 (낮음, 증거 지위) 262 PASS의 원본은 이번에도 직접 읽지 못함
+- **근거:** `s3b-fsync-20261013-r001~r006` root는 허용 디렉터리 밖이라 Read가 거부됐습니다. `counts.json`·`executed.jsonl`·`result.json`은 index의 경로와 SHA만 확인했습니다(`r1-input-index.json:62-85`).
+- **상태:** 262 unique와 occurrence 1은 Driver 관측과 A의 finish 2건 대조에 의존합니다.
+- **부수 관찰:** r005와 r006의 counts SHA가 같습니다(`:79`, `:83`). 둘 다 31/31이면 자연스럽지만 본문은 미확인입니다.
+- **최소 조치:** Owner가 이 한계를 인지하면 충분합니다.
+
+### R1-C-F7 (낮음, 증거 지위) 역사 occurrence는 controls 세대도 여럿
+- **근거:** `p2-r1-evidence-review.md:510-514`에 controls 키가 3개입니다. index에서 controller가 cleanup-09와 -10 사이에 다르고(`:92`, `:104`), observer가 target-diagnostic-20에서 다릅니다(`:93`, `:117`).
+- **판단:** 패킷 15행의 "runtime·observer·controller 변경 없음"은 correction32 한정 문구입니다. cleanup 14개(`Work:10808`)는 controller 정리 동작의 자격 검증이며 제품 matrix 증거가 아닙니다. offline 14개와도 별개입니다.
+- **최소 조치:** 5,782를 "source S1–S19 × controls 3세대 이력"으로 표기합니다.
+
+## 보완 검토 결과(결함 없음, 정적)
+
+- **T0 buffered/raw observer** (`observer.py:347-434`):
+  - `xb`/`bx` 생성만 선택하고, 그 외 쓰기 모드 open은 `unobserved-open-after`로 드러냅니다(`:351-357`).
+  - short write는 원본 raw write에 넘기는 데이터를 자르는 방식입니다(`:387-392`).
+  - close-after는 저장 경로를 쓰며, 설정 거부 시 flush 없이 raw를 닫습니다(`:412-433`).
+- **EntryControlTests:** P2 T0 14개 메서드(`tests:1056-1096`)와 `observer_error_probe`의 stage·refusal 단언(`:1036-1054`)을 읽었습니다. T0 batch 1의 55개, batch 2의 5개 ID 목록은 Driver 집계에서 확인했습니다(`evidence-review:21-23`).
+- **Lifecycle positive** (`tests:3632-3650`): exit 0, classification, snapshot 변화, project 파일 보존, lock 이벤트를 단언합니다.
+- **C5 candidate lock anchor** (`tests/test_candidates.py:226-241`): Owner 승인 범위(Work `:11854`, `:11867`)와 일치합니다. unit runtime double이며 installed OLD 증거가 아닙니다.
+- **D1–D4 결정 연결:** Owner 수락 `:7623-7625`, 의무 재배치 `:9666`, D2 exact bytes 수락 `DR-0004:358`과 Work `:8918`을 확인했습니다.
+
+## 의무별 상태
+
+| 의무 | 상태 |
+| --- | --- |
+| T0 | 조건부. observer와 테스트 일부 정적 확인. `buffered_probe` 본문 미검토 |
+| A1/A2 | 조건부. A의 판단 유지. 대형 상수 미검토 |
+| B1/B2 | 조건부. F4와 A-F1(S3b 인터프리터 경유 fence 실행 미관측) |
+| C1 | 조건부. OLD staged-current 잔여 한계(B-F1) |
+| C2/X1 | 조건부. D2 구현은 B가 정적 확인. 행 구성 미검토 |
+| C3 | 조건부. 공존 복구 guard 실행 미검증(B-F2) |
+| C4 | 조건부. same-entry는 F1로 해소. 0033/0054 원인 미확정 유지(B-F3) |
+| C5 | 조건부. 22개 모듈 중 함수 3개만 읽음. F5 |
+| E1–E7 | 한정 이력으로만 재사용(F3) |
+| D1 | 미검토. retain 근거 테스트 본문을 읽지 않음 |
+| D2 | 충족 근거 있음(계약 수락 + 정적). 실행 원본 미대조 |
+| D3 | F1 해소, F2 미확인 |
+| D4 | 조건부. T0 정적 확인 범위 한정 |
+
+## 미검토·미검증
+
+- **대형 상수:** `P2_A1_CELLS`, `P2_A2_CELLS`, `P2_B1_ROWS`, `P2_B2_ROWS`, `P2_C1/C2_ROWS`, `P2_C4_MAP`, `P2_X1_MAP`. projection 구간도 토큰 한도를 넘어 읽지 못했습니다. 행 구성과 완전성은 세 번의 검토 모두에서 미검토입니다.
+- **Early bridge 8개, X1 legacy 44개, fixture program 본문, `colvia` launcher 본문.** A-F1에 대한 Driver의 정적 보완은 독립 확인하지 않았습니다.
+- **C5:** 나머지 테스트와 helper, proof caller closure의 AST 대조.
+- **OLD source, repair/detach 제품 소스**(`product.py` 1534행 이후).
+- **원본 실행 기록:** 이번에 직접 읽은 counts/executed/result는 0건입니다. 5,782의 ID 순서 대조와 SHA 계산도 하지 않았습니다.
+- **입증되지 않은 것:** 전원 손실, fullfsync, read/open 전후와 parent-directory kill, nonzero strict-prefix 전체 matrix, 실제 CLI 취소.
+
+## Owner에게 남은 결정
+
+1. **A-F1:** S3b installed-new의 인터프리터 경유 fence를 정적 유추로 수용할지.
+2. **A-F2:** 과거 189개를 "1-byte/0600 이력, S3a matrix 아님"으로 두고 nonzero-prefix matrix 부재를 수용할지.
+3. **A-F3:** G2 미검증 네 항목의 한계 수용.
+4. **B-F1:** OLD staged-current 잔여로 인한 전환 불가와 일반형 진단 수용.
+5. **B-F2:** C3 공존 복구 guard의 실행 미검증 수용.
+6. **B-F3:** C4-0033/0054 원인 미확정 수용.
+7. **C-F2:** M1 후속 대조 의무의 이행 여부 확인 또는 한계 처분.
+8. **C-F4:** OLD init/repair late-lock 미주장 수용.
+9. **대형 matrix 행 구성**이 어떤 Reviewer에게도 읽히지 않은 상태에서 P2 수락 판단을 할지.
+10. **C5 면제 3건의 범위 문구**(C-F5 포함)와 **E1–E7·262·5,782의 지위 문구**(C-F3, F6, F7) 확정.
+
+1–8은 공개된 nonblocking 한계이며, 실제 계약 차단으로 분류한 항목은 없습니다. 9는 한계가 아니라 검토 공백이므로 따로 판단이 필요합니다.
+
+
+#### Driver Disposition
+
+- R1-C-F1 — accept: B-F6 해소. Work8918–8922의 실제 Owner M1 수락,8858/8895의 transition 한정,8810–8811/8833의 공개된 same-entry 차이와 제품 분기가 연결된다. 후속: 새 계약 변경/제품 수정 없음.
+- R1-C-F2 — needs-user: Work8603은 당시 열거 테스트에 중간 collision/완료 replay lock 단언이 없음을 확인했을 뿐이다.8857/8904의 wider module·과거 qualification 후속 대조 완료 기록은 이번 범위의 검색에서 찾지 못했다. 완료했다고 바꾸지 않는다. 후속: Owner가 미확인 의무의 처분을 결정해야 함; 추가 실행/리뷰/의무 면제는 승인하지 않음.
+- R1-C-F3 — accept: E1–E7은 이전 제품 바이트의 한정 이력이다. M1/D2 뒤 현재 바이트 실행 증거로 재표기하지 않으며 재배치된 P2 의무와 구별한다. 후속: 최종 수락 문구에 이 경계 유지.
+- R1-C-F4 — accept: OLD init/repair의 선행조건 거부와 snapshot 보존을 window fence·late-lock recheck로 확대하지 않는다. 기존 공개 한계를 유지한다. 후속: 최종 Owner 결과 수락 필요.
+- R1-C-F5 — revise: helper-level 지적을 수용한다. test_productization_safety.InventoryWindowLifecycleTests.test_history_binding_cannot_regress_window는 기존 C5 selection에 포함되며 sequence-resume-20261013-r001 executed.jsonl에서 occurrence1/PASS를 확인했다. target/apply/보존 통합 검증은 아니다. 후속: helper-level PASS로 한정; 새 실행 없음.
+- R1-C-F6 — accept: Driver의 read-directory 목록 생성이 기존 원래 실행 root에만 의존해 최신 s3b-fsync r001–r006을 빠뜨렸다. 실제 C Read 요청2건이 outside directory로 거부됐다.262개 counts/executed/result의 직접 독립 대조는 unavailable이며 Driver의 기존/이번 read-only 검증과 A finish2개 대조만 있다. 후속: 허용 목록 오류와 독립 검토 공백을 공개.11회 한도에서 재호출/사후 검토 완료 표기 없음.
+- R1-C-F7 — revise: 5,782는 source S1–S19와 controls3세대에 걸친 실행 이력이다. 모든 source/control 조합을 실행했다는 곱집합 의미로 쓰지 않는다. correction32의 observer/controller 불변은 그 국소 수정에만 해당한다. 후속: cleanup14·offline14·matrix 증거를 구분 유지.
+
+#### Owner Decision Boundary
+
+세 판정 모두 conditional이며 읽은 범위에서 P0/P1 차단이나 제품 계약 위반 반례는 보고되지 않았다. B-F6 same-entry 차이는 기존 수락으로 해소됐다. 그러나 이는 다음 항목의 자동 수락이 아니다.
+
+1. 공개된 검증/운영 한계: S3b interpreter fence 정적 근거만, nonzero-prefix 전체 matrix 부재, G2의 제한된 kill/fsync 관측, OLD staged-current 전환 거부, C3 공존 recovery guard 미실행, C4 두 오류 원인 미확정, OLD init/repair late-lock 미주장.
+2. 이행 확인이 남은 기록: M1 wider-module/과거 qualification의 same-entry 중간 collision·완료 replay lock 대조 의무(C-F2).
+3. 독립 검토 공백: 큰 matrix 행 구성은 세 reviewer 모두 완독하지 못했다. C5 대부분 helper/caller, early bridge, OLD source 등은 원문 보고의 미검토 범위로 남는다. 최신262개 원본 접근은 Driver의 허용 디렉터리 누락으로 차단됐다. 본체 계약 결함과 검토 수행의 한계를 혼동하지 않는다.
+
+P2 결과 수락·의무 변경/면제·P3 이관·Git·STATUS/Done은 하지 않았다. Reviewer가 일부 한계를 nonblocking으로 분류했어도 Owner의 수락은 아니다. 추가 review call은0개 남으므로 재호출하지 않는다. 더 정교한 패킷이나 추가 분할을 다음 자동 작업으로 만들지 않으며, 다음 단계는 이 근거와 공개 한계를 바탕으로 Owner가 P2 수락 여부를 판단하는 것이다.
+
+#### Budget, Validation And Preservation
+
+누적 review11/11회·4840.905750/14400초다. 이번 A212.814967+B252.851085+C220.773032=686.439085초(약11분26초)이며 준비 시간을 포함하지 않는다. 마지막 CLI quota 관측은5시간33%/주간12% 사용,19:00KST리셋 예정이다. 다른 세션 사용도 포함될 수 있으므로 시작4% 대비 차이를 이 리뷰만의 비용이라고 단정하지 않는다. Product controller1039/1039·root161/161은 그대로다. A/B/C read-config 모두 armed=false이고 프로세스 그룹은 모두 종료됐다.
+
+최종 원문은 각 read-run/response.md와 이 Work에 그대로 보존했고 Driver 처분은 분리했다. source/고정 증거의 기존 보존 사본과 checkout 밖 current-changes.patch를 유지한다. 구현 worktree와 기존 실행 root는 P2 Owner 판단·미해결 의무의 소비가 남아 있어 유지한다. 새 Work·자동 정리·commit·push·삭제는 없다. Raw stream의 소비자는 모델/도구/quota/접근 거부 및 이 결과의 Owner 판단이고, 그 의존 종료 시 보존 필요를 재평가한다. CLI 세션의 자동 문맥/저장 한계는 유지하며 task 기록에 비밀·계정 이메일을 복사하지 않았다.
+
+일반 git diff --check의 원문 유래 trailing-whitespace1건은 Reviewer 원문 보존 때문에 그대로 남겼다. 이를 숨기거나 일반 검사PASS라고 보고하지 않는다. 제품 code diff는 시작과 동일하며 no-product-change 검증은 별도로 통과해야 한다.
+
+최종 확인: A/B/C 고정 입력과 Work prefix 재대조PASS, 세 config armed=false, 세 process group 종료, 세 최종 응답의 Work 원문 포함을 확인했다. 제품/code diff SHA는 시작과 동일하다. Work·현재 README·세 안내문의 GFM render5개PASS이며 code 밖 literal emphasis0이다. 일반 git diff --check는 앞서 명시한 A 원문 blank line1건만 경고했다. 이 최종 append까지 current-changes.patch에 보존한다.
+
+
+### P2 R1 Gap Supplements Owner Authorization — 2026-10-13
+
+Owner는 기존 A/B/C 전체를 반복하지 않고 미진한 필수 범위만 확인하는 두 보완 리뷰 제안에 “얘기한대로 진행하자.”라고 승인했다. Review 한도11→13회, Claude Opus5.5 High, fresh session·Read/Glob/Grep만 허용하는 기존 read-only CLI 방식이다. 기존 runtime/test/controller/observer 변경·테스트 재실행·P2 수락/Done·P3·Git 동작은 포함하지 않는다. 기존 누적 review4840.90575020805/14400초, controller1039/1039·root161/161은 유지한다. 자동 추가 리뷰·재시도·한도 확대는 없다.
+
+첫 보완은 matrix 구성·fixture/helper/assertion의 연결, early bridge/X1 및 최신262 원본 결속을 확인한다. 두 번째는 C5 영향 호출부/관련 테스트, E1–E7/D1–D4 및 실행 세대별 재사용, M1 후속 대조 의무와 잔여 필수 공백을 확인한다. B-F6은 C에서 해소된 상태로 유지한다. Driver의 확인을 독립 확인으로 계산하지 않는다. 과거 국소 실행의 한계 유지 승인을 P2 필수 검토 면제로 해석하지 않는다. 직전 Owner Decision Boundary의 곧바로 전체 수락 판단으로 넘어가는 다음 단계는 이번 보완으로 정정한다.
+
+새 압축 도구·대형 패키지 없이 기존 원본과 짧은 안내를 사용한다. preparation31/r1-assembly/supplement-1, supplement-2에 기존 read-review.py를 모델effort/high·호출12/13·scope·cap13 및 해당 안내문에 맞게 최소 매개변수 변경한다. 프로세스/인증/읽기 도구 제한·취소/강제종료 경계·fresh quota10분 조건은 유지한다. 최신 s3b-fsync r001–r006 root를 명시 허용한다. 증거 원본은 수정하지 않는다. actual Owner quota 확인은 2026-10-13 09:01 UTC경 5시간35%·주간13% 사용이다.
+
+최소 완료 기준은 각 의무를 충족/증거 미확인/실행 부족/계약 불일치로 판정하고 원문 응답·Driver 처분·잔여 최소 조치를 기록하는 것이다. 검토를 못한 것을 한계 수락으로 닫지 않는다. 새 실행 또는 제품 수정이 필요한 경우 이유·최소 범위를 별도로 보고한다. 제품 입력과 고정 근거를 전후 대조하고, 첫 예상 밖 review 실패/접근·입력 이상/한도 위험이면 후속 호출을 멈춰 보고한다. 시간 경과만으로 실행 중 reviewer를 종료하지 않는 기존 정책은 유지한다.
+
+기존 구현 checkout과 실행 root는 이번 리뷰 및 P2 결과 판단에 필요해 유지한다. 새 raw stream의 소비자는 실제 모델/도구·읽기 접근·quota·최종 응답 확인과 Owner 결과 판단이며 해당 의존 종료 시 보존 필요를 재평가한다. 별도 Work/장부·전체 source 복사·영구 검증 산출물은 만들지 않는다. 이번 준비 확인에서 source repository에 docs/STATUS.md가 없음을 관측했으며 이 저장소의 docs/development 기록이 소유권을 유지한다. 제품 실행/검증 실패가 아니다.
+
+
+### P2 R1 Gap Supplement 1 Result — 2026-10-13
+
+첫 보완은 fresh Claude Opus5.5(claude-opus-5-5) High session c9e826df-0050-42a4-8bd4-83f715b8336c에서 정상 종료했다. 인증은 claude.ai/firstParty/pro이며 다른 인증환경 변수가 없음을 실행기가 확인했다. Tool은 Read/Glob/Grep, MCP0, shell/test/edit/network/delegation0이다. 기존 CLI 자동 문맥과 세션 저장 때문에 packet-only 독립성은 주장하지 않는다. 제품 base a17f35cf323ffde7a8642a85501fddbec858b6de, Work 제외 code diff45ed3b8105c840ec94a769e20c6806624e2deeeb5dbf1c12974ae46e959568d7, guide1a51744ee5e8770364a89ce2217c1abea6c97d29a6d358cc52bbdb0a8a60dd71. 고정 입력3495개와 Work prefix의 전후 신원 대조PASS, exit0, group_absent=true, drift/취소/경계이상0,773.454565083026초다. 실제 제품 테스트 실행0이며 recorded 결과를 정적으로 검토했다.
+
+준비 중 SOURCE가 기존 add-dir 목록에 없다는 Driver assertion이 실패했다. SOURCE는 기존 cwd로 이미 허용되는 경로였으므로 제품 입력/접근 오류가 아니라 검사 전제 오류였다. 같은 shell의 다음 inspect는 config 미작성으로 FileNotFoundError였다. 두 오류 모두 auth/reviewer 호출 전에 발생했다. 승인 범위 안에서 SOURCE도 명시 목록에 추가해 검사와 실제 접근 의미를 맞췄고, 새 source/도구/권한 범위를 넓히지 않았다. 이후 inspect와 review는 정상 완료했다. Reviewer의 큰 파일 read1건과 root 상위 Glob1건은 제한에 거부됐고 개별 경로/구간으로 계속 검토했다. 최신6개 root 원본 접근은 모두 성공했다.
+
+#### Verbatim Reviewer Response
+
+# P2 R1 Gap Supplement 1 — 정적 검토 보고
+
+## Scope verdict: **conditional** (Supplement 1의 질문 1–4 한정)
+
+읽은 범위에서 계약 위반 제품 결함, 재현 반례, P0/P1 차단은 찾지 못했습니다. matrix 9개 영역의 행 구성은 생성 원리와 개수 검사로 연결됐고, 최신 262의 원본 6개 root는 직접 대조됐습니다. 다만 F1은 판정표 문구 대비 축 누락이고 처분 기록을 찾지 못했으며, F2·F3은 증거 지위 정정이 필요합니다. 이 판정은 P2 수락·Done·P3 승인이 아닙니다.
+
+- **직접 실행:** 0건. 해시도 계산하지 않았습니다(Read/Glob/Grep만 사용).
+- **recorded:** 원본 실행 기록에서 읽은 사실입니다.
+- **static:** 소스·선언을 읽고 추론한 것입니다.
+
+## Findings
+
+### S1-F1 (중간, 축 누락 + 처분 기록 미확인) C1의 "OLD pending init/switch/repair/detach" 중 switch만 cell로 존재
+- **의무 문구:** `WORK:7540`은 "OLD pending init/switch/repair/detach"의 pre-S1 거부를 요구합니다.
+- **실제 축 (static):**
+  - 생성 원본 `authoring-wave-03/p2-static-c1-obligations.py:7-8`은 point 4 × invocation 4 = 16행뿐입니다.
+  - 현재 선언 `tests/test_entry_window_transition.py:270`의 `test_p2_c1_0017`~`0032`도 같습니다.
+  - helper `tests:3831-3841`은 OLD `update` 요청만 만듭니다.
+  - fixture `tests:274`(`authoring-wave-04/p2-c1-old-lifecycle-program.py:15,22`와 조각 일치)는 `workspace_switch_apply(..., inject_at=point)`만 호출합니다.
+- **처분 기록:** repair는 `WORK:8379`에 "target만으로 관측 불가" 사유로 닫혀 있습니다. init과 detach는 cell도 없고, Work에서 처분 행을 찾지 못했습니다(`pending init|repair|detach` 검색 0건, R-17 `WORK:8373-8380`에 해당 항목 없음).
+- **대체 근거 아님:** X1 legacy `test_old_detach_readers_and_new_writer_refusal`(`tests:1204-1216`)은 OLD 부분 detach target에 대한 NEW detach apply 거부입니다. transition admission 거부가 아닙니다.
+- **최소 조치:** Driver가 init/detach 처분 행을 지목합니다. 없으면 아래 중 하나를 Owner가 결정합니다.
+  - 최소 cell 추가. 목적은 OLD 부분 init(binding 전 API 중단)과 OLD 부분 detach target에서 transition preview/apply가 정확한 사유로 거부되는지 확인하는 것입니다. 조건은 snapshot 동일과 `entry-transition.json` 부재입니다.
+  - 사유를 적은 명시 처분.
+
+### S1-F2 (낮음~중간) X1 legacy 거부 테스트 일부가 목표 guard를 식별하지 않음
+- **위치:** `tests:2254-2258`(`test_invalid_new_entry_prefixes_preserve_exact_bytes`), `tests:2270`(`test_s6_rejects_binding_next_and_wrong_modes`), `tests:1282-1296`(`transition_prefix_case`).
+- **근거 (static):** 앞의 두 테스트는 exit 65, 코드 family, snapshot 동일만 단언합니다. symlink 한 건 외에는 message를 보지 않습니다. `transition_prefix_case`는 kill 직후 정확한 prefix가 아니라 최종 상태만 봅니다.
+- **판단:** `DR-0004:131`의 "stable non-pass + preserve bytes"는 충족합니다. 그러나 "unexpected executable partial N", "B1+binding.next" 같은 특정 guard가 발화했다는 증거는 아닙니다.
+- **최소 조치:** 이 행들을 "보존 거부 증거, guard 식별 아님"으로 표기합니다. guard 식별이 필요하면 message 단언을 추가합니다(test 변경이므로 승인 필요).
+
+### S1-F3 (낮음~중간, 증거 지위) D1의 "unknown 보존"은 현재 후보 selection에서 부분만 연결됨
+- **충족 (static):** retain과 허용 retirement/replay는 현재 A2와 launcher 테스트가 정확한 snapshot 동등으로 단언합니다.
+  - 빈 staging 두 개 retain: `tests:3138-3139`, `tests:1655-1660`.
+  - S6 retired replay가 디렉터리를 재생성하지 않음: `tests:3324-3329`, `tests:3396-3397`.
+  - S3 fallback: `tests:3400-3401`.
+- **공백:** 완료 뒤 switch/entry staging의 unknown member 거부를 message까지 단언하는 `test_completed_staging_unknown_members_preserved`(`tests:2822-2840`)는 `selection-and-batches.json:6894`의 factory 목록에만 있고 selection에 없습니다. `test_d3_current_replay_sync_set_and_retired_staging`(`:6922`)도 같습니다.
+- **현재 후보의 unknown 근거:**
+  - C4 transition-seam 4행(`tests:4267`): message를 단언하지만 mock API seam입니다.
+  - X1의 S3 `unknown-binding-stage`와 S6 `binding-next`: 코드만 단언합니다(F2).
+- **불일치:** `WORK:9666`의 "D1 … unknown 보존을 A2/X1에 연결"은 이 범위보다 넓습니다. S6 unknown-member는 E3/E4 이력에 의존합니다(이전 제품 바이트, Supplement 2 대상).
+- **최소 조치:** `WORK:9666` 문구를 위 범위로 한정하거나, 해당 1개 ID의 현재 후보 실행을 Owner가 결정합니다.
+
+### S1-F4 (중간, A-F1 독립 확인) S3b installed-new의 인터프리터 경유 fence는 정적 근거가 성립하나 실행은 미관측
+- **독립 확인 (static):**
+  - `colvia:4`가 `entry-1` 상수를 정의합니다.
+  - `colvia:52-61`: B0의 `active_release.inventory_id`가 `checkout-1`이므로 `:60`의 ref 동등 비교에서 `ValueError`가 납니다.
+  - `colvia:112-113`이 `HV2-WORKSPACE-LAUNCHER`/65로 끝냅니다. runtime import는 `colvia:97`이고 그 전에 종료합니다.
+  - launcher 자신의 mode를 보는 분기는 없습니다. 자기 바이트 비교(`:85`)는 `:60` 뒤입니다.
+  - Driver 인용 `colvia:51-64,95-119`는 대체로 맞습니다. 핵심 행은 `:60`입니다.
+- **실행 근거와의 관계:** S4/S5 installed-new 행은 observer가 `runpy.run_path`로 실행합니다(`observer.py:47,504`). 같은 완성 바이트와 B0에서 이 거부, lock-attempt 부재, snapshot 동일을 단언합니다(`tests:3483-3487,3497`). S3b는 mode만 다릅니다.
+- **계약 판정:** 계약이 명시한 S3a/S3b 차단 기제는 "non-executable, not an admitted installed entry"입니다(`DR-0004:122,159`). 이는 native exec errno 13과 정확한 bytes/0600 단언(`tests:3480-3482`)으로 실행 관측됩니다. 인터프리터 경유 실행은 계약상 필수 실행 의무로 보지 않습니다.
+- **지위:** "정적 추론 + S4 동치 실행"입니다. S3b 인터프리터 dispatch PASS가 아닙니다.
+- **선택 보강:** 목적은 S3b 완성본/0600을 observer 경유로 dispatch해 같은 거부를 직접 관측하는 것입니다. 조건은 lock 이벤트 0과 snapshot 동일이며 1행이면 됩니다.
+
+### S1-F5 (낮음, 판정) nonzero strict-prefix의 matrix 교차는 계약상 필수 아님, primitive 경로는 충족
+- **현황 (static):** correction32 뒤 A2/B1/B2의 S3a 대표는 zero-length뿐입니다(`test-change.diff:75-76,84-85,93-94,102-103,111-112`; 현행 `tests:3289-3290,3310,3463,3480,3555`).
+- **primitive 경로:** `launcher_prefix_case`의 short one/middle/last(`tests:1566-1568,1609-1610,1634,1638-1645,1649-1659,1678-1685`)가 다음을 단언합니다.
+  - 정확한 prefix bytes와 0600.
+  - B0 보존과 lock 해제.
+  - 1회 recovery 뒤 정확한 완료 snapshot.
+  
+  `test_transition_prefix_02`(`tests:1301-1302`)도 있습니다. 세 short ID는 X1 selection에 있습니다(`selection-and-batches.json:19154-19156`).
+- **판정:** `DR-0004:140`은 S3a를 길이 매개변수를 가진 한 상태로 정의합니다. 계획 `:96`은 primitive 경로를 요구하고, 계획 `:90`의 "every S state"는 상태 대표로 충족됩니다. 과거 189개는 "이전 test generation의 1-byte/0600 이력"으로만 둡니다. S3a matrix나 현재 S3b로 재분류하면 안 됩니다.
+- **증거 지위:** short 3개의 최신 실행은 X1 세대입니다. 262에는 `write_full`만 있습니다.
+- **조치:** 없음. 문구만 유지합니다.
+
+### S1-F6 (낮음, 판정) C3 recover 4행은 공존 guard 증거가 아니며, 그 guard의 실행은 계약상 필수 아님
+- **근거 (static):** `tests:4010-4012,4018`은 pending lifecycle 부재를 단언한 뒤 `no pending lifecycle to recover`(`product.py:1370`)를 기대합니다. `product.py:1373→1291`에는 도달하지 않습니다.
+- **필수 여부:** 계약을 지키는 writer로는 공존 상태가 만들어지지 않습니다.
+  - S1 이후 OLD writer는 schema로 거부됩니다(OLD `product.py:273-279`; late-lock 실행 단언 `tests:3573-3575`).
+  - NEW installed는 S6 전에 차단됩니다.
+  - pre-S1 pending은 preview/apply 8행이 거부합니다.
+  
+  계획 `:93` "pending refusal"은 그 8행으로 충족됩니다.
+- **최소 조치:** 4행을 "recover 선행조건 거부 + 보존 + 복구 뒤 전환 성공"으로만 셉니다.
+- **선택 보강:** 목적은 S1 pending lifecycle에 pending Work를 합성 주입하고 `--recover`를 호출해 `pending Work blocks lifecycle`과 snapshot 동일을 확인하는 것입니다.
+
+### S1-F7 (낮음, 판정) OLD init/repair의 late-lock 미주장은 구조적으로 타당, closure 문구는 부정확
+- **근거 (static, OLD 소스 `…-s3b-fsync-20261013-r001/old/src/hv2ref/product.py`):**
+  - 다른 plan은 `:466`에서 거부됩니다.
+  - 같은 plan의 완료 replay는 `:521-522`에서 lock(`:526`) 전에 read-only로 끝납니다.
+  - repair는 손상이 전제이므로 healthy predecessor와 양립하지 않습니다.
+- **실행으로 단언된 것:** `tests:3652-3668`.
+  - init은 모든 상태에서 `different initialization plan`입니다. window fence가 아니라 선행조건입니다.
+  - repair는 S1 이후 `invalid receipt identity/schema`입니다. schema fence이며 preview 경로입니다.
+  - 둘 다 snapshot 동일, lock-attempt 0입니다.
+- **판정:** 계획 `:90`의 "refuse after S1 without mutation"은 충족합니다. late-lock 조항은 유효하게 대기할 수 있는 writer가 전제이므로 init/repair 16행(`test_p2_b2_0177~0184`, `0201~0208`)에는 필수가 아닙니다.
+- **한계:** 동일 plan init replay의 S1 이후 거부(OLD `:469-471`→`:279`)는 실행되지 않은 정적 추론입니다.
+- **최소 조치:** closure 문구 "no jointly valid OLD apply"를 "변이하는 유효 OLD apply 없음(동일 plan replay는 lock 없는 read-only)"로 정정합니다.
+
+### S1-F8 (낮음, 선택적 한계) 구성 원리상의 병합·표본화 중 근거 행이 Work에 없는 것
+- **A2 retirement 조합:** `p2-static-recovery-map.py:37-43`은 O-retired와 B-existing-member의 retirement 분기도 모델링합니다. `p2-static-a2-obligations.py:5`는 S3 fallback 2개와 S6 2개만 선택합니다. selector 정체성은 합집합으로 덮이지만 상태 조합은 실행되지 않습니다. Work에서 해당 라벨의 근거를 찾지 못했습니다(검색 0건).
+- **A2 부분 상태:** S2 partial은 selector 정체성 중복 제거로 추가됩니다(`a2:19-27`). `WORK:7536`의 "누락 위치만 추가"와 일치합니다.
+- **C2 alias:** `reference-alias`는 Work owner 2종 × `HV2`뿐입니다(`test_p2_c2_0145~0152`). `WORK:7541`의 "Work/intent required refs의 alias" 중 intent-owner alias와 `COLVIA`는 cell이 없습니다.
+- **조치:** `WORK:7567`의 "동등성 근거 선제 제시" 원칙에 따라 근거 한 줄을 달거나 Owner 처분을 받습니다.
+
+### S1-F9 (정보, A-F4·C-F6 해소) 최신 262 원본을 직접 대조함
+- **접근:** 6개 root 모두 읽기 성공했습니다.
+- **결과와 개수 (recorded):** 각 `result.json`은 `execution_pass: true`, exit 0, `natural_completion: true`, `group_absent: true`, `cleanup_errors: []`, source_digest `37d5c59b…`입니다. `counts.json`은 selected = run이고 failures/errors/skips/unfinished/unstarted가 모두 0입니다.
+
+| root | selected = run | 초 |
+| --- | --- | --- |
+| r001 | 14 | 128.594 |
+| r002 | 50 | 342.233 |
+| r003 | 49 | 362.056 |
+| r004 | 87 | 947.422 |
+| r005 | 31 | 486.877 |
+| r006 | 31 | 551.502 |
+
+  합계 262, discovered는 모두 6650입니다. r005와 r006의 counts는 내용이 같아 SHA가 같은 것이 자연스럽습니다.
+- **순서와 occurrence:** 각 `executed.jsonl`의 ID 순서가 `selected-order.json`의 해당 배치와 전부 일치합니다. 모든 행이 occurrence 1, pass입니다. r001에서 trace는 14번째입니다.
+- **입력 결속:**
+  - 각 `inputs.json`의 `invocation_sha256`이 `execution-plan.json:149,303,457,611,765,919`와 같습니다.
+  - collection `d6b2bcf9…`와 controls 해시가 6개 모두 같습니다.
+  - `result.json`의 `inputs_sha256`이 `execution-state/b00N-focused-p2-finish.json`과 같습니다.
+- **189+10+1+62:** 성립합니다.
+  - S3b 189 = A2 100(`a2_1771~1870`) + B1 62 + B2 27.
+  - 인접·canary 10 = S3a/S4 이웃 6 + launcher 4.
+  - trace 1, G2 62.
+  
+  A2의 ID→state 위치는 동결 rows(`obligation-rows.json:69853,71437,71453,73037,73053`)와 현재 선언의 인접 tuple(`tests:288`)로 확인했습니다.
+- **부수:** `ASSEMBLY/supplement-1/read-run-c9e826df…`에 response 없는 이전 시도 흔적이 있습니다. 내용은 읽지 않았습니다.
+
+## 의무별 coverage
+
+| 의무 | 읽은 근거 | 상태 |
+| --- | --- | --- |
+| A1 1233 | 생성 원리(`p2-static-a1-obligations.py`): durable 97회×6 + member 31×18 + short 93 = 1233. 동결 1233, 수집 기대 1233. 단언 `tests:3146-3198`, T0 trace `:3200-3220` | 구성 충족(static). 현재 tuple 행 단위는 미대조 |
+| A2 2700 + bridge 8 | 생성 3종. 동결 2700 = 필수 2448 + partial 184 + 복합 68. bridge 8은 `selection:14613-14620`. 본문 `tests:2399-2470,2842-2872` | 구성 충족. bridge 8은 위치·message·1회 주입·이후 sync 0·복구를 단언. F8 |
+| B1 600 | 378+54+90+38+36+4 (`p2-static-b-obligations.py`). dispatch `tests:4367-4371`, `:3470-3547,3670-3739` | 충족. 가용성 종결과 fence를 구분. source-grammar 38은 근거 명시 병합. F4 |
+| B2 216 | 27 route × 8 state. `tests:3549-3586,3713-3724` | 충족. prepare 제외는 무변이로 정당(`tests:3505-3506`). init/repair 16은 F7 |
+| C1 80 | 16+16+8+8+8+24. 현재 old-pending/persisted-record 40행 직접 대조, `tests:3786-3879` | **F1** |
+| C2 192 | 24+16+96+8+8+16+24. multiple/scope/alias 32행 직접 대조 | 구성 충족, alias 축은 F8. reference/captured 행은 생성식 기준 |
+| C3 144 | 18+12+36+24+36+18. 현재 30행 직접 대조, `rework`→`baseline-refreshed` 변경 기록(history-review `:301-326`)과 일치 | 충족. F6 |
+| C4 384 | 240+16+24+16+40+20+4+24. `tests:4245-4302` | 개수·구성 충족. map 384행 본문은 미대조 |
+| X1 56 | additional 12행 전부 현재 선언과 일치, `tests:4341-4358`. legacy 44 목록 `selection:19123-19166` | 12 충족. legacy는 22개 본문만 확인. F2 |
+| T0 / D4 | `tests:444-713`: witness(raw 쌍·written 합·within stack·identity), short 3종, refusal 사유·stage, bypass 자기검증 | 정적 충족(읽은 구간). probe program 본문 미검토 |
+| D1 | F3 참조 | retain/retirement 충족, unknown은 부분 |
+| late-lock·runtime 거부 | `tests:3560-3581`, `:3483-3497` | 충족(static). 실행 원본은 262 중 S3b 행만 직접 대조 |
+| G2 map | 현재 `P2_G2_MAP` 31행 = 동결 `g2-static-map.json` 31행 전부 일치 | 충족 |
+| fixture program | C1 old-lifecycle: 현재 `tests:274`가 wave-04와 조각 일치. C3: 현재 `tests:277`은 보정 14·15를 반영, wave-04는 `rework`(`:85`)로 이전 세대 | 세대 구분 확인. 전체 바이트 동등은 미검증 |
+| 262 원본 | F9 | 충족(recorded) |
+
+**현재 선언과 동결의 결속:** 등록 loop(`tests:4612-4652`)가 중복을 금지합니다. correction32 수집 기대 파일의 영역별 개수는 1233 / 2700 / 1628 / G2 62+trace 1이고, 6개 root의 discovered 6650과 맞습니다.
+
+**부수 확인(C-F2 일부):** same-entry 완료 replay의 lock-attempt 부재와 lock anchor 비생성은 `tests:4293,4301-4302`가 단언합니다.
+
+## 남은 필수 공백 (한계 수락으로 돌릴 수 없음)
+
+1. **F1:** C1 OLD pending init/detach의 cell 또는 처분 행.
+2. **X1 legacy 44 중 22개 본문 미검토:** EntryFoundationTests 11, `binding_b03` 4, `release_s3_rename` 2, `binding_b05` 2, `current_candidate`·`fresh_init_collision`·`live_collision` 3. `launcher_o01` 2개는 flow 표(`tests:1559-1560`)만 확인했습니다.
+3. **현재 `P2_A1_CELLS`·`P2_A2_CELLS`·`P2_C4_MAP`의 행 단위 내용:** 개수·원리·경계 tuple까지만 확인했습니다. 동결 rows와의 전수 동등은 미검증입니다.
+4. **embedded fixture 4종과 probe 3종의 전체 본문:** `P2_RECORD_FIXTURE`, `C1_RECORD_PENDING`, `C2_FIXTURE`, `C4_SAME_ENTRY`, `OBSERVER_*_PROBE`. 헤더와 일부 조각만 대조했습니다. wave-07 C2와 현재본의 관계는 미확인입니다.
+5. **F3:** D1 unknown-member(S6)의 현재 후보 근거 또는 문구 한정.
+
+## 선택적 한계
+
+- F4·F6·F7의 정적 추론 항목. 실행 미관측이며 계약상 필수는 아니라고 판정했습니다.
+- F5 nonzero-prefix 교차 matrix, F8 A2 retirement 조합과 C2 alias 표본.
+- 262 외 이력 occurrence의 원본 대조, SHA 재계산, `p2-assemble-draft.py` 본문.
+- C5, E1–E7/M1 재사용(Supplement 2 대상).
+- 전원 손실, fullfsync, 실제 CLI 취소는 여전히 미입증입니다.
+
+Reviewer는 위 항목 어느 것도 면제하거나 수락하지 않습니다.
+
+
+#### Driver Disposition
+
+- S1-F1 — accept: C1 의무7540에 OLD pending init/detach가 있지만 generator/helper는 switch만 구성한다. R17의 repair 처분 외 init/detach 처분은 Driver의 한정 검색에서도 찾지 못했다. Supplement2에서 계약·기존 근거를 최종 대조하고, 부재가 확인되면 최소 검증/범위 결정이 필요하다. 이번에 테스트나 면제를 승인하지 않는다.
+- S1-F2 — revise: stable non-pass와 보존은 확인되지만 모든 guard/kill 직후 prefix가 식별된 것은 아니다. 해당 행의 근거를 보존 거부로 한정한다. 계약상 추가 guard 식별 의무가 없다면 새 message 단언은 자동 필수가 아니다.
+- S1-F3 — accept: 현재 선택의 D1 unknown 근거가 부분적이다. 제품 변경 영향과 E3/E4 재사용을 Supplement2에서 확인한 뒤 현재 후보1개 실행 필요 여부를 판단한다. 지금 재사용을 승인하거나 기존 의무를 줄이지 않는다.
+- S1-F4 — accept: launcher 순서·non-executable 계약의 독립 확인으로 A-F1의 정적 근거가 보완됐다. S3b interpreter 직접 실행은 여전히 없지만 계약상 필수로 판정되지 않았다. 관련 S4 실행과 정적 추론을 S3b 실행PASS로 쓰지 않는다.
+- S1-F5 — accept: short one/middle/last의 exact prefix·복구 primitive가 남아 있고 전체 교차 matrix 의무는 찾지 못했다. 신규 교차 조합은 만들지 않는다. 과거189개와 현재 S3b·X1 short3의 세대를 구별한다.
+- S1-F6 — accept: recover4는 no-pending-lifecycle 선행조건이고 공존 guard 실행은 아니다. 정상 writer로 공존을 만들 수 없다는 소스 근거와 별도 preview/apply 거부를 유지한다. 합성 공존 테스트를 자동 필수로 만들지 않는다.
+- S1-F7 — revise: 동일 plan init replay는 lock 이전 read-only이므로 ‘유효 OLD apply 없음’보다 ‘변이하는 유효 OLD apply 없음’이 정확하다. init/repair16을 late-lock 실행으로 확대하지 않는다.
+- S1-F8 — revise: retirement·C2 alias의 범위/동등성 근거가 미확인이다. Reviewer의 선택적 한계 분류만으로 Work7567의 근거 의무를 충족했다고 보지 않는다. Supplement2에서 기존 처분과 공통 판정을 확인한다.
+- S1-F9 — accept: 최신262의6root·ID순서·개수·원본 결과 및 입력 참조 결속을 독립 확인했다. A-F4/C-F6 읽기 공백은 해소됐다. SHA값 대조이며 Reviewer의 해시 재계산은0이다. 원문에 적힌 ‘response 없는 이전 시도’는 바로 이 실행 중 자기 session c9e826df 폴더를 본 것이며 별도 이전 시도/실패가 아니다.
+
+남은 X1 legacy22·fixture/probe 본문과 C5/reuse/M1은 승인된 두 번째 보완에 연결한다. matrix 모든 행을 사람이 읽는 새 의무는 만들지 않는다. 기존 변환/고정 입력/변경 경계가 완전성을 뒷받침하는지 검토하며, 부족하면 정확히 무엇이 없는지 보고한다. 첫 리뷰의 검토가 일부 남았음을 숨기거나 두 번째 전에 P2 수락을 요청하지 않는다.
+
+#### Budget And Continuation
+
+Review12/13회·5614.360315291076/14400초다. 최종 CLI quota는5시간62%·주간14% 사용(09:17UTC경 관측)이다. 계정 공통 사용률이며 이 리뷰만의 비용으로 단정하지 않는다. 제품 controller1039/1039·root161/161은 그대로다. Config는 자동 disarmed됐고 프로세스 그룹은 종료됐다. Owner가 승인한 두 번째 보완은 원본 입력/최신 quota와 이 결과·처분을 확인한 후1회 진행한다. 제품 수정·재시험·P2 수락/Done/P3 권한은 없다.
+
+
+### P2 R1 Gap Supplement 2 Stopped By Session Limit — 2026-10-13
+
+두 번째 보완은 fresh Claude Opus5.5(claude-opus-5-5) High session e9e56198-ee77-494c-b2d3-210dff2b1faa에서 실행됐으나 5시간 구독 한도에 걸려 최종 검토 보고서 없이 종료됐다. guide SHA e70dc352ba1e503029c66645a138ef8f01310eb0f1b10d0cbf5e11064240b865, base a17f35cf323ffde7a8642a85501fddbec858b6de, Work 제외 code diff45ed3b8105c840ec94a769e20c6806624e2deeeb5dbf1c12974ae46e959568d7. 인증은 claude.ai/firstParty/pro, 다른 인증 경로 환경변수 부재를 확인했다. Read/Glob/Grep만 허용했고 MCP0, 제품 실행/테스트/수정0이다.
+
+고정 입력3500개와 Work prefix의 전후 대조에서 drift는 없었다. Actual wall724.6345709169982초, CLI exit1, process group_absent=true, Owner 취소/강제종료/모델·도구 경계이상/감시기이상0이다. Final protocol event의 subtype은 success였지만 is_error=true이므로 정상 리뷰로 판정하지 않았다. result.json의 final_response_available=true는 아래 오류 문자열이 존재한다는 뜻이며 Reviewer 보고서가 있다는 뜻이 아니다.
+
+#### Verbatim CLI Error
+
+You've hit your session limit · resets 7pm (Asia/Seoul)
+
+#### Driver Disposition And Coverage Boundary
+
+최종 rate_limit_event는 status=rejected, five_hour utilization1.0, seven_day0.17, reset19:00KST, overage 비활성이다. 최초 Owner35%/13% 및 S1 종료62%/14%와 함께 계정 공통 관측으로 남기며 증가분 전부를 이 작업의 비용이라고 단정하지 않는다. 자동 재호출/다른 모델/다른 인증 경로/추가 과금 우회는 하지 않았다.
+
+S2에서 Read/Glob/Grep171건, 직접 Read한 고유 파일26개가 관측됐다. C5 인덱스22개 모듈 중 직접 Read는 test_candidates.py/test_general_work.py/test_productization_safety.py3개였고 다른 테스트 검색도 수행했다. M1·C5 원본 실행/중복 occurrence·세대 이력·제품 호출부 및 S1 일부 잔여를 읽었지만 최종 판정이 없으므로 C5 closure, E1–E7/D1–D4 재사용, M1 후속 의무 또는 S1 잔여가 닫혔다고 계산하지 않는다. Read 요청 수와 검색은 완전성 증거가 아니다. 새 제품 결함의 최종 finding도 수신하지 않았다.
+
+S1의 conditional 결과와 Driver 처분은 유효하게 유지한다. 최신262 원본 접근·결속 및 matrix 구성원리 확인은 S1의 범위대로 해소됐다. C1 pending init/detach 의무/처분, D1 unknown-member 재사용, retirement/C2 alias 근거, X1 legacy/fixture·probe 잔여와 C5/reuse/M1은 여전히 판단이 필요하다. 필수 미검토를 한계 수락으로 바꾸거나 P2 종료를 요청하지 않는다.
+
+Review13/13회·6338.994886208075/14400초다. 이번 두 invocation의 합은1498.0891360000242초(약24분58초)이며 두 번째는 실패한 invocation으로 포함한다. 제품 controller1039/1039·실행 root161/161은 그대로이고 리뷰13회 한도는 소진됐다. 두 config는 disarmed, 두 프로세스 그룹은 종료됐다. 다음 reviewer invocation은 승인되지 않았다.
+
+#### Recovery Proposal And Preservation
+
+최소 복구 제안은 표시된19:00KST 초기화 후 실제 quota·구독 인증·동일 입력을 확인하고, Owner가 리뷰 한도13→14를 명시 승인하면 중단된 S2의 동일 Claude 세션1회만 이어 남은 원문 확인과 최종 판정을 받는 것이다. 이미 끝난 S1/262 결속을 다시 리뷰하거나 새 전체 패킷·제품 테스트/수정을 만들지 않는다. 이번 승인은2회였으므로 세 번째 invocation을 자동 실행하거나 자동 재개 일정을 만들지 않는다. 같은 세션 재개의 사유는 중단 전 읽기 문맥 보존이며 fresh independence를 다시 주장하지 않는다. 재개용 CLI/runner 변경은 아직 하지 않았다.
+
+원본 stream/result/error, S1 원문/Driver 처분, 두 안내/입력 신원과 기존 Work가 보존돼 있다. 두 Claude session JSONL의 존재도 내용 노출 없이 확인했고, 특히 S2 세션과 raw stream은 위 named recovery 및 Owner 결과 판단이 소비자다. 해당 복구/결정 종료 전에는 삭제하지 않는다. source/test bytes는 변경하지 않았으며 기존 보존본과 현재 patch를 유지한다. 구현 checkout과 실행 root는 P2 미완·복구 의존 때문에 유지한다. commit/push/STATUS/Done/P3/cleanup은 없다.
+
+
+최종 보존 확인: S1/S2 기존 inspect-only로 고정 입력·Work prefix·HEAD/code diff 불변을 재확인했고 두 config armed=false다. 추가 auth/reviewer/test 호출은0이다. Work와 두 안내는 GFM render에서 code 밖 literal emphasis0을 확인했다. 일반 git diff --check는 Reviewer 원문 blank line의 trailing whitespace4건(기존 A1건+S1 원문3건)을 경고했다. 원문 보존 의무 때문에 그대로 유지하며 일반 diff-check PASS라고 보고하지 않는다. Work/현재 README의 최종 bytes를 기존 durable bundle에 보존하고 P2·복구 의존이 남은 checkout/root를 유지한다.
+
+
+### P2 R1 Gap Supplement 2 Resume Owner Authorization — 2026-10-13
+
+Owner는19:00KST reset을 직접 확인하고 “좋아. 리뷰 한도를 14회로 늘리고, 리셋 확인했으니 뒤 중단된 두 번째 세션만 1회 재개해줘. 이미 끝난 검토는 반복하지 말고, 다시 실패하면 자동 재시도 없이 보고해줘.”라고 승인했다. Review cap13→14, 시작 사용13회·6338.994886208075/14400초다. Product controller1039/1039·root161/161 및 제품/테스트 변경·실행 금지는 그대로다. 추가 quota 비율을 추정하지 않으며 현재 Owner reset 확인을 fresh quota 근거로 사용한다.
+
+동일 Claude session e9e56198-ee77-494c-b2d3-210dff2b1faa의 보존 파일과 기존3500개 fixed input, Work prefix, HEAD/code diff 불변을 재확인했다. 기존 S2는 새 세션으로 다시 시작하지 않는다. 설치 CLI help에서 --resume <session-id>를 확인했고 --fork-session/--continue/새 --session-id는 사용하지 않는다. supplement-2-resume-1의 기존 supervisor 복사본에 call14/cap14/19:00 gate/--resume와 해당 session ID 확인만 반영한다. Auth·읽기 도구·MCP 제한·drift·프로세스 감시/취소 정책은 유지한다. 재개 직전 session 파일의 기존 신원도 확인하며 실행 후에는 같은 세션이 정상 append되므로 원래 파일hash를 불변 조건으로 요구하지 않는다.
+
+현재 안내는 이미 읽은 기록을 반복하지 않고 남은 C5 closure·E1–E7/D1–D4 재사용·M1·S1 잔여 원문을 확인해 S2 최종 보고서를 반환하도록 한 짧은 continuation이다. 기존 대형 패킷을 갱신하거나 신규 압축 도구를 만들지 않는다. 이번은 같은 문맥의 이어진 리뷰이며 fresh-context 독립성을 주장하지 않는다. Final 오류/한도/입력·모델·session 경계이상이 다시 발생하면 결과를 보존하고 자동 재시도·추가 호출 없이 보고한다. P2 수락/Done·P3·Git·adopter 실행은 승인되지 않았다.
+
+
+### P2 R1 Gap Supplement 2 Resumed Result — 2026-10-13
+
+Owner 승인대로 중단된 동일 session e9e56198-ee77-494c-b2d3-210dff2b1faa를 --resume으로1회 이어갔다. Actual Claude Opus5.5(claude-opus-5-5), High, claude.ai/firstParty/pro; 기존 문맥의 연속이며 fresh-context 독립성을 주장하지 않는다. 실제 init session/model과 Read/Glob/Grep3종·MCP0이 일치했다. CLI에서도 reset 후 five_hour0%·weekly17%를 확인했고 종료 시2%·17%였다. Reviewer 재시도/새 session/fallback/제품 테스트/제품 수정0이다.
+
+Guide SHA6eca80fc27cfcc88e08a5ccd7a29e909925e450b987d64215f3f4f43adee2d8e, base a17f35cf323ffde7a8642a85501fddbec858b6de, Work 제외 code diff45ed3b8105c840ec94a769e20c6806624e2deeeb5dbf1c12974ae46e959568d7. Fixed input3505개/Work prefix 전후 대조PASS, input drift0, session/model/tool/감시기이상0, exit0, group_absent=true, 취소/강제종료0,143.638271874981초다. 이번 재개 Read17건·read error0이며 기존 S2 읽기 문맥을 이어 최종 응답을 받았다. 리뷰 호출 완료가 모든 의무 충족을 뜻하지 않는다.
+
+#### Verbatim Reviewer Response
+
+# P2 R1 Gap Supplement 2 — 정적 검토 최종 보고
+
+## Scope verdict: **conditional** (Supplement 2 질문 1–5 및 S1 인계 잔여 한정)
+
+읽은 범위에서 제품 계약 위반 반례나 P0/P1 차단은 찾지 못했습니다. 다만 필수 공백이 3건 남습니다: M1 필수 검증 1항목의 현재 후보 실행 부재(F1), DR-0004:177 행 대비 C1 축 부족(F3), D1 unknown-member의 현재 근거(F4). 이 판정은 P2 수락·Done·P3 승인이 아닙니다.
+
+- **직접 실행:** 0건. 해시도 계산하지 않았습니다(Read/Glob/Grep만 사용).
+- **recorded:** 원본 실행 기록에서 읽은 사실입니다.
+- **static:** 소스·선언을 읽고 추론한 것입니다.
+
+## Findings
+
+### S2-F1 (중간, 실행 부족) M1이 "실제로 확인"하기로 한 D3 same-entry 주입 횟수가 현재 제품 바이트에서 실행되지 않음
+- **의무:** `WORK:8903`이 "기존 D3 same-entry 주입 횟수를 실제로 확인한다"고 적었습니다. R0-C도 "실행으로만 확인 가능"이라 했습니다(`WORK:8845`).
+- **단언 위치:** `tests/test_entry_window_transition.py:2641-2653`의 `test_d3_same_entry_scope_unchanged`(`:2650`이 주입 1회 단언).
+- **선택 여부 (recorded):** 이 ID는 `frozen-inputs/selection-and-batches.json:6936`의 `factory_ids`에만 있습니다. `selections`(`:13376-19167`)의 t0·a2 bridge 8(`:14613-14620`)·c4·c5·x1 어디에도 없습니다.
+- **Work 근거:** `WORK:9030`, `:9299`는 정적 서술뿐입니다.
+- **판단:** M1은 same-entry 경로를 실제로 바꿨습니다(`r0-c-result/m1-proposed.diff:39-40,48-49,54-60,65-66,73-75,83-84,92-98`). 이전 세대 E3의 실행은 이 항목에 재사용할 수 없습니다. 복구 세대별 selection 파일은 전수로 열지 않았으므로 "선택 목록에 없음, 실행 기록 미발견"으로 한정합니다.
+- **최소 조치:** 기존 ID 1개를 현재 후보에서 1회 실행합니다(신규 작성 불필요). 또는 Owner가 명시 처분합니다.
+
+### S2-F2 (중간, 기록 부재) M1의 wider-module·과거 qualification 대조는 기록이 없고, 이번에 정적으로만 수행함
+- **기록:** `WORK:8857`, `:8904`의 후속 의무에 대한 이행 행은 없습니다. 검색 결과는 `:8904`, `:12645-12647`, `:12739`, `:12751`뿐입니다.
+- **이번 대조 결과 (static):**
+  - **중간 collision 단언:** 진단 문자열 3종(`retired entry collision`, `entry-1 lifecycle/recovery`, `preserve historical result`)은 tests 중 entry 테스트 파일에만 있습니다. 넓은 모듈에는 same-entry 중간 collision 단언이 없습니다.
+  - **완료 replay 단언(넓은 모듈):** `tests/test_productization_safety.py:980-981`, `:2647-2649`, `:2846-2849`. 모두 lock anchor가 이미 있는 상태의 snapshot 동등이라 M1 전후 모두 성립합니다.
+  - **lock anchor 단언(넓은 모듈):** `:2822-2836`은 미완료 apply의 한도 거부입니다. guard(`product.py:1433`)가 `:1439`보다 앞서므로 M1과 충돌하지 않습니다.
+  - **미선택:** `ProductLifecycleOutputLimitTests` 6개는 `ordinary_ids`(`selection:12993,12996`)에만 있습니다.
+- **M1 본체 검증은 현재 후보에 있음:**
+  - 단언: `tests:4253-4302`(replay-lock-absent/present, replay-collision, late-stage/late-binding collision, truth 우선순위, sibling/source 허용).
+  - 행: `test_p2_c4_0337~0356`(`tests:266`).
+  - 제품 일치: `product.py:1421-1423,1492,1527-1528,734`.
+  - 실행 (recorded): same-entry-hook-resume r001 36/36, r002 24/24.
+- **확인 못한 것:** 과거 qualification 원본(F5). `'hv2'` occupant를 쓰는 넓은 모듈 14곳(`test_general_work` 3, `test_worktree_execution` 2, `test_checkout_window_transition` 9)의 개별 본문.
+- **최소 조치:** 이 대조를 Work 행으로 기록합니다. 6개 실행은 선택 보강입니다.
+
+### S2-F3 (중간, 계약 행 대비 축 부족 — S1-F1 확정) OLD pending init/detach의 cell도 처분도 없음
+- **계약:** `DR-0004:177`이 "New / old pending init/switch/repair/detach"에 Init·Update·Rollback·Repair·Detach 모두 R을 요구합니다. 계획 `:91`과 `WORK:7540`도 같습니다.
+- **처분:** R-17은 pending 생성 수단을 "Work/intent/switch"로만 열거하고 repair만 닫았습니다(`WORK:8379-8380`, `:8520`). init/detach 처분 행은 없습니다.
+- **현재 있는 근거:**
+  - switch pending × update preview/apply 16행(S1 확인).
+  - detach target의 Detach 열: `tests:1204-1216`. 실제 OLD API가 만든 after-receipt prefix(`tests:174-188`)를 쓰지만 예외 타입만 단언합니다.
+  - 같은 열의 합성 근거: `tests/test_checkout_window_transition.py:100-142`(`legacy detach writes` 메시지 단언).
+  - Read 열: `tests:4572-4581`.
+- **없는 것:** OLD 부분 init target 전 열. OLD 부분 detach target의 Init/Update/Rollback/Repair 열.
+- **정적 추론(미실행):** `product.py:873`, `:1183-1184`, `:1070` 계열 선행 거부가 예상됩니다. 실행된 적은 없습니다.
+- **최소 조치:** Owner가 범위를 결정합니다. cell을 추가한다면 OLD after-plan(binding 전) init prefix와 기존 `fixed_old(detach=True)` target에서 transition preview/apply를 호출해, 정확한 사유·snapshot 동일·`entry-transition.json` 부재를 확인하는 최소 2~4행입니다. 테스트 추가이므로 승인이 필요합니다.
+
+### S2-F4 (낮음~중간, 증거 미확인 — S1-F3 판정) D1 unknown-member는 정적으로 재사용 가능하나 현재 바이트 실행과 원본 확인이 모두 없음
+- **계약:** `DR-0004:145`("after checking it has no unknown members").
+- **단언:** `tests:2822-2840`. switch/entry 두 종의 정확한 메시지, 허용 sync 3개, 주입 0, snapshot 동일을 봅니다.
+- **선택 여부:** `selection:6894`의 `factory_ids`에만 있습니다.
+- **재사용 가능성 (static):** 거부 지점 `product.py:437`, `:637`과 완료 replay 분기 `:1424-1428`은 M1/D2 diff의 hunk 밖입니다. D2 추가분(`:497-511`)은 이 거부보다 뒤이고, 빈 truth fixture에서는 무동작입니다.
+- **한계:** 제품 바이트와 release identity는 달라졌고, E3/E4 원본은 읽지 못했습니다(F5). `WORK:9666`의 "unknown 보존을 A2/X1에 연결"은 실제 선택보다 넓습니다.
+- **최소 조치:** `WORK:9666`을 "C4 seam 4행 + X1 S3/S6 코드 단언 + E4 이전 바이트 이력"으로 한정합니다. 또는 기존 ID 1개를 F1과 같은 배치로 실행합니다.
+
+### S2-F5 (낮음, 접근 불가) E1–E7 원본 기록은 이번 허용 범위 밖
+- **장애:** `driver-p2-batch-02/candidate-01~05`와 D3/binding/N·O/S3 원본은 `read-identity.json`의 `read_directories`(`:14-151`)와 inputs에 없습니다(검색 0건). BUNDLE 안에도 사본이 없습니다.
+- **대신 확인한 것:** M1+D2 diff 본문(`r0-c-result/m1-proposed.diff`)을 직접 읽었습니다. 전환 경로의 모든 변경이 `transition` 조건 아래이거나 same-entry `else` 안입니다. 현행 `product.py:1421-1531`, `:480-511`과 hunk 내용이 일치합니다. 파일 전체 동등은 미검증입니다.
+- **항목별 재사용 판정:**
+
+| 항목 | 현재 후보의 대체·보강 | 판정 |
+| --- | --- | --- |
+| E1 N/O/binding | X1 legacy 대표 14개(S19 PASS) + T0. 나머지 위치는 이전 바이트 이력 + 전환 경로 정적 무변화 | 한정 재사용 가능 |
+| E2 S3 | A2 2,700이 대체 | 대체됨 |
+| E3 D3 | 전환은 A2가 대체. same-entry 부분은 재사용 불가 | **F1** |
+| E4 tear/unknown | A1 실제 write가 대체. 완료 뒤 unknown은 미재실행 | **F4** |
+| E5 writer/late-lock | B1 600 / B2 216이 대체 | 대체됨 |
+| E6 local baseline | D2가 `_entry_local_baselines`를 변경. C2/C3/X1 12가 대체 | 대체됨 |
+| E7 controls | T0를 같은 observer로 재실행 | 충족(recorded) |
+
+- **E6 보강:** own-ref 우선 진단은 `test_p2_x1_0008/0009`(`tests:267`, `:4353`)가 단언합니다.
+- **E7 보강:** `observer.py`·`runner.py`·`common.py` SHA가 b001(S1), C5(S18/S19), correction32 입력에서 같습니다(각 `inputs.json:61-66`). controller만 `adb77144…`에서 `d0007484…`로 다릅니다.
+- **최소 조치:** 수락 문구에 "E1–E7은 이전 바이트 이력, 원본은 보완 리뷰에서 미열람"을 고정합니다.
+
+### S2-F6 (낮음, S1-F8 판정) retirement·alias의 동등성 근거는 소스에 있으나 Work에 없음
+- **A2 retirement 조합 (static):**
+  - `product.py:630-655`의 staging / switch-operation / entry-operation 분기는 서로 독립인 `if _exists`입니다. O와 B 양쪽에 동시에 걸린 조건이 없습니다.
+  - `:668-679`의 fallback은 단일 `next()` 사슬입니다.
+  - `WORK:7536`이 명시한 것은 "부모 fallback"까지입니다. 조합은 명시 의무가 아닙니다.
+- **C2 alias (static):**
+  - alias 8행(`tests:271`, `0145~0152`) 중 required 4행은 NEW가 아니라 OLD 게시 경계에서 거부됩니다(`tests:3931-3934`).
+  - 그 OLD 함수는 owner와 무관합니다(`old/src/hv2ref/work.py:986-1000`).
+  - optional 4행은 허용됩니다.
+  - `COLVIA` ref는 파일이 있어야 하므로 root alias guard(`product.py:217-218`)가 먼저 발화합니다. C1 root 행과 같은 술어입니다.
+  - 따라서 `depends()`의 casefold(`:476-479`)가 ref에 대해 첫 진단이 되는 alias 행은 없습니다.
+- **판단:** 누락된 결함 경로는 찾지 못했습니다. `WORK:7541`의 "Work/intent required refs의 alias"에 대한 범위 근거가 기록되지 않은 상태입니다.
+- **최소 조치:** 위 근거를 Work에 한 문단으로 기록합니다. `COLVIA` ref 직접 행은 선택 보강입니다.
+
+### S2-F7 (낮음, 증거 지위) C5 109 occurrence의 세대와 범위 문구
+- **결과 (recorded):**
+  - sequence-resume r001: 75/75 pass, S18 `7fdbe103…`, 12개가 occurrence 2.
+  - detach-membership-resume r001: 34/34 pass, S19 `a21e1930…`, 1개가 occurrence 2.
+  - 합계 96 unique / 109 occurrence입니다. failures/errors/skips/unfinished/unstarted는 모두 0입니다.
+  - 중복 13은 `test_worktree_execution.py:16-17`의 class import에서 옵니다.
+- **세대 차이:**
+  - 배치 97은 `test_candidates.py`와 `test_umbrella_lifecycle.py` 정정 전(S18)에 실행됐습니다. 그 안의 umbrella_lifecycle 3개는 이후 정정된 `:163`과 다른 메서드입니다(static).
+  - C5는 correction32 source digest(`37d5c59b…`)에서 실행된 적이 없습니다. correction32 diff는 entry 테스트만 바꿉니다(`test-change.diff:1-2`). C5 모듈은 그 파일을 import하지 않습니다(검색).
+- **색인 밖 세대:** candidate-lock-resume-29의 source digest `779e0d54…`(`WORK:11869`)는 S1–S19 키에 없습니다. 그 실패 root도 허용 목록에 없습니다. 실패 사실은 `WORK:11887-11889`로만 확인했습니다.
+- **Owner 승인 범위:** 세 정정 모두 승인 문구와 실제 diff가 일치합니다.
+  - downgrade regex 1줄: `WORK:11756`.
+  - candidate lock anchor 1함수: `WORK:11867`.
+  - detach 문자열 2값: `WORK:11914`. 정적 근거 `product.py:1779-1786`도 맞습니다.
+- **최소 조치:** "C5 = S18 75 + S19 34, correction32 세대 미실행, runtime-double 범위"로 표기합니다.
+
+### S2-F8 (정보, C-F5 판정) well-formed downgrade는 apply로 도달할 수 없음
+- **근거 (static):** `product.py:783`(schema/window pair)과 `:1354`(schema-2 entry-1 전용)가 `_switch_binding_receipt`의 rank 검사(`:808-811`)보다 앞섭니다. `tests/test_productization_safety.py:2663-2673`은 helper 단위 방어 검사로 보는 것이 정확합니다.
+- **실행 근거 (recorded):** apply 수준은 malformed pair(`:2651-2661`, snapshot 동일)입니다. 두 테스트 모두 S18 배치에서 pass입니다.
+- **조치:** 없음. "helper-level" 문구를 유지합니다.
+
+## C5 proof caller closure — 범위와 근거
+
+**제품 측 (static, 7개 모듈 검색 전수 + 핵심 본문):**
+- **생성:** `product.py:941-946`, `:949-952`, `:955-994`.
+- **검증 seam:** `work.py:203-210`, `:1177-1185`, `:1189`. SHA가 non-null인데 window가 없거나 미지원이면 fail-closed입니다.
+- **소비:** `work.py`의 호출부는 모두 `verified_inventory_id`를 전달합니다(`:1048-1105`, `:1298-1444`). 그 외 `intent.py:258`(명시적 None seam), `:369,397,403`, `candidates.py:239-240`, `view.py:144,149,151,232`, `cli.py:112-113,218-223`, `workspace.py:351-352,397-398`, `product.py:521`.
+- **OLD 대조:** NEW `_live_external_refs`(`work.py:997-1012`)와 OLD(`:986-1000`)의 차이는 launcher 이름 도출뿐입니다. `candidates.py:240`은 OLD와 window 토큰만 다릅니다.
+
+**테스트 측:**
+- **runtime double:** 전 tests를 패턴으로 열거해 11개를 확인했습니다(no-SHA 대역 10, 실제 proof 전달 1: `test_worktree_execution.py:487`). 모두 위 계약과 일치합니다.
+- **본문 확인:**
+  - `test_candidates.py:24-64`, `:226-241`.
+  - `test_productization_safety.py:19-58`, `:233-252`, `:952-981`, `:1975-1992`, `:2573-2709`, `:2714-2886`.
+  - `test_runtime_admission.py:18-141`.
+  - `test_checkout_window_transition.py:47-142`.
+  - `test_general_work.py:88-94,155-161,342-356,553-565`.
+  - `test_general_work_invariants.py:29-54,245-266,545-561`.
+  - `test_umbrella_recovery.py:138-193`.
+  - `test_worktree_checkout_bytes.py:200-221,296-318`.
+  - `test_human_view.py:179-202,251-266`.
+  - `test_detach_topology_sharing.py:98-110`.
+  - `test_plain_auditor_boundary.py` 전체.
+- **entry 측 seam:** `tests/test_entry_window_transition.py:4392-4409`, `:4540-4570`.
+
+**미검토 (숨기지 않음):** 아래 선택 테스트 본문은 읽지 않았습니다. closure는 "제품 측 전수 + double 목록 + 109 PASS"까지이고, 이 본문의 의미 대조는 독립 확인되지 않았습니다.
+- `test_productization_safety` 선택 35개 중 약 25개.
+- `test_worktree_execution` 7개(`:487` 외).
+- `test_umbrella_lifecycle` 4개(diff 주변 외).
+- `test_git_candidate_reuse`, `test_topology_observation_sharing`, `test_view_observation_sharing`, `test_general_work_recovery`.
+- `test_worktree_history`, `test_worktree_integration`, `test_worktree_pending_lifecycle`, `test_worktree_process_recovery`, `test_worktree_process_safety`.
+
+## X1 legacy·fixture 잔여 (S1 공백 2·4 해소 범위)
+
+- **EntryFoundationTests 11:** `tests:4379-4603`을 읽었습니다. `:4485-4497`은 코드만 단언합니다. 정적으로는 `product.py:1066`과 `:1095`가 유일한 거부 원인입니다.
+- **prefix 계열:** `binding_b03` 4·`b05` 2(`:1352-1450`, `:1491-1522`), `release_s3_rename` 2(`:1772-1841`), `launcher_o01` flow(`:1536-1661`, `:1711-1715`)를 읽었습니다. 모두 witness 위치, 정확한 prefix, lock 해제, 1회 복구, 정확한 완료 snapshot을 단언합니다.
+- **나머지 3개:** `current_candidate`, `fresh_init_collision`, `live_collision`은 `:1173-1202`에서 읽었습니다.
+- **X1 실행 (recorded):** detach-membership-resume r002 45/45, r003 11/11(S19).
+- **OLD fixture:**
+  - `tests:137-188`은 `old/src`만 import하고 release 해시를 고정한 실제 OLD API 실행입니다. 설치된 OLD launcher 실행은 아닙니다.
+  - `schema1_fixture`(`:87-131`)와 `test_legacy_version…`은 명시적 합성입니다.
+  - C5 candidate WINDOW 테스트는 runtime double입니다.
+- **embedded program:**
+  - `P2_C4_SAME_ENTRY`는 wave-03 원본(`r0-e-result/authoring-wave-03/p2-c4-same-entry-program.py`) 대비 hook 참조 3곳만 다릅니다(`tests:278`). 현재 hook 대상은 `workspace._write_exact`이고, `product.py:1403`의 함수 내 import와 맞습니다.
+  - `P2_RECORD_FIXTURE`, `C1_RECORD_PENDING`, `C2_FIXTURE`는 이력 diff의 식별 토큰이 현행 `:273,275,276`에 있고 import origin 검사도 있습니다.
+  - 조립 변환은 `authoring-wave-07/p2-assemble-draft.py:12-13,41-62`로 확인했습니다. 대형 상수의 전수 동등 실행 검사는 요구하지 않습니다.
+- **미확인:** `p2-compact-declarations.py` 본문. `OBSERVER_*_PROBE` 3종의 전체 본문(헤더와 patch 대상 `:219-223`만 확인).
+
+## 의무별 통합 상태 (A/B/C/S1 + S2)
+
+| 의무 | 상태 | 근거·비고 |
+| --- | --- | --- |
+| T0 / D4 | 충족(static + recorded SHA 연결) | probe 본문 전체는 미검토 |
+| A1 1233 | 충족(구성) | S1 |
+| A2 2700 + 8 | 충족(구성) | retirement 조합은 F6 근거 기록 필요 |
+| B1 600 / B2 216 | 충족 | S3b 인터프리터 경유, init/repair late-lock은 선택 한계(S1-F4·F7) |
+| C1 80 | **계약 불일치(축 부족)** | F3 |
+| C2 192 | 충족(구성) | alias 범위 근거 미기록(F6) |
+| C3 144 | 충족 | 공존 guard는 선택 한계(S1-F6) |
+| C4 384 | 충족 | M1 본체 검증 포함(F2) |
+| C5 96/109 | 충족(recorded PASS + 제품 측 closure) | 세대·범위 문구 F7. 테스트 본문 일부 미검토 |
+| X1 56 | 충족 | legacy 일부는 guard 미식별(S1-F2) |
+| D1 | **증거 미확인** | F4 |
+| D2 | 충족 | `DR-0004:354-365`, `product.py:497-511`, X1 12행 |
+| D3 / M1 | 본체 충족, **1항목 실행 부족** + 기록 부재 | F1, F2 |
+| E1–E7 | 한정 이력. 원본 접근 불가 | F5 |
+| 262 (correction32) | 충족(recorded) | S1-F9 |
+
+## 남은 필수 공백
+
+1. **F1:** `test_d3_same_entry_scope_unchanged`의 현재 후보 실행 또는 Owner 처분.
+   - 계약상 이유: M1 수락 때 "실제 확인"으로 고정된 의무이고, same-entry 경로가 바뀌었습니다.
+2. **F3:** OLD pending init/detach의 cell 또는 Owner 범위 결정.
+   - 계약상 이유: `DR-0004:177`이 명시한 행입니다.
+3. **F4:** `WORK:9666` 문구 한정, 또는 `test_completed_staging_unknown_members_preserved` 1개 실행.
+   - 계약상 이유: `DR-0004:145`.
+   - F1과 F4는 기존 ID 2개를 한 배치로 닫을 수 있고 신규 작성이 없습니다.
+4. **F2 기록:** wider-module 대조 결과를 Work 행으로 남깁니다. 과거 qualification 원본 대조는 접근 경로가 열려야 가능합니다.
+5. **독립 검토 공백:** C5 선택 테스트 중 위 미검토 본문.
+
+## 선택 보강
+
+- `ProductLifecycleOutputLimitTests` 6개의 현재 후보 실행.
+- C2 `COLVIA` ref 직접 행, A2 retirement 조합 행.
+- S1의 F4·F5·F6·F7 선택 항목.
+- E1의 대표 외 위치를 현재 바이트로 재실행.
+- 전원 손실, fullfsync, 실제 CLI 취소는 여전히 미입증입니다.
+
+Reviewer는 위 어느 항목도 면제하거나 수락하지 않습니다.
+
+
+#### Driver Disposition
+
+- S2-F1 — accept: M1 실제 확인 의무와 해당 단언은 있으나 고정 입력에 속한 executed.jsonl262개를 Driver가 검색해도 해당 ID 실행은 없다. 이 검색은 독립 리뷰와 구별한다. 후속: 기존 test_d3_same_entry_scope_unchanged1개 현재 후보 실행을 최소 후속으로 제안; 실행 승인은 아직 없음.
+- S2-F2 — revise: 이번 정적 wider-module 대조는 유효하지만 과거 qualification 원본과14곳 occupant 본문 미확인이 남는다. M1 본체 C4 실행과 후속 의무 전체 완료를 구별한다. 후속: 이번 근거를 Work에 기록하되 미확인 부분은 열어 둔다.
+- S2-F3 — revise: DR177행 대비 검증 축/처분 부족을 수용한다. 제품 구현이 계약을 위반했다는 반례는 아니다. 제안2–4행만으로 모든 열이 닫힌다고 확정할 수 없다. 후속: OLD pending init/detach와 각 명령 열을 기존 근거/공통 선행조건/신규 필요로 먼저 대응한 최소 검증안을 제안; 계약 축소 면제 없음.
+- S2-F4 — revise: 정적 재사용 가능성은 있으나 E4 원본 독립 검토가 없다. 문구를 좁히기만 해서는 필수 unknown-member 의무를 닫을 수 없다. 고정 executed262개에도 현재 ID는 없다. 후속: 원본 재사용 확인 또는 기존 test_completed_staging_unknown_members_preserved1개 현재 실행; 후자가 F1과 묶을 수 있는 최소 실행안. 아직 실행하지 않음.
+- S2-F5 — revise: E1–E7 이전 원본을 읽기 목록/입력에 포함하지 못한 Driver 준비 공백이다. Reviewer의 미열람을 전체 재사용 승인으로 바꾸지 않는다. 후속: 원본 경로의 명시 접근과 남은 재사용 판단 필요; 이번 호출14소진으로 추가 호출 없음.
+- S2-F6 — accept: retirement 분기 독립성/단일 fallback, alias의 OLD owner-independent 게시 거부와 root alias 선행 거부는 범위 근거다. 후속: 아래 Work에 근거를 기록하고 조합/alias 확대를 자동 요구하지 않는다.
+- S2-F7 — revise: C5 S18 75+S19 34의96unique/109occurrence와 correction32 미실행 경계를 수용한다. 제품 caller와double 목록 검토는 테스트 본문 의미 대조 전체를 대체하지 않는다. 후속: C5 closure를 부분으로 유지하고 최종 보고의 미검토 모듈/메서드 목록을 그대로 후속 범위로 보존.
+- S2-F8 — accept: well-formed downgrade는 helper 방어 검사이며 apply 수준으로 확대할 수 없다. 후속: helper-level 한계 유지; 추가 실행/수정 없음.
+
+
+#### Recorded Static Scope Rationale
+
+S2가 직접 읽은 제품 소스에서 retirement staging/switch-operation/entry-operation 분기는 독립적인 존재 검사이며 O와 B 동시 조건이 없고 fallback은 단일 next 사슬이다. 따라서 별도 retirement 조합 전수를 새 의무로 만들지 않는다. C2 alias required4행은 owner와 무관한 OLD 게시 함수에서 거부되고 optional4행은 허용된다. COLVIA required ref는 실제 파일이 필요해 NEW root alias guard가 먼저 발화하므로 현재 C1 root 근거와 같은 선행 술어다. 이는 정적 범위 근거이며 실행하지 않은 조합 PASS가 아니다.
+
+M1 wider-module 대조에서 확인된 completed replay snapshot/기존 lock anchor 단언은 M1과 충돌하지 않았고 C4의 실제20행으로 M1 본체를 검증했다. 다만 D3 same-entry 주입 횟수의 기존 ID 실행은 미확인이고 과거 qualification 원본·일부 occupant 본문 대조는 남아 있다. Driver가 고정 입력의 executed.jsonl262개를 읽기 전용 검색한 결과 test_d3_same_entry_scope_unchanged와 test_completed_staging_unknown_members_preserved는 모두0건이었다. 이는 그 고정 실행 집합의 관측이며 모든 역사 기록의 부재를 증명하지 않고 독립 Reviewer의 추가 실행으로 세지 않는다.
+
+#### Remaining Work And Authority Boundary
+
+P2 종료는 아직 불가하다. 최소 실행 후보는 위 기존 ID2개이며 신규 작성 없이 함께 검증할 수 있으나 별도 실행 승인이 필요하다. C1은 OLD pending init/detach의 명령별 요구와 기존 근거를 연결해 부족한 행만 추가하는 계획이 필요하다. 문구 한정으로 필수 의무를 제거하지 않는다. C5 미검토 테스트 본문, observer probe3종의 전체 본문, 과거 E1–E7/qualification 원본 접근·재사용 판단도 남는다. Reviewer의 표에서 C5/T0를 충족으로 표시한 부분은 해당 본문 미검토의 단서를 포함한 부분 근거로만 채택한다. 제품 결함이 재현됐다는 판정은 아니며 미검토를 결함 없음으로 확대하지 않는다.
+
+누적 review14/14회·6482.633158083056/14400초다. Product controller1039/1039·root161/161은 불변이다. 이번 call14를 정상 수신했으므로 추가 review/resume은0회다. Config disarmed, 프로세스 그룹 종료. P2 수락/Done·P3·Git/adopter 변경은 하지 않았다. Raw stream/동일 CLI session과 기존 입력은 잔여 검토·Owner 결과 판단의 소비 대상으로 유지한다. 구현 checkout·실행 root는 아직 필요해 보존하고 자동 정리하지 않는다. 원문/Driver 처분은 기존 Work에서 분리해 보존했으며 current-changes.patch도 최종 bytes로 유지한다.
+
+### P2 Minimal Gap Verification Plan — 2026-10-13
+
+#### Owner Request And Plan Status
+
+Owner 요청: “기존 테스트 2개와 C1 부족 행을 대상으로 최소 검증안을 구체화해줘. 이미 확인한 검증은 반복하지 말고, 남은 독립 검토 범위도 함께 정리해줘. 추가 실행이나 리뷰 호출은 계획 확인 후 승인할게.”
+
+이 절은 계획이며 실행 승인/결과가 아니다. 이번 턴은 소스·기존 결과 읽기와 계획 기록만 수행했다. Product/test import, discovery/collection, controller, reviewer/auth 호출은 모두 0이다. 기존 Work `CHORE-20261009-002`에서 계속하며 새 Work/STATUS pointer를 만들지 않는다. L1 test-only 후속, Standard Work, PLAN → APPROVAL 대기다. 계약·runtime·controls 변경이나 새로운 기술 정책 결정은 포함하지 않는다. Source branch는 `codex/colvia-brand-transition`; 매칭 `.claude/rules`는 없고 기존 test/runner 계약을 따른다. 한국어 주 문서와 English heading은 Toolstead DR-007을 따른다. PLAN/STATUS 방향 변경은 없다.
+
+계획 기준 HEAD는 `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work 제외 tracked diff SHA-256은 `45ed3b8105c840ec94a769e20c6806624e2deeeb5dbf1c12974ae46e959568d7`, entry test SHA-256은 `f9303e1a8c66ca3800889197c30f5b935c3aea519c997a9dc1ae8b00c60ba3ad`다. 이는 이번 읽기에서 확인한 신원이다. 승인 뒤 신규 test-only diff가 생기면 새 base+diff/test hash와 exact selection을 결속하고, 기존 제품/controls의 불변을 따로 확인한다.
+
+#### Smallest Bounded Slice
+
+권고는 기존 ID 2개 + C1 신규 ID 9개를 한 focused batch로 실행하는 것이다. 신규 C1 ID 9개는 명령 칸 9개를 뜻하며 내부 preview 사례는 14개다. OLD init의 root 준비 전/후에 거부 경로가 달라 `after-plan`과 `after-launcher`를 각 칸 안에서 구분한다. 14개를 9개 독립 실행으로 잘못 합산하지 않는다. C1의 유효한 사전 요청이 있는 두 경로에만 아래 apply/recover 확인을 붙인다. 새 runtime 기능이나 전수 prefix matrix를 추가하는 계획은 아니다.
+
+| Existing ID (prefix: test_entry_window_transition.EntryProductTests.) | Exact Obligation | Passing Evidence |
+| --- | --- | --- |
+| `test_d3_same_entry_scope_unchanged` | M1/D3 same-entry 기존 주입 횟수 | baseline와 unavailable 2사례 모두 updated/exit0; unavailable 주입 정확히 1회; 결과에 d3-sync 없음; 두 active release 동일·launcher bytes 일치. 현재 2641–2653행 그대로 실행 |
+| `test_completed_staging_unknown_members_preserved` | D1 완료 뒤 unknown staging 보존 | switch/entry 2사례 모두 exit65·정확한 PRODUCT 메시지; switch만 lock 준비 sync3개, entry sync0; 주입0·전체 snapshot 동일. 현재 2822–2840행 그대로 실행 |
+
+두 ID의 본문과 기존 shared helper는 수정하지 않는다. 두 ID 모두 기존 factory에 있으나 현재 고정 실행 집합에서 실행 근거가 확인되지 않은 항목이다. 신규 검증 수를 늘리기 위해 이전 성공을 다시 선택하지 않는다.
+
+#### C1 Command Coverage And New IDs
+
+`DR-0004:177`의 New / old pending 행을 기준으로 한다. 아래 `new`는 미래 실행 예정이지 PASS가 아니다. OLD switch/repair의 이미 기록된 검증·관측 한계 처분과 기존 C1 80행은 재실행하지 않는다. 이 표는 init/detach 공백만 닫는 제안이다.
+
+| Target State | Init | Update | Rollback | Repair | Detach | Read |
+| --- | --- | --- | --- | --- | --- | --- |
+| OLD pending init | new 01 | new 02 | new 03 | new 04 | new 05 | 01의 두 prefix에서 source status를 함께 확인; 일반 복구 안내의 계약 적합성은 독립 검토 |
+| OLD pending detach | new 06 | new 07 | new 08 | new 09 | 기존 old-detach writer refusal + legacy schema 거부 근거 재사용 | 기존 historical detach reader/auditor 근거 재사용 |
+
+고정할 신규 ID suffix는 다음과 같다. 모두 `test_entry_window_transition.EntryProductTests.` 아래에 둔다.
+
+1. `test_p2_gap_c1_old_init_init`
+2. `test_p2_gap_c1_old_init_update`
+3. `test_p2_gap_c1_old_init_rollback`
+4. `test_p2_gap_c1_old_init_repair`
+5. `test_p2_gap_c1_old_init_detach`
+6. `test_p2_gap_c1_old_detach_init`
+7. `test_p2_gap_c1_old_detach_update`
+8. `test_p2_gap_c1_old_detach_rollback`
+9. `test_p2_gap_c1_old_detach_repair`
+
+각 ID는 isolated synthetic target에서 시작한다. OLD init 01–05는 각 `after-plan` / `after-launcher`를 식별한 subcase 2개이며, OLD detach 06–09는 `after-receipt` 1개다. 첫 오류/실패에서 runner failfast를 적용하고 나머지는 unstarted로 남긴다. fixture 생성에 필요한 OLD 정상 초기화는 target 구성 절차이며 기존 qualification 재실행으로 세지 않는다.
+
+#### Fixture, Invocation And Oracle
+
+- OLD init: retained OLD source의 실제 `workspace_init_preview/apply`와 builtin `inject_at`만 사용한다. `after-plan`은 canonical OLD init plan만 남고 format/binding/launcher가 없는 상태, `after-launcher`는 OLD release·receipt·실행 가능한 hv2가 있지만 binding이 없는 상태다. fixture metadata로 OLD release identity, import origin, exact plan/token, 실제 InjectedCrash point 및 prefix 구성·bytes/mode를 확인한다. 임의 JSON으로 pending을 꾸미거나 OLD source를 patch하지 않는다.
+- OLD detach: 현재 `fixed_old(detach=True)`와 같은 actual OLD API recipe를 쓴다. canonical schema2 detach receipt가 게시되고 기존 OLD binding/launcher/product/truth가 보존된 `after-receipt` prefix다. Update 07에서만 OLD 정상 설치와 detach 중단 사이에 같은 target의 유효한 NEW transition preview/request/token을 보관할 수 있도록 전용 fixture helper를 둔다. 기존 shared helper의 의미는 바꾸지 않는다.
+- 모든 새 preview는 NEW independent-source CLI, `--source-checkout`, `--profile entry-1`, 명령별 유효 인수를 사용한다. parser 오류·잘못된 confirmation·임의 forged request를 목표 거부의 증거로 세지 않는다. Repair backup은 그 테스트 WORK 안의 아직 없는 경로다.
+- 01 Init: OLD init 이전 같은 target에서 얻은 유효한 NEW init request를 OLD pending 생성 후 apply와 recover apply에 각각 사용한다(2 prefixes × 2 attempts). 요청과 token은 변경하지 않는다. 실제 OLD request로 NEW source가 exact recovery를 시도하는 경우도 각 prefix에서 1회 확인하며, 이 2건은 source identity fence로 별도 표기한다.
+- 07 Update: OLD detach 이전 같은 target에서 얻은 유효한 NEW transition request로 apply와 recover apply를 각 1회 확인한다. preview가 없어서 임의 transition plan을 만들지 않는다.
+- 나머지 apply 조합은 추가 실행하지 않는다. OLD init에는 active binding이 없어 지원되는 update/rollback/repair/detach 요청을 발급할 수 없다. OLD detach 시작 전의 checkout-1에 대해서도 NEW rollback/repair/detach 요청은 계약상 발급되지 않는다. 해당 writer의 mutation 전 shared observation/plan/source gate를 정적으로 대응하고 독립 리뷰에서 축약 적합성을 판단한다. 이를 “모든 apply 조합 실행 PASS”로 적지 않는다. Reviewer가 별도 유효 요청 경로를 제시하면 자동 확대하지 않고 계획으로 돌린다.
+
+정적 소스에서 예상한 정확한 거부는 아래와 같다. 실행 기대를 성공 출력에 맞춰 바꾸지 않는다.
+
+| Calls | Expected First Refusal | Source Basis |
+| --- | --- | --- |
+| NEW Init preview + 사전에 받은 NEW Init request apply/recover, 두 OLD init prefix 및 detach Init preview | exit65 / `HV2-WORKSPACE-PRODUCT` / `different initialization plan` | product.py 1060; candidate가 달라 persisted OLD plan과 일치할 수 없음 |
+| 실제 OLD Init request의 NEW-source recover, 두 init prefix | exit65 / `HV2-WORKSPACE-PRODUCT` / `source changed since init preview` | product.py 1113; 별도 source-identity refusal, pending guard로 오인하지 않음 |
+| init after-plan의 Update/Rollback/Repair/Detach preview | exit65 / `HV2-WORKSPACE-PRODUCT` / `root is not ready` | product.py 832; workspace.py 312–319 |
+| init after-launcher의 Update/Rollback/Repair/Detach preview | exit65 / `HV2-WORKSPACE-PRODUCT` / `product unavailable, malformed or unstable` | product.py 868의 absent binding read → 1272–1273의 OSError 변환 |
+| detach Update/Rollback/Repair preview와 Update apply/recover | exit65 / `HV2-WORKSPACE-PRODUCT` / `root is not ready` | workspace.py 307–310 detach-candidate → product.py 832 |
+
+각 호출 직전/직후 target 전체 snapshot(bytes/type/mode, binding/launcher/receipt/truth/unknown member 포함), exact request bytes/token, NEW entry-transition receipt 부재를 비교한다. Init은 init receipt 수가 늘지 않아야 한다. Repair backup은 계속 부재여야 한다. Writer observer의 mutation event가 없어야 하며 invocation 자체 기록/diagnostic event와 제품 mutation을 구별한다. 통과한 negative를 이후 다른 호출로 오염시키지 않도록 매 호출 전 기준을 다시 읽는다. 기존 snapshot+observer로 지원하지 않는 새로운 관측 조건이 필요하면 controls를 바꾸지 않고 중단한다.
+
+Read는 01에서 NEW source status의 두 init prefix `partial`/exit14, active runtime 성공 주장 없음·snapshot 동일을 확인한다. 현재 소스상 after-plan 응답에는 matching OLD source 안내가 없을 수 있고 after-launcher 안내도 generic independent source다(product.py 1183–1188). DR의 “matching old source requirement”를 만족하는지는 별도 semantic review 의무다. 단순 partial PASS만으로 그 문구 의무를 닫거나 이 계획에서 계약을 축소하지 않는다. 제품/문서 변경이 필요하다는 판단이 나오면 별도 처분·승인 대상이다.
+
+회계: 신규 C1 9 ID = preview 14건 + apply/recover 8건(01의 6 + 07의 2) + init status 2건. 기존 ID2개의 내부 사례4개와 구분한다. Subcase metadata에 prefix/operation/invocation을 남겨 ID count와 실제 확인 수가 섞이지 않게 한다.
+
+#### Files And Execution Reuse
+
+승인 뒤 변경할 제품 저장소 파일은 `tests/test_entry_window_transition.py`(신규 9 methods와 전용 OLD-prefix helper/program), 이 Work(계획/입력/결과/처분)뿐이다. 기존 P2 row constant, 제품 runtime, observer/runner/common/controller/SBPL은 그대로 둔다. private bundle의 기존 P2 아래에 이번 exact selection/input/결과 pointer를 추가하되 별도 Work나 중복 상태 장부를 만들지 않는다.
+
+재사용 root: `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-s3b-fsync-20261013-r006`. Git worktree가 아닌 기존 bounded execution directory다. 이번 읽기에서 `acquire-base`, `canary-base`, `smoke-base`의 execution_pass, 현재 config와 controls/runtime/Git/system-config 동일 및 controls 실제 해시 일치를 확인했다. `collect-p2-correction` / `focused-correction` 두 경로는 없었다. Controller `completed()`는 이 세 준비 결과에 동일 source를 요구하지 않으며, 변경된 tests/source digest는 새 collection으로 결속한다(controller 59–69, 108–132). 따라서 새 root/acquire/canary/base smoke를 반복하지 않는다. 이전 원본 결과와 이미 사용한 슬롯은 변경하지 않는다.
+
+승인 뒤 첫 mutation 전에 다른 process/agent가 이 root를 사용하지 않는지, 슬롯 부재·source/OLD/controls/runtime identity·보존과 저장 여유를 다시 확인한다. 경로 사용 여부가 달라지거나 기존 준비 근거가 무효면 중단한다. 자동 새 root, 기존 슬롯 삭제·덮어쓰기, smoke 재실행으로 우회하지 않는다. 96GiB 보존 한도와 host 여유 조건을 유지하고 storage 부족 시 기존 산출물 삭제나 quota 확대를 추정하지 않는다.
+
+실행은 기존 `colvia-entry-cleanup-10/controller.py`의 고정 isolated bootstrap과 macOS sandbox를 그대로 사용한다. Runtime은 기존 CPython 3.14.7 exact path/SHA, Git·OLD hash도 기존 config에 고정한다. Work cwd는 source checkout, 쓰기는 해당 slot WORK/evidence로 제한하며 네트워크는 차단한다. Product/test subprocess는 controller process group 안에 유지한다.
+
+| Proposed Invocation | Selection / Bound | Maximum |
+| --- | --- | --- |
+| controller `collect p2-correction` | 신규 후보 목록만 수집; test body 실행 없음. exact source/controls/collection identity와 11 ID 각각 occurrence1 확인 | 300초, 1회 |
+| controller `focused correction` | 위 기존 2 + 신규 C1 9, 총 11 ID / 11 occurrence. 그 밖의 ID 선택 금지 | 1200초(cleanup 포함), 1회 |
+
+두 명령은 README의 `PYTHON -I -S -B -c <fixed runpy bootstrap> CONTROLS controller.py INPUT INPUT_SHA256 MODE SLOT` 형식을 쓴다. 승인 뒤 test-only bytes 확정 → immutable collect input → collection hash 확인 → focused input 생성 순서로 결속한다. 지금 존재하지 않는 미래 digest를 승인된 값인 것처럼 기입하지 않는다. Collection도 승인 대상 controller invocation이다.
+
+필요한 예산 제안: controller cap `1039 → 1041`(추가 2회), root cap `161` 유지(추가 0), 승인 후 이 slice에 controller 합계 최대 1500초. 기존 시간창을 자동 연장하지 않는다. Reviewer cap과 별개다. Authoring/입력 준비는 최대 90분의 task 시간, 초과 예상이면 실행 전 보고한다. 위 숫자는 아직 승인되지 않았다.
+
+#### Independent Review Remaining Scope
+
+남은 범위를 두 번의 fresh read-only review로 나누는 안이다. 기존 A/B/C/S1/S2의 완료된 항목·262개 실행 원본 전수·큰 matrix를 다시 검토시키지 않는다. 필요한 계약/확정 finding/Driver 처분은 좁은 선행 근거로 제공한다. 이전 응답의 요약을 미검토 본문 대신 사용하지 않는다.
+
+| Proposed Call | Exact Purpose | Required Inputs And Completion |
+| --- | --- | --- |
+| R15, authoring 후·실행 전 | 새 11-ID 선택의 충분성/정확한 oracle, C1 prefix/명령/apply 축약·Read 안내 의무; 잔여 C5/M1/T0 test-side semantic review | 신규 test-only diff·고정 ID map·본 계획; 아래 C5 45 bodies의 미검토 부분과 실제 호출 helper; M1 occupant14곳 잔여·observer probe3종·compact declarations. 기존 product caller 확인 결과를 재사용하고 의존 hunk만 읽는다. 새 계약/제품 수정/추가 test 필요가 생기면 처분 후 STOP |
+| R16, 한정 실행 뒤 | 새 11 ID의 실제 실행/입력 결속, E1–E7·과거 qualification의 아직 확인 못한 재사용 판단, 남은 의무의 누적 처분 | 새 collection/selection/counts/executed/result와 필요한 trace, R15 원문/Driver 처분, 아래 실제 역사 입력과 원본 결과. 성공/실패/정적 추론/미검토를 분리한 최종 의무표. 이미 확인한 전체 matrix·C5 PASS를 재실행하거나 전부 다시 읽지 않음 |
+
+R15의 C5 본문 45개는 S2가 밝힌 미검토 module 목록을 기준으로, 이미 읽었다고 보고한 full-body 구간을 제외한 보수적 목록이다. “45개 전체를 한 번도 안 읽었다”는 주장이 아니다. 일부 diff/line이 이미 읽힌 메서드는 그 미검토 부분과 helper만 읽는다. 아래 표기 행수는 현재 source 기준이며 입력 digest가 바뀌면 선언 위치를 다시 결속한다. 기존 S18/S19 selected 결과 96 unique /109 occurrence를 재사용하며 이 45개를 다시 실행하지 않는다. 이 목록 바깥에서도 S1/S2가 full-body 검토를 완료한 근거가 없다고 드러나면 누락을 명시해 STOP하며 자동으로 전체 suite를 확대하지 않는다.
+
+M1의 occupant14곳은 S2가 남긴 3개 module(`test_general_work`, `test_worktree_execution`, `test_checkout_window_transition`)의 관련 function/helper body에 한정한다. 문자열 hit 수를 새로운 test 수로 세지 않는다. C5 45개와 겹치는 본문은 한 번만 검토한다. 완료 replay/lock anchor와 C4 0337–0356의 이미 확인된 부분, 선택 보강인 ProductLifecycleOutputLimitTests 6개의 실행은 제외한다. 과거 qualification에서는 M1 변경과 관련된 same-entry 중간 collision/lock assertion만 현재 hunk와 대조한다.
+
+T0/D4 잔여는 entry test에 내장된 `OBSERVER_*_PROBE` 3종 전체 body와 authoring `p2-compact-declarations.py`의 변환 의미다. 프로브 실행/T0 전체 반복은 하지 않는다. 3종의 patch 범위·원상복구·외부 I/O/observer 동작 변화 여부, 이미 실행된 원본과의 신원 연결을 읽는다.
+
+E1–E7 입력 누락 재발 방지: 다음 기존 preparation directory의 manifest/result가 참조하는 exact invocation, source/test delta, parent result/inputs, selected executed rows, 필요한 raw witness 경로까지 읽기 허용 목록과 digest map에 명시한다. root directory만 알려주고 실제 원본은 접근 불가인 상태로 호출하지 않는다.
+
+- `p2-preparation-01/contracts-d3-01`: D3 과거 qualification 및 same-entry 회귀 의무.
+- `p2-preparation-01/launcher-prefix-01` / `binding-prefix-01`: E1 N/O/binding 재사용 중 대표 회귀로 직접 대체되지 않은 selector와 byte identity.
+- `p2-preparation-01/release-publication-01` / `release-sync-fault-01` / `release-sync-fault-02`: E2의 원래 근거 → 현재 A2 대체 범위. 원래 모든 trace를 다시 심사하지 않음.
+- `p2-preparation-01/driver-p2-batch-02/candidate-01` through `candidate-05`: E3–E7, 실패02/03과 성공/회복04/05의 경계, failfast/control 부분 근거. 모든 후보를 성공으로 합산하지 않음.
+- `p2-full-execution-01/candidate-lock-resume-29`와 그 result가 가리키는 실패 root: S18/S19 색인 밖 실패의 원본 및 이후 승인된 correction 연결. 재실행 없음.
+
+이번 준비에서 candidate01–05 `result.json`을 열어 원본 path reference 36/14/29/9/13개가 모두 존재함을 확인했다(중복 제거는 각 result 내부 기준). 이는 접근 경로 확인이며 raw 내용/해시/재사용 판정의 독립 검토를 대신하지 않는다. 승인 뒤 각 packet의 모든 명시 파일·원본 참조가 allowlist 내부이고 readable인지, exact base/diff+untracked reviewed inputs가 포함됐는지 호출 전 검사한다. 미설명 drift/누락 경로가 있으면 CLI 호출 0회로 중단한다. 원본이 있는 한 full source 복제/새 archive는 만들지 않는다.
+
+Reviewer는 기존과 같은 Claude Opus 5.5 High, 구독 `claude.ai/firstParty` 인증 경로를 비밀값 없이 확인한 fresh session, Read/Glob/Grep만 허용한다. shell·test·edit·network/MCP 도구를 열지 않는다. 두 호출 모두 source/model/session/tool 경계를 기록한다. 전송 전 bounded input 크기를 점검하고 기존 60k 참고 token 기준을 유지한다; 참조 tokenizer 수치이며 실제 Claude token 확정값이 아니다. 넘치면 자동 압축/추가 분할·추가 호출하지 않고 계획으로 돌아온다.
+
+필요한 리뷰 cap 제안은 `14 → 16`, 추가 최대 2회다. 현재 누적 `6482.633158083056 / 14400초`에서 총 시간 한도를 늘리지 않는다. 각 packet은 약 20분 이내 읽을 수 있는 범위로 구성하되 시간 추정은 승인 또는 자동 취소 권한이 아니다. 기존 no-wall-time-kill 정책을 유지하고 세션이 살아 있는 상태에서 임의로 종료하지 않는다. 누적 예산을 넘거나 quota 오류/응답 불완전/입력 drift가 있으면 다음 호출·자동 resume/retry를 하지 않는다. 시작 전 사용량·인증 확인이 필요하며 reset 시각이나 이전 quota를 현재 값으로 추정하지 않는다.
+
+#### Stop Rules, Done Criteria And Preservation
+
+승인 순서: test-only authoring/입력 준비 승인 → R15 한정 검토 → Driver 처분으로 범위 안의 계획이 성립한 경우에만 승인된 controller 2회 → R16 한정 결과/재사용 검토 → Driver 통합 보고 → 별도 Owner P2 수락 판단. Reviewer는 승인권자가 아니며 발견한 scope 변경을 자동 적용하지 않는다. R15 실패/미해결 필수 항목은 다음 실행을 막는다. Reviewer 호출 없이 먼저 실행하는 순서로 임의 변경하지 않는다.
+
+완료 기준은 11 selected/11 run, failure/error/skip/unstarted/unfinished0, C1의 14 preview+8 apply+2 status 하위 확인과 각 exact refusal/보존 단언 충족, 두 기존 ID의 명시 단언 충족, 입력 불변·자연 종료·process group 정리, 원본 응답과 Driver accept/revise/defend/needs-user 및 재사용 근거의 기록이다. 정적 apply 축약·Read 안내·과거 qualification·C5 미검토가 남으면 그것을 명시하고 P2 완료로 바꾸지 않는다.
+
+첫 예상 밖 거부/결과, fixture 부적합, read/write 경계 실패, controller budget/storage/identity 불일치, call/root cap 초과는 즉시 STOP/retry0다. 실패 보존 후 exact correction과 추가 실행은 새 승인 없이는 하지 않는다. 제품 결함을 발견해도 이 test-only 승인으로 runtime을 수정하지 않는다. 이미 통과한 모든 P2 영역·전체 suite·C5 96개·T0·기존 C1 80개를 반복하지 않는다. P2 Done/STATUS/P3/P4/Git/adopter 변경은 이 계획 밖이다.
+
+되돌리기 비용은 낮다: test-only 추가와 private inputs를 한 묶음으로 되돌릴 수 있고 runtime/contract는 불변이다. 기존 변경을 reset하거나 역사 결과를 삭제하지 않는다. 원본 raw는 이번 잔여 검토/Owner 판단의 소비 대상이 끝날 때 보존 필요를 다시 판단한다. 현재 source checkout과 지정 실행 root는 구체적인 다음 사용이 있어 유지한다. 새로운 영구 review 사본·실행 전후 source tree·중복 manifest 묶음을 기본 산출물로 만들지 않는다.
+
+현재 실제 수치는 controller1039/1039, root161/161, review14/14로 유지한다. 위 cap 증가·새 11-ID 실행·리뷰2회는 모두 미승인 제안이다. 사용자의 “계획 확인 후 승인” 지시에 따라 여기서 멈춘다.
+
+#### C5 Remaining Body Index
+
+아래는 재실행 목록이 아니라 독립 읽기 검토의 최대 45-method 범위다. 필요한 helper는 호출관계로 한정하고 이전 검토 완료 body 및 중복 import occurrence는 다시 세지 않는다.
+
+- `test_productization_safety.py` — 24개:
+  - `SingleHomeRuntimeTests.test_inventory_exact_25_paths_and_no_retired_modules` — 현재 186–192행.
+  - `SingleHomeRuntimeTests.test_exact_initial_product_verification_is_read_only` — 현재 194–198행.
+  - `SingleHomeRuntimeTests.test_real_default_runtime_connects_intent_and_work_writers` — 현재 205–210행.
+  - `SingleHomeRuntimeTests.test_source_writer_default_cannot_impersonate_installed_runtime` — 현재 212–218행.
+  - `SingleHomeRuntimeTests.test_modified_or_nonexecutable_launcher_is_refused` — 현재 304–307행.
+  - `SingleHomeRuntimeTests.test_contract_inventory_bytes_sizes_and_paths_are_strict` — 현재 363–384행.
+  - `ActualWorkspaceInitTests.test_actual_preview_apply_replay_and_read_only_status` — 현재 687–708행.
+  - `ActualWorkspaceInitTests.test_exact_init_recovery_after_every_owned_prefix` — 현재 723–734행.
+  - `ActualWorkspaceInitTests.test_source_changed_after_preview_is_refused_before_root_creation` — 현재 749–756행.
+  - `ActualWorkspaceInitTests.test_port_product_launcher_collision_and_link_preserve_project` — 현재 600–612행.
+  - `ActualWorkspaceInitTests.test_real_worker_launcher_cannot_write_control_or_itself` — 현재 828–835행.
+  - `ActualWorkspaceInitTests.test_switch_recovers_every_published_prefix_with_changed_launcher` — 현재 983–1005행.
+  - `ActualWorkspaceInitTests.test_repair_exact_active_preserves_completed_truth_and_originals` — 현재 1225–1243행.
+  - `ActualWorkspaceInitTests.test_detach_review_removal_race_is_bounded_without_further_deletion` — 현재 1444–1460행.
+  - `ActualWorkspaceInitTests.test_detach_review_plain_reader_rejects_forged_launcher_origin` — 현재 1440–1442행.
+  - `ActualWorkspaceInitTests.test_production_launcher_ignores_environment_and_project_source_shadow` — 현재 787–791행.
+  - `ActualWorkspaceInitTests.test_repair_missing_launcher_and_mode_only` — 현재 1245–1253행.
+  - `InventoryDeclarationTests.test_worker_literal_and_legacy_absence` — 현재 2475–2481행.
+  - `InventoryDeclarationTests.test_candidate_code_is_not_executed` — 현재 2483–2485행.
+  - `InventoryDeclarationTests.test_unknown_dynamic_duplicate_and_nested_declarations_refused` — 현재 2487–2497행.
+  - `InventoryDeclarationTests.test_other_binding_forms_refused` — 현재 2499–2518행.
+  - `InventoryDeclarationTests.test_oversized_malformed_and_parser_failures_refused` — 현재 2520–2526행.
+  - `InventoryDeclarationTests.test_old_exact_release_remains_readable` — 현재 2555–2561행.
+  - `InventoryDeclarationTests.test_rehashed_mispackaged_release_is_refused_without_writes` — 현재 2563–2570행.
+
+- `test_worktree_execution.py` — 7개:
+  - `InstalledWorkerPublicationTests.test_installed_checkpoint_cannot_absorb_submitted_worker_result` — 현재 452–468행.
+  - `InstalledWorkerPublicationTests.test_installed_local_pending_protects_worker_apply_and_view` — 현재 470–501행.
+  - `InstalledWorkerPublicationTests.test_installed_entry_publishes_worker_result_and_worker_entry_refuses` — 현재 503–506행.
+  - `WorkerPublicationTests.test_worker_submit_records_review_without_applying_content` — 현재 93–101행.
+  - `WorkerPublicationTests.test_missing_wrong_dirty_worker_and_control_drift_leave_no_truth` — 현재 103–114행.
+  - `WorkerPublicationTests.test_required_work_reference_must_match_retained_post` — 현재 157–161행.
+  - `WorkerPublicationTests.test_human_baseline_refresh_crash_drift_resume_and_replay` — 현재 174–187행.
+
+- `test_umbrella_lifecycle.py` — 4개:
+  - `UmbrellaInventoryTests.test_windows_require_their_own_exact_membership` — 현재 32–40행.
+  - `UmbrellaInventoryTests.test_old_window_is_read_only_and_all_downgrades_refuse` — 현재 42–49행.
+  - `InstalledUmbrellaLifecycleTests.test_q_created_parent_on_p_then_detach_plain_refs_and_korean_view` — 현재 117–157행.
+  - `InstalledUmbrellaLifecycleTests.test_detach_missing_umbrella_member_refuses_apply_and_resume` — 현재 160–181행.
+
+- `test_git_candidate_reuse.py` — 1개:
+  - `InstalledCandidateReuseTests.test_candidate_reuse_fast_forward_retirement_and_next_baseline` — 현재 153–172행.
+
+- `test_topology_observation_sharing.py` — 1개:
+  - `TopologyObservationSharingTests.test_schema2_and_worker_status_keep_full_checks` — 현재 372–438행.
+
+- `test_view_observation_sharing.py` — 1개:
+  - `ViewObservationSharingTests.test_product_binding_change_at_three_points` — 현재 204–205행.
+
+- `test_general_work_recovery.py` — 1개:
+  - `SerialWriterTests.test_prepare_and_reader_are_read_only` — 현재 273–276행.
+
+- `test_worktree_history.py` — 1개:
+  - `InstalledWorkerHistoryTests.test_q_created_worker_and_local_survive_rollback_and_continue_before_detach` — 현재 54–92행.
+
+- `test_worktree_integration.py` — 1개:
+  - `InstalledTwoWorkerIntegrationTests.test_two_workers_same_file_stale_refresh_rebase_and_record_only_commit` — 현재 126–203행.
+
+- `test_worktree_pending_lifecycle.py` — 2개:
+  - `InstalledPendingLifecycleTests.test_pending_selection_blocks_other_writers_and_exact_repair_preserves_ticket` — 현재 125–126행.
+  - `InstalledPendingLifecycleTests.test_pending_worker_blocks_other_writers_and_exact_repair_preserves_ticket` — 현재 128–129행.
+
+- `test_worktree_process_recovery.py` — 1개:
+  - `InstalledWorkerInterruptionTests.test_kill_after_first_file_resumes_without_worker_checkout` — 현재 278–279행.
+
+- `test_worktree_process_safety.py` — 1개:
+  - `InstalledWorkerProcessTests.test_same_ticket_two_processes_select_once_then_read_only_replay` — 현재 158–159행.
+
+### P2 Minimal Gap Plan Authorization And Preparation Stop — 2026-10-13
+
+Owner는 “좋아. 제안한 계획대로 승인할게. controller 한도는 1041회, 리뷰 한도는 16회로 늘리고 실행 root는 161개로 유지해줘. 실행 전 리뷰부터 순서대로 진행하고, 이미 확인한 검증은 반복하지 마. 실패나 범위 확대가 필요하면 자동 수정·재시도 없이 중단하고 보고해줘.”라고 승인했다.
+
+승인 한도는 controller1041회, review16회, 실행 root161개다. 실제 사용은 controller1039회, review14회(누적6482.633158083056/14400초), root161개로 그대로다. 기존 계획의 신규 test-only authoring → R15 → controller2회 → R16 순서와 stop/retry0 조건을 유지한다. cap 변경은 호출 소비나 P2 수락이 아니다.
+
+첫 mutation 전 사전 확인에서 HEAD/entry test SHA, controls/runtime/Git/system config 실제 신원, 기존 acquire/canary/smoke 결과와 controls/tool 결속, 두 실행 슬롯의 부재, controller.lock의 즉시 exclusive 획득 가능을 확인했다. 해당 lock은 확인 직후 해제했다. Root는 기존 `hv2-reference-private-colvia-p2-s3b-fsync-20261013-r006`이며 host free 관측은34037760000bytes였다. 전체96GiB 보존 한도의 재계산은 아직 하지 않았다.
+
+마지막 process 확인을 위한 읽기 전용 `ps -axo pid=,command=` 호출은 Codex host sandbox에서 실행되지 못했다. Python subprocess.Popen이 `PermissionError: [Errno 1] Operation not permitted: 'ps'`를 발생시켜 준비 명령이 exit1로 끝났다. 출력 필터는 대상 root가 포함된 행만 보여주도록 작성했으며 프로세스 목록 자체는 수신하지 못했다. 따라서 다른 프로세스의 root 사용 여부는 미확인이다. Lock 가능만으로 전체 미사용을 증명하지 않는다.
+
+Owner의 실패 시 STOP/retry0 지시에 따라 sandbox 밖 재호출, 대체 process 조회, 신규 test authoring, reviewer/auth 호출, collection/controller 실행은 수행하지 않았다. 제품 검증 결과나 reviewer verdict는 새로 생기지 않았다. 기존 source/test/controls는 그대로이며 변경은 이 승인·중단 기록뿐이다. 중단 때문에 reviewer/controller 사용 수를 늘리지 않는다.
+
+재개에 필요한 최소 조치는 같은 대상 root를 위한 OS process 읽기 조회1회를 host sandbox 밖에서 허용하는 것이다. 제안 명령은 Python에서 `/bin/ps -axo pid=,command=`를 호출하고 해당 root가 포함된 process의 PID만 출력하는 읽기 전용 조회다(현 조회 프로세스 자신은 제외). 결과가 사용 중이면 수정 없이 보고한다. 이 환경 조회의 재시도 승인이 있을 때만 수행하며, 통과하면 승인된 test-only 준비/R15 순서로 복귀한다. 다른 준비 실패·추가 범위는 다시 STOP한다. 이 제안은 reviewer/controller/root cap을 늘리지 않는다.
+
+기존 checkout과 execution root는 후속 사용이 남아 유지한다. 이 Work 변경은 기존 durable current-changes.patch에 갱신한다. Git/STATUS/P2 Done/P3/P4/adopter 변경은0이다.
+
+### P2 Minimal Gap Preparation Resume And Authoring — 2026-10-13
+
+Owner는 sandbox 밖 동일 root 사용 여부 조회1회 재시도를 승인하고 미사용이면 기존 준비→R15 순서로 계속하라고 지시했다. 승인된 `/bin/ps -axo pid=,command=` 조회는 정상 종료했고 대상 root를 참조하는 자기 프로세스 외 PID는0개였다. 명령행에 나타나지 않는 모든 파일 접근의 부재를 증명하는 것은 아니며, 앞서 확인한 root의 task 소유·빈 슬롯·controller lock과 함께 재사용 근거로 삼는다. 조회 자동 반복은0회다.
+
+승인된 test-only authoring을 적용했다. 신규 C1 method9개와 전용 OLD-prefix program/helper만 추가했고, 기존 두 selected tests 및 기존 함수/메서드 본문은 AST 대조로 그대로임을 확인했다(둘러싼 suite factory는 신규 정의 추가로 달라진다). CLI parser에서 repair는 --profile 옵션이 없으므로 계획의 “명령별 유효 인수”에 따라 repair에만 --profile을 넣지 않았다. 동작/명령 범위 변경이 아니라 parser 거부를 목표 guard로 오인하지 않기 위한 실제 argv 구체화다.
+
+입력은 기존 bundle의 `minimal-gap-verification-35/test-only.patch`, `selection.json`, `authoring-identity.json`에 결속한다. 실행 전 R15의 소비 대상이며 전체 source 복제는 남기지 않는다. OLD after-plan/after-launcher/after-receipt 실제 builtin injection, NEW preview14/apply8/status2의 oracle을 작성했다. `gap-cases.jsonl`은 향후 해당 테스트 WORK 안에서 subcase 결과를 식별하는 한정 출력이며 아직 생성하지 않았다.
+
+현재 controller1039/1041, review14/16, root161/161이다. 제품/controls 수정, collection/test/controller/reviewer 호출은0이며 지금은 R15 준비 단계다. 이 기록과 test-only 추가의 durable patch를 갱신한다. R15 미해결 필수 finding/실패/추가 범위가 있으면 실행하지 않고 STOP한다.
+
+### P2 R15 Authentication Preparation Stop — 2026-10-13
+
+승인된 OS process 조회 재시도는1회 성공했고 대상 root의 matching PID는0개였다. 그 뒤 승인된 준비를 완료했다. 기존 test 본문/helper 보존, C1 신규9개와 exact selection11개, test-only.patch·새 source digest `52e58e00b1fc69b54410f19b6fd1c9a0f027670d11ed6295b7689f7d293cbc93`의 collect input, R15 Read/Glob/Grep-only fresh-session 실행기와 고정 입력233개를 준비했다. R15 Work 제외 code diff SHA는 `7982a3822718583e333f5d5ae431d852222128452bb8f98e47e3b11162238c42`다. Source/probe body의 필요한 읽기 위치를 안내했고 이전 완료 검토의 반복을 제외했다. Owner는 준비 중 현재 사용률을 “5%”라고 답했다. 5시간 사용률로 기록했으며 주간 비율은 미제공으로 유지했다.
+
+R15 inspect-only는 exit0, 고정 입력/Work prefix/HEAD/code diff 결속 PASS, armed=false를 반환했다. 이어 비밀값을 출력하지 않는 인증 확인 wrapper에서 alternate auth 환경변수7개는 모두 absent였다. `claude auth status`가 zero exit를 반환하지 않아 wrapper가 `AssertionError: authentication status unavailable`로 exit1 종료했다. CLI 자체의 정확한 exit code/stdout/stderr는 이 wrapper가 보존하지 않았으므로 실패 원인을 좁힐 수 없다. 샌드박스 제한 또는 실제 인증 상태 중 어느 것인지 확정하지 않으며 로그인이 무효라고 판정하지 않는다.
+
+Owner의 STOP/retry0 지시에 따라 sandbox 밖 auth 재호출이나 대체 인증 조회를 하지 않았다. R15 reviewer 호출0, 새 test/discovery/controller 실행0. `review-15/read-launch-admission.json`과 `read-run-*`이 없으며 config는 disarmed다. 현재 controller1039/1041, review14/16, root161/161, review시간6482.633158083056/14400초다. 모델 응답·Reviewer verdict는 아직 없다.
+
+다음 최소 재개 제안은 준비된 R15 실행기를 host sandbox 밖에서1회 실행해 내부 `claude auth status`로 구독 경로를 확인하고 정상일 때만 같은 실행에서 R15를 호출하는 것이다. 별도 사전 auth 호출을 또 하지 않는다. 최근 사용량10분 gate·정확한 승인/누적 예산·입력 불변 조건은 유지한다. 인증 실패/예상 밖 경로면 reviewer 호출 없이 STOP, R15가 실패하거나 미해결 필수 finding/범위 확대가 필요하면 controller 전에 STOP한다. 이 auth 재시도는 아직 승인되지 않았다.
+
+작성한 테스트는 미실행 상태로 유지하고 기존 current-changes.patch에 보존했다. `minimal-gap-verification-35/`의 test-only.patch·selection·authoring identity·collect input·R15 안내/입력 결속·pre-review-stop.json은 다음 승인된 R15/실행 및 Owner 판단의 소비 대상이다. probe-literals.md는 거대한 escaped literal3개를 읽을 수 있게 펼친 동일 값의 review projection이며 실행 대체 소스가 아니다. 전체 source 사본은 남기지 않았다. Work/테스트 외 제품/controls·Git/STATUS/P2 Done/P3/P4/adopter 변경0, 기존 실행 root는 재사용 계획이 있어 유지한다.
+
+### P2 R15 Automatic Approval Review Block — 2026-10-13
+
+Owner는 샌드박스 밖 인증 확인 재시도1회와 정상 구독 경로 확인 시 준비된 R15 호출 제안을 “승인”했다. 실행 전 config를 armed로 바꿨으나, auth/reviewer 명령을 포함한 exec_command는 자동 승인 검토에서 프로세스 생성 전에 거부됐다. 같은 명령에 포함했던 이전 authorization append도 실행되지 않았다.
+
+거부 사유 원문: “The command will invoke an external Claude reviewer with access to private repository/source evidence; although R15 and one authentication retry were approved, the transcript does not explicitly authorize exporting this sensitive payload to that destination.” 자동 승인 검토는 비공개 repository/source evidence를 외부 Claude Reviewer 서비스로 전송하는 명시적 승인을 요구했다. 이를 인증 실패나 Reviewer verdict로 해석하지 않는다.
+
+우회/재호출 없이 config를 다시 disarmed로 바꿨다. read-launch-admission.json과 read-run directory가 모두 없음을 확인했다. 이번 auth 재시도0, reviewer 호출0, controller 실행0이다. 실제 사용은 controller1039/1041, review14/16, root161/161, review시간6482.633158083056/14400초로 유지된다. 기존 test-only 작성물/입력과 current-changes.patch를 보존하며 checkout/root는 승인된 후속 작업의 사용 대상이므로 유지한다.
+
+재개에 필요한 결정은 R15에 한정된 비공개 소스·테스트·계약·검증/기존 리뷰 근거를 기존 claude.ai 구독 CLI를 통해 외부 Claude 서비스에 제공하는 명시적 허용이다. 이는 비공개 자료가 로컬 환경을 벗어나는 동작이며 공개 게시와는 다르다. 기존 Read/Glob/Grep-only·declared directory 경계와 비밀값/실제 adopter 데이터 제외를 유지한다. 허용돼도 호출 시점의 fresh quota10분 gate와 입력 불변 확인이 필요하며, 이미 만료된 사용량을 재사용하지 않는다. 제품/controls 수정·Git/STATUS/P2 Done/P3/P4 변경0이다.
+
+### P2 R15 External Review Authorization — 2026-10-13
+
+Owner는 R15 범위의 비공개 소스·테스트·계약·검증 자료를 기존 claude.ai 구독 CLI를 통해 외부 Claude 서비스에 제공하는 명시적 허용 질문에 “승인합니다. ㄱㄱ”라고 답했다. 앞서 승인한 외부 sandbox 인증 확인 재시도1회 및 정상 구독 경로 확인 시 R15 호출을 이 범위로 진행한다. 기존 사용량 확인의10분이 경과해 새로 확인했고 Owner는 “지금도5%”라고 답했다. 주간 사용률은 미제공이며 추정하지 않는다. 이전 자동 승인 차단은 auth/reviewer 실행 전이므로 호출을 소비하지 않았다. 새 범위/실패 시 STOP, 실행 전 R15 필수 미해결이면 controller 금지, 나머지 기존 한도/읽기 경계를 그대로 유지한다.
+
+### P2 R15 Result And Driver Stop — 2026-10-13
+
+#### Execution Identity And Boundary
+
+명시적 비공개 자료 외부 전송 승인과 현재5시간 사용률5% 재확인 뒤, 준비된 `minimal-gap-verification-35/review-15/read-review.py --run`을1회 실행했다. 인증 재시도는 기존 claude.ai / firstParty / pro 경로로 성공했다. 실제 모델은 Claude Opus5.5(`claude-opus-5-5`), effort high, 새 CLI 세션 `8168930a-40ac-4701-85d4-4bd35e9849d7`다. Read/Glob/Grep만 초기화됐고 MCP0, shell/test/edit/delegation 도구0이다. CLI 설정의 자동 account/session context까지 없다고 주장하지 않으며 packet-only 독립성은 보장하지 않는다.
+
+시작2026-10-13T10:54:12.740129UTC, 실행673.9934397080215초, exit0, 최종 응답 수신, process group 자연 종료 확인, input drift/model/tool/supervision anomaly0, 취소·강제 종료0이다. Tool call133회 중 Read 오류2회는 거대한 상수 줄을 포함한 범위의 token 제한과 잘못 추정한 DR 파일명이다. 정확한 DR 경로는 후속 읽기로 해소했고 대형 상수 관련 미확인은 아래 원문대로 남긴다. 이 두 읽기 오류를 성공으로 합산하거나 리뷰 프로세스 실패·반례 실행으로 혼동하지 않는다.
+
+Base HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work 제외 code diff SHA `7982a3822718583e333f5d5ae431d852222128452bb8f98e47e3b11162238c42`, packet SHA `0e587f24b218917a3fc34caf0aa26c373afc468b46214e5cadf3f11ffd44eac5`. 신규 test-only.patch·selection·probe projection 등 diff 밖 검토 입력은 read-identity.json의233개 hash와 Work prefix로 결속했다. 완료 시 동일성을 실행기가 확인했다.
+
+Review 실제15/16회, 누적7156.626597791078/14400초, controller1039/1041, execution root161/161이다. Config disarmed. 이번 Reviewer/Driver는 테스트·counterexample를 실행하지 않았다. 모델의 실행 전 판정은 not-ready이며 아래 최종 응답 전체를 원문 그대로 보존한다. 결과/응답/Driver 처분 경로는 `minimal-gap-verification-35/review-15/read-run-8168930a-40ac-4701-85d4-4bd35e9849d7/`다. Raw stream은 미해결 finding 처분 및 Owner 판단이 끝날 때까지 기존 named consumer용으로 유지하며 별도 소스 복제는 만들지 않는다.
+
+#### Reviewer Final Response — Verbatim
+
+# R15 정적 검토 보고 — 실행 전 최소 공백 검증
+
+**판정: 이 test-only 계획은 지금 상태로는 controller 2회 실행 준비가 되지 않았습니다.** 신규 테스트의 observer 이벤트 단언이 실제 observer 동작과 맞지 않아 신규 ID 9개 중 4개가 제품 결함 없이 실패할 것으로 추론됩니다(F1). 별도로 DR-177 Read 칸의 제품 진단 공백이 남습니다(F2). 아래는 모두 정적 추론이며, 이 Reviewer는 어떤 테스트·반례도 실행하지 않았습니다. Owner 수락·면제는 판단하지 않습니다.
+
+## 1. 신규 테스트와 C1 판정
+
+### F1 (높음, 실행 차단, static) — after-launcher 생애주기 preview 4건의 이벤트 허용목록이 과도하게 엄격함
+
+- `tests/test_entry_window_transition.py:3859-3863`은 모든 이벤트 행이 `audit-before:open`이기를 요구합니다.
+- observer는 `new-source` 진입에서 `os.open`을 감싸고(`observer.py:452`), 읽기 전용이어도 `open-before`/`open-after`를 기록합니다(`observer.py:290-292`).
+- after-launcher 상태에서 Update/Rollback/Repair/Detach preview는 `_workspace_product_once`에서 receipt를 `_serial_file`로 읽습니다(`product.py:838-839`). 이 경로는 `_stable_file`의 `os.open(path, O_RDONLY|O_NOFOLLOW)`를 지납니다(`product.py:279-287`, `work.py:105-110`).
+- 그 뒤에야 binding 부재로 `product unavailable, malformed or unstable`이 납니다(`product.py:868`, `1272-1273`). 따라서 `.hrn/product/receipts/gap-old-init.json`에 대한 `open-before`/`open-after` 행이 먼저 생기고 3861행 단언이 실패합니다.
+- 영향: `test_p2_gap_c1_old_init_{update,rollback,repair,detach}`의 after-launcher subcase(preview 14건 중 4건). runner는 `failfast=True`이므로(`runner.py:237`) 첫 실패 뒤 나머지는 unstarted가 됩니다.
+- 나머지 20건은 대상 안에서 `os.open`에 닿지 않아 이 문제가 없습니다. `load_json`은 `path.read_bytes()`이고(`jsonio.py:96-97`), init preflight는 `and` 단락으로 `_serial_file`을 건너뜁니다(`product.py:1060`).
+- 이것은 제품 거부가 틀렸다는 뜻이 아니라 test oracle 결함입니다. 고치려면 테스트 바이트가 바뀌어 test SHA, source digest, collect input을 다시 결속해야 합니다. 수정 여부는 Driver 처분·Owner 승인 사항입니다.
+
+### 거부 oracle 대조 (static, F1 외 일치)
+
+| 호출 | 기대 메시지 | 근거 |
+| --- | --- | --- |
+| Init preview / NEW 요청 apply·recover (두 init prefix, detach) | `different initialization plan` | `product.py:1060`; `recover` 검사(1068)보다 앞섬 |
+| 실제 OLD init 요청 + NEW source recover | `source changed since init preview` | `product.py:1113`; 대상 상태 읽기 전. `_validate_init_plan`은 checkout-1 plan을 통과시킴(`workspace.py:387-402`) |
+| after-plan 생애주기 preview | `root is not ready` | `workspace.py:312-319` → `product.py:832` |
+| after-launcher 생애주기 preview | `product unavailable, malformed or unstable` | 메시지는 맞으나 F1 |
+| detach preview 3건, Update apply/recover | `root is not ready` | `workspace.py:307-310`; apply는 `_switch_preflight`(`product.py:1356`)에서 writer_guard 전에 거부 |
+
+- code/exit: `_serial_require` → `HV2-WORKSPACE-PRODUCT`(`product.py:230-232`), exit 65(`cli.py:164-166`), partial → 14(`cli.py:154-155`).
+- 회계: preview 14 + apply/recover 8 + status 2, 고유 ID 11개가 `selection.json`·`authoring-identity.json`과 일치합니다.
+
+### OLD fixture (static, 적합)
+
+- after-plan은 실제 OLD `bootstrap_root` 주입점이고(`old/src/hv2ref/workspace.py:455-457`) 남는 구성원 집합이 fixture 단언(`:243`)과 맞습니다.
+- after-launcher는 `old/src/hv2ref/product.py:553-558`, after-receipt는 `:1248-1249`의 실제 주입점입니다.
+- `InjectedCrash`의 point/code(`old/src/hv2ref/errors.py:10-15`), import origin 검사(`:251-252`), 고정 inventory hash(`:207`, 기존 `:165`와 같은 값), PID/PGID(`:3826`), prefix snapshot 재대조(`:3828`)가 있습니다.
+- 임의 JSON이나 OLD patch는 없습니다. 토큰은 OLD API가 apply에서 직접 검증합니다.
+- NEW init 요청은 OLD pending 생성 전 같은 target에서 발급됩니다(`:3874-3879`). 단 그 시점 target은 비어 있고 `a` 파일은 OLD program이 나중에 씁니다(`:226`). plan은 내용을 결속하지 않으므로 거부 사유에는 영향이 없습니다.
+- detach Update 요청은 OLD detach 전에 실제로 preview됩니다(`:3899-3901`).
+
+### argv
+
+- Repair에 `--profile`이 없는 것은 parser와 일치합니다(`cli.py:69-79`). `run()`에서 repair는 profile 검사 앞에서 분기합니다(`cli.py:109-113`). helper의 생략(`:3832-3834`)은 유효 argv의 구체화로 봅니다.
+- 나머지 명령의 인수 조합은 parser와 각 `_workspace_*` 옵션 검사(`cli.py:252-310`)를 통과합니다.
+
+### apply 축약의 충분성 (static 판단, 실행된 칸 아님)
+
+- OLD init 이전 target은 `.hrn`이 없어 NEW update/rollback/repair/detach 요청이 발급될 수 없습니다.
+- OLD detach 이전 checkout-1에서도 rollback(`product.py:1325`), repair(`:875`), detach(`:1822`)는 preview 단계에서 거부됩니다. 발급 가능한 요청은 init과 update뿐이고 둘 다 테스트가 다룹니다.
+- 지원 요청 경로 기준으로 축약은 논리적으로 충분합니다. 다만 "모든 apply 칸 실행"은 아닙니다.
+- 수작업 위조 요청은 실행되지 않습니다. 정적으로 detach apply는 `product.py:1923`, repair apply는 `:1678`에서 writer_guard 전에 막히는 것을 읽었지만 `_repair_preflight` 본문은 읽지 않았습니다.
+
+### 보존·무변경 단언
+
+- 호출 전후 전체 snapshot(type/mode/bytes), 요청 bytes, transition receipt 부재, backup 부재를 단언합니다(`:3843-3856`).
+- observer 한계: mtime·xattr 변경과 자식 프로세스 쓰기는 이벤트로 잡히지 않습니다. non-Git target이라 git 자식은 무관합니다.
+- 기존 2개 ID 본문(`:2708-2720`, `:2889-2907`)은 계획 표의 단언과 일치하고 DR-145(완료 뒤 unknown staging 보존)와 맞습니다. `D3_SYNC_PROGRAM`(294행) 본문은 이번에 읽지 않았습니다.
+
+### F2 (필수 미해결, static) — DR-177 Read 칸의 "matching old source requirement" 진단이 제품에 없음
+
+- DR 문구: "Diagnose matching old source requirement; no generic recovery"(`DR-0004:177`), "precise recovery instruction"(`DR-0004:170`).
+- after-plan: `product.py:1183-1185`는 `next_action` 없이 root 분류만 돌려줍니다.
+- after-launcher: `product.py:1186-1188`은 "independent trusted source"라는 일반 복구 안내입니다. OLD source 일치 요구가 없고, 그대로 NEW source로 따르면 `source changed since init preview`를 받습니다.
+- 같은 정적 문구가 detach partial 안내(`product.py:1177-1179`)에도 있습니다. 이 칸은 계획상 기존 근거 재사용이며 이번에 재검증하지 않았습니다.
+- **판단: 제품 진단 변경 또는 DR 문구에 대한 명시적 계약 처분 중 하나가 필요합니다.** 테스트의 partial/exit14 PASS(`:3849-3850`)로는 닫히지 않습니다.
+- 연동: 신규 테스트는 일반 메시지를 정확히 고정합니다. 진단을 바꾸면 이 단언들도 함께 바뀝니다.
+
+## 2. C5 본문 닫힘
+
+읽은 범위에서 새 불일치는 없습니다.
+
+**본문과 helper를 읽은 것**
+
+- `test_productization_safety` 24개 전부와 `seed`/`launcher`/`run_runtime`/`call`/`preview`/`apply_init`/`installed`/`complete_work`/`switch_*`/`repair_*`/`detach_*`/`plain_detach`/`forged_detach_launcher`/`write_release`.
+- `test_worktree_execution` 7개와 `prepare_worker_result`, `SerialWriterTests` setUp·helper.
+- `test_umbrella_lifecycle` 4개, `test_worktree_history` 1개, `test_worktree_integration` 1개, `test_worktree_pending_lifecycle` 2개, `test_worktree_process_recovery.run_interruption`, `test_worktree_process_safety.run_contention`, `test_git_candidate_reuse` 1개, `test_general_work_recovery` 1개.
+
+**installed와 double 구분은 일관됨**
+
+- `SerialWriterTests`·`WorkerPublicationTests`는 runtime double입니다(`test_general_work_recovery.py:38-39`, `inventory_id` 없이 `launcher_sha256: None`). 이 범위의 4개는 S2-F7의 "runtime-double 범위" 표기와 맞습니다.
+- `Installed*` 계열은 실제 `colvia` launcher와 실제 `verify_workspace_product` 값을 proof로 넘깁니다(`test_worktree_execution.py:421,431,487`, `test_git_candidate_reuse.py:38,57-60`).
+- P→Q→P 계열은 모두 entry-1 same-entry 갱신입니다(`test_worktree_history.py:59`, `test_worktree_pending_lifecycle.py:56-66`).
+- `'cannot downgrade'` 단언은 downgrade 검사가 schema 분기보다 앞서므로 성립합니다(`product.py:810-812`).
+
+**낮은 관찰 (조치 강제 아님)**
+
+- `test_inventory_exact_25_paths…`는 이름과 달리 29를 단언합니다(`test_productization_safety.py:189`).
+- `test_old_exact_release_remains_readable`는 실제 OLD 릴리스가 아니라 현 payload로 만든 합성 human-1 형상입니다(`:2528-2553`).
+- `0 if runtime_supported() else 16` 분기 단언(`:705` 등)은 어느 쪽이 실행됐는지 정적으로 알 수 없습니다.
+
+**미검토 (통과 아님)**
+
+- `test_view_observation_sharing`의 `injection` 후반부(64-77행)와 `POINTS`.
+- `test_topology_observation_sharing`의 클래스 setUp과 `git` helper.
+- `tests/fixtures/product_plain_auditor.py`, `intent_plain_auditor.py` 본문.
+- `test_general_work_invariants.IntentWriterTests.draft`, `hv2ref.umbrella.capture`, 프로세스 테스트의 `CHILD` literal.
+- S18/S19 원본 결과: 이번에 열지 않았습니다. "109 PASS"는 S2 인용에 의존하며, 5개 표본 ID가 slice 색인(`p2-r1-c5-test-slices-identity.json`)에 있는 것만 확인했습니다. C5는 correction32 세대와 현재 digest에서 실행된 적이 없다는 한계가 유지됩니다.
+
+## 3. M1 occupant 잔여
+
+14곳 어디에도 entry-1 아래 `hv2` 은퇴 진입 충돌 단언은 없습니다.
+
+- **`test_general_work` (3)**: `:280`, `:311`, `:319`. Git-ignored 추가 경로(`new.cache`)의 일반 Work 점유이며 hv2와 무관합니다. `:280` 테스트는 이름과 달리 누락 경로와 `authority_verification`만 단언합니다.
+- **같은 파일의 `hv2` 사용**: proof 없으면 일반 프로젝트 파일로 tree에 포함(`:57-65`, `:158`), 명시적 checkout-1 proof가 있으면 legacy launcher로 제외(`:159-161`, `:553-565`). `entry-1`·`colvia` 문자열은 이 파일에 없습니다. `:339-340`은 넓은 `ContractError`만 단언해 목표 사유를 특정하지 못합니다(낮음).
+- **`test_worktree_execution` (2)**: `:362`, `:373`. `dir/new.cache`의 일반 점유이고 runtime double 범위입니다.
+- **`test_checkout_window_transition` (9)**: `make_exact_suite`(`:145-493`)의 `setUp`/`source_call`/`installed`/`prefix`/`detach_prefix`/`to_q`/`pending`과 관련 테스트를 읽었습니다. 여기서 `hv2`는 보존된 planning-1 P launcher 경로입니다.
+  - 이 suite는 과거 P→Q 정확 산출물용 factory입니다. 현재 entry-1 후보를 `new_source`로 주면 planning-1 predecessor가 거부되고(`product.py:1321`), `:326`의 schema 2 단언도 현재 schema 3과 다릅니다.
+  - 즉 현재 후보의 M1 근거가 될 수 없고 과거 qualification 대조(R16) 대상입니다.
+  - 미검토: `prepare_old_requests`(209-272), `test_existing_mixed_children…`(383-446).
+
+## 4. T0/D4와 변환
+
+**프로브 3종 (static, 새 불일치 없음)**
+
+- 원본 대입 행 286/288/290과 대표 문구를 대조했습니다. SHA는 계산 도구가 없어 검증하지 못했습니다.
+- DIRFD: observer 패치 전 원본 `os.open`/`os.close`를 잡고 `finally`에서 닫습니다. `run_path`만 `mock.patch`로 대체·복원합니다. I/O는 `exec/runs` 경계 안 target으로 한정됩니다. 호출부(`:556-590`) 기대와 일치합니다.
+- BUFFERED: `io.open=capture`는 복원되지 않지만 자식 프로세스 한정입니다. observer가 이 wrapper를 "원본"으로 잡으므로 반환 객체는 같습니다. bypass/fdopen/sync-error/sync-unavailable 경로와 호출부(`:609-690`) 단언이 맞습니다.
+- ERROR: `io.open`/`os.fstat`/`os.fsync`/`run_path`를 context로 패치·복원합니다. 로그가 `events.open`으로 열리므로(`observer.py:92`) 캡처가 성립합니다. 결함은 observer witness·logger에만 주입됩니다.
+- 낮음: 세 프로브 모두 `observer.__file__`만 확인하고 `common` 모듈 출처는 확인하지 않습니다.
+
+**`p2-compact-declarations.py`**
+
+- A1은 prefix 성질만 assert합니다(13행). **재구성한 행이 원래 펼친 행과 같다는 등식 검사가 이 스크립트에 없습니다.** `id`는 위치로 재부여되고 열거되지 않은 키는 조용히 빠집니다(15, 25행).
+- D3/A2는 `P2_D3_POSITIONS`의 같은 dict 객체를 공유합니다(23, 25행). 현재 제자리 변경 사용처는 grep으로 발견되지 않았습니다.
+- `missing_constants` 검사가 "트리 어디서든 Store된 이름"으로 완화됐습니다(28행).
+- **접근 불가 근거**: 변환 대상 `/private/tmp/p2-assemble-draft.py`는 선언 디렉터리 밖입니다. 또 현재 source에는 변환 출력에 없는 352행과 `P2_G2_MAP`(353행)이 사이에 있어, 이 스크립트만으로 현재 바이트가 재현되지 않습니다. 352행 내용은 확인하지 않았습니다.
+
+## 5. Runner 경계
+
+- `completed()`는 controls/runtime/git/system config만 요구합니다(`controller.py:59-70`). acquire/canary/smoke 재사용 가정은 코드와 일치합니다.
+- `collect`는 `(source_digest, controls, phase)`가 기존 수집과 달라야 합니다(`:33-36`, `:202-207`). r006에는 `collect-base`, `collect-p2`가 있고 새 digest `52e58e00…`는 다르다는 계획 기록과 맞습니다.
+- r006의 `result.json`은 acquire-base, canary-base, collect-base, smoke-base, collect-p2, focused-p2 여섯 개뿐입니다. 두 대상 슬롯의 `result.json`은 없습니다. 빈 디렉터리 존재 여부는 Glob으로 확정하지 못했습니다.
+- focused는 `collection_sha256`이 문자열이고 재계산값과 같아야 실행됩니다(`runner.py:101`). null인 현재 입력으로는 focused가 돌 수 없어 단계적 결속 의도와 일치합니다.
+- 선택 실행 순서는 수집 순서를 따릅니다(`runner.py:111`). `selection.json`의 순서가 아닙니다.
+- 낮음: 계획 표의 기존 ID 행 번호(2641–2653, 2822–2840)는 현재 2708–2720, 2889–2907입니다.
+
+## 6. 남은 구체 의무
+
+1. **F1**: 실행 전에 테스트 단언 수정 여부를 처분해야 합니다. 수정하면 새 test SHA, source digest, collect input 결속과 변경분 재검토가 따릅니다. 현 바이트로 실행하면 실패·STOP이 예상됩니다.
+2. **F2**: DR-177 Read 진단 공백(제품 변경 또는 계약 처분)은 Owner 결정 사항입니다. Owner 중단 규칙상 미해결 필수 항목에 해당하는지는 Driver 처분입니다.
+3. C5 미검토 helper(2절 목록)와 S18/S19 원본 결과 직접 대조.
+4. compact 변환의 행 등식 근거, draft 원본, 352–353행 생성 경위.
+5. R16 예약분: `make_exact_suite` 과거 qualification 대조와 E1–E7 원본.
+
+#### Driver Disposition — Separate From Reviewer And Owner
+
+- R15-F1 — accept. Driver가 작성한 `p2_gap_observed_call`의 이벤트 허용목록 오류다. Test3859–3863은 audit-before:open만 허용하지만 observer290–292는 읽기 전용 os.open에도 open-before/open-after를 기록한다. 실제 after-launcher receipt 읽기와 이어지는 binding 부재 거부 경로를 정적으로 대조했다. 제품 결함이나 실행 재현으로 표현하지 않는다. 권고 수정은 해당 helper에서 audit 및 open-before/open-after의 detail 형식을 구분하고 모든 open의 flags를 검사해 읽기 전용만 허용하는 것이다. write/create/truncate/append·기타 mutation/observer 오류 event는 계속 거부하며 snapshot/request/receipt/backup 단언은 유지한다. 지금은 수정하지 않는다.
+- R15-F2 — accept, 제품 변경은 needs-user. DR177의 matching old source 안내 요구와 product1183–1188의 안내 부재/일반 안내,1177–1179의 detach 일반 안내를 직접 대조했다. 계획에서 이미 열어 둔 Read 의미 공백이 구체화됐다. 계약을 유지하고 OLD pending 상태에서 일치하는 OLD source·원래 request/token을 요구하는 정확한 읽기 진단을 보완하는 쪽을 권고한다. 정상 NEW pending/fresh target를 OLD로 오분류하거나 복구 권한/쓰기 경로를 바꾸면 안 된다. init/switch/repair/detach 중 실제 관측 가능한 상태와 기존 observability 처분을 적용 지점별로 매핑한 최소안이 필요하다. 기존 승인은 test-only이므로 제품 수정·계약 면제·추가 테스트를 자동 실행하지 않는다.
+- R15-C5 — revise. 이번에 읽은45개 대상의 본문/호출 helper 결과는 누적 검토에 반영하되, 원문에 남은 view injection 후반/POINTS, topology setUp/git, auditor fixture2개, IntentWriterTests.draft, umbrella.capture, process CHILD literal까지 독립 검토 완료라고 쓰지 않는다. S18/S19 원본 결과는 앞선 S1/S2에서 이미 확인한 범위가 있으므로 R15에서 다시 열지 않았다는 이유만으로 그 근거를 무효화하거나109 occurrence 전체 재실행·재검토 의무를 새로 만들지 않는다. 미검토 helper와 이전의 정확한 읽기 근거를 대응한 뒤 잔여만 남긴다. Runtime double/installed 및 과거 source generation 한계는 유지한다.
+- R15-M1 — revise. 일반 Work occupant와 entry-1 은퇴 hv2 충돌은 다른 의무다. 이번14곳 판독을 기록하고 historical checkout-window suite를 현재 후보의 M1 실행 근거로 사용하지 않는다. 기존 D3 ID의 새 실행은 아직0이며 D3_SYNC_PROGRAM 전체와 명시된 prepare_old_requests/mixed_children의 남은 부분은 현재 검토에서 완료하지 못했다. 과거 exact-source qualification 대조는 원래 R16 범위로 남긴다.
+- R15-T0/transform — revise. Probe3종 본문에서 새 불일치가 발견되지 않았다는 정적 결과를 반영한다. Reviewer는 SHA를 직접 계산하지 않았고 원래 프로브 실행을 반복하지 않았다. Compact 작성기의 전수 행 등식 assertion 부재는 실제 행 불일치의 재현이 아니다. 임시 authoring path의 접근 부재·현재352–353행 미열람·원본변환 연결을 정확한 증거 공백으로 남긴다. 기존 wave-07 보존본과 frozen rows/현재 선언 및 앞선 구성원리 검토를 대응해야 하며, 읽을 수 없는 임시 경로를 새로 복원하거나 모든 원본을 복제하는 것을 기본 조치로 삼지 않는다.
+- R15-runner — accept. 준비 결과 재사용과 collection 이후 focused input 결속의 정적 적합성은 유지한다. 실패 단언/필수 Read 공백 때문에 collect와 focused 모두 시작하지 않는다. Reviewer가 Glob만으로 빈 directory를 확정하지 못한 것은 Driver가 앞서 확인한 슬롯 부재를 대체하지도 무효화하지도 않는다. 실제 재개 전에 drift/in-use/budget 조건은 다시 맞아야 한다.
+
+#### Stop, Next Bounded Slice And Preservation
+
+Owner가 승인한 “실패나 범위 확대 시 자동 수정·재시도 없이 중단” 조건과 R15 필수 미해결 시 controller 금지 조건에 따라 여기서 STOP한다. 이번 controller0, 신규 test 실행0, product/controls 수정0, 자동 reviewer 재호출0이다. Authoring의 신규9 ID는 미실행 상태로 유지한다. R16도 호출하지 않는다. 제품 결함이 재현됐다는 주장·P2 수락/Done·STATUS·P3/P4·Git·adopter 변경은 없다.
+
+다음 권고는 하나의 한정 수정 계획이다: (1) Driver의 읽기 이벤트 oracle 정정, (2) 기존 DR을 유지하는 OLD pending source-aware 읽기 진단 및 관련 단언 정정, (3) 이번에 남긴 정확한 helper/변환 근거만 재배치. 제품 진단이 바뀌므로 이전 모든 PASS를 새 제품 바이트의 PASS로 부르지 않되, 전체 P2/C5/T0·완료 리뷰를 자동 반복하지 않는다. 실제 변경 영향과 최소 검증/리뷰 예산을 먼저 제시해야 하며, 남은 R16 한 번이 변경분 사전 검토와 기존 실행 후 검토를 모두 대신한다고 추정하지 않는다. 현재 한도를 자동 확대하거나 기존 순서를 생략하지 않는다. 이 절은 수정/추가 실행 승인 요청의 근거이며 승인 자체가 아니다.
+
+테스트/Work 변경은 기존 durable current-changes.patch에 갱신하고 코드 digest 불변 및 원문 응답 보존을 확인한다. Source checkout과 r006 execution root는 구체적인 후속 사용이 남아 유지한다. 기존 unrelated 변경이나 과거 evidence를 삭제하지 않는다.
+
+### P2 R15 Findings Minimal Correction And Completion Plan — 2026-10-13
+
+#### Owner Request, Status And Completion Boundary
+
+Owner 요청: “두 문제를 묶은 최소 수정 계획을 정리해줘. 계약은 유지하고, 이미 확인한 검증은 반복하지 말아줘. 남은 helper 검토까지 포함해서 완료까지 필요한 실행·리뷰 횟수와 승인 범위를 한 번에 제시해줘. 5시간 현재29%. 빨리 진행하자.”
+
+이번 턴은 읽기와 기존 Work의 계획 기록만 승인됐다. Test/product 수정·import·discovery·controller·reviewer/auth 호출0이다. 29%는 이번 Owner 관측값이며 이후 호출 시점의 live 값으로 소급하지 않는다. 앞선 계획의 test-only 범위를 아래 한정 diagnostic 수정으로 확장하는 제안이다. 계약/DR은 그대로 유지한다.
+
+위험도 L1(국소 제품 진단 및 테스트 오류 수정), 실행 모드 Standard Work, 상태 PLAN → APPROVAL 대기. 기존 CHORE-20261009-002·codex/colvia-brand-transition에서 계속한다. Source의 AGENTS/docs/README authority와 Toolstead work-plan/Approval Matrix를 적용하며 matching path rule 없음. DR-007의 한국어 주 기록 정책을 적용한다. 신규 module·DB·infra·정책/아키텍처 결정이 없어 PLAN 방향/STATUS/별도 DR 변경 없음. 기존 Owner guide의 설명/관측/승인 분리 원칙을 따른다. 다른 Work나 Toolstead의 unrelated dirty 변경은 편집하지 않는다.
+
+정상 경로는 `한정 수정 → R16 → collect 1회 → focused 1회 → R17 → Owner P2 결과 수락 판단`이다. 모든 필수 의무가 닫히면 P2 기술검증 결과를 수락 가능한 상태로 보고한다. P2 수락/Done, P3/P4, activation, Git, adopter 적용까지 끝난다는 뜻은 아니다. 새 실패·필수 미해결·범위 확대가 나오면 이 경로의 다음 단계로 진행하지 않는다.
+
+#### F1 — Correct Only The Read-Event Oracle
+
+변경 위치는 `tests/test_entry_window_transition.py:p2_gap_observed_call`(현재3842–3867)이다. `audit-before:open`과 observer의 `open-before`/`open-after`를 읽기 이벤트로 구분하고, event별 detail 형식을 검증한다. Audit tuple의 flags와 wrapper dict의 flags가 실제 int이고 O_RDONLY 접근이며 O_WRONLY/O_RDWR/O_CREAT/O_TRUNC/O_APPEND를 포함하지 않는지 확인한다. 열린 경로와 before/after flags의 모순도 허용하지 않는다. 알 수 없는 event/detail, observer failure, 모든 mutation event는 계속 실패한다. 이름에 open이 들어간다는 이유로 포괄 허용하지 않는다.
+
+전체 snapshot(bytes/type/mode), request bytes/token, transition receipt 부재, init receipt 집합 불변, repair backup 부재 단언은 유지한다. 원본 observer/runner/controller/common/SBPL을 바꾸지 않는다. 새 after-launcher4개 subcase가 읽기 이벤트를 실제로 지나가는 것이 positive 근거다. Observer 전체 suite를 재실행하지 않으며 event 형식/쓰기 거부 의미는 R16이 실제 observer 본문과 대조한다. R15의 정적 실패 예측을 이미 실행한 before-failure로 기록하지 않는다.
+
+#### F2 — Preserve DR And Make Recovery Source Explicit
+
+제품 변경은 `src/hv2ref/product.py:_workspace_status_observation`의 아래 출력 분기에 한정한다. 새 persisted field/schema, 상태 판별기, registry, filesystem probe, writer/guard/recovery 동작은 추가하지 않는다. `next_action`은 기존 출력 필드다.
+
+| Existing Branch | Minimal Change | Preserved Boundary |
+| --- | --- | --- |
+| root의 검증된 partial-candidate → partial (현재1183–1185) | 기존 분류 결과에 정확한 원래 init request의 candidate release와 일치하는 independent source가 필요하다는 next_action 추가. Older-window init이면 retained matching OLD source를 써야 하며 현 entry-1 source로 일반 복구하지 말라고 명시 | inspect_root가 이미 검증한 partial 분기에만 추가. uninitialized/unknown/malformed/degraded/unstable에는 복구 가능성을 새로 부여하지 않음 |
+| root-ready지만 binding 없는 incomplete init (1186–1188) | 같은 exact-source/원래 request 안내로 구체화. “OLD이면 matching OLD source”라는 조건을 명시하고 unknown/torn 보존 문구 유지 | 별도 init-plan 재읽기나 window 판정 helper를 만들지 않음. NEW init을 OLD로 단정하지 않음 |
+| 관측·검증된 pending lifecycle (1189–1194) | 이미 확보된 `state['pending']['plan']['candidate_release']['inventory_id']`가 older window이면 retained matching OLD candidate/source와 exact request/token만 사용하도록 안내. candidate entry-1이면 기존 정확한 NEW transition/same-entry 경로 유지 | 현재 binding이 checkout-1이라는 이유만으로 S1–S5 전환을 OLD pending으로 오분류하지 않음. candidate 기준을 R16에서 대조 |
+| 검증된 partial detach (1175–1180) | 이미 검증된 `result['receipt']['plan']['schema_version']` 1/2는 retained matching OLD source로만 exact request/token recovery; schema3의 기존 NEW 복구 안내 유지 | 완료 detached의 read-only 안내, malformed/degraded 우선순위, retained bytes/history 보존 그대로 |
+
+안내의 공통 의미: 상태를 보존하고 원래 request가 결속한 exact candidate/source를 사용한다. 단순히 현재 source를 다시 실행하라는 뜻이 아니다. Init의 두 분기는 이미 있는 정보만으로 공통 조건부 안내를 만들며 새 source 신뢰성 검증·복구 가능 판정을 추가하지 않는다. 문구는 source의 기존 English 스타일을 유지한다.
+
+OLD pending repair는 DR-0004의 외부 backup 관측 한계와 기존 R-17 처분(Work8379/8520)을 재사용한다. Target-only status로 보이지 않는 repair를 탐지했다고 주장하거나 새 marker를 만들지 않는다. 손상 거부·복원 완료 후 미보이는 외부 receipt 경계도 그대로다. 별도 repair 감지나 writer diagnostic 전면 변경을 이 수정에 끼워 넣지 않는다.
+
+`status`와 `doctor`는 cli106–108의 동일 workspace_status를 쓰고, `view`는 기존 _workspace_status_observation/next_action 렌더링을 쓴다. CLI/view 코드 변경 없이 안내가 표시되는 것을 확인한다. 이 변경으로 충분하지 않다면 범위를 자동 확대하지 않고 STOP한다.
+
+#### Exact Focused Selection — Fifteen IDs, One Run
+
+아직 실행하지 않은 기존 최소안11 ID를 유지한다: `test_d3_same_entry_scope_unchanged`, `test_completed_staging_unknown_members_preserved`, `test_p2_gap_c1_old_init_{init,update,rollback,repair,detach}`, `test_p2_gap_c1_old_detach_{init,update,rollback,repair}`. 모두 `test_entry_window_transition.EntryProductTests.` prefix다. 이미 PASS한 다른 ID를 다시 선택하지 않는다.
+
+이11개 중 OLD init/init ID의 기존 after-plan/after-launcher status2건에는 exact-source 안내 단언을 추가한다. after-plan 대표에서만 source doctor1회와 source view1회를 추가해 exit14/partial 및 사람이 보는 matching-source 안내와 보존을 확인한다. View 출력은 JSON으로 잘못 파싱하지 않고 기존 text 경로를 사용한다.
+
+제품 진단 변경에 직접 필요한 신규4 ID만 추가한다:
+
+| New ID Suffix | Cases / Evidence |
+| --- | --- |
+| `test_p2_gap_read_old_switch_source` | 기존 actual OLD counterpart/OLD API builtin after-receipt fixture의 status1건. candidate가 old-window이며 retained matching OLD source와 exact request를 지시; partial/14·binding/receipt/truth 보존 |
+| `test_p2_gap_read_old_detach_source` | 기존 actual OLD schema2 after-receipt fixture의 status1건. matching OLD source 지시, partial/14·exact remaining suffix/receipt/truth 보존 |
+| `test_p2_gap_read_new_pending_source` | actual NEW init after-plan/after-launcher2, admitted transition after-receipt1, entry-1 same-entry update after-receipt1, schema3 detach after-receipt1: status5건. NEW exact recovery를 OLD로 잘못 돌리지 않으며 분류/보존/entry context 유지 |
+| `test_p2_gap_read_nonpending_and_unknown` | absent fresh target, healthy entry-1, completed schema3 detach, malformed init plan: status4건. 기존 classification/exit/healthy or retained-read 안내/오류 우선순위 유지; unknown에 recoverable/pass 주장을 추가하지 않음 |
+
+총15 unique ID/15 occurrence. 기존 writer preview14 + apply/recover8은 유지한다. 읽기 진단은 기존 OLD init status2 + 신규 status11 = status13건, 대표 doctor1/view1을 더해15건이다. 이15건은15 ID와 다른 단위다. 기존 D3/unknown staging2 ID의 내부4사례도 별도다. 15개 ID를 한 focused invocation에 담고 fixture/subcase를 실행 횟수로 부풀리지 않는다.
+
+Fixture는 현재 승인된 actual OLD/NEW builtin injection과 isolated API recipe를 재사용하며 임의 plan/invalid argv를 원하는 오류의 근거로 쓰지 않는다. NEW candidate 내용이 바뀌면 새 inventory/ref/source digest를 정상 생성한다. 고정 predecessor OLD bytes는 그대로다. 새 진단의 비간섭을 확인하는 네 control은 변경된 출력 분기의 새로운 검증이며 기존 통과한 전체 status·P2·C5 suite를 반복하지 않는다.
+
+#### R16 — Changed Bytes And Remaining Helper Closure
+
+수정 완료 후 실행 전 fresh Claude Opus5.5 High read-only 검토1회다. 새 product/test diff와15-ID selection·oracles, source-read/OLD-vs-NEW 분기, R15-F1/F2 처분을 검토한다. 아래 남은 입력은 동일 packet에 읽기 가능한 정확한 경로/구간으로 넣는다. 기존45개 C5 본문 전체를 다시 주지 않는다.
+
+- `test_view_observation_sharing`: POINTS(21), injection 후반64–76. `test_topology_observation_sharing`: setUp19–24, git203–205와 실제 호출 helper의 아직 안 읽은 부분.
+- `tests/fixtures/product_plain_auditor.py`(203행), `intent_plain_auditor.py`(89행) 실제 사용 본문.
+- `test_general_work_invariants.IntentWriterTests.draft`41–42 및 `hv2ref.umbrella.capture`123–145의 남은 의존 범위.
+- `test_worktree_process_recovery.CHILD`26–77, `test_worktree_process_safety.CHILD`24–65. Child 실행은 하지 않고 source origin·writer/proof/출력 의미를 확인.
+- entry `D3_SYNC_PROGRAM`(현재294행의17,416자 literal), historical `test_checkout_window_transition.prepare_old_requests`209–272와 `test_existing_mixed_children…`383–446. 이미 읽은 M1 ordinary occupant/past-window 판정은 선행 결론으로 재사용.
+- Compact 작성기에서 현재 A1/A2/D3 선언으로 가는 연결. 기존 durable `r0-e-result/authoring-wave-07/p2-assemble-draft.py`(9,137bytes)는 존재하며 compact 변환이 반영된 본문42–63행을 가지고 있다. `/private/tmp`의 원래 작업 파일을 재생성하지 않는다. 현재352행은 설명 주석,353행은 P2_G2_MAP이며, G2 31행 일치는 이미 S1이 확인했다(Work12928). 이 관계를 작은 구간으로 제시하고 G2 전수 대조는 반복하지 않는다.
+
+거대한 한 줄 때문에 읽기 실패하지 않도록 D3 literal 및 필요한 선언은 AST의 동일 값 projection과 원본 assignment 위치/value digest로 제공한다. Reviewer가 실행하지 않는다는 한계를 기록하며 Driver가 projection fidelity를 정적 확인한다. 전체 module/source 복제는 하지 않는다. A1/A2/D3의 compact→expanded 의미는 기존 조립 식과 frozen 행 구조를 읽어 확인하고, 아직 없는 key/ID 보존 근거만 순수 데이터 정적 대조로 보강할 수 있다. Product import·factory discovery·test body 실행은 이 정적 대조에 포함하지 않는다. 그 자체를 제품 실행 PASS로 세지 않는다.
+
+R16의 끝에는 named helper별 reviewed/reused/unavailable 표를 받아 누락을 확인한다. 행 등식이 없다는 지적을 실제 행 불일치로 확대하지 않되, 미설명 mapping이 남으면 다음 실행을 막는다. 전체 repo/새 helper 트리를 무한 재귀로 확대하지 않고 대상 테스트의 실제 직접 호출 의미에 필요한 부분만 읽는다. 필수 의존성이 계획 밖으로 넓어지면 STOP한다.
+
+#### Controller And R17 — Exact Result And Historical Reuse Closure
+
+R16 필수 unresolved0이고 Driver 처분으로 이 계획 안에 성립한 경우에만 기존 fixed controller를2회 호출한다. `.../hv2-reference-private-colvia-p2-s3b-fsync-20261013-r006/exec/runs/collect-p2-correction` 및 `focused-correction`은 이번 읽기에서도 부재다. 기존 r006 root/acquire/canary/base smoke와 controls/runtime/Git/system-config 결속을 재사용한다. 새 root·acquire·canary·smoke는0회다. 실행 직전 소유/사용 중 여부·exclusive slot·lock·보존/96GiB storage·host 여유와 정확한 source/OLD/tool identity가 바뀌면 중단한다.
+
+1. `controller.py INPUT INPUT_SHA256 collect p2-correction`: 새 product+test source digest의 collection1회, 300초. Test body 실행0.15 ID 각각 occurrence1이 정확히 수집돼야 한다.
+2. Collection hash를 결속한 새 focused input으로 `controller.py INPUT INPUT_SHA256 focused correction`:15 ID만 실행1회,1200초(cleanup 포함), 기존 failfast. 기존 CPython3.14.7 isolated `-I -S -B -c <fixed runpy bootstrap>`과 macOS SBPL/network 차단/WORK evidence 쓰기 경계를 유지한다. Controls·runtime·Git SHA는 기존 config 값 그대로다.
+3. **R17** fresh read-only 리뷰1회: 새15-ID execution/selected counts·subcase/assertions·before/after preservation·input identity·process cleanup와 R16 처분을 확인한다. 남아 있던 E1–E7/과거 qualification 원본 재사용 판정도 이 호출에 합친다.
+
+R17 역사 입력은 기존 계획의 exact paths를 유지한다: contracts-d3-01, launcher-prefix-01, binding-prefix-01, release-publication-01, release-sync-fault-01/02, driver-p2-batch-02/candidate-01..05 및 candidate-lock-resume-29의 실패 원본과 승인 correction 연결. 실제 result가 가리키는 source/test delta·selected row·필요 trace가 allowlist에 포함되고 존재하는지 호출 전 확인한다. 이미 S1/S2에서 닫은262개 원본 결속·C5 96/109 집계나 A/B/C 전체를 다시 감사하지 않는다. 새 진단 변경의 무관성·historical source generation과 현재 claim을 구분해 재사용 판단에만 집중한다. 남은 exact qualification의 과거-only 성질을 소급 current PASS로 바꾸지 않는다.
+
+R17은 이번 수정의 새 실행 결과와 누적 필수 의무표를 마감한다. 새 finding이나 필수 unread가 남으면 재호출/자동 수정 없이 Owner에게 그 항목만 보고한다. 종료 목표는 new15 selected/run, fail/error/skip/unstarted/unfinished0, 필수 R15 finding/helper/transform/historical reuse 미해결0, 정확한 입력 보존 및 자연 종료다.
+
+#### One Approval Package And Fixed Counts
+
+| Budget | Used Now | Proposed Normal Completion | Approval Needed |
+| --- | --- | --- | --- |
+| Controller | 1039/1041 | 추가2회 →1041/1041 | 기존 미사용2회에 수정된 product/test/15-ID 입력을 허용; cap 증액 없음 |
+| Review | 15/16 | R16+R17 추가2회 →17/17 | cap16→17, 위 두 한정 범위 허용 |
+| Execution roots | 161/161 | 추가0, r006 재사용 | cap 유지 |
+| Review elapsed | 7156.626597791077/14400초 | 남은7243.373402208923초 안에서2회 admission | 총 한도 유지; review별 약20분 예상은 자동 kill 기준 아님 |
+| Controller elapsed for this slice | 0 | collect300 + focused1200 = 최대1500초 | 위 fixed timeout 그대로 |
+
+한 번의 승인에 포함할 범위는 다음과 같다: product.py의 네 읽기 진단 분기, entry test의 oracle/진단 단언/신규4 ID, 기존 Work 기록과 private input·결과·보존 묶음, R16/R17 두 호출, controller 두 호출, 이들을 위한 제한된 read-only 환경/인증/사용량·입력 사전 확인. 구현·준비 작업은90분 이내를 목표 상한으로 두고 초과 예상이면 보고한다. 기존 테스트9개/기존2개 본문 중 새 진단과 직접 관련 없는 부분은 바꾸지 않는다.
+
+R16/R17에 필요한 위 비공개 source/test/계약/검증·역사 근거를 기존 claude.ai/firstParty 구독 CLI를 통해 외부 Claude 서비스에 제공하는 허용을 이 승인 묶음에 명시한다. R15 전송 승인만으로 다른 범위의 전송을 묵시 확대하지 않는다. 비밀값·실제 adopter 자료·무관한 저장소는 포함하지 않는다. Read/Glob/Grep만, MCP0, reviewer shell/edit/test/delegation0, actual model/session/auth path 기록과 원문/Driver/Owner 분리를 유지한다.
+
+OS process 및 claude auth 확인은 host sandbox 제한에 걸렸다가 같은 조회를 반복하지 않도록 처음부터 승인된 host-level 읽기 경로로 수행한다. 이는 테스트의 SBPL을 해제하는 권한이 아니다. 사용량은 호출 전10분 안의 실제 Owner 관측 또는 시각을 기록한 CLI usage event를 사용하며 수치·관측시각을 추정하지 않는다. 현재29%가 두 호출의 성공을 보장하지는 않는다. 인증 경로 변경/quota 부족이면 STOP하며 API 과금 경로로 전환하지 않는다.
+
+첫 실제 실패, 필수 미해결, input drift, 신규 소스/controls 범위, 지원 밖 fixture, budget/storage/권한 경계 문제에는 자동 수정·재시도·추가 호출0을 유지한다. Reviewer 결과는 승인권이 아니며 이 계획의 범위 안에서 Driver가 처분한다. Reviewer가 단순 설명 보완만 요구하면 기존 기록 범위로 반영할 수 있지만 code/expected result 변경은 새 승인 없이 뒤따라 적용하지 않는다.
+
+되돌리기 단위는 이번 product diagnostic + oracle/신규4 ID diff와 해당 private 입력이다. 기존 누적 미커밋 변경/DR/역사 evidence는 보존한다. 범위가 국소적이고 persistent state 변경이 없어 reversal cost Low다. 실제 남은 위험은 OLD/NEW 안내를 잘못 구분하거나 helper/역사 근거를 빠뜨리는 것이며, 위 branch controls와 두 review의 정확한 종료표로 확인한다.
+
+승인은 위 수정·검증·결과 보고까지다. P2 Owner 수락/Done, P3/P4, 계약/DR 변경, source Git/PR/merge/release, activation/adopter 적용은 별도다. 전체 통과 시 P2 수락에 필요한 짧은 결과를 제시하고 Owner 결정을 기다린다. 이 계획은 아직 실행되지 않았으며 한도도 아직 변경하지 않았다.
+
+#### Candidate Identity And Packet Bound
+
+Product.py 변경은 managed payload의 release identity/길이를 바꾼다. 따라서 새15-ID fixture는 current candidate를 실제로 계산하는 기존 `new_init`/`transition`/`interrupted_api`/`d3_other_source` 계열을 사용한다. 과거 P2_RELEASE_ID/P2_A1_LENGTHS에 묶인 `p2_materials`/`p2_state_snapshot`/`p2_c4_*`를 새 진단 fixture에 사용하지 않는다. 기존 완료 matrix의 상수·row·old receipt를 새 identity로 일괄 재작성하지 않는다. 계획 읽기에서 해당 상수 참조가 위 helper 안에 있고 selected 기존2 ID와 gap9 helper는 동적 candidate 경로임을 확인했다. R16은 신규4 ID의 실제 helper 연결도 확인한다. 과거 frozen matrix의 PASS는 역사/영향 분석 근거로 유지하고 새 제품 전체 실행 PASS로 부르지 않는다.
+
+R16/R17 안내와 초기 참조 입력은 기존60k reference-token 기준 안에 준비하며 각 호출의 완료 의무 목록과 직접 읽을 구간을 명시한다. 거대한 Work 전체·상수 한 줄·완료 리뷰 전체를 그대로 전송하지 않는다. 모든 명시 입력/간접 raw 경로의 read 접근과 digest 결속을 호출 전에 검사하고, 누락이나 크기 초과면 자동 추가 세션을 만들지 않는다. 이 packet 준비/정적 projection 검사도 위 authoring 승인 범위에 포함한다.
+
+### P2 Conditional Approval Package And Overnight Boundaries — 2026-10-13
+
+#### Current Owner Instruction And Corrected Order
+
+Owner의 2026-10-13 P2→P3→P4 운영 지시를 적용한다. 현재 승인된 것은 이 실행 묶음의 구체화와 기존 Work 기록이다. 아래 묶음 자체는 최종 승인 대기다. 과거 계획의 `수정 → R16` 순서를 폐기하고 `R16(R0 계획+잔여 helper) → Driver 처분 → 사전 승인 조건 확인 → 명시 수정 → collect → focused → R17(R1 변경+결과+역사 재사용)`으로 정정한다. 과거 기록은 당시 제안으로 보존한다.
+
+CONTRIBUTING의 기본 R0/실행 승인 경계를 한 번의 Owner 조건부 승인으로 결합하려는 이유는 휴대폰에서 반복 승인을 줄이면서 R0 선행을 지키기 위해서다. Reviewer의 판정을 Owner 승인으로 대체하지 않는다. Owner가 아래 범위를 승인한 뒤에도 R16 필수 미해결0, 계약·파일·15 검사 ID·예산 불변, 예정 밖 수정 불필요가 모두 성립해야 후속 실행이 허용된다. 새 finding에 따른 예정 밖 코드/단언 수정은 작아 보여도 자동 적용하지 않는다.
+
+이번 읽기에서 HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, branch `codex/colvia-brand-transition`, Work 제외 diff SHA256 `7982a3822718583e333f5d5ae431d852222128452bb8f98e47e3b11162238c42`를 재확인했다. 최신 controller start의 ordinal1039, s3b correction의 root155+acquire6=161, R15 result/config의 review15와 누적7156.626597791077초가 서로 일치한다. 이후 controller start 없음, r006의 `exec/runs/collect-p2-correction` 및 `focused-correction` 부재. 이번 준비에서 auth/reviewer/controller/test 실행0이며 한도는 아직 바꾸지 않았다.
+
+#### Exact Mutation And Verification Scope
+
+Source checkout은 `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition`이다. 코드 변경 파일은 `src/hv2ref/product.py`와 `tests/test_entry_window_transition.py` 두 개다. 기존 F1/F2 계획을 그대로 한정 적용한다: read-only open 세 event의 형식/flags 검증, 읽기 진단 네 분기의 exact original candidate/matching OLD source 안내, 해당 진단 단언과 신규4 ID. 별도 상태 판별·filesystem probe·schema·writer·복구 동작·계약 변경은 없다. Work와 이번 묶음의 기존 private 입력/결과/보존 파일을 갱신할 수 있다.
+
+검사 prefix는 `test_entry_window_transition.EntryProductTests.`이며 정확한 suffix15개는 아래와 같다. 각각1 occurrence, focused invocation1회다.
+
+- `test_d3_same_entry_scope_unchanged`
+- `test_completed_staging_unknown_members_preserved`
+- `test_p2_gap_c1_old_init_init`
+- `test_p2_gap_c1_old_init_update`
+- `test_p2_gap_c1_old_init_rollback`
+- `test_p2_gap_c1_old_init_repair`
+- `test_p2_gap_c1_old_init_detach`
+- `test_p2_gap_c1_old_detach_init`
+- `test_p2_gap_c1_old_detach_update`
+- `test_p2_gap_c1_old_detach_rollback`
+- `test_p2_gap_c1_old_detach_repair`
+- `test_p2_gap_read_old_switch_source`
+- `test_p2_gap_read_old_detach_source`
+- `test_p2_gap_read_new_pending_source`
+- `test_p2_gap_read_nonpending_and_unknown`
+
+앞 절의 fixture/subcase와 보존 단언은 유지한다. NEW fixture는 변경된 candidate identity를 정상 계산하고 과거 frozen matrix 상수를 새 PASS처럼 갱신하지 않는다. 이미 확인한 전체 P2/C5/T0 실행과 S1/S2 검토는 영향이 없는 범위에서 재사용한다.
+
+실행은 기존 r006 root와 CPython3.14.7 isolated bootstrap/SBPL/network 차단/controller를 재사용한다. 명령은 `controller.py INPUT INPUT_SHA256 collect p2-correction`1회(300초), 실제 collection을 결속한 `controller.py INPUT INPUT_SHA256 focused correction`1회(1200초)다. 정확한 INPUT과 SHA는 수정 후 실제 bytes에서 산출하며 미래 digest를 추정하지 않는다. Collection에15 ID가 정확히 한 번씩 존재하고 source/control/OLD/runtime/process/storage 조건이 유지될 때만 focused를 진행한다. 전체 collection은 목록 수집이며 전체 suite 실행이 아니다.
+
+#### R16 R0 And R17 R1 Obligations
+
+R16은 수정 전 계획을 검토한다. F1의 read-event 허용 설계, F2의 기존 네 분기와 DR 유지,15-ID fixture/oracle 계획 및 `Candidate Identity And Packet Bound`의 동적 fixture 조건을 확인한다. 아직 작성하지 않은 신규4 ID를 구현 완료로 표현하지 않는다. 앞 절 `R16 — Changed Bytes And Remaining Helper Closure`의 named helper/변환 의무는 그대로 넣되 제목의 changed bytes는 현재 기존 입력과 제안 변경을 뜻하도록 정정한다. 향후 실제 diff 검토는 R17의 책임이다.
+
+남은 직접 입력은 view POINTS/injection 후반, topology setUp/git/직접 helper, product/intent plain auditor fixtures, IntentWriterTests.draft, umbrella.capture, 두 process CHILD, D3_SYNC_PROGRAM, historical checkout prepare_old_requests/mixed_children, durable wave07 assembly와 compact 선언 변환 연결이다. 이미 확인한 probe3/G2 31행/C5 본문을 무조건 다시 읽게 하지 않는다. named helper별 reviewed/reused/unavailable 표와 계획의 필수 미해결 여부를 받아 Driver가 처분한다. 큰 literal은 기존 AST 동일 값 projection과 원본 위치/value digest를 사용하고 source 전체 복제나 새 압축기를 만들지 않는다.
+
+R17은 실제 수정 diff,15-ID 실행 원본/selected-counts/subcase/보존/자연종료/input identity, R16 처분, E1–E7 및 과거 qualification의 실제 미검토 재사용 판단과 최종 누적 의무표를 검토한다. 역사 원본은 아래 preparation 범위에서 지정한 original result/manifest/input/selected row/source-test delta와 그 exact raw witness만 읽는다. 모든 history를 재감사하지 않으며 과거 PASS와 변경 후보의 새 PASS를 구분한다. 필수 미검토는 Owner의 한계 수락으로 대체하지 않는다.
+
+두 리뷰는 각각 fresh Claude Opus 5.5 (`claude-opus-5-5`), effort `high`, 기존 구독 `claude.ai/firstParty` 경로다. 실제 authMethod/apiProvider/model/session을 기록하고 예상 경로와 다르면 호출 전 중단한다. Read/Glob/Grep만, MCP0, shell/edit/test/delegation/network retrieval 도구0이다. 비공개 source/test/계약/검증·역사 자료를 외부 Anthropic Claude 서비스에 전송한다. 키·토큰·계정 이메일·실제 adopter 민감 데이터·무관한 저장소는 제외한다. CLI 자동 context 가능성 때문에 packet-only 독립성을 보장했다고 쓰지 않는다.
+
+Reviewer 접근 디렉터리는 아래 목록을 상한으로 삼고, 각 호출의 실제 필수 입력과 그 파생 입력·결과만 digest map에 넣는다. source 전체나 Work 전체를 무조건 읽으라는 허용이 아니다. 존재하는 원본과 짧은 안내를 사용하고 각 호출 전에 mandatory path/readability/digest/60k reference-token 범위를 확인한다. 다른 source/control dependency나 허용 root가 필요하면 호출 전에 중단한다.
+
+- Source: `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition`
+- 현재 evidence와 bounded 파생 자료: `/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/p2-full-execution-01`
+- 과거 preparation: 아래 공통 prefix의 `contracts-d3-01`, `launcher-prefix-01`, `binding-prefix-01`, `release-publication-01`, `release-sync-fault-01`, `release-sync-fault-02`, `driver-p2-batch-02/candidate-01`부터 `candidate-05`. 공통 prefix는 `/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01`.
+- 현재 execution/OLD fixture: `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-s3b-fsync-20261013-r006`
+- 위 역사 입력이 지목한 다음 task 전용 원본 root의 필요한 source/test/result/trace 구간(모두 `/Users/kyungseo/dev-home/agent-worktrees/` 아래):
+  - `hv2-reference-private-colvia-binding-verification-20261010-b04`
+  - `hv2-reference-private-colvia-control-source-20261010-b02`
+  - `hv2-reference-private-colvia-control-verification-20261010-b02`
+  - `hv2-reference-private-colvia-d3-verification-20261010-b03`
+  - `hv2-reference-private-colvia-dirfd-control-source-20261011`
+  - `hv2-reference-private-colvia-dirfd-p2-verification-20261011-r03`
+  - `hv2-reference-private-colvia-dirfd-p2-verification-20261011-r04`
+  - `hv2-reference-private-colvia-driver-p2-02-20261011`
+  - `hv2-reference-private-colvia-failfast-control-source-20261011`
+  - `hv2-reference-private-colvia-failfast-p2-verification-20261011-r01`
+  - `hv2-reference-private-colvia-failfast-p2-verification-20261011-r02`
+  - `hv2-reference-private-colvia-full-p2-base-20261011`
+  - `hv2-reference-private-colvia-launcher-verification-20261010-b05`
+  - `hv2-reference-private-colvia-p2-candidate-lock-resume-20261013-r001`
+  - `hv2-reference-private-colvia-p2-cleanup-qualification-20261012`
+  - `hv2-reference-private-colvia-p2-collection-resume-20261013-r001`
+  - `hv2-reference-private-colvia-p2-mixed-history-resume-20261013-r003`
+  - `hv2-reference-private-colvia-p2-noncanonical-resume-20261013-r001`
+  - `hv2-reference-private-colvia-p2-same-entry-hook-resume-20261013-r003`
+  - `hv2-reference-private-colvia-s3-sync-verification-20261011-b08`
+  - `hv2-reference-private-colvia-s3-verification-20261010-b06`
+  - `hv2-reference-private-colvia-witness-p2-verification-20261011-r05`
+
+이 목록은 접근 상한이며 검토 완전성 판정이 아니다. 역사 JSON의 일부 source 경로는 현재 부재하므로 그 이름 자체를 필수 원본으로 단정하지 않는다. 필요한 실제 원본과 보존 input/diff의 연결은 호출 전 확인하며, 필수 bytes가 없으면 unavailable로 중단한다. 경로만 존재한다는 사실을 qualification 통과로 계산하지 않는다.
+
+
+검토 입력 신원은 각 호출 직전 base revision + Work 제외 diff SHA256 + untracked/역사 원본의 file digest + append-only Work prefix + guide/runner digest로 고정한다. 허용된 수정·결과 파생물은 같은 승인 범위에 포함하지만 R17에는 실제 새 신원을 기록한다. 보존된 입력과 결과의 사용 목적은 이번 잔여 의무 판단 및 Owner 수락이며 기존 source/patch/raw를 유지한다. 별도 장부나 대형 복제 묶음은 만들지 않는다.
+
+#### One Conditional Approval, Budgets And Stops
+
+- Controller: 현재1039/1041, 추가 최대2회로1041/1041. cap 불변.
+- Review: 현재15/16, R16/R17 최대2회, cap만16→17. 사용량이 남더라도 추가 리뷰 없음.
+- Root:161/161 유지, 추가0개. 현재 source와 r006은 구체적 재사용 때문에 유지.
+- Review admission 누적 시간:7156.626597791077/14400초, 총 한도 불변. 경과 시간만으로 살아 있는 Reviewer를 강제 종료하지 않음. 다음 호출 전에 잔여 admission 조건 확인.
+- 예상 총 소요 약1–2시간, 구현/준비 목표 상한90분 + 지정검증 최대25분 + 리뷰 각 약20분. 추정은 성공 보장이나 kill 기준이 아님. 초과 예상 또는 새 필수 의무 발생 시 상태 보고.
+
+승인에는 동일 범위의 host-level 읽기 전용 인증/환경/프로세스/사용량/저장공간 확인도 포함한다. sandbox에서 실패한 뒤 같은 조회를 다시 승인받는 대신 처음부터 승인된 host 경로를 사용한다. 테스트 SBPL이나 credential 경계는 완화하지 않는다. 사용량은 호출 전10분 이내 실제 관측으로 기록한다. 기존29%를 미래 관측으로 갱신하지 않는다. 기존 fixed supervisor는 호출 번호16/17·cap17·현재 guide/identity만 맞추며 실행/보안 제어 의미를 변경하지 않는다.
+
+첫 예상 밖 실패·필수 미해결·drift·범위/보안 위반·한도 초과에는 중단하고 보존·읽기 전용 원인 확인·Driver 처분 뒤 최소 복구안 하나를 요청한다. 예정 밖 수정/재실행/새 리뷰를 자동으로 추가하지 않는다. 확인된 Claude 사용량 한도 실패만 `한도로 유예·미완료`로 기록하고 부분 응답은 최종 판정으로 쓰지 않는다. 실제 소모 호출은 계산한다. 자동 대기/재시도/모델·과금 전환은 하지 않는다. 미완료 R0 의존 수정·실행, 미완료 R1 의존 수락·단계 전환은 보류한다. 이미 승인되고 그 리뷰와 독립이며 다른 선행조건도 충족한 일만 계속하고, 그 밖에는 다음 단계 읽기/계획만 준비한다. 유예 리뷰 재개는 별도 승인이다.
+
+완료 기준은15 selected/15 run, failure/error/skip/unstarted/unfinished0, named subcase/보존 단언 충족, 자연 종료와 입력 무결성, R15-F1/F2 및 helper/변환/역사 재사용의 필수 미해결0이다. 이 기준을 충족한 정확한 P2 결과와 P3 계획을 한 번의 후속 승인 요청에 묶는다. P3는 colvia adapter 포함 규범 구성원11개·사용 안내·EN/KO 매뉴얼을 후보로 정렬하고, P3 수락/P4 계획도 결합 요청한다. P4는 실제 최종 후보 수집·전체 normal/parent-optimized·exact artifact·결과 리뷰 예산을 새로 산정해 승인받는다. 과거 예산을 자동 승계하지 않는다.
+
+이번 승인은 P2 한정 수정·검증·결과 보고까지이며 P2 결과 수락/Done, P3/P4 실행, 규범 활성화, Git commit/push/PR/merge, 실제 AI Gov/Spring 적용, 공개 전환을 포함하지 않는다. 자동 schedule이나 다음 임의 작업을 만들지 않는다. 제품 결과 수락과 규범 활성화는 exact evidence를 제시한 뒤 별도로 요청한다.
+
+승인 요청: 위 범위의 외부 Anthropic Claude 전송, R16/R17 리뷰, 명시된 두 파일 수정 및 지정15-ID 검증을 승인하시겠습니까? ‘승인’으로 답하면 R0 선행과 위 조건을 지키며 전체 묶음을 진행합니다. 현재 이 승인 요청의 답변은 아직 없다.
+
+#### Owner Conditional Bundle Approval — 2026-10-13
+
+Owner가 위 휴대폰 승인 요청에 “승인”으로 답했다. 위에 명시한 비공개 입력 및 범위 내 파생 결과의 외부 Anthropic Claude 전송, R16/R17 두 review, product.py/entry test의 명시 수정, controller collect/focused2회를 조건부 승인했다. Review cap16→17, controller1041/root161 유지. R16 R0 선행 및 필수 미해결0/범위 불변을 충족한 경우에만 후속 수정·검증·R17을 실행한다. R0 승인과 후속 실행 승인의 결합은 Owner의 명시적 사전 결정이며 Reviewer 권한이 아니다. 새로운 수정·재시도·추가 호출은 자동 허용되지 않는다. 이번 승인에는 앞서 명시한 host-level 읽기 전용 인증/환경/프로세스/사용량 확인이 포함된다. 제품 결과 수락·Done·P3/P4 실행·Git·실제 적용·규범 활성화 권한은 포함하지 않는다.
+
+Owner가 R16 호출 전 사용량 확인에 “그대로야”로 답했다. 2026-10-13T11:42:16 UTC 관측으로 Claude5시간 사용량29%를 기록한다. Weekly는 unknown이며 이를 임의 수치나 R17의 미래 관측으로 재사용하지 않는다.
+
+### P2 R16 R0 Result And Conditional Execution Admission — 2026-10-13
+
+R16은 fresh Claude Opus5.5 / claude-opus-5-5 / High, session d8c7f110-ea1a-439e-8c1a-bcabb4a1e31e, claude.ai/firstParty/pro 경로로718.2447687500389초 실행되어 exit0·자연 종료·group absent·input drift0·boundary/supervision anomaly0으로 완료됐다. Read/Glob/Grep만 사용했으며 Reviewer test 실행0. 실제 review16/17, 누적7874.871366541116/14400초, controller1039/1041·root161/161은 그대로다. 승인한 P2 묶음만 후속 진행하며 Owner P2 결과 수락은 아직 없다.
+
+#### Verbatim Reviewer Response
+
+# R16 / R0 정적 검토 보고
+
+아래는 모두 Read/Grep 기반 정적 추론이다. 테스트·반례는 실행하지 않았고 digest도 계산하지 않았다. "기록"이라고 표시한 것만 과거 실행 원본에서 읽은 값이다.
+
+## (a) 계획 판정
+
+**ready — 필수 미해결 finding 0건.** 계약·두 파일·15 ID·예산을 바꿔야 할 근거는 찾지 못했고, 예정 밖 수정도 필요하지 않다. 다만 아래 K1–K6은 승인된 두 파일 안에서 지켜야 하는 구현 제약이다. focused 실행이 1회뿐이므로 어기면 제품 결함 없이 실패·STOP하거나, 15 ID 밖 회귀를 놓친다. 실행 허용 여부는 Driver 처분과 Owner 조건에 속한다.
+
+## (b) 설계 판단
+
+### F1 — 읽기 이벤트 oracle (적합)
+
+observer의 실제 생성부와 계획이 맞는다.
+
+| 이벤트 | detail 형식 | 근거 |
+| --- | --- | --- |
+| `audit-before:open` | 문자열 `repr((mode, flags))` | `observer.py:247-252` |
+| `open-before` / `open-after` | dict `{"flags","mode"}` | `observer.py:290-292` |
+| 같은 두 이벤트의 dir_fd 경로 | dict에 `dir_fd` 추가, observer가 읽기 flag만 허용 | `observer.py:253-289` |
+
+- 기록된 실제 행: `r006/exec/runs/focused-p2/work/EntryProductTests/test_p2_g2_0032/…-2.events` seq 7–9가 `open-before {"flags":256,"mode":511}` → `audit-before:open "(None, 16777472)"` → `open-after` 같은 dict 순서다. io 읽기는 `"('r', 16777216)"`만 남긴다(seq 1–6).
+- **K1**: audit flags는 wrapper flags와 같지 않다(256 대 16777472, 차이 0x1000000). 일관성 검사는 open-before/after 사이의 path·dict 일치로 한정해야 한다. audit와 wrapper의 flags 등식을 요구하면 after-launcher 4건이 실패한다.
+- **K2**: `dir_fd` 키 형식은 수용하든 거부하든 명시적으로 정한다. 제품에서 dir_fd open은 `candidates.py:156-159`, `view.py:90-93`뿐이고, 이번 fixture에는 planning 파일이 없어 닿지 않을 것으로 추론한다.
+- 계속 거부돼야 하는 것: `observer-refusal`(`tests:469-478`), `unobserved-open-after`·`create-*`(`observer.py:353-357`), `lock-*`(`:435-445`), write/fsync/chmod/unlink/replace/mkdir/rename/rmdir(`:294-338`).
+- R15-F1의 원인(현재 `tests:3859-3863`이 `audit-before:open`만 허용)은 그대로 확인된다. 이는 실행 재현이 아니다.
+
+### F2 — 네 분기 안내 (계약 보존으로 판단)
+
+| 분기 | 계획이 쓰는 값 | 확인 |
+| --- | --- | --- |
+| partial detach (`product.py:1175-1180`) | `result['receipt']['plan']['schema_version']` | 반환에 존재(`:1896-1898`), 1/2/3 검증(`:1756`), receipt와 결속(`:1867`). NEW 쓰기는 3만 허용(`:1923`). DR-183/177과 일치 |
+| pending lifecycle (`:1189-1194`) | `state['pending']['plan']['candidate_release']['inventory_id']` | pending은 항상 검증된 switch receipt(`:871`, `:852`). schema 2 ⇔ entry-1(`:783`), NEW preview는 entry-1 후보만 생성(`:1334`). binding이 checkout-1이어도 후보가 entry-1이면 NEW로 남아 S1–S5를 OLD로 오분류하지 않는다 |
+| partial-candidate (`:1183-1185`) | 조건부 안내 | `inspect_root`는 plan을 반환하지 않는다(`workspace.py:319,334`). 새 I/O 없이 OLD 여부를 가릴 값이 없어 조건부 안내가 범위 내 유일한 방법이다 |
+| root-ready, binding 없음 (`:1186-1188`) | 조건부 안내 | 위와 같음 |
+
+- init 두 분기는 DR-177의 "matching old source requirement"를 조건부로 명시할 뿐이다. 이 target이 OLD pending이라고 결정적으로 진단하지는 않으므로, 결과 기록에서 그렇게 표현하면 과대 주장이다. 필수 finding은 아니다.
+- **K3**: 안내는 `root["classification"] == "partial-candidate"`일 때만 붙인다. `:1184`의 같은 return이 uninitialized/degraded 등도 처리한다.
+- **K4**: 15 ID 밖의 기존 단언이 문구를 고정한다(`tests/test_productization_safety.py`, 승인 파일 아님).
+  - `:1523` — schema 3 partial detach 문구 완전 일치.
+  - `:2203` — `"original detach request"` 포함, `"init"` 미포함.
+  - `:2267` — binding 없는 분기에 `"manual preservation"` 포함.
+  - `:1505` — 완료 detached 문구 완전 일치.
+  - 계획의 "유지" 방침과 맞지만 focused 실행으로는 검출되지 않는다. 신규 단언으로 고정하거나 R17이 diff로 확인해야 한다.
+- status와 doctor는 같은 함수다(`cli.py:105-108`, exit 14는 `:154-155`).
+- view는 코드 변경 없이 안내가 나온다고 추론한다: after-plan에서 `_observe`가 `(status, {}, {})`를 반환하고(`view.py:219`), `next_action`이 필터에 포함되며(`:565`), 종료 코드는 14다(`:22-23`, `:593`). 실행 기록은 없다.
+- **K5**: view는 `text()`로 `_ ( ) * # [ ] { } | ~ @` 등을 이스케이프한다(`view.py:32-43`). 키도 `next\_action`으로 나오므로 단언은 렌더링된 형태를 기준으로 해야 한다.
+- OLD pending repair의 외부 backup 한계는 DR-188, Work 8379, R-17(8520)과 일치하며 계획이 그대로 유지한다.
+
+### 15 ID와 fixture (적합)
+
+- 개수는 현재 본문과 맞는다(`tests:3869-3909`): preview 10+4=14, apply/recover 6+2=8, 기존 status 2. 신규 status 1+1+5+4=11을 더해 13, doctor 1과 view 1을 더해 15다.
+- 동결 상수 격리: `p2_materials`가 `P2_RELEASE_ID`·`P2_A1_LENGTHS`를 단언하므로(`tests:3182-3193`) F2 이후 새 후보에서는 성립하지 않는다. 금지 방침이 옳다.
+- 동적 경로로 확인한 helper: `product()`(`:1182-1186`), `new_init`(`:1197-1202`), `transition`(`:1231-1234`), `interrupted_api`(`:2064-2071`), `d3_other_source`(`:2551-2556`), `d3_run`(`:2395-2409`), `p2_lifecycle_request`(`:3663-3673`), `p2_old_lifecycle_api`(`:3813-3819`), gap helper(`:3821-3909`). 모두 `P2_RELEASE_ID`를 참조하지 않는다.
+- **K6**: 신규 4 ID는 기존 helper를 그대로 쓸 수 없는 지점이 있다.
+  - `p2_gap_observed_call`은 `expected is None`이면 14/partial을 고정한다(`:3849`). nonpending 대조군은 0, 15, 10이 필요하다.
+  - 같은 helper가 `receipts/entry-transition.json` 부재를 단언한다(`:3845,3856`). NEW transition after-receipt에서는 이 파일이 존재한다.
+  - `json.loads(data)`(`:3847`)는 view 출력에 쓸 수 없다.
+  - `interrupted_api`는 `candidate_source`가 고정이라 same-entry after-receipt에 쓸 수 없다.
+  - schema 3 detach는 `:2132-2137`의 동적 패턴을 쓰고, `p2_c4_*`(`:4250` 동결 참조)는 피한다.
+  - 매개변수화하더라도 기존 11 ID의 기본 단언은 약화하지 않아야 한다.
+
+## (c) 12그룹 coverage
+
+| # | 대상 | 상태 | 근거와 의미 |
+| --- | --- | --- | --- |
+| 1 | view `POINTS` 21, `injection` 64–76 | reviewed | 1–110 열람. 세 지점이 `view`의 `_workspace_status_observation`/`_product`/`_observe`를 패치한다. 종료 시 정확히 1회 발화와 변형 뒤 snapshot 불변을 단언(`:75-76`). 불일치 없음 |
+| 2 | topology `setUp` 19–24, `git` 203–205 | reviewed | 파일 전체 1–533 열람. 직접 의존인 intent fixture `setUp`/`accept`/`next_draft`/`injection`(`test_intent_observation_sharing.py:19-86`), `git_commit_all`(`test_productization.py:7-13`), `git_environment`(`workspace.py:129-132`)도 읽음. `_TopologyObservation` 내부는 미열람 |
+| 3 | `product_plain_auditor.py` 203행 | reviewed | 전체 열람. 제품 import 없는 stdlib 감사기. schema 1/2/3 쌍 일치, schema 3 ⇔ `colvia`·29경로, 제거 prefix 순서, 보존 bytes, schema 3의 `hv2` 충돌 거부(`:169-171`). 한계: no-follow open 없이 lstat 전후 비교만 함 |
+| 4 | `intent_plain_auditor.py` 89행 | reviewed | 전체 열람. 선택 체인만 읽고 digest·ID·ticket 결속을 확인(`:56-76`). 범위 한계는 docstring과 일치 |
+| 5 | `IntentWriterTests.draft` 41–42 | reviewed | schema 1 초안 dict 생성. `record_ref`는 `{id, sha256}`(`work.py:632-633`). `setUp`의 runtime은 double(`:36`)이라 installed 근거가 아님. `SerialWriterTests` helper는 R15 재사용 |
+| 6 | `umbrella.capture` 123–145 | reviewed | 28–145 열람. 자식이 없거나 미수락·pending이면 `unavailable`로만 분류. `_child_chain` 74–120 포함. `_resolve`와 1–27행은 미열람 |
+| 7 | process_recovery `CHILD` 26–77 | reviewed | 원본을 먼저 호출한 뒤 지정 phase에서 대기하는 래퍼. guard 밖 barrier는 예외(`:38`). 설치된 `target/colvia`를 실행(`:75-76`). 실행 안 함 |
+| 8 | process_safety `CHILD` 24–65 | reviewed | `fcntl.flock`과 `writer_guard`에 관측·대기만 추가, 의미 불변. 이벤트 파일이 배타 생성이라 중복 진입은 실패로 드러남 |
+| 9 | `D3_SYNC_PROGRAM` 294 | reviewed (projection) | `readable-literals.md` 9–264행으로 의미 판단. `same_entry_receipt`는 jsonio의 receipts 디렉터리 sync 첫 회에만 선택(`:119`, `:188`). `tests:2708-2720`, `2889-2907` 단언과 일치. 낮음: import 출처 단언 없음. 원본 한 줄과 SHA는 직접 대조하지 않음 |
+| 10 | `prepare_old_requests` 209–272 | reviewed | P 설치본에서 실제 발급한 요청 11+6개를 만든다. `--profile planning-1`은 현재 CLI에서 받지 않으므로(`cli.py:26`) 과거 source 전용 |
+| 11 | mixed_children 383–446 | reviewed | P→Q에서 옛 ticket·fresh prepare 거부, 명시적 rebind와 재제출 뒤 완료. DR-196 경로의 과거 세대 판이며 entry-1 근거가 아님. 낮음: `:385-387`의 import 4개 미사용. umbrella fixture helper 본문은 미열람 |
+| 12 | wave-07 조립 42–63, compact 변환 | reviewed, 전수 등식은 unavailable | 아래 설명 |
+
+**12번 상세**
+
+- 연결: compact 스크립트의 치환 블록(`p2-compact-declarations.py:4-26`)이 durable 조립본 `p2-assemble-draft.py:41-63`과 줄 단위로 대응한다. 28행 치환은 `:90-91`과 대응한다.
+- 현재 source의 349, 354, 356행은 Grep으로 직접 확인했고 조립본 `:52,60,62`의 문자열 및 projection과 같다. 선언 순서 326–351, 354–356도 조립 순서와 같다.
+- 352행은 주석, 353행은 `P2_G2_MAP`이며 A1/D3 이름을 참조하지 않는다. 뒤 식의 평가에 영향이 없다.
+- A1: 9개 키를 복원한다. `prior_complete_files`는 prefix 성질을 assert한 뒤 길이로 저장하고(`:47-50`), 디렉터리와 member는 index로 저장해 순서를 보존한다. ID는 위치로 재부여한다.
+- D3/A2: position은 값 동일성으로 중복 제거하고 모델별 index 순서와 중복도를 유지한다. A2 selector는 같은 position을 가리킨다.
+- 순수 데이터 보강:
+  - a1/a2 구간에서 예상 밖 행 키는 휴리스틱 Grep으로 0건이었다(첫 일치가 b1 구간 86324행).
+  - a1 ID는 1233개이고 표본 1–5, 411–413, 822–824, 1230–1233이 위치와 일치했다.
+  - a2 원본에는 ID가 없어 `setdefault`(`:9`)로 위치 부여된다. 2700까지 확인했다.
+- unavailable: 348/350/351/355행의 실제 데이터와 동결 행의 전수 등식은 확인하지 못했다. 긴 줄을 읽지 않았고 계산 도구가 없다. 이는 행 불일치의 증거가 아니다.
+
+## (d) 재사용 경계
+
+- R15 결과(probe 3종 본문, ordinary occupant 14곳, C5 본문 45개, runner 경계, OLD fixture 판정)는 다시 열지 않았다. 이번 읽기에서 이를 뒤집는 근거는 없었다.
+- S1의 G2 31행 일치(Work 12928)와 matrix·262 원본 결속, S2의 product caller closure는 재심사하지 않았다.
+- F2 이후 동결 matrix(A1 1233행 등)는 새 후보 bytes의 PASS가 아니다. `tests:3182-3193` 때문에 재동결 없이는 성립하지 않는다는 정적 추론이며, 계획 기록과 일치한다.
+
+## (e) R17 예약과 남은 공백
+
+**R17 예약**
+- 실제 diff, 15 ID 실행 원본, selected 수, subcase, 보존 단언, 입력 신원.
+- K1–K6 준수 여부. 특히 K4의 네 문자열은 실행으로 드러나지 않는다.
+- E1–E7과 과거 qualification 원본의 재사용 판정.
+- `make_exact_suite` 계열(10, 11번)의 세대 대조.
+
+**이번에 실제로 읽지 않은 것 (통과로 세지 않음)**
+- `_detach_receipt`, `_detach_order`, `_lifecycle_truth`, `_visible_truth`, `writer_guard` 본문. `tests:2903`의 허용 sync 3행은 이 본문에 의존하므로 실행으로만 확정된다.
+- `P2_C1_OLD_LIFECYCLE_PROGRAM`(341행), `OLD_INIT`/`OLD_DETACH`/`OLD_COUNTERPART` 프로그램 본문.
+- `umbrella.py:1-27`과 `_resolve`, umbrella fixture helper, `candidate_fixtures.proposal`, `make_manifest`.
+- `read-identity.json` 199–267행. 읽은 1–198행도 digest 대조는 하지 않았다.
+- 신규 status 11건이 open 외 이벤트를 내지 않는다는 점은 non-Git fixture 전제의 추론이다. 어긋나면 F1이 실패로 닫는다.
+- controller·runner·SBPL은 이번에 다시 읽지 않았다(R15 범위).
+
+#### Driver Disposition And Owner Condition Check
+
+- 계획 ready/필수 미해결0 — accept. R16 R0 선행, 계약/두 파일/15ID/예산 불변, 예정 밖 수정 불필요 조건이 충족되어 Owner의 조건부 사전 승인을 사용한다. Reviewer가 실행 권한을 부여한 것으로 해석하지 않는다.
+- K1 — accept: open-before/after path·dict를 대조하고 audit와 wrapper flags의 등식은 요구하지 않는다. 각 flags는 별도로 read-only 검증한다.
+- K2 — accept: wrapper detail은 flags/mode와 선택적 dir_fd만 허용하며 각 int 형식을 검증한다. unknown event/detail 거부는 유지한다.
+- K3 — accept: shared return의 next_action 추가는 partial-candidate에만 한정한다.
+- K4 — accept: NEW schema3 partial detach와 completed detach의 기존 완전 일치 문구, original detach request/manual preservation을 보존한다. 기존 다른 test 파일은 수정/재실행하지 않고 R17 diff에서 확인한다.
+- K5 — accept: view는 escaped text로 단언하고 JSON으로 파싱하지 않는다.
+- K6 — accept: 진단 전용 작은 helper에 explicit classification/exit/보존을 넣고 기존 gap11의 receipt 부재·partial 기본 단언은 유지한다. same-entry/detach는 기존 동적 직접 API 패턴으로 구성한다.
+- 12그룹 검토 — accept, 범위 한계 유지. 전체 compact 데이터의 전수 등식이나 ancillary 미열람까지 독립 검토했다고 주장하지 않는다. 현재 불일치 근거/필수 finding은0이며 reserved history/make_exact_suite 및 최종 누적 의무는 R17에 넣는다. 과거 PASS를 새 candidate PASS로 바꾸지 않는다.
+- 별도 read-only storage 관측: allocated90,959,650,816bytes, cap103,079,215,104bytes, free34,037,760,000bytes. 기존2GiB 여유와4GiB host 여유 조건을 충족한다. 사용된 root 예산은 역사적 사용량161로 유지하며 현재 존재하는 batch root160과 qualification root를 새 호출 수로 재계산하지 않는다.
+
+이제 승인한 F1/F2와15-ID 준비를 수행한다. 새 지적·테스트 실패·drift/범위 위반에는 자동 수정·재실행 없이 보존하고 중단한다.
+
+### P2 Preparation Check Failure And Bounded Recovery Proposal — 2026-10-13
+
+R16 ready 뒤 승인한 product.py/entry test 수정을 적용했고 AST parse는 통과했다. 지정 controller/test는 아직 실행하지 않았다. 입력 준비 명령 `python3 /private/tmp/colvia-p2-prepare-correction.py`가 line24 AssertionError/exit1로 중단되어 자동 수정·재실행 없이 STOP했다. 원인은 Driver 준비 검사 오류다: ast.walk가 nested method뿐 아니라 이를 포함한 build_entry_suite 전체도 변경 함수로 수집하는데 allowlist는 이 외곽 함수를 빠뜨렸다. 읽기 전용 진단의 실제 변경은 product `_workspace_status_observation`1개; test `build_entry_suite`와 의도한 `p2_gap_observed_call`/`p2_gap_init_case`, 추가는 read helper2+지정 test4다. 제품 반례나 실행 실패로 표현하지 않는다.
+
+후속 입력 코드를 읽는 동안 아직 실행되지 않은 source_digest 계산의 JSON 표현도 기존 common.canonical(indent2)와 다르게 compact임을 확인했다. 잘못된 입력은 생성/호출되지 않았다. 복구안은 preparation script에서 (1)외곽 build_entry_suite를 알려진 변경으로 포함하면서 nested 변경2/추가6 검사는 유지, (2)기존 indent2 canonical과 일치시키고 기존 source digest로 encoding을 확인, (3)보존된 수정 전 patch를 명시 입력으로 사용한다. 제품/테스트/공용 controller·observer·SBPL은 추가 수정하지 않는다.
+
+실패 script와 제안 script는 기존 private minimal-gap-verification-35의 failed-preparation.py/proposed-preparation.py이며 제안은 실행하지 않았다. 동일 위치 preparation-check-stop.json에 실제 실패·원인·제안 hash를 기록했다. preparation-input.patch는 실패 준비 검사의 정확한 입력 재사용을 위해 기존 patch를 보존한 것이며, minimal-correction.patch는 이번 두 파일의 정확한 변경이다. 이 추가 원본의 소비자는 이번 복구와 R17 입력 검토이고, 소비 종료 뒤 재현 가능한 중복 보존 필요를 재평가한다. 기존 current-changes.patch는 현재 source/Work diff로 갱신한다.
+
+복구 승인 제안: 위 preparation 보정과 재실행1회, 성공 시 이미 승인된 collection1회/focused15ID1회/R17 R1 1회를 계속한다. Source와 외부 Anthropic 전송/모델·effort·구독·read directory 범위는 앞선 승인 그대로이며 범위 내 파생 준비/실행 결과를 포함한다. 이 국소 preparation correction에 별도 R0 호출을 추가하지 않고 기존 R17에서 실제 입력 신원과 함께 확인하는 결합은 Owner의 명시적 승인 대상으로 제안한다. Product/test 새 보정이나 실제 검증 재시도는 포함하지 않는다.
+
+현재 controller1039/1041, review16/17, root161/161. 한도 증액/새 root/추가 review 제안0. 예상 추가 준비5분, 이후 기존 지정 검증 최대25분과 R17 약20분. 첫 예상 밖 실패나 필수 미해결/drift/범위 위반은 다시 STOP. 완료 기준/결과 수락/P3/P4/Git/activation 제외와 확인된 quota 유예 규칙은 유지한다. 복구 승인은 아직 받지 않았다.
+
+#### Owner Preparation Recovery Approval — 2026-10-13
+
+Owner가 위 최소 복구 요청에 “승인”으로 답했다. 준비 스크립트의 함수 비교/기존 canonical JSON 정렬 보정과 재실행1회, 성공 시 기존 수집1회·15-ID focused1회·R17결과 리뷰1회를 승인했다. 이 준비 보정은 별도 R0 호출 없이 R17에서 입력 신원과 함께 확인하는 결합으로 명시 승인됐다. 기존 Anthropic 외부 전송·Opus5.5High·claude.ai/firstParty 구독·Read/Glob/Grep·명시 directory/파생 입력 범위는 유지한다. 제품/테스트 추가 수정, 추가 호출/한도 증액, P2 수락/P3/P4/Git/adopter/activation은 승인하지 않았다. 준비 재실행 및 후속 첫 예상 밖 실패에는 자동 재시도 없이 STOP한다.
+
+### P2 Driver Launcher Bytecode Stop And Exact Recovery Proposal — 2026-10-13
+
+승인된 준비 스크립트 재실행1회는 통과했다. 새 source digest는 `3a812614273ea96ffb876bde234e562ff10f6f6bc716dfeaa78ebe8e86a1c5c5`, collect input SHA256은 `a6eb373bf2b793f72ec309becadf3912bb2da1c0272be19a96b8211fe1088a7d`다. Host-level ps에서 지정 root를 사용하는 프로세스0, exclusive lock 가능/해제, slots부재, 기존 common의 source/runtime/OLD/base evidence 검증을 확인했다.
+
+그 다음 Driver가 `python3 .../minimal-gap-verification-35/run-correction-step.py collect`를 실행하면서 바깥 parent에 `-B`를 빠뜨렸다. 내부 controller argv에는 이미 고정 -I/-S/-B가 있었지만 controller 호출 전 parent의 common import가 통제 폴더에 `__pycache__/common.cpython-314.pyc`를 생성했다. 기존 common.config가 `RuntimeError: unexpected control bytecode`로 거부했고 exit1이다. 실제 controller 시작 기록과 collect/focused 슬롯은 모두 부재다. Controller1039/1041, review16/17, root161/161 유지. 테스트 실행0. 이 기록은 controller/test failure나 제품 결함이 아니라 Driver 실행 준비 실패다.
+
+읽기 전용 진단에서 source_files 입력과 controls12개 원본 digest drift0을 확인했다. 생성 캐시1개의 exact path/hash/size/mtime는 기존 private minimal-gap-verification-35/correction-execution-STOP.json에 기록했다. 자동 삭제·수정·재실행하지 않았다. 캐시는 재생성 가능한 Python 컴파일 산출물이며 고유 source/결과 입력이 아니다.
+
+최소 복구 요청: 방금 생성된 `docs/development/verification/colvia-entry-cleanup-10/__pycache__/common.cpython-314.pyc`1개만 unlink하고 해당 __pycache__가 비어 있으면 rmdir한다. 다른 파일은 정리하지 않는다. source/controllers/test script bytes는 변경하지 않고 바깥 호출도 이미 고정된 CPython3.14.7의 `-I -S -B`로 실행한다. 실패 기록은 보존하고 Owner 재개 결정을 남긴 뒤 이번 collect 시도1회→성공/15ID조건 충족 시 focused1회→R17 1회만 계속한다. 기존 두 controller/한 review 잔여 안이며 한도 증액/추가 root/R0호출은 없다. 향후 실제 실패에는 자동 재시도0이다.
+
+외부 전송은 앞서 승인한 source checkout·source/test/계약/evidence·명시 역사 원본 root와 범위 내 파생 결과에 한정하며 Anthropic Claude, claude-opus-5-5/High, claude.ai/firstParty 구독, Read/Glob/Grep only/MCP0을 유지한다. R17이 preparation correction/실제 입력·실행·역사 재사용을 함께 확인한다. 결과 수락/P3/P4/Git/실제 적용/activation은 제외한다. 예상30–50분, 최종15검사통과와필수미해결0이 완료 기준이다. 이번 캐시 정리/호출 재개 승인은 아직 받지 않았다.
+
+#### Owner Bytecode Recovery Approval And Cleanup — 2026-10-13
+
+Owner가 위 exact 캐시 정리·호출 보정·지정 검증·외부 전송·리뷰 묶음에 “승인”으로 답했다. 기록된 SHA와 exact 단일 파일/빈 parent 조건을 확인한 뒤 common.cpython-314.pyc1개를 unlink하고 빈 __pycache__만 rmdir했다. 실패 원본은 기존 private driver-bytecode-stop.json으로 보존했다. source/controls/test script bytes를 수정하지 않았다. 이후 바깥 caller도 고정 CPython3.14.7 -I -S -B로 실행한다. 준비 검사는 이미 통과하여 반복하지 않는다. Collect1→15ID focused1→R17 1회를 기존 한도 안에서 재개하며 새 실패에는 자동 재시도0을 유지한다.
+
+### P2 Minimal Correction Execution Result — 2026-10-13
+
+승인된 준비 복구/캐시 정리 후 두 controller 호출을 완료했다. Controller1040 collect p2-correction은0.68초/exit0, controller1041 focused correction은32.672초/exit0. 두 실행 모두 natural_completion true, group_absent true, cleanup_errors[], input_verification_error null, inputs_unchanged_or_acquired_exact true다. 외곽 caller도 고정 CPython3.14.7 -I/-S/-B와 기존 parent environment로 실행했다. 추가 root나 base smoke/canary/acquire는 없다.
+
+실제 source digest `3a812614273ea96ffb876bde234e562ff10f6f6bc716dfeaa78ebe8e86a1c5c5`; collection SHA256 `9672d38f5d3c6d64873ee5f44eb1875fd34f217de3f13b3404e46569775b4c28`; focused input SHA256 `a4539a6ddc2a286224e38f1f3a4deb17b4771755f24202e74eb347be5af49b4b`다. 수집은6663 occurrence이며 지정15개 ID는 각각1회다. 수집 숫자는 실행 PASS가 아니다. 실제 counts는 selected15/run15/errors0/failures0/skips0/expected_failures0/unexpected_successes0/unstarted0/unfinished0이다.
+
+원본은 r006/exec/runs/collect-p2-correction 및 focused-correction의 inputs/result, work/collection.json·selected.json·executed.jsonl·counts.json·각 test evidence다. private minimal-gap-verification-35/correction-collect-start/finish.json와 correction-focused-start/finish.json이 정확한 command/runtime/environment/시간/실행 결과를 결속한다. 신규 C1 gap-cases24행은 preview14 +apply/recover8 +status2다. 별도 gap-read-cases13행은 status11+doctor1+view1이며 읽기 총15건이다. 모두 snapshot_unchanged/request_unchanged/backup_absent true를 기록했다. 기존2 ID의 내부 단언은 해당 실제 test/run 결과로 구분한다. 이전 PASS나 동결 matrix 전체를 새 source PASS로 재표시하지 않는다.
+
+R16-K1의 read audit/wrapper flags 차이를 허용한 oracle, K3의 branch 한정, K5의 view 텍스트, K6의 동적 fixture는 이번 선택 범위에서 실행됐다. K4의 기존 다른 파일 문구 단언은 재실행하지 않았고 실제 diff 확인을 R17에 유지한다. 남은 E1–E7/qualification 및 누적 의무 판단도 R17로 남는다.
+
+현재 controller1041/1041, review16/17, root161/161. 남은 실행 호출0, 결과 리뷰1회. P2 결과 수락/Done은 아직 없으며 R17 입력 준비로 진행한다. 실행 후 Work 제외 code diff SHA256 `6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9`다.
+
+### P2 R17 Preparation And P3 Read-Only Planning — 2026-10-13
+
+R17 결과 리뷰1회는 기존 Owner 조건부 승인과 두 복구 승인에 포함돼 있다. 새 승인 없이 이 범위의 준비를 완료했다. 현재 Work 제외 code diff는 `6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9`, source HEAD는 `a17f35cf323ffde7a8642a85501fddbec858b6de`다. R17 guide는 실제 최소 diff/15-ID 원본·K1–K6·E1–E7/과거 qualification·make_exact_suite 세대·누적 필수 의무를 지정한다. 기존 감독기는 DOMAIN/call ordinal만 R17로 바꿨고 중단/모델/도구/인증/무결성 guard를 변경하지 않았다.
+
+입력1,117개와 명시된36개 directory의 실제 경로/readability/digest를 확인했다. 이는 Reviewer 전수 열람 주장이 아니라 targeted 원본의 접근/무결성 결속이다. Guide10,385bytes+고정 instruction reference2,500bytes의 합12,885는 기존60k 최초입력 reference 상한 안이며 실제 tokenizer 측정/전체 session token 수가 아니다. 원본은 on-demand 읽기다. Historical b07 참조3개는 R0 차단/쿼터 때문에 실행하지 않은 root의 참조이며, 실제 S3 sync 성공 원본 b08의 focused11/11·exit0/natural/group absent를 별도로 확인했다. 18개 보존 OLD make_exact_suite AST는 현재 보존 factory와 동일하다. 이 Driver 정적 비교는 Reviewer 의미 판단이나 current candidate 실행을 대체하지 않는다. R17 inspect-only는 PASS, 외부 호출0, armed false다. 최신 quota 관측 전까지 호출하지 않는다.
+
+#### P3 Proposed Scope And Approval Boundary
+
+다음은 P2 수락과 결합할 P3 계획의 읽기 전용 준비다. P3 착수/외부 리뷰/편집/검증은 아직 승인받지 않았다. R17에서 필수 미해결0이 확인된 정확한 P2 결과만 수락 대상으로 제시하며, 실패·필수 미검토가 남으면 그 복구를 우선한다. 현재 P3 대상31개 파일의 위치·크기·현행 표현과 기존 관련 test 본문을 읽었다. 아직 제품/문서 후보를 변경하지 않았다.
+
+규범 successor11개는 아래와 같다. 현행 M3의 adapter 구성원을 colvia-work로 대체하는 후보이며 활성화는 별도다.
+
+- `docs/WORKSPACE-CONTRACT.md`, `docs/GENERAL-WORK.md`, `docs/GUIDED-INTENT-FORMATION.md`, `docs/REFERENCE.md`, `docs/OPERATIONS.md`, `docs/MANUAL-OPERATION.md`, `docs/SECURITY-AND-SUPPORT.md`, `docs/MAINTAINING.md`, `docs/GETTING-STARTED.md`, `adapters/colvia-work/SKILL.md`, `docs/development/CHECKOUT-1-STRUCTURE.md`.
+
+소비자6개는 `README.md`, `AGENTS.md`, `CLAUDE.md`, `docs/README.md`, `docs/CONCEPTS.md`, `PRODUCT-CAPABILITIES.json`이다. Human manual12개는 `manual/{en,ko}/{README,concepts,first-work,getting-started,resume,rules-and-removal}.md`다. CLI/view2개는 `src/hv2ref/cli.py`와 `src/hv2ref/view.py`의 표시 문구만 대상으로 한다. 필요 없는 파일은 unchanged disposition으로 남기며 수정 수를 맞추지 않는다.
+
+편집 범위는 현재 사용 명칭/launcher/adapter·entry-1 입력과 출력·one-way S1 및 exact OLD recovery·pending/collision별 status/doctor/view/confirmation 소비 의미·시작/첫 Work/재개/복구를 확정 P2 동작과 DR-0004에 맞추는 것이다. OLD 명령은 matching OLD source와 정확한 원래 request/token 조건을 명시하고 보존한다. `.hrn`, `HV2-`, `hv2ref`, stored IDs/schema 의미, 과거 DR·receipts·실행 결과와 과거 명령은 유지한다. `cli.py` 내부 prog=hv2ref를 단순 brand 치환하지 않으며 source CLI description 및 installed/help 표시, `view.py` 화면 제목만 필요한 범위에서 맞춘다. Product behavior/분기/guard/record shape 변경이 필요하면 분리하여 STOP/보고한다.
+
+각 규범 파일은 clause별 amendment와 보존할 조건을 식별하고 exact successor hash11개를 결과에 제시한다. docs index와 current entry에는 활성화 전 후보임을 분명히 표시한다. DR-0002/DR-0003의 기존 accepted byte ranges를 수정하지 않는다. 편집한 문서의 현재 화면이 현행 M3를 자동 대체하지 않는다. Capabilities는 candidate의 entry-1 범위와 historical evidence를 구분하며 exact artifact qualification/실제 adopter/production 주장으로 올리지 않는다. 원래 English technical documents는 English, manual EN/KO는 의미가 같은 각각의 언어로 유지하며 Work/Owner 보고는 한국어다.
+
+#### P3 Proposed Checks And Budget
+
+R0 계획/범위 독립 검토1회 → Driver 처분 → 필수 미해결0·31파일/문구-only/검사/예산 불변 조건 확인 → 명시 편집 → 정적 문서 검증과 fixed collect/focused → R1 실제 diff·실행·EN/KO/authority 의미 검토1회를 제안한다. Reviewer는 기존 구독 claude.ai/firstParty, `claude-opus-5-5` High, fresh session, Read/Glob/Grep only/MCP0을 사용한다. 비공개31파일과 관련 고정 계약·직접 test/controls·Work 필요한 부분·범위 내 파생 diff/result를 외부 Anthropic Claude 서비스에 전달한다. 키/토큰/계정 이메일/실제 adopter 민감 정보는 제외한다. Source checkout·기존 private bundle·재사용 r006만 접근 허용하고 필요한 인증/환경/사용량/프로세스 읽기 확인을 묶는다. P2 역사 root 전부를 P3 입력에 다시 넣지 않는다.
+
+P3 자체 최대 review2회(R0/R1), admission 시간 별도7,200초를 제안하며 실제 R17 종료 누적 사용량에 더해 새 cap을 제시한다. 경과 시간만으로 Reviewer를 강제 종료하지 않는 정책을 유지한다. 초기 guide는60k reference 이내, 명시 scope targeted 읽기이며 전체 Work ingest/대형 압축기를 만들지 않는다. 예상 작업시간90–150분이며 자동 수정/재시도/추가 review0이다.
+
+실행은 기존 r006의 성공 acquire/canary/smoke 전제와 동일 runtime/controls를 재사용한다. 새 source identity로 `collect p3`1회(300초), 성공 collection hash를 결속한 `focused p3`1회(1,200초), 합계 controller2회/1,500초다. Controller cap1041→1043, root161 유지를 제안한다. 경계/선행 입력/새 source collection 재사용이 성립하지 않으면 새 root나 추가 setup을 자동 실행하지 않고 계획 변경을 요청한다. 실제 invocation은 현재 controller.py의 고정 runtime CPython3.14.7 `-I -S -B` entry와 기존 SBPL/allowlist/environment로 고정하며 외곽 caller도 `-I -S -B`를 사용한다. 승인된 두 mode/slot과 exact source/diff/selection만 허용한다.
+
+Focused 선택은 다음 기존10개 unique ID, 총15 occurrence다. 현재 P2 correction collection을 읽어 확인한 결과 1–5번은 각각2회, 6–10번은 각각1회다. Imported class의 동일 ID 중복을 임의 제거하지 않는다. 이는 이전 수집의 정적 관측이며 P3 collection 뒤 같은 occurrence 구성인지 새로 확인한다. 조건이 다르면 실행 전에 STOP한다. Skip/expectedFailure/미실행을 PASS로 바꾸지 않는다.
+
+1. `test_productization_safety.ActualWorkspaceInitTests.test_document_port_managed_payload_generic_disclosure_guard`
+2. `test_productization_safety.ActualWorkspaceInitTests.test_document_port_local_links_resolve`
+3. `test_productization_safety.ActualWorkspaceInitTests.test_document_port_workspace_error_codes_are_documented`
+4. `test_productization_safety.ActualWorkspaceInitTests.test_document_port_source_and_installed_help_hide_injection`
+5. `test_productization_safety.ActualWorkspaceInitTests.test_port_intent_cli_help_is_bounded_and_noninteractive`
+6. `test_human_view.HumanViewInstalledTests.test_p_q_p_uses_current_adapter_path_and_detach_remains_readable`
+7. `test_human_view.HumanViewInstalledTests.test_git_recorded_work_live_view_is_read_only_and_paths_are_readable`
+8. `test_runtime_admission.RuntimeAdmissionTests.test_runtime_capability_declaration_matches_admission`
+9. `test_view_observation_sharing.ViewObservationSharingTests.test_status_helper_branch_parity`
+10. `test_intent_observation_sharing.IntentObservationSharingTests.test_same_target_view_keeps_exact_output_and_read_only`
+
+정적 검증은31개 exact 후보에서 (a) command/path/literal별 현재/OLD/history/internal keep 판단 (b) relative link와 anchor/adapter/manual destination 존재 (c) JSON parse 및 capability schema/runtime 값 보존 (d) cli/view AST에서 승인된 문자열 변경 외 로직 불변 (e) GFM-compatible render 뒤 코드 외 literal emphasis 부재 (f) EN/KO6쌍의 명령·조건·수락/실행/복구·지원 한계 의미 대조 (g) 읽기 진입순서와 파일별 lines/bytes 전후, 중복/과도한 안내 분량 점검 (h) 신규 diff whitespace와11 successor hashes를 포함한다. 기존 test3은 docs/*.md 중심이므로 manual/adapter/source supplement의 링크·GFM는 Driver 정적 검사에서 별도로 포함한다. AST/문자열/링크 검사는 제품 실행을 대신하지 않으며 R1 의미 검토도 별도로 기록한다.
+
+P3 완료 기준은 exact31파일 disposition과규범11hash, 위정적검사, focused10unique/15selected/15run·abnormal0·보존/자연종료, R0/R1필수미해결0이다. Readability는 읽기 분량·진입 경로의 리뷰로만 보고하고 실제 새 사용자 이해도나 adoption 검증으로 주장하지 않는다. 문서 수정 때문에 P2 전체를 반복하지 않는다. P3 결과 수락과 P4 최종 후보 수집/normal·parent-optimized/artifact 계획을 다음 한 요청에 묶는다. P4의 명령/collection/실제 count/상한은 후보가 고정된 뒤 새로 산정한다. P3 승인은 P3 수락/P4 실행/Done/규범 활성화/Git/실제 AI Gov·Spring 적용/공개를 포함하지 않는다.
+
+
+### P2 R17 Final Review And Driver Disposition — 2026-10-13
+
+#### Invocation And Evidence Identity
+
+Owner가 최신 Claude 5시간 사용률55%를 알려준 뒤 이미 승인된 R17을1회 호출했다. Actual model claude-opus-5-5, requested effort high, fresh session `ae283086-6bb7-44af-84e0-0d157138dd54`, auth claude.ai/firstParty/pro, Read/Glob/Grep만 활성화했고 MCP0이었다. Input packet SHA `8fc33e562eae0cde6856703288a44a845870e7ae4b76aabde3816eb1555f9e13`, response SHA `b3337a80843a549f4e91ac54636b98941d66941d7684c3d24ad8bbdd481bd3ee`. Base `a17f35cf323ffde7a8642a85501fddbec858b6de`와 Work 제외 diff `6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9`를 전후 결속했다.
+
+597.1467240829952초/exit0, group_absent true, input_drift null, boundary_anomaly false, supervision_anomaly false, 최종 응답 수신 완료다. Read88/Grep70/Glob10, 직접 Read 고유 파일59개는 활동량이며 완전성 주장이 아니다. 상위 driver-p2-batch-02를 대상으로 한 Grep/Glob2건은 restricted path guard가 읽기 전에 거부했고, 허용된 candidate01–05의 개별 경로로 검토를 이어갔다. 외부 범위의 내용 전송이나 도구 확대는 확인되지 않았다. 초기 계정/세션 자동 문맥 가능성은 기존 감독기 고지대로 유지하므로 packet-only independence를 주장하지 않는다.
+
+마지막 CLI rate_limit_event는 allowed, five_hour89%/seven_day23%, overage 미사용·비활성, 5시간 reset2026-10-13T15:00:00Z(한국시간10월14일00:00)였다. 이 값은 계정 공통 관측이고 이 리뷰 단독 비용이 아니다. 후속 호출에는 유효한 최신 관측을 사용하며 사용량 회복을 자동으로 기다리거나 재시도하지 않는다.
+
+#### Reviewer Response — Verbatim
+
+# R17 / R1 정적 검토 보고
+
+Read/Grep/Glob만 사용했고, 테스트·반례 실행과 digest 계산은 하지 않았습니다. "기록"은 실행 원본에서 읽은 값이고 "정적"은 제 추론입니다.
+
+## (a) 판정
+
+**ready — 필수 미해결 finding 0건.** 범위는 F1/F2 최소 수정 diff, 15 ID 실행 기록, K1–K6, E1–E7과 역사 factory의 재사용 경계입니다. 승인된 두 파일·네 분기 밖의 범위 확대는 찾지 못했습니다. P2 수락·P3 착수·Done 판단은 하지 않습니다.
+
+이월 조건 1건과 낮은 관찰 3건이 있습니다.
+
+- **N1 (중간, 수락 문구와 P4에 고정 필요):** 동결 상수가 현재 후보와 다릅니다.
+  - `tests/test_entry_window_transition.py:326`은 `product-release-916e7be7…`이고, 현재 후보는 `product-release-63e080ff…`입니다(기록: `test_p2_gap_read_nonpending_and_unknown/gap-read-cases.jsonl` 2행).
+  - `p2_materials`(`:3182-3193`)와 `:4367/4380/4397/4490/4492`가 이 상수를 단언하므로, 동결 matrix 계열은 재동결 없이는 현재 바이트에서 통과할 수 없습니다(정적, 미실행).
+  - 5,782/262/109는 이전 세대 기록으로만 남습니다. 재동결은 테스트 변경이므로 P4에서 새로 승인받아야 합니다.
+- **N2 (낮음):** init 두 분기의 안내는 조건부 문구이고 NEW pending init에도 같은 문구가 나옵니다(기록: `new-init-after-plan`, `new-init-after-launcher` 행). 결과 기록에 "OLD pending으로 진단"이라고 쓰면 과대입니다. DR-0004:177 충족 해석은 Owner 몫입니다.
+- **N3 (낮음):** K2의 `dir_fd` 분기는 15 ID 실행에서 한 번도 발화하지 않았습니다(gap 이벤트 38개 파일에서 0건). 정적 확인뿐입니다.
+- **N4 (낮음):** view 단언은 렌더링 전체 텍스트에 `partial`이 있는지만 봅니다(`:3874-3875`). 분류 oracle로는 약합니다.
+
+## (b) 실제 diff, 15 ID 결과, K1–K6
+
+**제품 diff (정적):** `product.py:1180-1181, 1187-1190, 1193, 1197-1199` 네 분기뿐입니다.
+- 쓰는 값은 모두 이미 검증된 관측값입니다: `result["receipt"]["plan"]["schema_version"]`(`:1764, 1874-1875, 1905`), `state["pending"]["plan"]`(`:852, 871`).
+- 새 I/O·쓰기·분류값은 없습니다.
+- DR-0004:177(OLD pending → matching old source), :178(S1–S5 기존 경로), :183(schema 3)과 맞습니다. writer 쪽 거부 문구 `:1931`과도 일관됩니다.
+- 옛 init 문구나 lifecycle 문구를 고정한 다른 테스트·문서는 Grep으로 0건이었습니다.
+
+**실행 기록 (r006, source digest `3a812614…`):**
+
+| 항목 | 값 | 원본 |
+| --- | --- | --- |
+| collect (controller 1040) | 6663 수집, exit 0, 0.68s — 수집만 | `collect-p2-correction/result.json`, `correction-collect-start/finish.json` |
+| focused (controller 1041) | selected 15 / run 15, 실패·오류·skip 0, unstarted `[]`, unfinished `[]`, 32.672s | `focused-correction/work/counts.json`, `executed.jsonl` |
+| 자연 종료 | `natural_completion` true, exit 0 | `focused-correction/result.json` |
+| group 부재 | `group_absent` true, `cleanup_errors` [] | 같은 파일 |
+| 입력 보존 | `inputs_unchanged_or_acquired_exact` true, `input_preservation` PASS | 같은 파일, `correction-focused-finish.json` |
+| 실행 환경 | CPython 3.14.7 `-I -S -B`, controls 12개 digest 기재 | `correction-focused-start.json`, `inputs.json:55-68` |
+
+- **gap-cases 24행:** preview 14(init 5×2 + detach 4), apply/recover 8(init-init 6 + detach-update 2), status 2. 전 행에 `request_unchanged`, `snapshot_unchanged`, `transition_receipt_absent`, `backup_absent`가 true입니다.
+- **gap-read-cases 13행:** status 11 + doctor 1 + view 1. 기존 status 2를 더해 읽기 15건입니다. exit는 14/15/0/0/10으로 기대와 같습니다.
+- **두 OLD 분기 실제 문구:** old-switch는 `pending_lifecycle: fence-update`와 OLD 안내, old-detach는 schema 2와 OLD 안내가 기록됐습니다.
+- **이벤트:** gap 이벤트 38개 파일에서 세 open 이벤트 외 행은 0건입니다(부정 Grep).
+- **기존 2 ID (S2-F1/F4의 현재 후보 실행):** 둘 다 pass입니다.
+  - `test_d3_same_entry_scope_unchanged`(`:2708-2720`): baseline과 `same_entry_receipt` unavailable 주입에서 exit 0/updated, 주입 1회, 같은 active_release를 단언합니다.
+  - `test_completed_staging_unknown_members_preserved`(`:2889-2907`): switch/entry 두 종류에서 exit 65, 정확한 메시지, 허용 sync 3행, snapshot 불변을 단언합니다.
+
+**K1–K6:**
+
+| | 판정 | 근거 |
+| --- | --- | --- |
+| K1 | 닫힘 (기록) | `:3859-3865`는 before/after의 path·dict만 대조하고 flags는 각각 읽기 전용 검사. `old_init_detach-5.events` seq 6–8에서 wrapper 256, audit 16777472가 함께 통과. open-before 2,652행 |
+| K2 | 닫힘 (정적만) | `:3855-3858` 키 집합 고정, `type is int`, ≥0. 미발화(N3) |
+| K3 | 닫힘 (기록) | `product.py:1188` 단일 조건. uninitialized와 unrecognized 행에 `next_action` 없음(`:4048, 4066`) |
+| K4 | 닫힘 (정적 대조, 재실행 아님) | 아래 |
+| K5 | 닫힘 (기록) | `:3873-3875` 텍스트 단언. view 행에 `next\_action: use an independent…` 기록 |
+| K6 | 닫힘 (기록) | 별도 helper에 명시적 classification/exit/보존. 기존 helper의 14/partial과 receipt 부재 기본값 유지(`:3893-3904`). 신규 fixture는 `P2_RELEASE_ID` 미참조 |
+
+K4 대조(`tests/test_productization_safety.py`는 수정·재실행되지 않음):
+- `:1505`(완료 detach 완전 일치)와 `:1523`(schema 3 partial 완전 일치)은 `product.py:1177-1179`가 그대로라 유지됩니다. 같은 리터럴이 신규 `:4042, 4056`에서 새 바이트로 pass했습니다.
+- `:2203`은 현재 source로 만든 detach(schema 3으로 추론)라 문구가 불변입니다. OLD 문구에도 부분 문자열이 있고 `init`은 없습니다.
+- `:2267`은 `product.py:1193`에 `manual preservation`이 남아 있어 유지됩니다.
+
+**준비 복구:** 승인 연결이 맞습니다.
+- `preparation-check-stop.json`: allowlist가 외곽 `build_entry_suite`를 빠뜨린 실패입니다. indent 불일치는 미실행 정적 문제로 따로 기재돼 있습니다.
+- Work 14030 승인 뒤 `preparation-recovery-result.json`은 1회 통과, controller 0, test 0입니다.
+- `driver-bytecode-stop.json`: 바깥 호출의 `-B` 누락으로 캐시 1개가 생겼고 controller는 시작하지 않았으며 control drift는 `[]`입니다.
+- Work 14046 승인 뒤 `driver-bytecode-recovery.json`(12:26:12Z, source_edits false)이 있고, collect가 12:26:34Z에 시작했습니다. 현재 `__pycache__`는 없습니다.
+- 준비 스크립트 본문(`failed-preparation.py`, `proposed-preparation.py`, `run-correction-step.py`)은 읽지 않았습니다.
+
+## (c) E1–E7과 역사 factory
+
+모두 **과거 후보 digest의 기록**이며 현재 15 실행이 아닙니다.
+
+| | 읽은 원본 | 당시 기록 | 재사용 경계 |
+| --- | --- | --- | --- |
+| E1 | b05·b04 `focused-p2`의 result/counts/selected/executed, 두 result·r1-disposition | N/O 19+9 = 28 pass(`65abd844…`), B 28+9 = 37 pass(`b3a4336e…`) | 과거 한정 근거. 이번 diff는 읽기 진단 함수뿐이라 전환 쓰기 경로는 무변경(정적). 현재 세대 대체는 S2의 X1/T0 판정 재사용 |
+| E2 | b06·b08의 result/counts/executed | b06 15 pass(S3 6 + prefix 9), b08 11 pass(S3 6 + sync 오류 4 + normal 1) | A2 2,700이 대체한다는 경계 유지 |
+| E3 | b03 result/counts/executed 73, completion-result, r1-disposition 일부 | 73 pass(`cc1455f6…`), same-entry ID 포함 | 전환은 A2 대체. same-entry는 역사 pass를 쓰지 않고 **현재 15의 pass로 닫힘** |
+| E4 | candidate-01 result, entry-focused-input | A64 pass(r01), unknown-staging ID 포함, 합성 tear 112는 "interrupted C-buffered write 아님" 명기 | 합성 근거 한정. 실제 write는 A1 대체. unknown staging은 **현재 15의 pass로 닫힘** |
+| E5 | candidate-02/04/05 result | 04: controls 6 + product 12 = 18 pass. 05: writer 4 + invalid witness 1 = 5 pass. 02: 8 pass / 1 fail / 3 unstarted로 STOP | B1 600 / B2 216 대체. 02는 실패 |
+| E6 | candidate-04, b03 | local baseline pass, b03의 local 3 + changed-truth 1 | D2 이후 C2/C3/X1 대체 유지 |
+| E7 | candidate-01, candidate-03 result | failfast 4 probe, dirfd 5 pass 뒤 1 fail·17 unstarted로 STOP | 각 고정 후보의 부분 근거. 03 전체는 실패. T0 재확인 지위 유지 |
+
+**역사 factory (정적):**
+- 현재 `make_exact_suite`는 `tests/test_checkout_window_transition.py:145`, 보존 OLD는 `r006/old/tests/…:113`입니다. `planning-1` 호출 행 20여 곳이 일정하게 +32행 어긋나 있어 Driver의 AST 동일 확인과 모순되지 않습니다. 전 본문을 줄 단위로 직접 대조한 것은 아닙니다.
+- `make_exact_suite`의 호출부는 `tests/`와 controls에 없습니다(정의 1건뿐). controls는 OLD 이름의 기본 5개만 `base-seed-ids.json:7-11`로 선택했고(b04 smoke-base에서 확인), factory 20건은 읽은 어떤 selected에도 없습니다. Work 2251/2439/2575와 일치합니다.
+- factory 안의 `old_source/'hv2'`는 planning-1 세대의 통상 launcher 사용이며, entry-1의 은퇴 `hv2` 재출현 충돌(DR-0004:194)이 아닙니다.
+- 과거 후속 대조 의무는 닫힌다고 판단합니다. 근거는 M1 본체 C4(S2 재사용), 현재 D3 ID pass, factory를 재타깃하지 않는 계약입니다. factory는 현재 후보에서 실행되지 않았습니다.
+
+## (d) 누적 의무
+
+| 의무 | 판정 | 근거 |
+| --- | --- | --- |
+| S2-F1 | 폐쇄 (기록) | 현재 digest에서 pass |
+| S2-F2 | 폐쇄 (한정) | E3 원본, factory 대조, R15의 occupant 14곳 재사용 |
+| S2-F3 | 폐쇄 (범위 한정) | 신규 9 ID 24행. Read 칸은 init 2 + doctor/view, detach·switch 각 1. OLD-detach의 Detach 칸은 `test_old_detach_readers_and_new_writer_refusal`(`:1271-1283`) 재사용. apply 축약은 "전 칸 실행"이 아님(R15) |
+| S2-F4 | 폐쇄 (기록) | 현재 digest에서 pass |
+| S2-F5 | 폐쇄 | 위 (c) |
+| S2-F7 | 부분 유지 | C5 109는 이전 세대 기록. 본문은 R15 45개 + R16 12그룹 + 아래 보완 |
+| R15-F1 | 폐쇄 (기록) | after-launcher 4건이 wrapper 이벤트를 지나 통과 |
+| R15-F2 | 폐쇄 | 네 분기 + N2 |
+| R16 예약 | 폐쇄 | 이 보고 |
+| OLD pending repair | 한계 유지 | DR-0004:188, Work 8379/8520. 새 탐지 주장 없음 |
+
+**R16 미열람 항목 중 이번에 읽은 것:**
+- `_OLD_PROGRAM_BASE` 끝부분과 `OLD_INIT_PROGRAM`, `OLD_DETACH_PROGRAM`(`:150-188`), `OLD_COUNTERPART_PROGRAM`(`:292`): 실제 OLD API만 쓰고 import 출처가 OLD임을 검사합니다.
+- `P2_C1_OLD_LIFECYCLE_PROGRAM`(`:341`): OLD `workspace_switch_apply(inject_at=point)`와 pending plan 일치를 확인합니다. 슬롯·selector 검사 한 구간은 읽지 못했습니다.
+- `_detach_plan_shape` 머리, `_detach_receipt`, `_detach_observe_once`, `umbrella.py:1-27`, `work._resolve`, `make_manifest`, `test_candidates.proposal`.
+
+**후보 lock 실패 (S2 색인 밖):** r001은 selected 34 / run 26 / fail 1 / unstarted 8, digest `779e0d54…`입니다(`STOP.json`, `counts.json`, `executed.jsonl` 26행). 실패 ID는 `test_detach_missing_umbrella_member_refuses_apply_and_resume`입니다. 이후 기대 문자열 2개 정정과 동일 34 PASS는 Work 11912–11940 기록뿐이고, 그 실행 root는 허용 목록에 없어 원본을 읽지 못했습니다. 실패와 partial 25는 PASS 집계에 넣지 않았습니다.
+
+**읽지 않은 것 (통과로 세지 않음):**
+- `_detach_order`, `_lifecycle_truth`, `_visible_truth`, `writer_guard` 본문. `:2903`의 허용 3행은 이번 실행 기록으로만 확정됩니다.
+- 역사 factory의 umbrella fixture helper 본문.
+- `release-publication-01`, `release-sync-fault-01/02`의 기록. "실행 0"은 직접 확인하지 못했고 판단에 쓰지 않았습니다.
+- E1의 `case-observations.json`, E3의 `observed-result.json`, candidate의 patch와 `prepared-manifest.json`.
+- `collect-p2-correction/inputs.json`, `read-identity.json`의 digest 대조, controller·runner·SBPL 재열람.
+- 기본 5개 `test_checkout_window_transition` 검사의 현재 세대 실행 여부.
+
+**선택 보강:** `dir_fd` 읽기 경로 1건 실행, view 분류 단언 강화, `safety:1505/1523/2203/2267`의 새 바이트 실행.
+
+**운영 제한:** P4에서 최종 후보의 normal/parent-optimized/artifact를 새로 고정·승인하고 N1 재동결을 포함해야 합니다. 전원 손실, fullfsync, native cleanup qualification 14의 한계는 앞선 판정 그대로입니다.
+
+#### Driver Disposition
+
+R17 ready/필수 미해결0을 검토 범위 안에서 accept한다. Owner 결과 수락이나 P3 착수로 대신하지 않는다. 다음 처분은 reviewer의 원문과 구분한다.
+
+- N1 — accept, P4 필수 선행조건으로 이월. 현재 product-release-63e080ff 계열 후보와 동결 P2_RELEASE_ID의916e7be7 계열이 다르다. 현재15검사는 동적 fixture 기반이며, 동결 matrix의5,782/262 및 C5 109를 현재 source의 새 PASS로 표현하지 않는다. P3 문서 변경으로 release bytes가 다시 달라질 수 있으므로 P4는 실제 최종 제품·문서 후보가 정해진 뒤 동결 oracle/constants의 후보 결속 변경을 별도 명시 승인하고, 그 뒤 최종 collection/normal/parent-O/artifact 계획을 확정해야 한다. 기존 P3 승인만으로 테스트 재동결이나 P4 실행을 허용하지 않는다.
+- N2 — 관측과 표현 제한은 accept, 새 계약 미결이라는 해석은 defend. Owner가 승인한 계획 표(Work13690–13702)는 init 두 분기에서 새로운 OLD 판별을 추가하지 않고 “OLD이면 matching OLD source”라는 공통 조건부 안내를 명시했다. R16이 이 설계를 ready로 판단한 뒤 같은 조건으로 구현/실행했다. 현재 OLD init으로 분류하는 기능이라고 주장하지 않는다. Verified OLD switch/partial detach는 검증된 window/schema를 사용하고, init은 원래 request가 결속한 exact candidate source와 조건부 OLD 안내다. DR177 면제나 신규 상태 판별 권한을 Owner에게 요청하지 않는다.
+- N3 — accept. optional dir_fd의 typed branch는 정적 검토이며 이번15 ID에서 실행된 것으로 쓰지 않는다. 신규 execution 의무를 뒤늦게 추가하지 않는다. 예정된 readonly oracle·snapshot/request/backup 보존은 실제 실행됐고, dir_fd 신규 독립 사례는 Reviewer가 제안한 선택 보강으로 남긴다. 자동 수정/재실행 없음.
+- N4 — accept. view의 partial 텍스트 검사는 단독으로 완전한 구조적 classification oracle가 아니다. 같은 fixture의 status/doctor JSON classification·exit와 view의 escaped next_action·보존 관측을 함께 사용한 지정 범위의 근거로만 계산한다. View 분류 단언 강화는 선택 보강이고 이번 source 변경이나 추가 실행으로 자동 전환하지 않는다.
+- F1/F2·K1–K6·S2-F1/F2/F3/F4/F5와 R16 예약 — accept, 원문에 적힌 static/recorded 구분과 축약 범위를 유지한다. C1 전 칸의 모든 apply 조합 실행을 주장하지 않는다. OLD repair의 target-only 관측 불가와 정확한 source/backup 의존은 기존 처분대로 남는다.
+- S2-F7/C5의 “부분 유지” — revise: 과거 세대 실행이라는 한계와 bounded 독립 검토 범위를 유지한다. R15의45 body, R16의12그룹, R17의 직접 보완을 합치되 독립 source/helper 전수 검토로 확대하지 않는다. R17이 이번에 읽지 않은 역사 factory umbrella fixture는 current entry-1 실행 의무로 재타깃하지 않는 원래 계약에 속한다. `_detach_order`/`_lifecycle_truth`/`_visible_truth`/`writer_guard` 및 준비 스크립트 전체가 이번 R17에서 독립 판독됐다고 표시하지 않는다. R17은 이 미열람을 공개한 상태에서 지정 범위의 필수 미해결0으로 판정했고, 실행 관측이 보장하는 주장도 그 단언 범위 안으로 제한한다. 이 처분은 필수 항목 면제나 전체 static coverage 주장으로 사용하지 않는다.
+- Candidate lock 실패/후속34 PASS — 보완 근거를 기록한다. R17은 r001의34 selected/26 run/1fail/8unstarted 원본을 직접 확인했고 실패를 PASS에 더하지 않았다. 성공한34의 원본은 이번 R17 목록 밖이었으나 이전 R1-B 원문49–50행이 `detach-membership-resume-20261013-r001`의 counts/result를 직접 읽어34/34·abnormal0·exit0·group absence·S19 a21e1930을 기록했고, S2 원문91–103행도 S18 75 +S19 34 및 해당 수정의 세대 경계를 확인했다. 이번 미열람 때문에 이미 존재하는 독립 판독을 다시 요구하지 않으며 Driver의 새 판독으로 대체하지도 않는다.
+
+#### Result Status And Proposed Next Gate
+
+정확한 P2 결과는 HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work 제외 diff `6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9`, executable source map `3a812614273ea96ffb876bde234e562ff10f6f6bc716dfeaa78ebe8e86a1c5c5`, correction input `a4539a6ddc2a286224e38f1f3a4deb17b4771755f24202e74eb347be5af49b4b`로 식별한다. R16 R0 선행과 Owner 조건부 승인, 지정15/15 결과 및 R17 R1 필수 미해결0을 충족했다. 과거 한정 실행 이력과 위 관측/검토 범위 한계를 포함한 P2 결과 수락을 요청할 수 있는 상태다. 전체 최종 후보 qualification·제품 최종 수락·규범 활성화는 아직 아니다.
+
+현재 controller1041/1041, review17/17, root161/161이다. Review 누적8472.018090624111/14400초. 추가 P2 실행/review 자동 권한은0이다. 기록과 exact inputs/result를 보존했고 implementation checkout/r006은 P3의 구체적인 재사용 계획 및 미수락 최종 결과 때문에 유지한다. 원문/필수 복구 입력을 삭제하지 않으며 재생성 가능한 evidence를 새 영구 산출물로 지정하지 않는다.
+
+P3 제안은 앞 절의31파일·규범11구성원·10unique/15occurrence로 고정한다. R0+조건부 문구 편집/정적검증/collect p3+focused p3+R1을 한 번의 사전 승인에 묶는다. Review cap17→19, controller cap1041→1043, root161과 누적 review시간14400초는 유지한다. 두 review의 admission에는 현재8472초를 이월하고 남은5927.981909375889초 범위를 사용한다. 경과 시간만으로 진행 중 review를 강제 종료하지 않으며, 예산 조건이 다음 호출을 허용하지 않으면 중단/보고한다. 기존 초안의 P3 별도7200초 증액 제안은 사용하지 않는다.
+
+P3 R0에서 필수 미해결0, 지정31파일/표시 문구 외 product 동작 불변, 기존10ID/15occurrence·고정 runtime/controls·호출/root/시간 한도 불변을 충족할 때만 Owner의 명시적 조건부 사전 승인으로 실행한다. 새 finding 때문에 예정 밖 수정·재실행·파일/자료/접근 범위 확대가 필요하면 자동 적용하지 않고 최소 복구안을 제시한다. 입력 drift, 보안 경계 위반, 검증 실패, 한도 초과도 STOP한다. 확인된 Claude quota 한도만 원래8절에 따라 미완료로 유예하며, 그 리뷰에 의존하지 않고 이미 승인된 작업만 계속한다. 자동 대기/재시도/모델·과금 전환은 없다.
+
+P3 승인에 포함할 자료/외부 전송은 동일 source checkout31파일과 그 직접 계약·tests·현재controls·Work의 필요한 범위, 현재 private bundle 안의 P2 처분과 P3 파생 diff/input/result, 기존 r006의 관련 결과다. Reviewer 접근은 source checkout, p2-full-execution-01 bundle, r006 세 directory로 제한한다. Anthropic Claude 서비스, claude-opus-5-5 High, claude.ai/firstParty 구독, fresh session, Read/Glob/Grep only/MCP0, 비밀·이메일·실제 adopter 민감 데이터 제외를 유지하며 필요한 인증/환경/사용량/프로세스 읽기 확인도 포함한다.
+
+예상90–150분(사용량 유예 시간 제외). 완료 시 P3 결과 수락과 P4 후보 재동결/수집·전체 회귀·artifact 계획을 묶어 요청한다. 이 제안은 P3 결과 수락/P4 실행/Done/규범 활성화/Git commit·push·PR·merge/실제 AI Gov·Spring 적용/공개 전환을 포함하지 않는다. 현재는 Owner 결정을 기다리며 P3를 시작하지 않는다.
+
+
+### P2 Result Acceptance And P3 Conditional Authorization — 2026-10-13
+
+Owner는 2026-10-13 13:12:40 UTC의 “승인”으로 직전 휴대폰용 승인 묶음을 수락했다. 정확한 P2 후보 HEAD a17f35cf323ffde7a8642a85501fddbec858b6de / Work 제외 diff 6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9, 최소 수정15/15와 R16/R17 필수 미해결0, 명시한 과거 qualification/부분 검토 한계를 포함한 P2 결과 수락이다. 최종 전체 후보 qualification/제품 수락/규범 활성화는 아니다.
+
+같은 승인으로 P3의 앞 절31파일·규범11개 및 고정10unique/15occurrence에 대한 R0 → 필수 미해결0/범위 불변 확인 → 명시된 문구 수정·정적 검사·collect p3/focused p3 → R1을 조건부로 허용했다. Reviewer 판정은 Owner 승인을 대체하지 않으며 이 실제 사전 승인에 따라 진행한다. Review cap19, controller cap1043, root161, review 누적14,400초로 고정한다. 시작 누적은 review17회/8472.018090624111초, controller1041회다. 기존 초안의 별도7200초 증액은 채택하지 않았다.
+
+외부 Anthropic Claude 전송은 source checkout의 명시31파일·직접 계약/tests/controls·Work 필요한 범위, p2-full-execution-01 내부의 P2 처분 및 P3 파생 입력/결과, 기존 r006 관련 결과를 포함한다. 이 세 directory만 Reviewer 접근에 허용한다. claude-opus-5-5 High, claude.ai/firstParty 구독, fresh session, Read/Glob/Grep only, MCP0를 유지한다. 비밀·계정 이메일·실제 adopter 민감 정보는 제외한다. 필요한 인증/환경/사용량/프로세스 읽기 확인도 승인됐다.
+
+예정 밖 수정/추가 검증, 실패, drift, 범위/보안 경계 위반, 한도 초과에는 STOP한다. 확인된 quota 유예에만 Owner8절의 예외를 적용하며 자동 재시도/대기/모델 또는 과금 전환은 없다. P3 결과 수락, P4 재동결/실행, Done, 최종 제품 수락/규범 활성화, Git, 실제 adopter 적용/공개 전환은 별도다. Source/r006은 승인된 P3와 후속 P4 계획에 재사용하므로 유지한다.
+
+#### P3 R18 Preparation Check
+
+R18 R0의31파일 clause 계획, 직접 계약/tests/controls/기존 결과77개 입력, source·bundle·r006 세 read directory를 결속했다. Guide18,277bytes, SHA256 `20dbccba78bb592cb7e7c81efb27468e379b036f6e992718d434fd015f3ddea6`. 최초 guide+reference2,500bytes는60k reference 안이며 전체 session token 측정은 아니다. 기존 감독기의 DOMAIN/scope/call ordinal/cap만 승인된 R18/P3/18/19로 바꿨고 무결성·도구·모델·인증·사용량·종료 guard는 유지했다. Inspect-only PASS, 외부 호출0, armed false. Current manual의 과거 release digest/2026-10-05 실습은 historical checkout-1 근거로 남기고 entry-1 qualification로 사용하지 않는 clause를 포함했다.
+
+현재 P3 제품/문서 편집과 controller 실행은0이다. 마지막 Claude 사용량 관측은2026-10-13T13:00:28Z의five_hour89%, seven_day23%였으며 더 이상10분 freshness 조건을 충족하지 않는다. 현재5시간 사용량 수치만 Owner에게 요청했다. 이는 기존 실행 승인을 다시 요청하는 것이 아니다. 새 관측 전 호출하지 않으며 사용량 소진이 확인된 상태로 기록하지도 않는다. Review17/19, controller1041/1043, root161/161, review8472.018090624111/14400초를 유지한다.
+
+### P3 R18 R0 Quota Deferral And Proposed Resume — 2026-10-13
+
+Owner는 현재5시간 사용량93%, 약1시간21분 후 reset 예정이라고 알려 주었다. 이를2026-10-13T13:38:55Z의 현재 관측으로 기록하고, 기존 승인에 따라 R18 R0를1회 호출했다. 실제 시작13:39:27.269195Z, session `83b15829-0cc2-4037-8806-c96ef1812070`, claude-opus-5-5 High, claude.ai/firstParty/pro였다. Auth에는 비밀/계정 이메일을 기록하지 않았다. 실제 tools Read19/Glob9/Grep10, unique Read files17, MCP0, tool error0였다. 이 부분 열람은 독립 검토 완료나 필수 의무 충족을 뜻하지 않는다.
+
+Guide SHA256 `20dbccba78bb592cb7e7c81efb27468e379b036f6e992718d434fd015f3ddea6`, HEAD a17f35cf323ffde7a8642a85501fddbec858b6de, Work 제외 diff6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9 및77개 input map은 보존됐다. 실행85.64933333301451초 후 CLI exit1, execution_complete=false, group absent=true, input_drift=null, boundary/supervision anomaly=false다. 원본은 `p3-alignment-36/review-18/read-run-83b15829-0cc2-4037-8806-c96ef1812070/{result.json,response.md,stream.jsonl,supervisor.jsonl,driver-disposition.json}`에 보존한다.
+
+최종 rate_limit_event는 status rejected / five_hour utilization1.00 / seven_day0.23 / isUsingOverage=false / overageDisabledReason org_level_disabled였다. Reset epoch1791903600은2026-10-14 00:00 KST다. 결과 envelope의 subtype success와 별개로 is_error=true였으며, 아래 문구는 substantive Reviewer 최종 판정이 아니라 사용량 오류 응답 원문이다.
+
+```text
+You've hit your session limit · resets 12am (Asia/Seoul)
+```
+
+Driver 처분: quota-deferred-incomplete. Owner 지시8절의 확인된 사용량 예외를 적용한다. 필수 미해결0/ready 판정은 없으며 부분 응답으로 대체하지 않는다. P3 R0에 의존하는31파일 편집·collect p3/focused p3·R1은 보류한다. 자동 대기/재시도/모델·과금 경로 변경은 하지 않았다. P2 결과 수락은 유지한다. 현재 P3 대상31개는 baseline hash와 모두 같고, P3 source 수정0/controller 실행0이다.
+
+실제 누적은 review18/19, review8557.667423957126/14400초(잔여5842.332576042874초), controller1041/1043, root161/161이다. 호출을 되돌리지 않는다. 원래 남은 reviewer1회만으로는 R0 재개와 후속 R1을 모두 수행할 수 없다.
+
+#### Proposed Single Resume Bundle
+
+Quota 회복을 현재 관측으로 확인한 뒤 Owner가 별도로 승인할 대상은 같은31파일 P3 R0 fresh1회(R19) + 앞서 승인한 조건부 문구 편집/정적검사/collect p3·focused p3 + R1 fresh1회(R20)다. R18의 부분 읽기는 완료 근거로 이월하지 않는다. 기존 source/hash77input과 R18 유예 결과를 재확인하고, 범위 내 파생 guide/diff/results를 결속한다. Mandatory31파일 disposition/규범11개 exact hash/ENKO 의미·링크·렌더·읽기 분량/지정10ID15occurrence/actual help-view 결과의 의무를 유지한다. Review cap19→20만1회 늘리는 제안이며 누적14400초/controller1043/root161은 유지한다. Source·bundle·r006의 세 접근 directory, Anthropic private source/tests/contracts/results 전송, claude-opus-5-5 High·기존claude.ai/firstParty 구독·Read/Glob/Grep only/MCP0, 비밀·계정 이메일·실제 adopter 민감정보 제외도 동일하다. 필요한 auth/env/usage/process 읽기 확인을 포함한다.
+
+R0 필수 미해결0과 계약·31파일·표시-only·지정검사·예산 불변일 때만 기존 조건부 편집/검증으로 진행한다. 예정 밖 수정/재실행·drift·실패·범위/보안 경계 위반·한도 초과에 STOP하며 confirmed quota만 같은 유예 규칙이다. 완료는 exact31 disposition/규범11hash/정적검사/15selected15run abnormal0/보존·자연종료/R0R1필수0이다. 예상90–150분은 reset 대기 시간을 포함하지 않는다. P3 결과 수락/P4 재동결 또는 실행/최종 제품 수락/규범 활성화/Done/Git/adopter 적용/공개 권한은 포함하지 않는다. 재개는 아직 승인되지 않았으며 다음 호출을 arm하지 않았다.
+
+읽기 전용 후속 준비로 P4 fixed controller의 final collection/normal/parent-O/artifact mode가 존재함을 확인했다. 그 현행 최대 timeout은 실제 최종 후보의 새 실행 예산이나 충분성 근거가 아니다. P4는 P3 제품·문서 bytes와 별도 승인된 frozen oracle/constants 재결속 후 실제 collection/occurrence와 필요한 명령·예산을 다시 산정해야 한다. 아직 그 최종 후보가 없으므로 P4 실행안을 확정하거나 P3 승인에 포함시키지 않는다. R0 없이 진행할 수 있는 승인된 독립 구현/검증 작업은 없다.
+
+부분 raw evidence의 named consumer는 R19 재개 및 R20 누적 처분이며, 그 완료 뒤 재생성 가능한 stream 보관 필요를 재평가한다. 이 문구는 unique inputs/역사/복구 자료 삭제 권한이 아니다. Source와 r006은 구체적인 승인된 P3 재사용 및 이후 P4 계획을 위해 유지한다. 기록과 tracked 변경 patch는 checkout 밖 기존 bundle에 보존하며, source를 수정하거나 worktree를 정리하지 않는다.
+
+### P3 R0 Resume Authorization Before Quota Reset — 2026-10-13
+
+Owner는 R18 quota 유예 뒤 제시한 단일 재개 묶음에 “승인”이라고 답했다. 같은31파일 R0 재개(R19) → 필수 미해결0/범위 불변 조건 → 이미 명시한 문구 수정·정적검사·collect p3/focused p3 → R1(R20), 해당 private source/계약/tests/results 및 범위 내 파생자료의 Anthropic 전송을 승인했다. 모델/effort/구독/읽기도구/세 접근 directory/비밀 제외/중단 조건은 직전 묶음 그대로다. Review cap19→20을 승인했고 controller1043/root161/review14400초는 유지한다. P3 수락/P4/activation/Git/adopter/public 권한은 포함하지 않는다.
+
+승인 후 현재시각을 확인한2026-10-13T13:46:21Z는22:46 KST이며, 확인된 quota reset인10월14일00:00 KST 이전이다. 실행 승인은 유효하지만 사용량 회복 조건은 충족하지 않았다. 알려진 소진 상태에서 호출하지 않으며 자동 대기·재시도도 하지 않는다. R19를 preparation-only/armed false로 준비하고, 회복 뒤10분 이내 실제 사용량 관측을 받으면 같은 승인으로1회 호출할 수 있다. 이 확인을 새 실행 승인으로 반복 요청하지 않는다.
+
+R19는 fresh 계획 리뷰이며 R18 부분 읽기를 완료 근거로 사용하지 않는다. Same source HEAD/diff와 기존77input을 확인하고 R18 result/응답/Driver 처분을 추가 입력으로 결속한다. 기존 감독기의 DOMAIN/call ordinal/cap만R19/19/20으로 바꾸며 guard를 유지한다. Source31파일·제품 동작·tests는 이 준비에서 변경하지 않는다. 현재 review18/20, controller1041/1043, root161/161, review8557.667423957126/14400초다.
+
+
+### P3 R19 R0 Result And Minimal Recovery Proposal — 2026-10-14
+
+Owner의 사용량 초기화 확인과 기존 재개 요청 뒤, 자동 승인 검토가 과거 외부 전송 승인을 인정하지 않아 실제 호출 전에 두 차례 차단했다. 두 시도는 명령 미실행으로 config/입력 변경·auth/reviewer 호출·사용량 소비가 없었다. Owner가 동일 비공개31파일·관련 계약/tests/results의 Anthropic 전송과 R19/R20 및 기존 조건부 작업을 다시 명시적으로 승인한 뒤 R19를1회 실행했다.
+
+R19 session `be66df79-1523-44ff-9afb-51ee3927bc25`, 실제 claude-opus-5-5/High, claude.ai/firstParty/pro, Read46/Glob6/Grep39/MCP0, tool error0. Guide SHA256 `ce8363d18fe46b8af8600aa64b6331b53b43415f023c525d9eb3b8a3ef9dd142`, HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work 제외 diff `6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9`. 자연 종료 exit0/461.3867879169993초, process group absent, input drift/보안·감독 이상 없음. Fresh CLI session이나 계정/host 자동 context의 완전 독립을 주장하지 않는다. 기록은 기존 bundle의 `p3-alignment-36/review-19/read-run-be66df79-1523-44ff-9afb-51ee3927bc25/`에 있다.
+
+판정은 not-ready, 필수3건이다. 아래 원문은 정적 계획 검토이며 제품 실행 결과가 아니다. Driver는 세 건을 accept하되 예정 밖 수정은 적용하지 않았다. P3 대상31파일은 baseline과 모두 같고 P3 controller 실행은0이다. 현재 review19/20, controller1041/1043, root161/161, review 누적9019.054211874125/14400초(잔여5380.945788125875초). 최종 usage event는 five_hour22%, seven_day24%, allowed/no overage였다. 이 수치를 나중 호출의 fresh 관측으로 자동 사용하지 않는다.
+
+#### Reviewer Response Verbatim
+
+````text
+# P3 R0 계획 리뷰 (누적 R19) 결과
+
+## 판정
+
+**ready 아님 — 편집 전 필수 미해결 3건.** 세 건 모두 계획 보완으로 닫을 수 있는 종류이고, 31파일 구성·규범 11개·지정 10 ID 자체에서는 결함을 찾지 못했습니다. F1의 한 경로만 승인 문구("화면 제목만") 밖이라 Owner 확인이 필요합니다. 이 판정은 P3 수락·활성화·P4 판단이 아닙니다.
+
+아래는 모두 **정적 추론**입니다. P3 실행 기록은 아직 없고, R17의 15/15는 P2 후보의 기록이므로 P3 fresh PASS로 쓸 수 없습니다.
+
+## 필수 미해결
+
+### F1. `view.py`의 제목 밖 현재 명령 안내가 `hv2`로 남는다
+- `src/hv2ref/view.py:411`은 confirmation 화면에 `hv2 view intent <id> --revision <rev>`를 출력합니다.
+- `src/hv2ref/view.py:504`는 후보 절에 `hv2 view candidates`와 `hv2 candidate --help`를 출력합니다.
+- 설치 launcher는 entry-1 binding에서만 기동합니다(`colvia:4,60-62`, `product.py:965`). 따라서 "제목만" 바꾸면 entry-1 설치 화면이 은퇴한 launcher를 현재 명령으로 안내합니다.
+- 이는 계획의 "모든 현재 실행 예시는 entry-1/colvia"(guide:15)와 충돌합니다. D1-A에서는 root `hv2`가 오히려 충돌 대상입니다(DR-0004:263-267).
+- 정적 검사 (a)가 이 literal을 어차피 판정해야 하는데, 설계(guide:31 "다른 코드 상수 변경0")에는 처분이 없습니다.
+- 닫는 방법은 둘 중 하나를 편집 전에 명시하는 것입니다.
+  - **A. 두 행의 표시 문자열 3개도 고친다.** launcher 이름을 뺀 `view intent …` 형태(`REFERENCE.md:105` 방식)면 OLD target을 source로 읽을 때도 틀리지 않습니다. 승인 문구 밖이므로 Owner 확인이 필요합니다.
+  - **B. 유지하고 알려진 불일치로 기록한다.** P4 전 별도 승인 항목으로 넘기고, 문서가 view 출력을 현재 명령이라고 주장하지 않게 합니다.
+- 두 문자열을 고정한 test는 `tests/*.py` Grep에서 0건입니다. 다만 지정 15건 중 `:411` 경로(intent confirmation)를 실행하는 것은 없고, `:504`는 ID6·ID10의 기본 view에서 실행됩니다.
+
+### F2. 수락된 named amendment 일부가 파일별 clause 설계에 배정되지 않았다
+DR-0004:277은 C2 successor 문서가 이 mapping을 반영해야 한다고 정하고, :56은 clause별 successor text를 요구합니다. guide:17-27 설계에는 아래 항목의 귀속 파일이 없습니다.
+
+| 미배정 clause | DR-0004 | 구현 위치 | 자연스러운 귀속 |
+| --- | --- | --- | --- |
+| D2-A: fresh init이 `hv2` 점유물(NFC/casefold, 파일·디렉터리·symlink)을 첫 쓰기 전에 65로 거부. 늦은 충돌 시 이전 쓰기는 보존하고 "zero-change"로 보고하지 않음. tracked-but-absent `hv2`만으로는 거부 없음 | :273-275 | `product.py:1052, 1095` | `WORKSPACE-CONTRACT.md:103-125`, `GETTING-STARTED.md:69` |
+| D3-R-A: 완료된 전환 replay에서 truth가 이미 달라졌으면 degraded/10과 `transition_content_verification: unavailable`. 비교 중 drift·mismatch는 65. exit 10만으로 구분하지 않음 | :315-319 | `product.py:759-764` | `REFERENCE.md:41-48`, `OPERATIONS.md:17-19` |
+| D1: binding 없는 schema-3 detach에서 충돌 시 쓰기는 65, source status/doctor는 degraded/10. "cleanly detached"로 부르지 않음 | :271 | `product.py:1902` | REFERENCE, OPERATIONS, MANUAL-OPERATION |
+| D3-S-A: 첫 receipt 전 directory-sync 환경 거부. guard가 만든 lock 흔적은 zero-write가 아님 | :327-329 | 직접 대조하지 않음 | WORKSPACE-CONTRACT, OPERATIONS |
+
+R1이 마지막 리뷰이고 자동 수정·추가 리뷰가 0이므로, 누락을 R1에서 발견하면 복구 경로가 없습니다. 닫는 방법은 편집 전 clause 표에 위 행을 추가하는 것이며 범위는 그대로입니다.
+
+### F3. 규범 읽기 예산(token)에 대한 처분이 없다
+- `MAINTAINING.md:77`은 `tiktoken==0.13.0`/`o200k_base` 기준으로 `AGENTS.md` ≤2,000, `AGENTS + README + GETTING-STARTED` ≤4,000 token을 정합니다. 계획은 이 절을 보존합니다(guide:24).
+- 세 파일은 현재 3,459 + 2,603 + 11,863 = 17,925 bytes입니다(baseline.json). token 수는 제가 측정할 수 없지만 상한에 가까울 수 있습니다.
+- 계획은 여기에 후보 안내와 entry-1 전환 절을 더하면서 Checkout-1 절도 보존합니다(guide:25, 28). 그런데 검사 (g)는 lines/bytes만 봅니다(guide:79).
+- 닫는 방법: token을 "P3 미측정, P4 이월"로 명시하고 세 파일의 byte 증감을 보고합니다. GETTING-STARTED 신규 절은 요약과 링크로 두고 상세는 OPERATIONS/WORKSPACE-CONTRACT에 한 번만 둡니다. 지정 도구로 실제 측정하려면 신규 검증이므로 별도 승인이 필요합니다.
+
+## 의무별 확인
+
+**1. 31파일 disposition — 충족.**
+- baseline.json은 31건(11/6/12/2)이고 DR-0004:235의 영향 목록과 일치합니다.
+- `CLAUDE.md:1-4`에는 launcher literal이 없어 unchanged 처분이 타당합니다.
+- 범위 밖 유지도 옳습니다: `docs/development/README.md:146`의 "Preserve `hv2`"는 DR-0004:55에 따라 활성화 때 다루는 항목이고, `src/hv2ref/__init__.py:1` docstring은 표시 문구가 아닙니다.
+
+**2. 설계와 source/DR-0004 대조 — F1·F2 외 불일치 없음.**
+- entry-1 profile만 허용: `cli.py:26,62,88,112-113`. 설치 prog는 이미 `colvia`(`cli.py:188`).
+- 29경로와 launcher/adapter 매핑: `product.py:141-184`.
+- switch schema 2: 전환 때만 `remove=[hv2]`, 같은 창은 빈 목록, 첫 전환은 update만(`product.py:783-790, 812-818, 1342-1346`).
+- 정확한 predecessor: `product.py:385-388, 530, 818`.
+- detach: writer는 schema 3만, 1/2는 읽기 전용(`product.py:1764-1770, 1830-1838, 1931`).
+- repair와 init은 schema 1(`product.py:1603, 1003, 1047`).
+- CRLF는 checkout-1과 entry-1(`work.py:417`), 후보 writer는 entry-1(`candidates.py:240`).
+- D1-A conflict와 `lifecycle_ready`: `product.py:1259-1264`, `view.py:565`.
+- OLD pending 안내: `product.py:1180-1181, 1189, 1193, 1198-1199`.
+- binding.next 제한: `product.py:437, 653`.
+- plain auditor: schema 1/2/3, schema 3은 `colvia`·ENTRY 구성원·은퇴 충돌 검사(`product_plain_auditor.py:114-115, 120, 134-136, 169-171`). 계획 서술과 일치합니다.
+
+**3. M3와 successor 경계 — 성립.**
+- baseline의 규범 11개 hash는 `DR-0002:283-293`의 M3 effective hash와 모두 같습니다. adapter는 경로만 바뀐 동일 바이트(`b5f826d2…`)입니다.
+- 따라서 편집 뒤에는 working tree가 M3 바이트가 아니게 됩니다. 후보 안내는 "현행 유효 집합은 DR-0002 M3 hash로 식별되고 base revision에서 얻는다"는 뜻을 담아야 합니다.
+- DR-0002/0003 보호 바이트는 계획상 건드리지 않습니다(`DR-0003:22, 59`, DR-0004:58).
+
+**4. 지정 10 ID와 정적 검사 — 적절(F1-A 채택 시 `:411` 실행 공백만 남음).**
+- ID 1–5가 2회인 이유는 `tests/test_worktree_execution.py:17`이 `ActualWorkspaceInitTests`를 import하기 때문으로 보입니다. 이전 collection 원본은 열지 않았습니다.
+- `collect p3`/`focused p3`는 controller가 허용하고 한도 300/1200, slot 배타 생성입니다(`controller.py:15-16, 21-22, 134`).
+- ID2는 `README/AGENTS/CLAUDE`와 `docs/*.md`의 파일 존재만 봅니다(`test_productization_safety.py:515-523`). anchor와 manual/adapter/CHECKOUT-1-STRUCTURE 링크는 Driver 정적 검사 (b)에만 의존하며, 계획도 이를 인정합니다.
+- ID8은 runtime 블록만 봅니다(`test_runtime_admission.py:125-130`). capability 서술 문자열은 정적 검사 (c)가 유일한 방어입니다.
+- 제목과 source CLI description을 고정한 test는 Grep 0건입니다.
+- 동결 상수는 현재 문서 hash도 포함합니다(`test_entry_window_transition.py:326-333`). P4 재동결이 문서·adapter 항목까지 다뤄야 하며, P3에서 실행·수정하지 않는 계획은 옳습니다.
+
+**5. EN/KO — 구성 원칙 성립.**
+- 6쌍은 행 단위로 정렬되어 있고 명령 위치가 같습니다(first-work:17,50 / resume:45 / rules-and-removal:19,54,62,66,73 / getting-started:29,35,77).
+- KO 6개의 `en_content_sha256`은 baseline의 EN hash 앞자리와 모두 일치합니다.
+- 옛 digest 비교 지시(`manual/en/README.md:15,55`, `getting-started.md:43`)는 계획의 "별도 entry-1 receipt" 원칙으로 덮입니다.
+
+## R1에서 확인할 항목 (필수 아님)
+
+- `docs/README.md`, `README.md`, `AGENTS.md`는 payload에 실립니다(`product.py:143-156`). 후보 안내는 설치본에서도 참이어야 하고, source 전용 `docs/decisions/`·`docs/development/`로의 상대 링크는 설치본에서 끊깁니다(ID2는 source만 검사). 기존 방식처럼 code 경로로 표기하면 됩니다(`docs/README.md:24`).
+- 공개 guard 패턴(`test_productization_safety.py:509`)에 걸리는 문구를 안내에 넣지 않아야 합니다.
+- manual 5쪽 × 2언어의 "Edition … `checkout-1`; checked 2026-10-05" footer(README:48, getting-started:89, first-work:125, resume:53, concepts:98)가 "entry-1; checked"로 바뀌면 거짓 주장이 됩니다.
+- `CHECKOUT-1-STRUCTURE.md:3,7`의 Draft 표기는 DR-0002:24가 의도적으로 보존한 것입니다. successor status는 "M3 유효 revision은 `5797a6c2…`, 이 revision은 미활성 후보"로 구분해야 합니다.
+- `WORKSPACE-CONTRACT.md:191-192`의 binding 권한 보존 문장은 전환 한정 B1 0600(C0-M)과 same-entry 동작을 구분해야 합니다.
+- `PRODUCT-CAPABILITIES.json:53`의 `evidence_as_of`는 P3가 새 증거를 만들지 않으므로 유지하는 편이 안전합니다(선택).
+
+## 열람 범위
+
+**읽음**
+- 계약과 계획: guide(review-19), baseline.json, R17 응답·처분, R18 응답·처분, DR-0004 전문(1-373), DR-0002(1-34, 56-71, 275-293), DR-0003(1-24, 55-63), Work 14269-14317.
+- 규범·소비자 문서 전문: WORKSPACE-CONTRACT, OPERATIONS, GETTING-STARTED, MANUAL-OPERATION, SECURITY-AND-SUPPORT, GUIDED-INTENT, MAINTAINING, README, AGENTS, CLAUDE, docs/README, CONCEPTS, PRODUCT-CAPABILITIES.
+- 규범 문서 일부: REFERENCE 1-135와 literal 전수 추출, GENERAL-WORK 28-59·103-112·144-259, CHECKOUT-1-STRUCTURE 1-16·294-435, adapter 1-28·99-127.
+- manual: en/README, en/getting-started, ko/README 전문. 나머지 9개는 명령·판본·hash literal 추출만.
+- 코드: `cli.py` 14-123·180-314, `view.py` 400-419·494-610, `product.py` 120-228·1170-1269와 Grep 행, `colvia`·`work.py`·`candidates.py`·`controller.py`는 Grep 행.
+- test: 지정 10개 본문, `test_human_view.py` 40-124, auditor 108-175.
+
+**미열람 (통과로 세지 않음)**
+- GENERAL-WORK 1-27·60-102·113-143·260-309, REFERENCE 136-313 본문, CHECKOUT-1-STRUCTURE 17-293, adapter 29-98.
+- manual 9개 파일의 본문 의미(EN/KO 문장 단위 대조는 R1 대상).
+- `cli.py` 124-179, `product.py`의 나머지 본문(D3-S-A sync 호출부 포함), `intent.py`, `umbrella.py`.
+- r006의 `collect-p2-correction` 원본(occurrence 수는 import 구조로만 추론), SBPL·runner·allowlist, read-identity의 digest 대조.
+- `CONTRIBUTING.md`, `IMPLEMENTATION-IDENTITY.json`(Grep 0건만 확인), Work의 14062-14268.
+
+필수 증거 중 읽지 못해 판정을 보류한 항목은 없습니다. 위 미열람 범위는 R0 계획 판정에는 쓰지 않았고 R1의 실제 diff 검토에서 다뤄야 합니다.
+````
+
+#### Driver Disposition And Proposed Single Resume Bundle
+
+- F1 accept: `view.py:411`의 `hv2 view intent `를 `view intent `로, `:504`의 `hv2 view candidates`·`hv2 candidate --help`를 `view candidates`·`candidate --help`로 바꾸는 표시 문자열3개를 기존 제목 변경에 추가 제안한다. OLD target을 독립 source로 읽어도 잘못된 launcher를 지정하지 않는 subcommand 표기다. 제어 흐름·저장 schema·제품 동작은 불변이며 source CLI description/제목 외 모든 문자열을 바꾸는 권한이 아니다. 기존10 ID/15 occurrence에 `test_human_view.HumanViewInstalledTests.test_intent_optional_document_refs_exact_apply_and_stale_required_ref` 1개를 추가해11 unique/16 occurrence를 제안한다. 해당 본문은 intent confirmation 경로를 실행하고 읽기 전후 snapshot·ticket·stale-reference 경계를 확인한다. 이전 collection의 ordered 배열에1회 존재함을 확인했으며 새 collection에서도 같은16개 구성을 확인해야 한다. Test source 수정은0; 새 문자열 자체는 AST/string 정적 대조와 R1에서 확인한다.
+- F2 accept: 다음 네 행을31파일 clause 계획에 추가한다. 모두 accepted DR-0004의 문서 반영이며 새 제품 계약이 아니다.
+
+| Clause | 반영할 문서와 보존할 조건 |
+| --- | --- |
+| D2-A fresh init / late collision | WORKSPACE-CONTRACT·GETTING-STARTED: root hv2의 NFC/casefold 파일·directory·symlink 점유를 첫 쓰기 전65로 거부, late collision은 앞선 허용 쓰기를 보존, tracked-but-absent hv2만으로 새 거부를 만들지 않음 |
+| D3-R-A completed transition replay | REFERENCE·OPERATIONS: 이미 변한 truth는 transient degraded/10 + transition_content_verification unavailable, 비교 중 drift·mismatch는65; current binding 보존, exit10만으로 구분하지 않음 |
+| D1 schema3 detach collision | REFERENCE·OPERATIONS·MANUAL-OPERATION: binding 없는 exact detach의 추가 제거/완료 replay는65, source diagnostics는 해당 evidence가 달리 유효할 때 degraded/10; cleanly detached나 새 active binding을 주장하지 않음 |
+| D3-S-A pre-S1 synchronization | WORKSPACE-CONTRACT·OPERATIONS: 첫 receipt 전 bounded directory-sync 환경 거부, guard가 만든 허용 lock 흔적은 zero-write가 아님; 이후 단계·exact-current replay sync 의무와 scope를 보존 |
+
+- F3 accept: 기존 지정 `tiktoken==0.13.0/o200k_base` 상한을 바꾸지 않는다. P3에서는 exact token 측정 미실시를 명시하고 P4 계획에서 그 측정 의무와 환경을 확정한다. P3의 lines/bytes 전후 확인을 token PASS로 부르지 않는다. GETTING-STARTED의 새 전환 안내는 짧은 요약과 링크로 두고 상세는 OPERATIONS/WORKSPACE-CONTRACT에 둔다. 불필요한 문서·의무 read를 추가하지 않는다.
+
+재개 제안은 R20을 위3건의 보정 계획에 한정한 fresh R0 보완 리뷰로 사용하고, 필수 미해결0 및 아래 범위 불변이면31파일 문구 편집/정적 검사/collect p3·focused p3/R21 최종 실제 diff·결과·ENKO 리뷰까지 조건부 수행하는 것이다. R19에서 확인한 영향 목록과 계약을 불필요하게 전수 반복하지 않는다. 필수 독립 검토를 Driver 확인으로 대체하거나 R19를 ready로 다시 기록하지 않는다.
+
+Review cap20→21만1회 늘리는 제안이다. Controller cap1043/root161/누적review14400초와 collect300초·focused1200초는 유지한다. 두 controller 호출 내에서11unique/16occurrence만 실행한다. 현재 code/input identity를 재확인하고 파생 diff/결과를 결속한다. 자료는 같은 source checkout31파일과 직접 계약/tests/controls, 같은 private bundle의 R19·P3 파생자료, 기존 r006 관련 결과다. 세 read directory, 외부 Anthropic Claude 전송, claude-opus-5-5 High·claude.ai/firstParty 구독·fresh Read/Glob/Grep only·MCP0·비밀/계정메일/실제 adopter 민감정보 제외, 필요한 auth/env/usage/process 확인을 유지한다.
+
+완료 기준은31파일 처분·규범11개 hash·지정 정적검사·16selected/16run/abnormal0·입력/경계 보존·자연종료·R20/R21필수미해결0이며 exact token 측정은 미실시로 남겨 P4 계획에서 처리한다. 새 지적에 따른 예정 밖 수정/재실행, 실패, drift, 범위/보안/예산 위반 시 STOP한다. 확인된 quota만 기존 유예 예외이며 자동 대기/재시도/모델·과금 전환은 없다. 예상90–150분. P3 결과 수락/P4 실행/Done/기술 활성화/Git/실제 adopter 적용/공개는 포함하지 않는다. 아직 재개안은 승인 대기이며 R20을 준비·호출하지 않았다.
+
+기존 Work와 source 변경 patch를 checkout 밖 bundle에 보존한다. R19 원문·결과·Driver 처분의 소비자는 제안된 R20/R21이며 해당 검토 종료 후 raw stream 보관 필요를 재평가한다. Source/r006과 통합계획 checkout은 이 진행 중인 작업의 구체적 후속 사용이 있어 유지한다.
+
+### P3 R20 Supplement And Conditional Execution Authorization — 2026-10-14
+
+Owner는 직전 휴대폰 승인 요청 전체에 “승인”이라고 답했다. R19 F1/F2/F3 보완 계획을 R20 fresh R0 supplement로 검토하고, 필수 미해결0·승인 범위 불변이면31파일 편집·지정 정적검사·collect p3/focused p3·R21 실제 diff/결과/ENKO 최종 리뷰까지 수행하도록 조건부 사전 승인했다. F1의 표시 문자열3개와 기존 intent 검사1개 추가(11unique/16occurrence), F2 accepted clause4개 파일 배정, F3 exact token 미측정/P4 계획 이월을 포함한다. Review cap20→21만 증액하며 controller1043/root161/review14400초는 유지한다. 현재 review19/21,controller1041/1043,root161/161,review9019.054211874125/14400초다.
+
+자료 범위는 기존 source checkout31파일과 직접 계약/tests/Work, 기존 private bundle의 controls/R19/P3 파생 diff·results, r006 관련 collection·검증 결과다. 세 directory 안의 해당 비공개 자료를 Anthropic Claude로 전송하고 claude-opus-5-5 High, 기존 claude.ai/firstParty 구독, fresh Read/Glob/Grep only/MCP0을 사용하도록 승인했다. 필요한 auth/env/usage/process 확인을 포함하고 키·토큰·계정 이메일·실제 adopter 민감정보는 제외한다. R20은 세 보완 사항을 확인하며 R19에서 완료한 영향·계약 검토를 반복하지 않는다. 필수 미검토를 Driver 확인으로 면제하지 않는다.
+
+새 지적에 따른 예정 밖 수정/재실행, 실패·drift·범위/보안/예산 위반 시 STOP한다. 확인된 quota만 기존 유예 예외이고 자동 대기·재시도·모델/과금 전환은 없다. P3 결과 수락/P4 실행/활성화/Done/Git/adopter/public은 포함하지 않는다. 준비 시31파일 baseline/hash와 source HEAD/diff를 재확인했다. 실행 직전10분 이내 usage 관측과 기존 감독기의 나머지 admission 조건을 그대로 적용한다.
+
+### P3 R20 Supplement Result And Editing Admission — 2026-10-14
+
+Owner가 지정 세 directory의 비공개31파일·직접 계약/tests/results를 Anthropic Claude에 전송하여 R20/R21을 수행한다고 직접 명시한 뒤 R20을1회 실행했다. 앞선 자동 승인 검토 차단1회는 명령 실행 전이며 config/auth/reviewer 호출과 사용량 소비0이었다. 호출 전 Owner usage24%(2026-10-13T15:57:40Z)를10분 이내 확인했다.
+
+R20 session `71554588-4ea3-4a88-be16-a2ca1b73fe5e`, 실제 `claude-opus-5-5`/High, claude.ai/firstParty/pro, tools `{'Read': 29, 'Grep': 20, 'Glob': 3}`/MCP0. Guide SHA256 `35faa81c693ff12e0b7f31f5ecf36ff68802ee5fd5670796ae790192a0105083`, HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work 제외 diff `6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9`. 자연 종료 exit0/300.05804195802193초, process group absent, input drift·경계/감독 이상 없음. Fresh CLI session이며 자동 host/account context까지 독립이라고 주장하지 않는다.
+
+판정은 supplement-ready/필수미해결0이다. R19 not-ready는 역사로 보존하며 이번 보완판정과 Driver 처분을 결합한다. Driver는 F1/F2/F3를 accept하고 실제 Owner 사전 조건부 승인에 따라 P3 편집·지정검증 진입 조건을 확인했다. Reviewer 판정이 Owner 승인을 대체하지 않는다. 현재 review20/21,controller1041/1043,root161/161,review9319.112253832147/14400초다.
+
+#### Reviewer Response Verbatim
+
+````text
+# P3 R0 보완 계획 리뷰 (누적 R20) 결과
+
+## 판정
+
+**supplement-ready (계획 수준) — 필수 미해결 0건.** F1·F2·F3 보완안은 각각 R19 지적을 계획 수준에서 닫습니다. R19의 not-ready 판정은 그대로 보존하며, 이 판정은 R19 3건에 대한 보완 판정입니다. 편집·검증 진입 조건인 "필수 미해결 0·범위 불변"은 충족된 것으로 봅니다.
+
+이 판정은 P3 수락·활성화·P4 판단이 아닙니다. 아래 근거는 모두 **정적 추론**이며 P3 실행 기록은 아직 없습니다. 과거 15 PASS와 기존 collection은 P2 후보의 기록이므로 P3 fresh PASS로 쓰지 않았습니다.
+
+## F1 — 닫힘 (승인 범위 내)
+
+**범위와 승인**
+- 대상 문자열은 `src/hv2ref/view.py:411` 1개와 `:504` 2개가 맞습니다. `view.py`·`cli.py`에서 launcher나 옛 제품명을 표시하는 다른 literal은 이미 승인된 `view.py:564`(제목)와 `cli.py:19`(description)뿐입니다.
+- Owner의 범위 확대 승인은 Work `:14461`에 기록되어 있어, R19가 요구한 Owner 확인이 충족됩니다.
+- launcher를 뺀 표기는 현행 문서에 선례가 있습니다(`docs/GETTING-STARTED.md:88`, `docs/GUIDED-INTENT-FORMATION.md:23`).
+- `view … candidates`와 `candidate`는 실제 subcommand입니다(`cli.py:179-180, 207`).
+- 세 변경은 기존 `code(...)` 호출 안의 상수만 바꾸므로 분기·schema·동작 변경은 0입니다.
+
+**추가 test의 실행 경로** (`tests/test_human_view.py:71-83`)
+- `:77`과 `:80`은 설치된 `colvia view confirmation --input -`에 intent ticket을 넣습니다(`test_productization_safety.py:417-418`).
+- 이 호출은 `render_view` → `_confirmation` → `kind == "intent"` 분기를 거쳐 `view.py:411`을 2회 실행합니다(`view.py:580, 408-411`).
+- `:80`의 stale 경우도 `:411`에 도달합니다. 앞선 검사들이 `check()` 안에서 예외를 흡수하기 때문입니다(`view.py:387-391, 401-406`).
+- `:78`은 `validate_ticket`에서 65로 끝나고 `:83`은 `_intent` 경로라 `:411`에 닿지 않습니다.
+
+**기존 assertion이 검증하는 것과 못 하는 것**
+- 검증하는 것: exit 0, 호출 전후 target snapshot 동일, `# ` 시작, `human decision required`·confirm token·`brief.md`·stale advisory 문구(`test_human_view.py:44-50, 77, 80`).
+- 검증하지 못하는 것: 바뀐 문자열 자체. focused PASS는 "그 행이 예외 없이 렌더된다"까지만 보여 줍니다.
+- 문자열 내용은 계획대로 AST/string 정적 대조와 R21 실제 diff가 유일한 방어입니다.
+- `tests/` 전체에서 세 literal을 고정한 곳은 Grep 0건입니다.
+
+**`:504` 실행 경로**
+- ID6의 기본 view 3회(`test_human_view.py:157, 159, 161`)와 ID10의 `kind=None`(`test_intent_observation_sharing.py:311-316`)에서 실행됩니다.
+- ID10은 같은 코드의 두 렌더를 서로 비교하므로 문자열 변경에 영향받지 않습니다.
+
+**11 unique / 16 occurrence**
+- 기존 collection의 `ordered` 배열(`collection.json:6862-33515`)에 새 ID는 `:7780`에 1회, `occurrence: 1`로 있습니다.
+- `duplicates` 맵(`:797-975`)에는 없습니다.
+- `HumanViewInstalledTests`는 `test_human_view.py:28`에서만 정의되고 다른 test 모듈이 import하지 않아 1회가 구조상 일관됩니다.
+- 5×2 + 6×1 = 16이 맞습니다. 다만 이는 P2 collection의 관측이므로 P3 새 collection에서 재확인해야 하며, 계획도 그렇게 정하고 있습니다.
+
+## F2 — 닫힘 (네 배정 모두 의미 누락·과장 없음)
+
+| Clause | DR-0004 | 구현 근거 | 대조 결과 |
+| --- | --- | --- | --- |
+| D2-A | `:273-275` | `product.py:197-209, 1050-1054, 1095, 1119-1126` | 일치 |
+| D3-R-A | `:315-319` | `product.py:731-767` | 일치 |
+| D1 detach | `:271` | `product.py:1901-1902, 1937-1953, 1174-1184`; `view.py:22` | 일치 |
+| D3-S-A | `:311, 327-329` | `product.py:1441-1459, 613-665, 549-572`; `workspace.py:475-495` | 일치 |
+
+- **D2-A.** 충돌 판정은 이름만 열거하는 NFC/casefold 비교입니다. fresh 경로는 `bootstrap_root`(`:1123`) 전에 거부하고, guard 아래 재관측(`:1126` → `:1095`)이 late collision을 잡습니다. filesystem 점유만 보므로 "tracked-but-absent만으로 거부 없음"도 맞습니다. 귀속 절은 `WORKSPACE-CONTRACT.md:103-125`와 `GETTING-STARTED.md:69`가 적절합니다.
+- **D3-R-A.** 순서는 충돌 거부(`:734`) → replay sync(`:736-753`) → truth 상이 시 degraded + `unavailable`(`:757-761`) → 일치 시 비교와 재확인 65(`:763-766`)입니다. 귀속 절은 `REFERENCE.md:41-51`과 `OPERATIONS.md:17-19`가 적절합니다.
+- **D1 detach.** 충돌 검사는 bytes/prefix 검증 뒤, schema 3에만 걸립니다. 완료 replay 반환(`:1947, 1953`)보다 앞서 거부되고, source status는 `ContractError`를 degraded로 싣습니다(`:1183-1184`). 귀속 절은 `REFERENCE.md:50-51`, `OPERATIONS.md:29-37`, `MANUAL-OPERATION.md:9`가 적절합니다.
+- **D3-S-A.** admission sync는 guard 획득과 `_switch_preflight` 뒤, transition일 때만, receipt 쓰기(`:1459`) 전에 실행됩니다. guard가 `.hrn/locks`와 `writer.lock`을 먼저 만들므로 "zero-write 아님"이 구현과 맞습니다. R19가 직접 대조하지 않았던 pre-S1 호출부는 이번에 확인했습니다.
+
+새 계약 추가는 없습니다. 네 행 모두 DR-0004의 수락된 문구 범위 안입니다.
+
+## F3 — 닫힘 (계획 수준)
+
+- `MAINTAINING.md:77`은 상한과 "측정 시 기록" 의무만 정하고 현재 충족을 주장하지 않습니다. 따라서 문구를 보존해도 거짓 주장이 되지 않습니다.
+- 보완안은 R19가 제시한 닫는 방법과 같습니다: 상한 불변, P3 exact token 미측정 명시, P4 계획에서 환경·의무 확정, lines/bytes를 token PASS로 부르지 않음, GETTING-STARTED 전환 절은 요약+링크.
+- 완료 기준에도 "exact token 측정은 미실시, P4 계획에서 처리"로 기록되어 있습니다(Work `:14455`).
+- 세 파일의 byte 증감 보고는 기존 정적 검사 (g)(guide `:79`)와 R19 Driver 처분(`driver-disposition.json:13`)에 남아 있습니다.
+
+**이월되는 위험 (필수 아님, P4 계획 입력)**
+- token은 이번에도 측정하지 못했습니다. baseline 합계 17,925 bytes만으로는 이미 상한 근처이거나 넘었을 가능성을 배제할 수 없습니다(측정이 아닌 추정).
+- GETTING-STARTED는 규범 11개 중 하나입니다. P4 측정에서 초과가 나오면 그 successor hash와 R21의 해당 파일 결론이 다시 열립니다. P4 계획에 이 경로를 명시하길 권합니다.
+- F2가 예산 대상인 GETTING-STARTED에 D2-A를 추가하므로, 그 추가분도 F3 원칙대로 한두 문장과 링크로 제한해야 합니다.
+
+## R21에서 확인할 항목 (필수 아님)
+
+- **AST 상수 수.** 변경 상수가 정확히 `view.py` 4개(`:411` 1, `:504` 2, `:564` 1)와 `cli.py` 1개(`:19`)인지 확인합니다.
+- **D2-A 문구.** "첫 쓰기 전"은 최초 admission 관측에 점유가 있을 때만 해당합니다. 감지 뒤 추가 publication 금지, 점유물 삭제·rename 금지, 원자적 보호가 아님(DR `:275`)이 빠지지 않아야 합니다.
+- **D3-R-A 문구.** exit 10이 잘못된 product/prefix, 충돌, sync 실패, 현재 mismatch를 삼키지 않는다는 우선순위(DR `:319`)를 담아야 합니다. `historical_operation_result`는 새 durable 결과가 아닙니다(DR `:315`).
+- **D1 detach 문구.** `product.py:1184`의 degraded는 detach 관측의 모든 `ContractError`에 공통입니다. 문서는 degraded/10이 아니라 error code와 message로 충돌을 구분하게 해야 합니다. schema 1/2 불변과 launcher 제거 뒤 설치본 관측 불가(DR `:271`)도 확인 대상입니다.
+- **D3-S-A 문구.** preflight 성공이 이후 단계의 sync를 보장하지 않고 power-loss 증명도 아니라는 점(DR `:329, 340`)을 담아야 합니다.
+- **선택 개선.** `WORKSPACE-CONTRACT.md:245-266`(Receipt-Bound Detach)은 detach 상태를 열거하지만 D1 detach 충돌 행의 배정 대상이 아닙니다. 한 문장이나 링크를 두면 lifecycle 규칙 소유 문서와 OPERATIONS가 어긋나지 않습니다. 판정 조건은 아닙니다.
+- **동결 상수.** `view.py`는 managed payload 구성원입니다(`test_entry_window_transition.py:32`). 문자열 3개 추가는 이미 승인된 제목 변경과 같은 종류의 영향이며 P4 재동결 대상입니다. 지정 16건에는 해당 동결 test가 없습니다.
+
+## 열람 범위
+
+**읽음**
+- R19: `response.md` 전문, `driver-disposition.json` 전문, review-19 `read-guide.md` 전문.
+- Work(`CHORE-20261009-002`): `:14430-14465`.
+- DR-0004: `:40-60`, `:228-373`.
+- `view.py`: `:350-611`과 literal Grep. `cli.py`: Grep 행(`:19, 179-180, 207`).
+- `product.py`: `:190-217, 230-232, 545-669, 726-773, 1040-1139, 1164-1203, 1361-1472, 1880-1959`.
+- `workspace.py`·`jsonio.py`: Grep 행만.
+- test: `test_human_view.py:1-135, 155-177`, `test_productization_safety.py:391-424`, `test_intent_observation_sharing.py:309-317`, `test_view_observation_sharing.py:97-110`, `test_entry_window_transition.py:24-37`, `tests/` literal Grep.
+- 기존 collection: 구조 키, `ordered`·`default_ids`·`duplicates`의 해당 행.
+- 문서: `WORKSPACE-CONTRACT.md:100-129, 245-266`, `OPERATIONS.md:1-37`, `REFERENCE.md:35-51`과 heading, `GETTING-STARTED.md:52-70`과 heading, `MAINTAINING.md:68-81`, `MANUAL-OPERATION.md` Grep 행.
+
+**미열람 (통과로 세지 않음)**
+- `product.py:1473-1600`의 post-S1 sync 호출 경로 전체와 `_entry_compare_local` 본문. D3-S-A는 pre-S1 호출부와 replay 경로만 대조했습니다.
+- `writer_guard` 본문 전체, `sync_directory`의 `unavailable` 반환 분기.
+- ID7 외 지정 test의 재열람은 하지 않았습니다. R19의 본문 확인에 의존하고 ID6·9·10만 다시 읽었습니다.
+- `REFERENCE.md:105`의 긴 행 원문(선례는 다른 두 문서에서 확인).
+- controller·runner·SBPL·allowlist, `read-identity.json` digest 대조, baseline hash 재대조.
+- 새 test의 과거 실행 시간. 1,200초 예산 안에 16건이 드는지는 판단하지 않았습니다.
+- R19가 R1 대상으로 남긴 미열람 범위(GENERAL-WORK·REFERENCE·CHECKOUT-1-STRUCTURE·adapter 일부, manual 9개 본문 의미, EN/KO 문장 대조)는 그대로 R21 의무이며 이번에 통과로 바꾸지 않았습니다.
+
+필수 증거 중 읽지 못해 판정을 보류한 항목은 없습니다. R21은 실제 변경 31파일 처분, 규범 11 hash, 정적 검사, fresh 16회 결과, EN/KO 6쌍 의미를 확인하는 별도 의무로 남습니다.
+````
+
+#### Driver Disposition
+
+F1 표시 상수5개(cli1/view4)와 기존 intent 검사1개 추가, F2 accepted clause4개, F3 token 미측정/P4 계획 이월을 승인된대로 반영한다. Optional 추가 개선을 새 편집 범위로 확대하지 않는다. P4 token 초과 시 해당 문서/hash와 리뷰 결론에 영향을 판단해야 한다는 제한은 P4 계획 입력으로 유지한다. R21의 실제diff/ENKO/정적검사/fresh16회 결과 의무와 미열람은 그대로다. 과거15PASS를 P3 결과로 사용하지 않는다.
+
+추가 리뷰·예정 밖 수정/재실행·실패·drift·경계/한도 위반은 STOP한다. R21은 남은1회이며 별도 과금·모델 전환은 없다. 현재 원문과 결과의 소비자는 R21 누적 처분이고, 검토 종료 후 재생성 가능한 raw stream 보관 필요를 재평가한다. 보존은 Git/삭제 권한이 아니다.
+
+### P3 Authoring Precondition Failure And Minimal Resume Proposal — 2026-10-14
+
+R20 supplement-ready/필수0 뒤 승인된31파일 편집을 한 번 시도했으나, Driver의 일회용 편집 스크립트가 source 쓰기 전에 치환 전제 오류로 exit1했다. `docs/CONCEPTS.md`에 없는 `Harness v2`를 필수 치환 대상으로 지정한 Driver 준비 오류다. 제품 실행/테스트 실패가 아니다. 최종 일괄 write loop 전에 멈췄으며31파일의 baseline SHA256이 모두 그대로임을 별도로 확인했다. P3 controller 실행0, 추가 reviewer 호출0, 현재 review20/21·controller1041/1043·root161/161·review9319.112253832147/14400초다.
+
+필수 오류 출력:
+
+```text
+File "/private/tmp/colvia-edit-p3.py", line 43
+rep('docs/CONCEPTS.md','Harness v2','Colvia')
+AssertionError: ('docs/CONCEPTS.md', 'Harness v2')
+```
+
+Owner의 첫 예상 밖 실패 STOP 지시에 따라 스크립트를 고쳐 재실행하지 않았다. 읽기 전용 진단은 source write loop를 제거한 메모리 내 변환으로 나머지 치환 전제를 확인했고, 누락은 이1건뿐이었다. 이는 source 편집/제품 실행/지정 검증 PASS가 아니다. CONCEPTS 실제 문구는 `The root hv2 launches the bound runtime`이며 파일에는 `Harness v2` display가 없다. 따라서 복구 제안은 잘못된 브랜드 치환1행을 실제 root launcher 설명의 `hv2`→`colvia` 치환1행으로 교체하는 것이다. 원래 승인된 current-entry 정렬 범위이며 새 제품 계약/파일/테스트 추가가 아니다.
+
+실패한 편집 스크립트 원본은 기존 bundle `p3-alignment-36/p3-edit.py`에 보존한다. Named consumer는 이 승인 대기 authoring 복구이며, 성공 편집 및 R21 처분 뒤 이 재생성 가능한 스크립트의 보관 필요를 재평가한다. 임시 경로가 유일한 사본이 아니며 새 source 사본/영구 장부를 만들지 않는다.
+
+제안된 단일 재개 묶음: 위1행 수정 후31파일 편집1회 → 기존 정적검사 → collect p3 1회(300초)에서11unique/16occurrence 확인 → focused p3 1회(1200초) → R21 결과 리뷰1회. Source가 미변경이므로 R19+R20 계획 검토를 재사용하며 새 R0/추가한도 요청은 없다. R21은 기존 세 directory의 동일 private31files/direct contracts/tests/controls/results와 범위 내 파생 diff·결과를 Anthropic Claude로 전송하며 claude-opus-5-5 High/claude.ai·firstParty 구독/fresh Read·Glob·Grep/MCP0, 비밀·계정메일·실제 adopter 민감정보 제외를 유지한다. 필요한 auth/env/usage/process 확인을 포함한다. 입력은 기존 HEAD/Work 제외diff/31baseline 및 이후파생hash로 결속한다.
+
+완료 기준은31파일 처분·11normhash·지정정적검사·16selected/16run/abnormal0·보존/자연종료·R21필수0이며 exact token 미측정은 P4 계획 이월이다. 첫 새 지적에 따른 예정 밖 수정/재실행·실패·drift·범위/보안/한도 위반에STOP, confirmed quota만 유예하며 자동 대기/재시도/모델·과금 전환은 없다. 예상60–100분. P3 수락/P4 실행/활성화/Done/Git/adopter/public 제외. 아직 복구 재개는 승인 대기다.
+
+### P3 Authorized Recovery, Actual Edit And Validation — 2026-10-14
+
+Owner는 2026-10-14 01:24 KST “승인”으로 직전의 단일 authoring 복구 묶음을 승인했다. 별도로 01:02 KST 세 directory의 private31files·관련 계약/검사/검증자료를 Anthropic Claude로 전송하는 R20/R21을 명시적으로 승인했다. Driver는 누락 치환1행만 실제 root launcher 문구로 고친 뒤 승인된 편집을1회 수행했다. 이전 쓰기 전 실패를 삭제하거나 PASS로 고치지 않았다. 제품 계약/로직/테스트/범위 확대는 없다.
+
+실제 수정은31대상 중30파일이며 CLAUDE.md는 기존 canonical AGENTS 위임만 있어 unchanged다. HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`; 현재 Work 제외 binary diff SHA256 `bf4e1ae9390ba23c8623a5fb848333dc7a2ef58299b91246583de078190dacae`. 기존 P2 변경 중 이번31대상 밖 diff는 승인 전 SHA256 `6f4f802a30aa87b7a8b0ac6ba41388dc3f5ff7d8f476700be1780f9293b2aae9`와 동일하다. 현재31대상 diff와 최소 정적 결과는 기존 bundle `p3-alignment-36`에 R21 입력으로 둔다.
+
+#### File Disposition And Candidate Identities
+
+다음11개 normative-successor hash는 활성화 전 후보다. DR-0002 M3·DR-0003 acceptance·DR-0004 accepted bytes는 수정하지 않았다. Managed 경로의 source-only 참조는 후보 상태를 설명할 뿐 정상 설치의 mandatory input으로 승격하지 않는다. 과거 checkout-1/hv2 실행 기록·증거 digest와 matching OLD source 복구 조건은 구분해 유지했다.
+
+| File | Category | Disposition | Current SHA256 | Bytes before → after |
+| --- | --- | --- | --- | --- |
+| `docs/WORKSPACE-CONTRACT.md` | normative-successor | changed | `3796f658d304e726a337f9b06040b488ae17561195fd02c516cec746a6490e3a` | 25704 → 35299 |
+| `docs/GENERAL-WORK.md` | normative-successor | changed | `0e81c6a62b6a5e33d29d163662c1b1feb9be5626b65e6d04d6353747bf176074` | 42389 → 43948 |
+| `docs/GUIDED-INTENT-FORMATION.md` | normative-successor | changed | `b86b713b265379712b08216db07253f938e59db39fafd8d39c13a25eb4163001` | 3699 → 3814 |
+| `docs/REFERENCE.md` | normative-successor | changed | `ee4ce947e5c10ce7de18ab770e1b47f1fb96310e54463561a155903896f6fda4` | 55257 → 58458 |
+| `docs/OPERATIONS.md` | normative-successor | changed | `1ee6ee7045d1570fff3a5f6cae14322d89d0509f312a76460822818ece3e1350` | 6374 → 10919 |
+| `docs/MANUAL-OPERATION.md` | normative-successor | changed | `3341bb934dca5244ca12c449587c094b50ef4fdc32b8f454843991743d6d5f3c` | 2505 → 3195 |
+| `docs/SECURITY-AND-SUPPORT.md` | normative-successor | changed | `0da19e169b0c1eedcd01e594ba242e9c9ea55b64f72252fe692eb9e3db436f84` | 6252 → 7120 |
+| `docs/MAINTAINING.md` | normative-successor | changed | `d202bb1ac3ded035546ebf4fd17810b7bd4a2c66f7742660fd5d7bf803c434e1` | 18271 → 19657 |
+| `docs/GETTING-STARTED.md` | normative-successor | changed | `9d9e38128e459c890361d5a6e3bcbd83f6d3765b478eafde4fe0208dfac62e94` | 11863 → 13161 |
+| `adapters/colvia-work/SKILL.md` | normative-successor | changed | `df7db5f79613164de946e17bca732686f94715546c67158d63effd0105adf3df` | 23929 → 24647 |
+| `docs/development/CHECKOUT-1-STRUCTURE.md` | normative-successor | changed | `fd4019d4093fbd64ef5dcda8c36ba41cfc319a6e4feb0d84fd048c8d8dd81fe7` | 44410 → 45823 |
+| `README.md` | consumer | changed | `596862046472c12b9f2cd38fca46fd95d38f6fafcbb915aaa3307e76a6644dd8` | 2603 → 2845 |
+| `AGENTS.md` | consumer | changed | `49d5ee862002ca7576a98f510bb19daf5fdfeadeb65772c8008a7726c869395c` | 3459 → 3640 |
+| `CLAUDE.md` | consumer | unchanged | `5bda5bf79779716d004ba9611529f84bc9c8e9fbe29fe715fa53ef80c0a76993` | 230 → 230 |
+| `docs/README.md` | consumer | changed | `24b96f0fb685c1aba8b4bb698376f6b300bc14e7dd130e5373fb54a094eece7c` | 4123 → 5258 |
+| `docs/CONCEPTS.md` | consumer | changed | `bca9ff94f0623225ea6f17d6db9cb53e332cd5cf61ef5fff0d97a8134b943888` | 3085 → 3091 |
+| `PRODUCT-CAPABILITIES.json` | consumer | changed | `89d99783381680caa3b02536f7ab9e13de61ce06ab9b1b05dca29e7207c941ca` | 4077 → 4195 |
+| `manual/en/README.md` | manual | changed | `9591e1db33a1655310fbfee65ee42855041ed9e874bc3a7cc952bed28e262bd4` | 5430 → 5882 |
+| `manual/en/concepts.md` | manual | changed | `06948b9aa044b315325b854edbd7c98a0de30da0afe8de61a8004290aaf977f9` | 7312 → 7544 |
+| `manual/en/first-work.md` | manual | changed | `1044d764f8fa88b048cc4ebbed69d86924a3f8377946f3e1cfa58d82047cbdcb` | 10449 → 10698 |
+| `manual/en/getting-started.md` | manual | changed | `02fa67561ad487949d8ba784ebb8f3db0baeab2a8b652b689f079e8a5b535bd1` | 8139 → 8438 |
+| `manual/en/resume.md` | manual | changed | `47c8df39e47c876c899e26b5e8862f05bb60f5fa96b883270e0dcb4780c9a026` | 4059 → 4311 |
+| `manual/en/rules-and-removal.md` | manual | changed | `fc785eac9b9880492a50a37d54b19a7abe0de9279e07bfb8749418f71e0f840d` | 10725 → 12413 |
+| `manual/ko/README.md` | manual | changed | `e43e5ba5ab84b43566944be1164c98f327cf17b156067fa58e2fcb785137755b` | 6221 → 6722 |
+| `manual/ko/concepts.md` | manual | changed | `07c7086a7e08595ad513c1ca46f80d186d30fa9235aa62ed1ea059dca1ad298d` | 8248 → 8509 |
+| `manual/ko/first-work.md` | manual | changed | `29a33c1c8ff6edfecfca30fb53996870cd1a1909f90fbfa2ef72902bc3e98fac` | 12412 → 12690 |
+| `manual/ko/getting-started.md` | manual | changed | `55d729146613692389cfa3d97d3b3a413d1d369a74d745db78744a51f1abf11f` | 9543 → 9860 |
+| `manual/ko/resume.md` | manual | changed | `7d1a0d7fb2c9ce541ca51707d30472b573dfdeef8637dc0e3bcc21f1944145ae` | 4634 → 4912 |
+| `manual/ko/rules-and-removal.md` | manual | changed | `8b8bbc95d796b893af4788c122ecef7a328a50a5d9fe9747b2187bd77b7755cd` | 12812 → 14821 |
+| `src/hv2ref/cli.py` | display-only | changed | `0bd9861efc55534fa56ccd9f919dc2cdebb145f99122b963fb9b77aa88e8131e` | 18335 → 18331 |
+| `src/hv2ref/view.py` | display-only | changed | `bb32311b46dab38e2283f43a994a8198db2d6dfb94a1b3a1aabf432b21490bd5` | 44262 → 44246 |
+
+#### Driver Static Checks
+
+AST 대조는 cli.py1/view.py4개의 승인된 문자열 상수만 변경, 나머지 AST 동일이었다. Capabilities는 지정3개 boundary 문구만 변경하고 status/id/runtime/evidence_as_of/internal_lineage를 유지했다. Markdown28개를 marked GFM으로 렌더해 code 밖 literal emphasis 잔여0, 상대 링크/anchor297개 문제0. KO6개의 en_content_sha256은 새 EN bytes와 일치한다. 이 hash 검사는 EN/KO 의미 검토를 대체하지 않으며 R21에서6쌍 본문을 대조한다. 이번31대상 git diff --check는 PASS다; 기존 Work의 과거 whitespace는 이 범위에 섞지 않았다.
+
+읽기 분량의 bytes는 위 표에 기록했다. README 2603→2845, AGENTS 3459→3640, GETTING-STARTED 11863→13161, 합계17925→19646 bytes다. exact token 측정은 미실시이며 token budget PASS를 주장하지 않는다. MAINTAINING의 기존 상한은 불변이고 P4 계획에 정확한 측정 환경/명령·결과 의무를 둔다. 초과로 문서를 수정하면 successor hash와 R21의 해당 결론 재검토가 필요하다.
+
+#### Actual P3 Collection And Focused Run
+
+고정 runtime은 Python3.14.7의 절대경로 `/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14`, 외부 호출은 `-I -S -B`다. 기존 `colvia-entry-cleanup-10/controller.py`의 고정 bootstrap으로 입력 SHA를 검증하며 같은 E root와 controls를 재사용했다. 실제 sandbox runner argv/cwd/runtime/env/예산은 `exec/runs/collect-p3/inputs.json`과 `exec/runs/focused-p3/inputs.json`에 기록되어 있다. 그 argv는 `sandbox-exec -f test.sb PYTHON -I -S -B -c BOOTSTRAP CONTROLS runner.py INPUT INPUT_SHA WORK MODE`이며 결과 생성은 해당 run/work 경계 안으로 제한되고 network는 금지된다. 신규 root/command/dependency/test source는 없다.
+
+| Controller command tail | Input SHA256 | Budget | Actual seconds | Exit/result |
+| --- | --- | --- | --- | --- |
+| `controller.py p3-collect-input.json SHA collect p3` | `3ca73a8d28934f4091fccf2ae5e583243d567675582570482a52d5289b59f075` | 300s | 0.487 | 0/PASS |
+| `controller.py p3-focused-input.json SHA focused p3` | `6c41d15e2c70e74e3298fd3921174c51d2536af27cd79e22116e59498b8c1be7` | 1200s | 40.207 | 0/PASS |
+
+두 실행의 source_digest는 `86c0b5b467269906d793be6a79f3c2e363150d0652a42fc07ab5b78ae5d925e4`다. Fresh collection은 ordered6663, 선택11unique/16occurrence(5×2+6×1), collection SHA256 `47054c955cd3abb1582ab53ec2edfdf228ac24752810af6d8bb014c648acbae8`다. Focused는 selected16/run16, failure/error/skip/expected-failure/unexpected-success/unfinished/unstarted 모두0이다. 두 실행 모두 자연종료, process group absent, input 보존, cleanup 오류0을 확인했다. 과거 P2 PASS를 P3 fresh PASS로 사용하지 않았다. 이16회는 변경 문구 자체를 단언하지 않으므로 AST/문구 의미 검토가 별도로 필요하고, 전체 회귀·artifact qualification을 대체하지 않는다.
+
+이제 controller1043/1043·root161/161·review20/21·review elapsed9319.112253832147/14400s다. 지정 controller 호출은 모두 소진했으며 재실행은 하지 않는다. 남은 R21은 최신 usage/auth/env/process/입력 무결성 확인 후 승인된 실제 결과 리뷰1회만 실행한다. R21 필수0을 확인해도 P3 결과 수락·P4 실행·규범 활성화·Done·Git·adopter/public 권한은 생기지 않는다. 첫 새 지적에 따른 예정 밖 수정/재실행·실패·drift·경계/한도 위반은 STOP한다.
+
+Named consumer는 진행 중 R21 및 P4 계획의 입력/영향 판단이다. 기존 source 외부 bundle의 current-changes.patch로 변경을 보존한다. Source checkout은 P4 후보 준비, E root는 승인된 후속 실행 재사용 계획 때문에 유지하며 아직 cleanup 대상이 아니다. R21 처분 뒤 재생성 가능한 편집 스크립트/정적 출력의 추가 보관 필요를 재평가한다.
+
+### R21 Prepared, Current Usage Observation Pending — 2026-10-14
+
+R21 read-guide 7,889bytes、input156개를 현재 HEAD/Work제외diff/31대상/직접 계약·tests·controls·fresh P3 결과에 결속했다. Inspect-only와 Work GFM은 PASS이며 reviewer 호출0이다. 누적20/21, 다음1회는 이미 승인되어 있으나 실행 직전10분 이내 usage 관측이 필요하므로 armed=false로 유지한다. Owner에게 현재 Claude5시간 사용량만 요청했고 재승인을 요청하지 않았다. 과거 usage를 현재 관측으로 재사용하지 않는다.
+
+읽기 전용 P4 준비: fixed controller의 collect-final/complete-normal-final/complete-parent-O-final/artifact-final은 아직 실행하지 않았다. 현행 timeout300/5400/5400/1800초는 이전 설정일 뿐 새 예산 충분성 근거가 아니다. P4 계획은 tiktoken0.13.0/o200k_base의 정확한3문서 측정 → 필요 시 별도 문서 조정 처분 → P2_RELEASE_ID/SHA와 A1 lengths/D3 states/C4 map 등 동결 기대값의 최종 후보 재결속 → fresh collection → 실제 선택수/과거 측정시간을 근거로 회귀와 artifact 예산 확정 순서를 요구한다. 이는 조사이며 P4 편집·측정·수집·실행 승인이 아니다.
+
+중단 보존 점검에서 tracked 전체 변경 patch는 checkout 밖 기존 bundle의 current-changes.patch와 byte 일치를 확인했다. Untracked controls36파일 중32개는 기존 외부 bundle에서 동일 hash 사본을 확인했다. 나머지4파일만 같은 bundle r0-e-result/current-untracked-controls에 보존한다. Named consumer는 기존 controls를 재사용할 P4 계획·실행 및 변경복구이며, authorized Git/동등 보존이 확인되고 이 소비자가 끝나면 보관을 재평가한다. 이는 새 영구 증거 장부나 test 실행환경 보관 의무가 아니다. Source와 E는 구체적 P4 재사용 계획으로 유지한다.
+
+### R21 Actual Result, Driver STOP And Minimal Recovery Proposal — 2026-10-14
+
+Owner의 현재 Claude5시간 사용량38%를2026-10-13T16:40:22Z에 수신한 뒤, 기존 R21 승인을 실행했다. 대체 API/auth 환경은 모두 absent, `claude auth status`는 claude.ai/firstParty/pro였다. Sandbox 내부 ps가 권한상 거부되어 이미 승인된 읽기 전용 사전 확인을 scoped escalation으로 수행했고, source에서 중복 CLI는 없었다. 계정 이메일/키/토큰은 기록하지 않았다.
+
+R21은 actual claude-opus-5-5, requested high, session `9e120645-2d41-48d4-b8bf-12af9d1c90c5`, exit0, 357.5757532500429초로 정상 종료했다. Read37/Grep14/Glob4, MCP0, signal0, group_absent=true, input_drift=null, boundary/supervision anomaly=false. 입력 HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work제외diff `bf4e1ae9390ba23c8623a5fb848333dc7a2ef58299b91246583de078190dacae`, guide SHA `9a2e1122dfc40a9aa8ed926004806f30f9343c2b457ee3e7faf7b2978a6e38c0`. 원문 SHA `6948964395a7c74f49dd59d15b4fd466480c689ab68a1d4243a20ee25f5fe87d`. 자동 context가 있어 packet-only independence는 보장되지 않으며 리뷰의 실행 완료와 검토 의무 충족을 구분한다.
+
+판정은 P3-result not-ready, 필수 문구 결함2건이다. 추가로 R19에서 이월한 hunk 밖 본문 검토 의무가 남았다. 자동 수정/재실행/추가 reviewer 호출을 하지 않았다. 현재 controller1043/1043·root161/161·review21/21·review9676.68800708219/14400초, 남은4723.31199291781초다. R21 설정은 disarmed로 유지한다.
+
+#### Reviewer Response Verbatim
+
+````text
+# P3 실제 결과 리뷰 R21 — 판정: **P3-result not-ready, 필수 미해결 2건**
+
+두 건 모두 한 토큰/한 경로 수준의 잔여 불일치이지만, 고치면 규범 successor hash 1개와 manual hash 1개, source_digest가 바뀝니다. 그 밖의 의무(clause 배정, 후보 표기, 표시 문자열, 실행 기록)에서는 필수 결함을 찾지 못했습니다. 이 판정은 P3 수락·P4·활성화·Done·Git 판단이 아닙니다.
+
+**독립성 한계:** 실제 세션 모델·effort는 제가 검증할 수 없고(환경 표기는 claude-opus-5-5), 계정 메일·작업 디렉터리 같은 자동 context가 주입되었습니다. packet-only independence는 보장되지 않습니다. shell이 없어 HEAD, diff SHA256, 파일 digest는 재계산하지 못했습니다.
+
+## 필수 미해결
+
+### M1. KO resume의 현재 명령이 `./hv2 view`로 남아 있음
+- **근거:** `manual/ko/resume.md:15`의 요청 문안은 "./hv2 view를 실행하고…"입니다. 대응하는 `manual/en/resume.md:15`는 "Run ./colvia view"이고, 같은 KO 파일 `:20-23`의 명령 블록도 `./colvia`입니다.
+- **diff 확인:** KO hunk(`p3-diff.patch:1698`)는 `:17`부터 시작해 이 인용문을 건드리지 않았고, EN hunk(`:1260-1265`)만 바뀌었습니다.
+- **hash가 가린 점:** KO footer의 `en_content_sha256`은 새 EN hash `47c8df39…`와 일치합니다(`p3-diff.patch:1734`). hash PASS가 번역 불일치를 덮은 사례입니다.
+- **영향:** KO 독자가 새 세션에 은퇴한 launcher 실행을 지시하게 됩니다. entry-1 설치에서는 `hv2`가 없거나, 있으면 실행 금지 대상인 retired-entry 점유물입니다(DR-0004:263, `docs/REFERENCE.md:329`).
+- **원인(정적 추론, 미확인):** 치환 패턴이 "view를"처럼 한글 조사가 붙은 경계를 놓친 것으로 보입니다.
+- **최소 제안:** 해당 한 토큰을 `./colvia view`로 고칩니다. KO resume hash `7d1a0d7f…`만 바뀌고 `en_content_sha256`은 그대로입니다.
+
+### M2. 규범 successor MAINTAINING의 Source Layout에 존재하지 않는 adapter 경로
+- **근거:** `docs/MAINTAINING.md:18`은 `adapters/harness-v2-work/SKILL.md`를 가리킵니다. source의 `adapters/` 아래에는 `adapters/colvia-work/SKILL.md`만 있습니다(Glob).
+- **문서 내부 모순:** 같은 문서 `:9`는 `colvia`로 바뀌었고, Inventory 절은 현재 집합을 `adapters/colvia-work/SKILL.md`로 서술합니다(`p3-diff.patch:420`).
+- **영향:** 11개 규범 후보 중 하나가 현재 source 구조를 틀리게 기술합니다. 고치면 successor hash `d202bb1a…`가 바뀌므로 Work `:14625`의 hash 표는 최종 후보 식별값이 될 수 없습니다.
+- **최소 제안:** `:18`을 `adapters/colvia-work/SKILL.md`로 고칩니다.
+
+### 두 건의 공통 후속
+- manifest, Work 표, source_digest `86c0b5b4…`, collection hash가 바뀌므로 정적 검사와 collect/focused 재결속이 필요합니다.
+- 리뷰 호출은 21/21로 소진되었습니다. 닫는 방법은 Owner 결정 사항이며, 저는 이를 waiver로 바꾸지 않습니다.
+- 재검 때는 `hv2`(단, `hv2ref` 제외)와 `harness-v2`를 단어 경계 없이 전수 검색하길 권합니다. 제가 그렇게 검색한 결과 31대상 Markdown의 명령·경로 잔여는 이 두 건뿐이었습니다. `docs/REFERENCE.md`·`OPERATIONS.md`·`WORKSPACE-CONTRACT.md`·`CHECKOUT-1-STRUCTURE.md`의 `hv2`는 은퇴 경로 서술 또는 역사 inventory, `docs/README.md:32`의 `harness-v2-work`는 M3 출처 표기로 정당합니다.
+
+## 의무별 결과 (정적 추론)
+
+**1. 31대상 처분, 후보 표기, M3 경계 — M2 외 충족**
+- patch에는 30개 파일 diff가 있고 CLAUDE는 없습니다. manifest의 31개 sha256과 bytes는 collect/focused 입력의 `source_files` 값과 모두 일치합니다(`p3-collect-input.json:66-415`). 실행된 source와 manifest가 같은 바이트를 가리킨다는 기록상 결속입니다.
+- `docs/README.md:30-34`는 M3 미대체, DR-0004는 설계 수락일 뿐이라는 점, 복사·설치가 활성화가 아니라는 점, source 경로가 payload 링크가 아니라는 점을 명시합니다.
+- M3 hash는 원문과 일치합니다: 구조 보충 `5797a6c2…`(DR-0002:52, 293), adapter 옛 경로(DR-0002:51, 292).
+- 규범 11개 각각에 candidate notice가 있습니다. CHECKOUT-1-STRUCTURE는 역사 29경로 목록을 literal로 보존하고 현재 membership을 별도 문장으로 둡니다(`p3-diff.patch:884, 905, 914`).
+- 역사 절은 "Historical … retained old source"로 구분됩니다(GETTING-STARTED, WORKSPACE-CONTRACT; `p3-diff.patch:363, 834`).
+- `.hrn`·`HV2-`·`hv2ref` 유지가 명시되어 있습니다(`p3-diff.patch:844`). predecessor 식별값은 `product.py:386-387`, DR-0004:68과 일치합니다.
+- 미검증: `docs/README.md:32`의 "revision `a17f35cf…`에서 M3 바이트 복구 가능" 주장은 git 없이 확인하지 못했습니다.
+
+**2. DR-0004 clause 배정 — 누락·과장 없음**
+
+| Clause | DR-0004 | 실제 문구 | 결과 |
+| --- | --- | --- | --- |
+| D2-A | :273-275 | `p3-diff.patch:848`(WORKSPACE-CONTRACT), `:328`(GETTING-STARTED) | 최초 admission 점유 시에만 first-write 전 거부, guard 재관측, late collision은 이전 쓰기 보존, zero-change 아님, 비원자성, tracked-but-absent 무거부 모두 있음 |
+| D3-R-A | :315-319 | `:700-701`(REFERENCE), `:530`(OPERATIONS) | product/prefix/collision → sync → degraded/10 unavailable, drift·mismatch는 65. `historical_operation_result`는 새 durable 기록 아님. exit10 단독 구분 금지 |
+| D1 detach | :271 | `:699`, `:514`, `:468`, `:875`, `:949` | schema 3 한정, 65/degraded 10, error/message로 구분, "다른 detach 오류도 degraded/10" 명시, schema 1/2 불변, launcher 제거 후 설치본 관측 불가 |
+| D3-S-A | :327-329, 340 | `:869`, `:527`, `:732` | guard 아래 pre-S1 거부, lock 생성은 zero-write 아님, preflight가 후속 sync를 보장하지 않음, power-loss·fullfsync 비보장 |
+| C0-L-A captured-child | :367-369 | `:850`, `:278`, `:174` | sealed direct child, 완료·worker-mode 포함, scope·optional·후손 제외, own-reference 우선 |
+| Composite / S표 | :118-147, 344-346 | `:854-867`, `:524` | O + 임의 `binding.next`(0바이트 포함), B1 + `binding.next` 거부, same-account 치환 한계 |
+
+**3. R19 잔여 본문 — 부분 수행**
+- adapter는 `:24-103`과 diff 전체를 읽었습니다. unsupported guarantee는 없습니다.
+- GENERAL-WORK, REFERENCE, CHECKOUT-1-STRUCTURE는 diff hunk와 그 맥락, 잔여 토큰 Grep으로 검토했습니다. hunk 밖의 변경되지 않은 본문은 통독하지 않았습니다.
+
+**4. EN/KO 6쌍 — resume만 불일치(M1)**
+- 변경 hunk 전부를 문장 단위로 대조했습니다. README, concepts, first-work, getting-started, rules-and-removal은 조건·권한·결과가 같습니다.
+- 확인한 항목: candidate notice, 별도 entry-1 receipt 요구, "과거 checkout-1 digest 아님", OLD source 복구 제한, 보존된 2026-10-05 footer와 source/release 식별값, 전환·torn·collision 두 문단.
+- 한계: hunk 밖의 기존 번역 본문은 다시 대조하지 않았습니다.
+
+**5. 표시 문자열 — 승인 범위와 일치**
+- 변경 상수는 `cli.py:19` 1개와 `view.py:411`(1), `:504`(2), `:564`(1)로 총 5개입니다(`p3-diff.patch:1828-1860`).
+- byte 차이도 맞습니다: cli −4, view −16.
+- `:411`과 `:504`는 launcher를 뺀 `view intent …`, `view candidates`, `candidate --help` 형태라 설치본과 source 양쪽에서 틀리지 않습니다. `:564` 제목과 `cli.py:19` description은 이름만 바뀌었습니다.
+- AST 동일성과 capabilities의 boundary-only 변경은 diff로 확인했습니다. status, id, runtime, `evidence_as_of`, `internal_lineage`는 그대로입니다. AST 대조 자체는 Driver 기록입니다.
+- focused 16건은 바뀐 문구를 assert하지 않으므로, 이 정적 대조가 유일한 방어입니다.
+
+**6. 실행 기록 (관측, 재현 아님)**
+- collect: exit 0, 0.487초, 자연 종료, group absent, cleanup 오류 0.
+- focused: exit 0, 40.207초, discovered 6663, selected 16, run 16, 실패·오류·skip·xfail·uxsuccess·unfinished·unstarted 모두 0.
+- 선택은 11 unique이고 duplicates 맵에서 5개가 ×2입니다(`collection.json:882-906`). ordered에 occurrence 1이 11행, occurrence 2가 5행입니다.
+- source_digest와 collection hash는 요청 값과 일치합니다.
+- argv는 `sandbox-exec … -f test.sb PYTHON -I -S -B -c BOOTSTRAP CONTROLS runner.py INPUT SHA WORK MODE`이고, WORK는 `E/exec/runs/<slot>/work`, input SHA는 Work 표와 일치합니다.
+- 지정된 `completed.jsonl`은 없습니다. 실제 파일은 `executed.jsonl`이며 16행 모두 pass입니다.
+- 이 결과는 P3 focused 기록일 뿐, P2 전체 PASS나 미실행 P4 qualification이 아닙니다. M1·M2 수정 뒤에는 현재 바이트의 기록도 아니게 됩니다.
+
+**7. 정적 검사 정합성 — 공백 있음**
+- `p3-static-render-links.json`에는 docs 28, links 297, problems 0과 render·anchor 항목만 있습니다. command/path나 잔여 literal 검사 결과는 없습니다. Work `:14652`에도 그 검사가 기록되어 있지 않습니다. M1·M2가 통과한 이유입니다.
+- 새 anchor 5종은 실제 heading이 있습니다. 옛 `#transition-to-checkout-1` 참조는 0건입니다.
+- bytes 합계 17925 → 19646은 맞습니다.
+- token은 미측정이며 PASS로 평가하지 않습니다. 측정 아닌 추정으로는 19,646 bytes가 결합 상한 4,000 token을 넘을 가능성이 큽니다. 초과하면 GETTING-STARTED hash와 이번 결론이 다시 열립니다.
+
+## 비필수 권고
+- `adapters/colvia-work/SKILL.md:125`의 제목 "Checkout-1 Transition Handoff"는 본문이 entry-1 전환을 다룹니다. 다른 문서가 Checkout-1 절을 역사로 표시한 관례와 어긋나며, 이 제목을 고정한 test는 없습니다. M1·M2 수정 때 함께 고치길 권합니다.
+- WORKSPACE-CONTRACT는 pre-S1 sync 대상 디렉터리 집합, "admission 검사 뒤" 순서, umask 거부(DR-0004:135, 327)를 열거하지 않습니다. 과장은 아니고 DR이 출처로 남습니다.
+- `docs/`에는 일반 명칭 "Harness"가 13곳 남아 있고 manual은 전부 Colvia입니다. 명칭 일관성은 Owner 판단 사항입니다.
+
+## 미열람 (통과로 세지 않음)
+- `read-identity.json`, `p3-edit.py`, `stdout.log`, `boundary-positive.json`.
+- controller·runner·`test.sb` 본문(선행 검토 재사용). network 금지와 범위 밖 `OBJECTS` 경로 권한은 이번에 직접 확인하지 않았습니다.
+- collection의 ordered 6663행 전체와 그 개수(`counts.json`의 discovered 값으로만 확인).
+- `tests/test_human_view.py` 본문(R20 재사용), `product.py`(predecessor Grep만).
+- DR-0004 `:62-97, 151-189, 214-224`.
+- Work `:14606` 이전.
+- 규범 문서와 manual의 hunk 밖 unchanged 본문 통독.
+````
+
+#### Driver Disposition
+
+- M1 accept: manual/ko/resume.md15의 현재 요청 문안 `./hv2 view를`을 직접 확인했다. EN은 colvia이고 KO 코드블록도 colvia다. 편집 스크립트18행의 command 뒤 Unicode word boundary가 `view를`을 못 잡은 원인과 일치한다. 단일 literal `./hv2 view`→`./colvia view` 수정만 제안한다. 새 EN bytes는 없으므로 기존 en_content_sha256은 유지하며 KO 자체 hash만 갱신한다.
+- M2 accept: docs/MAINTAINING.md18의 Source Layout 경로 `adapters/harness-v2-work/SKILL.md`를 확인했다. 해당 현재 경로를 `adapters/colvia-work/SKILL.md`로 바꾸는1행만 제안한다. 규범11개 중 MAINTAINING successor hash1개와 managed release identity에 영향이 있다.
+- Static coverage revise: 앞선 GFM/link/AST/hash PASS는 유효한 범위 안에서 유지하지만 prose command/code-span path의 전수 currentness 검사를 대신하지 못했다. 다음 정적 검사는31대상에서 word boundary 없이 hv2/harness-v2를 찾고 각 잔여를 current/historical/OLD recovery/internal identifier로 명시 처분한다. 링크만 검사하지 않고 현재 source-layout 코드 경로와 quoted 실행 문안도 대조한다.
+- Review coverage revise: R21의 diff hunk 의미 대조를 기존 미열람 본문 의무의 완료로 확대하지 않는다. GENERAL-WORK·REFERENCE·CHECKOUT-1-STRUCTURE·adapter의 관련 hunk 밖 본문 및 manual EN/KO6쌍의 기존 본문 의미 대조를 보완 리뷰에서 직접 끝낸다. 필수 미열람을 Driver 확인이나 Owner 제한 수락으로 대체하지 않는다.
+- M3 provenance: Reviewer가 git 없이 확인하지 못한 a17f source 복구 주장은 Driver가 git show로11문서를 직접 읽어 DR-0002 M3 표의11hash와 모두 일치함을 확인했다. Adapter는 colvia-work 경로에 옛 동일 bytes가 있으며 mapping을 명시한 현재 설명과 일치한다. 이는 Driver 검증으로 표시하고 독립 Reviewer의 digest 재계산으로 주장하지 않는다.
+- Optional 권고 defend/defer: adapter의 Checkout-1 Transition Handoff 제목, Harness 일반명칭, DR 상세목록 추가는 현재 필수 결함이 아니므로 이번 최소2곳 수정에 묵시적으로 포함하지 않는다.
+- Recorded16PASS accept with boundary: 현재 수정 전 P3 후보의 실행 증거이며2곳 수정 뒤 새 PASS로 사용하지 않는다. 코드상수5개/제품로직0 및 이미 검토된 clause 판단은 무관한 범위에서 재사용한다.
+
+#### Proposed Single Recovery Bundle — Not Yet Authorized
+
+범위는 위2literal 수정과 지정 정적/실행/잔여 의미 검토다. 별도 R0 재호출을 생략하는 정확한 사유는 R19+R20 계획 검토와 R21의 실제2곳 교정 처방이 있고 새 제품계약/로직/테스트/검증 controls 변경이 없기 때문이다. 이 생략과 다음 단일 묶음 자체의 Owner 승인을 요청한다.
+
+먼저 P4로 남겨 둔 읽기 분량을 이 복구 앞단에서1회 측정하도록 추가 제안한다. 기존 `temp/validation-tools/hv2-tiktoken-0.13.0`(CPython3.14.7)과 o200k_base cache(`encoding-cache/fb374d419588a4632f3f557e76b4b70aebbca790`, SHA256 `446a9538cb6c348e3516120d7c08b09f57c36495e2acfffe59a5bf8b0cfb1a2d`)가 존재하므로 설치/다운로드는 필요 없다. 고정 Python3.14.7 `-I -S -B`에서 해당 site-packages 경로만 추가하고 cache를 고정해 AGENTS/README/GETTING-STARTED UTF-8 전체의 encode_ordinary 길이를 각각 측정한다. source3hash 전후 대조, tiktoken version0.13.0, cache hash를 확인하며60초1회·network 및 파일 write 금지 sandbox·stdout 결과만 사용한다. AGENTS≤2000 및3파일 합계≤4000일 때만 다음 편집/검증으로 간다. 초과/도구실패면 해당 결과를 보존하고 추가 문서 수정·테스트·리뷰를 실행하지 않은 채 최소 후속안을 다시 요청한다. token 상한을 완화하거나 bytes를 token PASS로 대체하지 않는다.
+
+Token 조건 충족 시: 위2곳 편집 →31대상 잔여문자열/현재명령·경로/링크·GFM/ENKO hash·11norm successor hash 갱신 → fresh collect1회(300초) → 같은11unique/16occurrence focused1회(1200초) → R22 보완 결과 리뷰1회. 실제 execution input은 기존 P3 source_files membership102개/controls/runtime/git를 유지해 새2파일 hash와 source_digest에 재결속하고 collection digest를 새로 고정한다. Before/after2filediff와 기존P3diff를 분리하며 R21이 검토한 입력을 덮어쓰지 않는다.
+
+기존 r006의 collect-p3/focused-p3는 이미 소비했고 focused-correction도 사용 중인 과거 결과이므로 재사용/덮어쓰기하지 않는다. 대신 기존 `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-s3b-fsync-20261013-r005`의 unused collect-p3/focused-p3를 사용한다. 이 root의 acquire/canary/smoke PASS 및 inputs digest를 읽었고 controls/runtime/git/systemconfig가 r006와 동일했다. 실행 전 root 현재상태/lock·OLD 원본·관련 input hash를 다시 확인한다. 새 root0, controller/runner/SBPL 변경0이다. 고정명령은 기존 `PYTHON -I -S -B -c BOOTSTRAP CONTROLS controller.py INPUT INPUT_SHA collect p3` 및 같은명령 `focused p3`; cwd=S, fixture/output은 r005/exec/runs/각slot/work, 테스트network금지다.
+
+| Budget | Current | Proposed maximum |
+| --- | --- | --- |
+| Controller calls |1043/1043|1045 (+2)|
+| Execution roots |161/161|161 unchanged; existing r005 reuse|
+| Reviewer calls |21/21|22 (+1 R22)|
+| Reviewer elapsed |9676.68800708219/14400s|14400 unchanged; remaining4723.31199291781s|
+| Token measurement |0|1 ×60s; no controller/root addition|
+
+R22는 claude-opus-5-5 High, 기존 claude.ai/firstParty 구독, fresh Read/Glob/Grep, MCP0로 수행한다. 목적은 M1/M2 수정과 broadened literal/path 검사, updated11normhash/31disposition, fresh16결과, 이월된4개규범 본문·ENKO6쌍의 미검토 의미를 직접 마치는 것이다. 이미 R21에서 닫은 나머지 clause는 새2곳과 무관한 범위에서 재사용한다. 경과시간만으로 reviewer를 종료하지 않는 정책, 실제 auth/env/usage/process 확인, session/model identity와 입력 전후 drift 검증을 유지한다.
+
+허용읽기/외부전송 디렉터리는 다음4곳으로 명시한다: source `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition`; 기존 bundle `/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/p2-full-execution-01`; 기존 실행결과 `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-s3b-fsync-20261013-r006`; 이번 재사용경계 `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-s3b-fsync-20261013-r005`. 대상은 P3 private31files·직접 계약/tests/controls와 R21 원문/Driver 처분·기존/새 검증결과·범위 내 파생diff/hash/입력이며 이를 외부 Anthropic Claude로 전송한다. 키·토큰·계정이메일·실제adopter 민감정보는 제외한다. tiktoken 설치환경 자체는 Reviewer 읽기 디렉터리에 추가하지 않고, 그 제한된 버전/cache해시/측정결과만 기존bundle 입력으로 제공한다. 입력식별은 HEAD/Work제외diff/31hash/검사input·collectiondigest/선행 R21 response hash와 새2filediff로 한다.
+
+완료 기준: token 상한충족·2곳정정·현재명령/경로미처분0·11hash/31처분·16selected=16run/abnormal0·자연종료/경계·input보존·R22필수미해결0 및 이월본문미검토0. 새 지적에 따른 예정 밖 수정/재실행·token초과·실패·drift·범위/보안/한도위반은STOP하며 confirmed quota만 기존 예외다. 자동재시도/다른모델·과금전환은없다. 예상45–90분(한도유예제외). P3 결과수락/P4 재동결·전체회귀·artifact/활성화/Done/Git/adopter/public은포함하지 않는다. 성공후 정확한 P3결과수락과 새로 산정한 P4범위를 묶어 요청한다.
+
+#### P4 Read-only Planning Observation
+
+현재 P3 collection은 ordinary779+factory5884=6663occurrence,6486unique이며 최종 재동결 뒤의 collection은아니다. 독립 static inventory계산은29managed members,4740bytes inventory, release `product-release-aea8feaaf538e051c43af004`/SHA256 `aea8feaaf538e051c43af004ed562b808134aac406de3b134b61c5fe7db38299`를 산출했으나 product를 import/실행하거나 qualification한 것이 아니며 위문서수정 뒤 바뀐다. Frozen P2 release916e7be7과14개literal-table의 후보 참조/length/short-position/second-release/C4 path-order를 P4에서 재결속해야 한다. 범위를 확인한것뿐이며 재생성·test편집을 하지않았다.
+
+기존 R1 evidence table128개PASS roots의시간 합계는61377.901초(약17.05h, 중복/보완포함)다. A1 1233회15973.848초와 A2 2708회17538.893초만합해33512.741초(약9.31h)였다. 이를 최종 후보 예상시간으로동일시하지않지만 complete각5400초를그대로새예산으로쓰면안된다는근거다. 현재full회귀명령을자동승인하지않고 candidate재동결/collection/기존per-ID시간·자원제약에근거한별도예산을정해야한다. OLD counterpart등3개fixture는현재ENTRY_RUN_NAMES기반이라과거focused-p2전용문제는유지되지않음을정적으로확인했다.
+
+R21 응답·결과·새STOP/제안과현재수정본을기존Work/bundle에보존한다. Named consumer는 Owner복구결정과승인시R22미해결의무이며그완료뒤재생성가능한raw자료보관필요를재평가한다. Source/r006/r005는기존결과보존및제안된재검증/P4재사용때문에유지하고cleanup/Git은하지않는다.
+
+### Owner-Authorized R21 Recovery And Token Gate — 2026-10-14
+
+Owner는 직전 단일복구 요청에 “승인”으로 답했다. Token1회 먼저 측정하고 상한충족 시2literal수정·정적검사·기존r005 collect/focused각1회·R22잔여본문 포함 결과리뷰1회까지 승인했다. 별도R0생략, controllercap1043→1045/reviewcap21→22, root161/review14400초 유지, 같은4directory의private범위Anthropic전송과파생입력·결과·필요auth/env/usage/process확인을포함한다. 새실패/지적에따른예정밖수정·재실행/범위·보안·drift·한도위반STOP, confirmedquota예외, P3수락/P4실행/활성화/Done/Git/adopter/public제외는그대로다.
+
+실제 token 측정은 Python3.14.7 -I -S -B, 기존 tiktoken0.13.0/o200k_base encode_ordinary, network/file-write금지 sandbox에서1회 실행했다. Exit0,0.205416375초,stderr없음,input3/cachehash전후불변. AGENTS754/2000,README583,GETTING-STARTED2616,합계3953/4000으로47tokens여유다. 정확한명령·script/runtime/cache·3filehash와결과는기존bundle p3-token-start.json/p3-token-count.py/p3-token-result.json에기록한다. 새환경설치/다운로드/root/controller호출0이며이가드조건충족에따라후속으로진입했다. Token상한충족은실제사용자이해도증거가아니다.
+
+승인된2곳만수정했다: KO resume의./hv2 view→./colvia view, MAINTAINING SourceLayout adapter경로1개. R21의31파일/hash/diff기록은덮어쓰지않고p3-correction-diff.patch에정확한2곳diff, p3-correction-static-identity.json에수정후31처분/11normhash를둔다. KO footer의ENhash는ENbytes불변이므로유지했다. 제품·test·controls/그밖29대상변경0. MAINTAINING새hash `cc0268ca3859405ad0ecf6640e729c232c1adba7d3d9afe2266fc491901410f2`; KO resume새hash `3669c274df9dd45610d91535b5d3164c276b7b5f715af280c910948af80a1b30`. Fresh실행은아직전이며기존16PASS를새bytesPASS로승격하지않는다.
+
+### P3 Corrected Verification And R22 Preparation — 2026-10-14
+
+수정 후 현재 31개 대상의 hash를 다시 대조했다. 단어 경계 없는 `hv2|harness-v2` 검색에서 잔여 82행을 내부 package/error identifier 65행, 은퇴 경로·역사 lifecycle/member 구분 13행, 별도 편집을 요구하는 옛 project-owned command 1행, literal historical inventory 2행, M3 adapter relocation 출처 1행으로 처분했다. 미처분 0이며 quoted 실행 문안과 Source Layout의 코드 경로도 확인했다. Source Layout의 basename은 src/hv2ref 아래 모듈로 확인했고 jsonio.py도 존재한다. 링크 297개/Markdown 28개 및 Work GFM에서 code 밖 literal emphasis 0, EN/KO 6쌍 content hash 일치를 확인했다. 의미 동등성의 잔여 본문 검토는 R22 의무로 유지한다. 전체 git diff --check는 보존 중인 Reviewer 원문의 기존 4개 공백 경고(12462/12849/12861/12908행)만 반환했다. 이를 무경고 PASS로 표현하지 않는다. 근거는 p3-correction-currentness.json, p3-correction-static-render-links.json, p3-correction-static-identity.json이다.
+
+기존 r005의 config/OLD 원본/12 controls/고정 Python3.14.7·Git·system config 및 acquire-base/canary-base/smoke-base 선행 결과를 확인했다. collect-p3/focused-p3 미사용과 controller lock 비점유도 확인한 뒤 각각 1회 실행했다. 고정명령은 앞서 승인한 PYTHON -I -S -B -c BOOTSTRAP CONTROLS controller.py INPUT INPUT_SHA MODE p3이고 cwd는 source S, test.sb의 network 차단과 각 slot/work 쓰기 경계를 유지했다.
+
+| 실행 | Invocation SHA256 | 결과 | 시간 / 상한 |
+| --- | --- | --- | --- |
+| collect p3 | `c9cc28566f2d01b1585ecac316f67bcb35cb79901a6b2d7bc2cafea36922043d` | exit 0, ordered 6663 | 0.486 / 300초 |
+| focused p3 | `7b1d8842a7a1eb4406071bee2f72e08039e0f1b4d0b80c8d403df51c8b42b882` | exit 0, selected=run=16, abnormal 0 | 41.141 / 1200초 |
+
+두 실행 모두 자연 종료, group absent, cleanup 오류 0, 입력 보존이다. 선택은 기존과 같은 11 unique/16 occurrence이며 전체 ordered sequence 6663도 이전 P3와 같다. Source digest `202970af68868f7a2e5b1bd2244ce7f4d1c856dad752c0b720cdff96b62a4019`, collection SHA256 `3e57159c7f0e67cf467c66f63fd0515d53b1c5dea96783b189e2fca27387e0db`. 실제 executed.jsonl 16행 모두 pass이며 unfinished/unstarted는 빈 배열이다. 입력·result·counts·selected·executed 기록은 r005/exec/runs/각 slot에 있다. Controller 누적 1045/1045, root 161/161이며 새 root는 만들지 않았다. R21의 r006 결과는 수정 전 증거로 보존한다.
+
+R22는 승인된 마지막 1회(누적 22/22)이며 아직 실행 전이다. 남은 reviewer admission budget은 4723.31199291781초다. R21에서 닫힌 clause/표시 로직 판단은 불변 범위에서 재사용하고, 현재 2곳 수정과 위 검사·현재 결과, GENERAL-WORK/REFERENCE/CHECKOUT-1-STRUCTURE/adapter의 미열람 본문, EN/KO 6쌍 전체 본문을 직접 검토하도록 명시한다. 새 source 수정이나 테스트 추가는 포함하지 않는다. Token 실제 측정 3953/4000은 기존 결과를 재사용한다. R22 입력은 새 guide/identity에 결속하며 외부전송 범위는 승인된 S/B/r006/r005 4곳이다.
+
+### R22 Prepared, Fresh Usage Observation Pending — 2026-10-14
+
+R22 guide 8,651 bytes, packet SHA256 `07f148ae45109bc8eb07e00a760b32590ec0f024141206088c844392be399776`, 입력 188개와 source HEAD/Work 제외 diff를 결속했다. Inspect-only 검사와 Work/guide GFM 검사를 통과했다. 기존 구독 claude.ai/firstParty/pro와 대체 인증 환경변수 부재를 확인했으며 source checkout에서 실행 중인 Claude CLI는 없었다. Review는 아직 호출하지 않았고 read-config는 disarmed다. 이전 Owner 사용량 관측은 10분 유효기간이 지났으므로 현재 5시간 사용률을 질문해 답변을 기다린다. 이 확인은 이미 승인된 묶음의 실행 전 조건이며 새 외부전송·리뷰 승인을 요구하는 것이 아니다.
+
+현재 controller 1045/1045, root 161/161, review 21/22, review elapsed 9676.68800708219/14400초다. 남은 R22 1회는 fresh usage 관측과 최종 입력 확인 후 실행한다. 그 결과에 의존하는 P3 수락/P4 착수는 아직 처리하지 않았다. P4는 최종 문서 bytes에 따른 동결 상수 재결속과 실제 collection 기반 예산 재산정이 필요하다는 앞선 읽기 전용 관측을 유지한다. Source/r005/r006은 해당 리뷰와 P4 준비의 구체적 재사용 대상으로 유지한다. 기존 Work와 source 변경은 외부 bundle의 current-changes.patch에 다시 보존한다.
+
+### R22 Actual Result And Driver Disposition — 2026-10-14
+
+Owner의 현재 5시간 사용률 0% 답변을 2026-10-13T22:22:40Z에 관측하고 승인된 R22를 1회 실행했다. 실제 모델은 claude-opus-5-5, 요청 effort High, 인증은 claude.ai/firstParty/pro다. 대체 인증 환경변수는 없었으며 source에서 병행 중인 Claude CLI도 없었다. Session `3c79a104-1c20-4a66-ba0d-88e6d788335f`, exit 0, 336.405498초, 도구 {'Glob': 7, 'Read': 45, 'Grep': 16}, MCP 0이다. 자연 종료 후 process group 부재, 입력 drift 없음, 취소·강제 종료·경계/감독 이상 없음으로 확인했다. Reviewer는 자동 context 때문에 packet-only independence를 주장하지 않았고 digest 재계산/새 테스트 실행도 주장하지 않았다.
+
+입력 HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work 제외 diff `59d9dd3caeb9f0ba30e9b12b007c58af1d0aec70cd089a51353383f2a0ee4b56`, packet `07f148ae45109bc8eb07e00a760b32590ec0f024141206088c844392be399776`, response SHA256 `5764e6973526d2e5a730e99f393ee834cb373a2b718b8dcc672c3be550eaf233`. R22 전후 188개 입력과 Work prefix가 유지됐다. 누적 reviewer 22/22, 10013.093505/14400초, 잔여 4386.906495초다. Controller 1045/1045와 root 161/161은 그대로다.
+
+#### Reviewer Response — Verbatim
+
+````text
+# P3 교정 결과 리뷰 R22 — 판정: **P3-result-ready, 필수 미해결 0건**
+
+M1·M2는 source에서 닫혔고, 이월된 필수 본문 4개와 한영 6쌍은 전체 본문을 통독했습니다. 새 필수 결함은 찾지 못했고, 비필수 관찰 3건은 아래에 근거와 함께 적습니다. 이 판정은 Owner 수락·P4·qualification·활성화·Done·Git·adopter/public 승인이 아닙니다.
+
+**세션·독립성:** 환경 표기 모델은 claude-opus-5-5이며 effort 설정은 제가 검증할 수 없습니다. Read/Glob/Grep만 사용했고 MCP 호출은 0입니다. 계정 메일·작업 디렉터리 같은 자동 context가 주입되어 packet-only independence는 보장되지 않습니다. HEAD, diff SHA256, 파일 digest는 재계산하지 않았습니다. 아래는 모두 정적 대조와 기록 열람이며 새 실행·재현은 없습니다.
+
+## 의무별 결과
+
+**1. 교정 두 곳과 currentness — 충족**
+- `manual/ko/resume.md:15`는 `./colvia view`이며 같은 파일 `:20-23`, `manual/en/resume.md:15`와 일치합니다.
+- `docs/MAINTAINING.md:18`은 `adapters/colvia-work/SKILL.md`이고, `adapters/` 아래에는 이 파일만 있습니다(Glob).
+- Source Layout(`:9-21`)의 나머지 경로도 실재합니다. root에 `colvia`만 있고 `hv2`는 없으며, `src/hv2ref/`에 열거된 모듈이 모두 있습니다.
+- `p3-correction-diff.patch`는 정확히 이 두 hunk이고, `p3-corrected-diff.patch:419-420, 1711-1712`에 반영되어 있습니다.
+- 제가 같은 대상에 `hv2|harness-v2`를 경계 없이 대소문자 무시로 Grep한 결과는 12개 파일 82행으로, `p3-correction-currentness.json`의 잔여 수와 같습니다. 나머지 P3 대상(root README, AGENTS, CLAUDE, capabilities, adapter, CONCEPTS 등)은 0행입니다.
+- 처분은 문맥에서 구분됩니다.
+  - 옛 project-owned 명령: `docs/OPERATIONS.md:45`가 "`./hv2 view` 지침은 별도 승인 편집 필요"로 현재 명령과 분리합니다.
+  - 은퇴 경로·OLD recovery: `docs/OPERATIONS.md:37, 53`, `docs/REFERENCE.md:323-329`, `docs/MAINTAINING.md:117`, 양쪽 `rules-and-removal.md:62`.
+  - 역사 inventory와 현재 membership: `CHECKOUT-1-STRUCTURE.md:314-346`과 `:348`.
+  - M3 출처: `docs/README.md:32`.
+- 기록 공백: currentness.json의 `current_source_layout_paths_resolved`(`:519-533`)에 `jsonio.py`가 없습니다. 파일은 실재하고 Work `:14837`에 확인 기록이 있어 source 결함은 아닙니다.
+
+**2. 이월 본문 4개 — 전체 통독, 필수 결함 없음**
+
+| 문서 | 읽은 범위 | 결과 |
+| --- | --- | --- |
+| `docs/GENERAL-WORK.md` | 1–317 (EOF) | 명령은 모두 `colvia`와 `--profile entry-1`(`:148-170, 185-212, 250`). OLD pending·schema 1/2는 retained old source(`:317`). detach 뒤 재초기화·attach 미지원(`:223-224`). qualification 미주장(`:5-7, 256`). |
+| `docs/REFERENCE.md` | 1–329 (EOF) | 현재 profile과 entry(`:9-22, 95, 107`). 일방향 전환과 OLD source는 rollback 경로가 아님(`:99-101, 113`). 진단 문맥(`:317-329`)은 R21 clause 판단과 일치. |
+| `docs/development/CHECKOUT-1-STRUCTURE.md` | 1–435 (EOF) | 후보 상태와 M3 hash(`:3`), 활성화 전 proposal(`:7`), 역사 29경로와 현재 membership(`:314-348`), schema 표(`:359-361, 365`), rank(`:374`), detach(`:386-390`). |
+| `adapters/colvia-work/SKILL.md` | 1–129 (EOF) | 진입 명령(`:12-20, 55, 105`). 암묵적 init/update 금지(`:115`). 전환·OLD 한계와 writer 권한 미부여(`:127-129`). unsupported guarantee 없음. |
+
+- Read 반환이 잘린 곳은 없습니다. 네 문서가 쓰는 교차 anchor는 실제 heading이 있습니다(`OPERATIONS.md:41`, `REFERENCE.md:317`, `WORKSPACE-CONTRACT.md:302`, `GETTING-STARTED.md:116`, `docs/README.md:30`).
+
+**3. EN/KO 6쌍 — 전체 본문 대조 완료, 의미 불일치 없음**
+
+| 쌍 | EN / KO 행 | 결과 |
+| --- | --- | --- |
+| README | 1–61 / 1–63 | 동등. qualified artifact와 별도 receipt, "과거 checkout-1 digest 아님"(`:17`), 역사 footer와 식별값(`:50-57`) 일치. |
+| concepts | 1–104 / 1–106 | 동등. 사람과 agent 권한(`:21, 58, 78`), rebind 제한(`:76`). |
+| first-work | 1–131 / 1–133 | 동등. 명령 블록, 수락 권한, 중단 조건 일치. |
+| getting-started | 1–95 / 1–97 | 동등. preview hash를 entry-1 receipt와 대조(`:45`), 명령(`:55-76`). |
+| resume | 1–59 / 1–61 | 동등. M1 해소. |
+| rules-and-removal | 1–83 / 1–85 | 동등. 전환·S1 일방향(`:60`), torn·collision·OLD·schema 3(`:62`), detach 6단계(`:68-73`). |
+
+- 여섯 쌍 모두 `:3`의 candidate notice가 같습니다. KO footer의 `en_content_sha256` 6개는 manifest의 EN hash와 문자열이 같지만, 이는 기록 대조이며 의미 동등성은 위 통독으로 판단했습니다.
+- 표현 차이는 조건·권한·결과를 바꾸지 않습니다.
+  - KO `getting-started.md:13`: "use the actual physical path"를 "실제 경로를 확인"으로 옮김.
+  - KO `first-work.md:46, 50`: "authority apply/operation"을 "수락·설치 등"으로 옮김.
+  - KO `rules-and-removal.md:41`: 영어 코드블록의 한국어 풀이를 추가.
+
+**4. manifest·후보 표기·입력 결속 — 충족**
+- `p3-correction-static-identity.json`은 11 normative + 6 consumer + 12 manual + 2 display = 31개이고 CLAUDE는 unchanged입니다.
+- 31개 sha256은 `p3-correction-focused-input.json`의 `source_files` 값과 전부 같습니다. MAINTAINING은 `cc0268ca…`, KO resume은 `3669c274…`입니다.
+- 규범 11개 모두 candidate notice가 있습니다(10개는 `:3`, adapter는 `:8`).
+- `docs/README.md:30-34`는 M3 미대체, DR-0004는 설계 수락일 뿐, 복사·설치는 활성화가 아님을 명시합니다.
+- DR-0002 `:51-52, 292-293`의 옛 adapter 경로와 `5797a6c2…`는 `CHECKOUT-1-STRUCTURE.md:3`, `docs/README.md:32`와 일치합니다.
+- a17f에서 M3 11개 hash가 복구된다는 주장은 Driver 검증(Work `:14791`)이며 저는 확인하지 못했습니다.
+
+**5. E5 실행 기록 — 요청 값과 일치 (기록상 결과)**
+- collect: exit 0, 0.486초/300, 자연 종료, group absent, cleanup 오류 0, 입력 보존. stdout은 `COLLECTED 6663 sha256 3e57159c…`입니다.
+- focused: exit 0, 41.141초/1200. `counts.json`은 discovered 6663, selected 16, run 16이고 나머지 항목은 모두 0입니다. `unfinished.json`과 `unstarted.json`은 `[]`입니다.
+- `executed.jsonl` 16행은 모두 pass이고 `selected.json`과 순서가 같습니다. stdout은 "Ran 16 tests … OK"입니다.
+- 선택은 config의 11 unique이며, occurrence 2는 `test_productization_safety`의 5개입니다(`collection.json:882-906`).
+- `collection.json`에서 occurrence 1은 6486행, occurrence 2는 177행으로 합 6663입니다. `default_ids`(`:16-796`)와 `factory_ids`(`:976-6861`)의 행 수는 779와 5884입니다. 행 수 계산이며 개별 열거는 하지 않았습니다.
+- source digest `202970af…`는 config, inputs, result, collection에서 같습니다.
+- argv 결속: SOURCE와 cwd는 S, OLD·WORK·LOG·HOME·TMPDIR·XDG는 모두 E5 아래, INPUT은 `G/p3-correction-*-input.json`입니다. input SHA `c9cc2856…`, `7b1d8842…`는 Work `:14843-14844`와 같고, Python 3.14.7 `-I -S -B`와 `test.sb`를 씁니다.
+- E6는 파일 목록만 봤습니다. 구성은 E5와 같습니다.
+
+**6. 정적·측정 기록 — 범위대로 확인**
+- `p3-correction-static-render-links.json`은 docs 28, links 297, problems 0이며 render·anchor 범위입니다. 명령·경로 currentness는 의무 1의 별도 기록이 담당합니다.
+- static-identity는 AST 허용 상수 5, 그 밖 변경 0, capability boundary 3개로 적혀 있습니다. 현재 literal은 `view.py:411, 504, 564`, `cli.py:19`에서 확인했습니다. focused 16건이 이 literal을 assert하지 않는다는 R21 한계는 유지됩니다.
+- token: script가 `-I -S -B`, 입력 3개 hash 전후, cache hash, tiktoken 0.13.0을 assert합니다(`p3-token-count.py:4, 12-13, 17, 20-21`). start 기록은 network·file-write deny profile과 60초 상한입니다. 결과는 exit 0, 0.2054초, stderr 없음, 754 + 583 + 2616 = 3953/4000(여유 47)이고 세 hash는 현재 입력과 같습니다.
+- sandbox 실제 집행과 tiktoken 환경은 읽기 범위 밖이라 확인하지 못했습니다. 이 수치는 가독성·사용성 입증이 아닙니다.
+- diff-check의 기존 공백 경고 4건은 Work `:14837` 기록대로이며 무경고 PASS가 아닙니다. 해당 4행 자체는 열람하지 않았습니다.
+
+## 비필수 관찰 (필수로 세지 않음, 수정하지 않음)
+
+- **`docs/MAINTAINING.md:119`가 token을 "unmeasured here … P4 plan must … measure"로 서술합니다.** 실제로는 같은 tokenizer로 현재 세 입력을 P3 복구 단계에서 측정했습니다(Work `:14831`). 과소 서술이라 지원되지 않는 보증을 만들지 않으므로 필수로 보지 않았습니다. 고치면 MAINTAINING successor hash와 source_digest가 다시 바뀌므로, P4 재동결 때 정리하길 제안합니다.
+- **`CHECKOUT-1-STRUCTURE.md:421`의 "This Draft"와 `:435`의 "The baseline record identifies this supplement's exact proposed bytes"는 hunk 밖 M3 원문입니다.** 현재 후보 bytes(`fd4019d4…`)에는 문자 그대로 맞지 않습니다. DR-0002가 식별하는 것은 `5797a6c2…`입니다. `:3`과 `docs/README.md:32-34`가 구분을 명시하고 hash 대조 시 불일치가 드러나는 방향이라 필수로 보지 않았습니다. P4 때 `:435`를 "M3 version" 기준으로 한정하는 문구를 제안합니다.
+- **양쪽 `rules-and-removal.md:3`의 notice는 "아래의 과거 checkout-1 실습"을 가리키지만 이 쌍에는 실습 footer가 없습니다.** `:79`가 README의 실습 release를 참조합니다. EN과 KO가 같아 번역 불일치는 아닙니다.
+- **Driver가 defer한 세 항목은 전체 문맥을 읽은 뒤에도 필수로 볼 근거가 없습니다.** adapter `:125` 제목, 일반 명칭 "Harness"(비-manual P3 대상 6개 파일 11행), pre-S1 상세 목록입니다. manual README `:57`의 "Harness v2"는 역사 식별이라 정당합니다.
+
+## 미검토 (통과로 세지 않음)
+
+- 이번 회차에 본문을 다시 통독하지 않은 P3 대상: WORKSPACE-CONTRACT, GETTING-STARTED(98–118행만 열람), GUIDED-INTENT-FORMATION, MANUAL-OPERATION, SECURITY-AND-SUPPORT, CONCEPTS, AGENTS, root README, CLAUDE, PRODUCT-CAPABILITIES. notice 행, 잔여 수, hash 문자열만 확인했고 clause 판단은 R21 재사용입니다.
+- DR-0004 본문, DR-0002의 Grep 행 외 본문.
+- controller, runner, `test.sb`, test 본문(선행 검토 재사용). argv의 `OBJECTS` 경로는 허용 4곳 밖입니다.
+- `collection.json`의 ordered 개별 행, `p3-correction-collect-input.json`의 `source_files` 본문(주요 key만 Grep).
+- `read-identity.json`, `p3-edit.py`, R21 당시 `p3-diff.patch`와 `p3-static-identity.json`, `p3-corrected-diff.patch`의 위 인용 범위 밖.
+- Work `:14765` 이전.
+- git 수준 주장 전부와 모든 SHA256 재계산.
+````
+
+#### Driver Disposition
+
+- Ready 판정 accept: M1/M2 교정, 31개 처분·11개 successor hash, currentness 82행, 현재 16회 실행, 토큰 3953/4000의 범위가 실제 기록과 일치한다. P3 결과는 Owner가 수락할 수 있는 상태이며 수락 자체는 아직 처리하지 않았다.
+- 이월 coverage accept: GENERAL-WORK 1–317, REFERENCE 1–329, CHECKOUT-1-STRUCTURE 1–435, adapter 1–129를 EOF까지 읽었고 EN/KO 6쌍도 각각 전체 본문을 대조했다. 이번 필수 미열람 0이다. 이미 검토한 불변 clause/로직은 R21과 선행 리뷰에서 재사용하며, 그 외 미검토 목록을 전체 제품 검증 완료로 확대하지 않는다.
+- Currentness 기록 공백 defend: JSON의 Source Layout 목록은 `jsonio.py`, `errors.py`가 같은 bullet에 있어 후자만 수집했다. jsonio.py의 실제 존재는 Driver가 별도로 확인해 Work에 적었고 R22도 직접 확인했다. 이는 제품 경로 결함이 아니며 기존 JSON을 덮어쓰지 않는다.
+- 비필수 관찰 defer: MAINTAINING의 token 미측정 문구, structure 마지막 문장의 역사적 proposed bytes 지칭, rules-and-removal의 공통 notice는 현재 후보 표기 및 실제 Work 근거와 함께 읽어야 한다. 새 사용 권한이나 지원 보증을 만들지 않아 이번 승인 범위에 자동 편집을 추가하지 않는다. Exact token 실측은 이 Work의 현재 결과가 기준이다. 이후 문구를 고칠 경우 해당 normative hash와 재동결/검증 영향을 별도로 다룬다.
+- 앞선 optional 권고 defer 유지: adapter 제목, 일반 Harness 명칭, DR 상세목록 보강은 새 필수 결함으로 승격하지 않았다.
+- 실행과 관측 경계 accept: Reviewer는 기록을 검토했으며 직접 재현하지 않았다. Actual token sandbox 집행과 runtime/cache 확인은 Driver의 실행 증거이며, P3 focused16은 전체 회귀나 artifact qualification을 대신하지 않는다.
+
+#### P3 Acceptance Candidate
+
+수락 대상은 위 HEAD/Work 제외 diff와 `p3-correction-static-identity.json`의 31개 파일/11개 규범 후보 hash, source digest `202970af68868f7a2e5b1bd2244ce7f4d1c856dad752c0b720cdff96b62a4019`, 현재 r005 collect/focused 및 token 실측·R22 결과다. P3 수락은 문서·표시 정렬 결과의 수락이며 규범 활성화나 최종 제품 qualification이 아니다. 관련 세 문서 토큰 입력은 고정됐고 여유는 47이다.
+
+### Proposed P4 Candidate Preparation Bundle — Not Yet Authorized
+
+P3 결과 수락과 다음 P4 준비 slice를 한 번에 제안한다. 전체 normal/parent-optimized 회귀를 지금 바로 실행할 예산 근거는 아직 부족하다. 현재 collection은 6663 occurrence이고 기존 A1+A2 결과만 약 9.31시간이므로 기존 complete mode의 각 5400초 상한을 그대로 승인안으로 재사용하지 않는다. 먼저 최종 후보의 테스트 선언을 재결속하고 실제 collection을 확보한 뒤, 과거 per-ID 시간·현재 자원·실행 경계에 근거한 전체 실행안을 제시한다.
+
+#### Exact Scope And Sequence
+
+1. Source S의 제품·문서·매뉴얼 31개 현재 bytes를 유지한다. stdlib AST/JSON/hash 기반의 고정 재결속 스크립트와 source 미적용 diff를 기존 B 아래 `p4-final-preparation-37/`에 준비한다. 제품/test를 import하거나 실행하지 않는다. 큰 packet 압축기나 새 증거 관리 체계는 만들지 않는다. 소비자는 R23 계획 리뷰와 승인된 1회 적용이며 그 뒤 재생성 가능한 준비 자료의 보관 필요를 재평가한다.
+2. R23 fresh R0 1회에서 정확한 기존 선언, 파생 방식, 미적용 diff, 범위·검증·예산·잔여 P4 실행 설계를 검토한다. 필수 미해결 0이고 아래 파일·계약·14개 선언·collection 범위·상한이 유지될 때만 후속 적용/수집으로 진행하는 Owner 조건부 사전 승인을 요청한다. Reviewer 판정을 Owner 승인으로 대신하지 않는다.
+3. 허용 편집은 `tests/test_entry_window_transition.py`의 14개 literal 선언이다: `P2_RELEASE_ID`, `P2_RELEASE_SHA`, `P2_RELEASE_SHA256`, `P2_A1_LENGTHS`, `P2_D3_STATES`, `P2_A2_STATE_MODELS`, `P2_C4_MAP`, `P2_A1_PATHS`, `P2_A1_DIRECTORIES`, `P2_A1_CELLS`, `P2_D3_POSITIONS`, `P2_D3_MODEL_INDICES`, `P2_G2_MAP`, `P2_A2_CELLS`. Source-side durable 기록은 기존 Work에만 추가한다. 제품 동작·test helper/fixture program·assertion·controller/runner/SBPL·DR/규범/매뉴얼은 편집하지 않는다.
+4. Rebinding은 identity 치환에 그치지 않는다. 현재 managed 29개 bytes로 canonical inventory와 synthetic README-suffix counterpart를 독립 구성한다. 읽기 전용 계산상 현재 release는 `product-release-596946e9370c7de83313417b`/SHA256 `596946e9370c7de83313417b7e23362a8ce19c5f25a5b8ce72e8dc422b9c49ea`, counterpart는 `product-release-057b3313e7f412a96a7e1340`/SHA256 `057b3313e7f412a96a7e1340966ea4147204ec9145512bd9aac732f607a84f26`이다. Inventory는 4740 bytes이며 A1의 19개 member length가 바뀌므로 각 member의 1/middle/last short-write 위치를 정확히 다시 산정한다. C4는 새 두 release와 retained OLD의 UTF-8 순서로 files/directories와 각 제거 prefix를 다시 구성한다. OLD inventory/receipt/schema/원본은 변경하지 않는다. 기존 helper/검증 규칙을 새 기대 결과에 맞춰 완화하지 않는다.
+5. 적용 전후 정적 검증으로 14개 선언 밖 AST 동일, source managed 29개와 P3 31개 bytes 불변, 기존 literal OLD 값 불변, A1 1233/A2 2700/C4 384/D3 positions340/models54/G2 members31, C4 files96/directories24 및 각 중단 위치·순서 대응을 확인한다. IDs나 cell 수가 달라지거나 다른 source 변경이 필요하면 적용/후속 실행을 멈춘다. 기존 토큰 실측은 입력 3개 불변을 확인해 재사용한다.
+6. 기존 r005의 unused `collect-final`을 고정 controller로 1회 실행한다. 명령은 `PYTHON -I -S -B -c BOOTSTRAP CONTROLS controller.py INPUT INPUT_SHA collect final`, PYTHON/CONTROLS/cwd는 이번 P3와 동일, INPUT은 B/p4-final-preparation-37 안에 새 test hash로 결속한 schema3/phase entry/factory true/selection empty config다. 상한 300초, network 금지, fixture/output은 r005/exec/runs/collect-final/work다. 실행 전에 OLD/controls/runtime/Git/systemconfig/선행 acquire-canary-smoke/lock/미사용 slot을 확인한다. 새 root와 canary 호출은 없다.
+7. 실제 ordered collection이 현재 6663 occurrence(779 ordinary + 5884 factory, 6486 unique) 및 동일 ID/occurrence 순서와 맞고, 자연 종료·input 보존·이상 0일 때 준비 완료로 기록한다. 이는 테스트 실행 PASS가 아니다. 그 collection과 재동결 source digest를 기준으로 normal·parent-optimized·exact artifact의 명령/상한/저장·시간·호출/root 예산 및 최종 결과 리뷰를 산정해 다음 단일 승인 요청으로 제시한다. 현재 각 complete 5400초 제한을 늘리는 controls 변경이나 우회 실행은 이번에 포함하지 않는다.
+
+#### Review And Egress
+
+R23은 claude-opus-5-5 High, 기존 claude.ai/firstParty 구독, fresh session, Read/Glob/Grep, MCP 0이며 shell/실행/수정/위임은 없다. 허용 directory는 이미 명시한 S/B/r006/r005 네 곳이다. 이 범위의 비공개 source·직접 계약·test 선언/관련 helper·기존 검증자료·R22 응답/Driver 처분·P4 미적용 diff/재결속 스크립트/정적 파생 결과·입력과 collection을 외부 Anthropic Claude에 전송하도록 요청한다. 키·토큰·계정 이메일·실제 adopter 민감정보는 제외한다. Authentication/env/usage/process 확인과 같은 범위의 파생자료는 묶음에 포함한다. 입력은 HEAD/Work 제외 diff, 현재 및 제안 test hash, 29개 managed inventory, R22 response hash와 정확한 검토 대상 hash로 결속한다. 실제 호출 전 모든 필수 파일이 네 directory 안의 허용목록에 있는지 확인한다.
+
+#### Limits, Completion And Stop
+
+| 항목 | 현재 | 이번 제안 상한 |
+| --- | --- | --- |
+| Controller |1045/1045|1046 (+1 collect-final)|
+| Execution root |161/161|161 유지, r005 재사용|
+| Reviewer |22/22|23 (+1 R23 R0)|
+| Reviewer elapsed |10013.093505/14400초|14400초 유지|
+| Runtime 실행 |0회 예정|collection 1회만, 300초|
+
+완료 기준은 승인된 14개 선언만 정확히 재결속, R23 필수 미해결 0, 전체 product/doc 입력 보존, 실제 collection의 동일 membership/order 및 수집 결과 보존, 다음 전체 실행 예산 제시다. 예상 준비 시간은 45–90분이며 한도 유예는 제외한다. 새 리뷰 지적에 따른 예정 밖 수정·재실행, 작성/정적검사/수집 실패, input drift, 범위·보안·예산 위반은 첫 건에서 STOP한다. 확인된 quota만 기존 유예 예외를 적용하며 자동 재시도·모델/과금 전환은 없다.
+
+이번 승인은 P3 결과 수락과 위 P4 준비 범위만 포함한다. 전체 normal/parent-optimized 회귀, exact artifact 실행, 최종 R1/제품 결과 수락·규범 활성화·Done·Git·실제 adopter 적용·공개 전환은 다음 정확한 실행안과 별도 승인에 남긴다.
+
+#### Preservation
+
+R22 원문·실제 실행 신원·Driver 처분과 이 제안을 기존 Work에 기록하고 현재 tracked diff를 checkout 밖 B/r0-e-result/current-changes.patch에 보존한다. R22 raw 결과의 남은 소비자는 Owner P3 수락 및 제안된 R23의 P3 입력 경계 확인이며, 이후 재생성 가능한 raw 출력의 추가 보관 필요를 재평가한다. Source/r005/r006은 위 구체적 후속 사용이 있어 유지한다.
+
+### Owner P3 Acceptance And P4 Preparation Authorization — 2026-10-14
+
+Owner는 직전 P3 결과 수락 + P4 재동결·수집 준비 요청 전체에 “승인”으로 답했다. 위 P3 Acceptance Candidate의 정확한 현재 31개 파일·11개 successor hash·source digest·현재 token/16회 실행/R22 결과를 P3 정렬 결과로 수락했다. 최종 제품 qualification이나 규범 활성화를 수락한 것은 아니다.
+
+같은 승인으로 기존 B/p4-final-preparation-37 아래 stdlib AST/JSON/hash 재결속 스크립트와 source 미적용 diff를 준비하고, R23 R0 1회 검토 후 필수 미해결 0 및 승인된 14개 선언·계약·범위·예산 유지 조건에서 source test 1파일 적용과 r005 collect-final 1회(300초)를 실행할 수 있다. 이것은 Owner의 명시적 조건부 사전 승인이다. 비공개 자료의 Anthropic 전송 범위는 기존 source/bundle/r006/r005 네 directory와 그 안의 직접 계약·test/helper·기존 결과·R22/Driver 처분·P4 파생 입력·결과이며 필요한 auth/env/usage/process 확인을 포함한다. Opus5.5 High, claude.ai/firstParty 구독, fresh Read/Glob/Grep·MCP0 경계다.
+
+Controller cap1046, root cap161 유지, review cap23, 누적 review time14400초 유지다. 최초 새 지적에 따른 예정 밖 수정/재실행·작성/검증 실패·drift·범위/보안/한도 위반 시 STOP, confirmed quota만 기존 유예 예외를 유지한다. 전체 normal/parent-optimized/artifact 실행과 최종 R1·제품 수락·활성화·Done·Git·adopter/public은 포함하지 않는다. 준비 시작 시 31개 source hash 불변을 확인했다.
+
+### P4 Unapplied Rebinding And R23 Preparation — 2026-10-14
+
+승인된 stdlib 변환안 준비를 1회 실행했다. 명령은 고정 Python3.14.7 `-I -S -B B/p4-final-preparation-37/rebind-candidate.py prepare`, cwd Toolstead이며 exit0, 약0.494초다. source/test import나 실행은 없고 source test는 아직 적용하지 않았다. 변환기는 입력 config SHA와 source102의 mode/size/hash 및 controls12를 확인하고, 14개 선언 밖 AST 동일·OLD 보존·기존 counts를 검증했다. A1 member length19개와 short-write 위치38개를 재산정했으며 C4 files96/directories24의 순서와 첫240개 삭제 prefix를 재구성했다. 나머지144행은 identity mapping에 대해 같다. 이 정적 결과는 실제 runtime 도달성이나 전체 회귀 PASS가 아니다.
+
+원본 test SHA `d39685bb94bff65146a4307ac7580b673866c8472180668b557b0d472d660e1c`, 제안 test SHA `2e906f843f9045e170745304d51a6354350a8d9a55035c3c4bbd4950291077db`, 미적용 patch SHA `b71672a5e66a846e560d3231d9c2810e804ded815bb00babea0f7f1ea4b42cfc`, 변환기 SHA `f4d8b040cb66459f2689f2cc4631093800c69b61536a8b36a07fb656e88c9ab9`다. 파생 요약은 B/p4-final-preparation-37/derivation.json이다. 소비자는 R23 독립 검토와 승인된 조건부 적용이며 종료 후 보관 필요를 재평가한다. 재구성 가능한 full source 복사본은 만들지 않았다.
+
+R23은 Opus5.5 High fresh Read/Glob/Grep/MCP0으로 여섯 의무(현재 inventory/OLD, 14개 선언 및 입력 경계, A1/selector 길이, C4 제거 순서, collection 경계, 전체 실행 후속 예산)를 검토한다. 기존 R22 감독기를 R23 식별·scope·호출상한에만 맞췄으며 종료/권한/시간 감시 방식은 같다. source102/controls12·기존 직접 근거·R22 결과·새 변환기/요약/patch/Work prefix를 결속한다. 아직 R23 호출과 source 적용/collection은 하지 않았다. fresh quota 확인 뒤 한 번만 호출하며 review22/23·누적10013.093505249166/14400초, controller1045/1046·root161/161이다.
+
+### P4 R23 R0 Result And Driver Disposition — 2026-10-14
+
+R23은 정상 종료했다. 실제 모델 claude-opus-5-5, 요청 effort High, session `4680382c-1522-4237-9ed5-88e235db4b49`, claude.ai/firstParty/pro 구독, exit0, 499.655924초다. Read/Glob/Grep 실제 호출 {'Read': 28, 'Glob': 4, 'Grep': 52}, MCP0이며 process group absent, input drift null, boundary/supervision anomaly false, 취소/강제종료 없음이다. Fresh usage는 Owner의 15% 응답(2026-10-13T23:05:10Z 관측)으로 확인했다. 검토 전후 193개 결속 입력과 HEAD/Work 제외 diff가 같았다. Guide SHA `1440a70778e5ff0e4b1503abd6ddd3816b33251228150e7f332c68d5e8b0454c`, 응답 SHA `c6ff5af8c002d4c330cfc1c2ce2b843b7d96cbf290d78739407d835769a12f5a`다. 누적 reviewer23/23, 시간 10512.749429/14400초이며 controller1045/1046, root161/161은 아직 그대로다.
+
+#### Reviewer Response — Verbatim
+
+**R23 판정: ready — 필수 수정 0건.** 14개 literal 적용과 collect-final 1회라는 승인된 조건부 범위에 한정하며, runtime·T0 도달성·전체 회귀·제품 qualification 판정은 아닙니다. 아래 판단은 모두 Read/Grep 기반 정적 추론이며 hash 재계산이나 실행은 하지 않았습니다. 자동 CLI 문맥이 있었으므로 packet-only 독립성은 주장하지 않습니다.
+
+## 필수 수정
+없음.
+
+## 선택 제안 (비차단)
+
+1. **collect-final 입력 미존재.** P에는 `rebind-candidate.py`, `proposed-test.patch`, `derivation.json`, `review-23/`만 있고 새 collect INPUT은 아직 없어 검토하지 못했습니다. P3 collect 선례 `p3-correction-collect-input.json:2,46-58`은 `collection_sha256: null`에 selection 11개이고, 변환기 CONFIG인 `p3-correction-focused-input.json:2`는 `"3e57…"`입니다. 따라서 "새 test hash에만 재결속"만으로는 `selection: []`가 되지 않습니다. 바뀌는 필드를 Work에 명시하길 권합니다.
+   - `source_files[T].sha256/size`, `source_digest`, `selection → []`, `collection_sha256 → null`.
+   - collect는 selection과 collection_sha256을 검사하지 않지만(`runner.py:98-101`), `collection_sha256`은 `inputs.json`에 그대로 기록됩니다(`controller.py:234-235`). focused 값을 두면 stale한 값이 증거에 남습니다.
+   - 입력이 틀리면 `config()`가 slot 생성 전에 거부하므로(`common.py:137-166`, `controller.py:44,211`) slot은 남지만 controller 1046회는 소모되어 STOP입니다.
+
+2. **동등성 비교 대상.** `collection.json`에는 `source_digest`가 들어가므로(`runner.py:93-95`) 파일 hash와 collection SHA는 반드시 달라집니다. 비교는 `default_ids`, `factory_ids`, `ordered`, `duplicates` 네 필드의 정확 일치로 정의해야 합니다.
+
+3. **apply 실행 플래그.** 변환기의 모든 검증이 `assert`입니다. apply도 prepare와 같은 `-I -S -B`로, `-O` 없이 실행함을 기록하길 권합니다.
+
+4. **쓰기 원자성.** `rebind-candidate.py:239`의 `T.write_bytes`는 원자적이지 않습니다. 중단되면 240-241행 대조 없이 torn 상태가 남을 수 있으니, Driver가 적용 후 SHA `2e906f84…`를 별도로 대조해야 합니다.
+
+5. **C4 OLD 순서 재현 검사 부재.** 변환기는 OLD literal의 files/directories 순서가 같은 규칙으로 재현되는지 직접 assert하지 않습니다(161행은 집합 동등, 172-174행은 행과 literal의 정합만). 제가 선두 구간만 직접 대조했습니다. 필수는 아닙니다.
+
+6. **후속 승인안에 명시할 사슬.** `LIMITS`의 complete 5400초는 `controller.py:21-22`에 고정이고, complete는 `final` slot 하나뿐이며(`:17`) selection을 금지합니다(`runner.py:103`).
+   - 상한을 올리거나 분할하려면 controls를 바꿔야 하고, 그러면 controls hash가 바뀝니다.
+   - 그 결과 E5의 acquire/canary/smoke anchor가 불일치하고(`controller.py:66-67`), collection payload도 controls를 포함하므로(`runner.py:93`) collection SHA가 바뀝니다.
+   - 새 root, 새 acquire/canary/smoke, 재collection이 필요해 root cap 161과 controller cap에 영향이 갑니다.
+   - 이번 collect-final은 membership/order와 예산 산정 근거로만 쓰고, 최종 후보의 collection identity로 미리 주장하지 않아야 합니다. 현재 Work에 그런 주장은 없습니다.
+
+## 의무별 확인
+
+### 1. inventory / counterpart / OLD / 입력 결속 — 일치
+- **inventory 모델.** 변환기 75-77행은 제품 `product.py:341-351`과 같습니다: `ENTRY_MANAGED_PATHS` 순서, `path/sha256/size_bytes`, `inventory_id`. canonical 형식 28행은 `jsonio.py:32-35`와 같습니다. ID 규칙은 `product.py:356`입니다.
+- **managed 29개.** `product.py:141-171`의 29개를 직접 셌고, UTF-8 정렬 assert는 73행입니다.
+- **bytes 결속.** `derivation.json`의 29개 sha/size를 P3 입력 `source_files`(61-424행)와 전부 대조해 일치했습니다. MAINTAINING `cc0268ca…`는 Work 14833과도 일치합니다.
+- **4740 bytes.** 4739→4740은 OPERATIONS.md 크기가 4자리에서 5자리(6374→10919)로 바뀐 +1로 설명됩니다.
+- **counterpart.** 변환기 81행의 suffix는 fixture `test:4365`와 동일 bytes이고 README 항목만 바뀝니다. canonical 모델은 OLD literal의 `new2_inventory→new2_sha256` 재현으로 자체 검증됩니다(67-68행).
+- **OLD 보존.** `8bd0eeac…`는 변환 대상 밖입니다. `product.py:385-389`, `baseline-inputs.json:770`, test 165·207행은 그대로이고, 치환 표(85-86행)에 OLD ID가 없습니다.
+- **입력 결속.** source 102 mode/size/sha, controls 12, config SHA는 40-55행에서 확인합니다.
+- **미확인.** `596946e9…`/`057b3313…` 값 자체는 재계산하지 못했습니다. 근거는 prepare exit 0 기록의 77·83행 assert입니다. 변환기는 `inventory_id='entry-1'`을 고정값으로 쓰고, 제품은 launcher에서 유도하는데(`product.py:347`) 그 유도 함수는 읽지 않았습니다.
+
+### 2. 14개 선언 경계 / apply 안전성 — 충분
+- **patch 범위.** `-` 14행과 `+` 14행이 정확히 NAMES이고 다른 ± 행은 없습니다. `+` 행에 옛 ID(916e/45ef) 잔존 0, 원본에 새 ID 선재 0이므로 치환은 단사입니다.
+- **옛 ID 분포.** test에서 916e/45ef를 가진 행은 14개뿐이고, 나머지 P2 선언과 비-P2 행에는 0입니다. P2 이름은 test 한 파일에서만 쓰입니다.
+- **AST·one-line.** 14개 밖 AST 동일 검증은 200-203행, 한 줄 선언 강제는 194행, 재파싱 값 대조는 198-199행, compile-only는 204행입니다.
+- **apply 흐름.** `derive()`가 먼저 source 102(T는 옛 hash)와 controls 12 drift를 검사합니다. 이어 patch와 report를 byte 비교합니다(237행). report에 `script_sha256`가 있어 스크립트 변경도 잡습니다. 그다음 nlink/symlink 확인, T 한 파일 쓰기, 읽기 대조, 전체 102 재대조 순입니다(238-241행). prepare는 덮어쓰기를 거부합니다(230행).
+- **eleven identity-only.** 189행 assert는 구성상 항등입니다. 실제 보존 근거는 치환의 단사성과 key 충돌 검사(95행), 길이 동일성입니다.
+- **collection 불변 근거.** 파생 행(349/354/356)과 메서드 등록(4926-4966)은 index와 ID 기반입니다. import 시점에 literal을 검증하는 코드는 찾지 못했습니다(grep은 4431행 1건).
+- **미확인.** 거대 literal 행(331-333, 346-348, 350-351, 353, 355)과 patch 본문 전체는 읽지 않았습니다. 선두, 표본, 패턴 검색만 했습니다. 14개 행의 trailing comment 유무도 확인하지 못했습니다(있어도 AST 밖입니다).
+
+### 3. A1 lengths / short-write / 모델 — 정확 (정적)
+- **lengths 19/31.** 원본 329행 31개를 전부 읽어 대조했습니다. 불변 12개는 현재 inventory 크기와 같고, 변경 19개의 before는 literal과, after는 inventory와 일치합니다.
+- **short 38개.** 규칙은 `{1, n//2, n-1}`입니다. OLD literal 표본에서 확인했습니다(receipt 1/680/1359, inventory 1/2369/4738, .gitignore 1/29/58, AGENTS 1/1729/3458). 19개 경로의 middle/last 전부를 직접 산술 검증했고(예: 4740→2370/4739, 10919→5459/10918, 126379→63189/126378), patch `+` 행 3개 경로도 확인했습니다. 136-148행은 identity 치환 뒤 길이를 다시 계산합니다.
+- **receipt 1360 / binding 527.** 변환기 110-121행 모델은 제품 plan(`product.py:1346-1349`) 및 fixture(`test:3185-3194`)와 필드가 같습니다. release 의존 필드는 고정 길이 id/sha뿐이라 길이가 불변이고, 127-128행이 OLD 값 재현으로 확인합니다.
+- **counts.** A1 1233, A2 2700, D3 340/54, G2 31은 179-182행 assert입니다. 직접 세지는 않았습니다.
+- **selector 의미.** A1/D3/G2/A2 행에는 OLD ID(8bd0)가 없어 혼합 release 정렬에 의존하지 않습니다. 따라서 identity 치환으로 순서와 occurrence가 유지됩니다(정적 추론).
+- **미확인.** 실제 write 관측이 없습니다. raw-write 1회, 버퍼 경계(OPERATIONS.md가 8192를 넘김), mkdir/fsync occurrence는 runtime 미검증입니다. T0 reachability PASS가 아닙니다. 변환기도 105행에서 같은 한계를 명시합니다.
+
+### 4. C4 — 재구성 원리 일치
+- **순서 규칙.** 변환기 157-159행은 제품 `_detach_order`(`product.py:1820-1824`) 및 계약 DR-0004:206("root colvia first → UTF-8 → deepest-first, UTF-8 ties")과 같습니다. test `4417`도 remove가 UTF-8 정렬임을 요구합니다.
+- **개수.** files 96 = 3 + 3×(1+29) + receipts 3, directories 24 = 3 + 3×7입니다. OLD는 `SERIAL_MANAGED_PATHS` 29개입니다(`product.py:48-78`, 변환기 152행).
+- **정렬 변화.** 이전은 45ef(new2) < 8bd0(OLD) < 916e(new), 이후는 057(new2) < 596(new) < 8bd(OLD)입니다. patch 21행 선두가 057/adapters/colvia-work, 057/src/hv2ref, 596/… 순서임을 확인했습니다.
+- **첫 240행.** 행 키는 event/id/kind/occurrence/path/removed_directories/removed_files뿐임을 표본으로 확인했습니다. 164-176행이 OLD 행의 구조(event 교대, occurrence 1, path=seq[j], prefix)를 assert한 뒤 같은 구조로 다시 씁니다. 소비처 `4424-4437`과 정합합니다.
+- **tail 144행(0241-0384).** id와 kind를 전수 열람했습니다. 기호 필드(case/history/executor/action/frontier/occupant/operation/damage/moment)만 있고 경로·ID는 0건입니다. identity 치환으로 충분하며, 177행 assert는 구성상 항등입니다. file-gap의 `files[2]`와 directory-gap은 런타임에 동적으로 결정되고 의미가 유지됩니다.
+- **ID 순서와 removal 의미의 구분.** count 384와 ID 순서는 유지되지만(178행), 596 블록과 8bd 블록의 위치가 바뀝니다. 파일 행 약 0073-0192와 디렉터리 행 0193-0240은 ID별 물리 경로가 이전과 다릅니다. 과거 per-ID 결과와 시간을 같은 사례의 증거로 승계할 수 없습니다. 실제 removal은 미실행입니다.
+- **미확인.** 240개 행 각각의 prefix 내용은 전수 열람하지 않았습니다.
+
+### 5. collect-final 계획 — 경계 일치
+- **slot.** `collect`/`final`은 허용 slot이고(`controller.py:15`), E5 `exec/runs`에 `collect-final`은 없습니다. 기존은 acquire/canary/smoke/collect-base, collect-p2, focused-p2, collect-p3, focused-p3입니다.
+- **제약.** `final` 제약(`:196-201`)은 complete/artifact anchor가 없어 해당하지 않습니다. `require_new_collection`(`:33-36`)은 새 source_digest로 통과합니다(정적 추론). acquire/canary/smoke anchor 요구(`:189-195`)는 controls가 불변이라 충족됩니다.
+- **한도와 경계.** 300초(`:21`), lock(`:54-55`), 배타적 slot과 work(`:211-215`), `test.sb`(`:224`)입니다. `test.sb` 본문은 읽지 않아 network deny 내용은 미확인입니다.
+- **기준 collection.** `collect-p3/work/collection.json`의 구조를 행 위치와 count로 확인했습니다: default 779, factory 5884, ordered 6663(occurrence=1 6486 + ≥2 177), duplicates 177. `collect-p3/result.json`은 exit 0, 0.486초, `execution_pass: true`이며 이는 기록된 실행 결과입니다.
+- **주장 범위.** Work 14982와 15016은 collection을 테스트 PASS로 바꾸지 않습니다.
+- **미확인.** 새 INPUT과 실행 전 확인 기록은 아직 없습니다(선택 제안 1·2 참조).
+
+### 6. 한도 / STOP / 후속 설계 — 누락·오주장 없음
+- **한도.** controller 1045→1046, root 161 유지, review 22→23, 시간 10013.093505/14400이 Work 14990-14996, 15012, 15020에서 일관됩니다. STOP 조건과 confirmed quota 예외는 14998, 15012입니다. 전체 normal/parent-O/artifact 제외는 15000, 15012입니다.
+- **9.31시간.** 15973.848 + 17538.893 = 33512.741초 ≈ 9.31h로 산술이 맞습니다(14823). 이는 과거 입력의 기록이지 현재 후보의 결과가 아닙니다.
+- **후속 의무.** per-ID 시간, 자원, 호출/root/저장/시간 예산, 최종 리뷰는 14972와 14982 #7에 있습니다. "중복 177"과 "필요 controls 변경"은 항목으로 명시되지 않았고 "이번 범위 제외"로만 언급됩니다. 누락으로 보지는 않지만 선택 제안 6의 사슬을 다음 승인안에 명시해야 합니다.
+- **qualification 주장.** 잘못된 주장은 찾지 못했습니다. 15016과 `derivation.json:124`가 한계를 명시합니다.
+
+## 미검토 영역
+- hash 일체(source/patch/script/derivation/identity)의 실제 값. Driver의 전후 검증에 의존합니다.
+- `proposed-test.patch`와 원본 거대 literal의 전체 본문.
+- `test.sb`, `runner.py` 본문 대부분, `acquire`/`canary`.
+- R22 원문과 `review-23`의 config/identity/supervisor.
+- E6 전체.
+- docs/decisions 중 DR-0004:202-206 외 부분.
+- collect-final 입력과 실행. 아직 존재하지 않습니다.
+
+#### Driver Disposition
+
+- 필수 수정 0 / R23 한정 ready를 accept한다. 여섯 의무를 construction 원리·소비 코드·기록 대조로 확인했다. 거대 반복행 전수 열람, hash 독립 재계산, 실제 runtime 실행은 수행하지 않은 한계로 유지한다. Reviewer 판정 자체가 Owner 승인은 아니며, 앞서 Owner가 승인한 조건부 진행 조건이 충족된 것이다.
+- 선택1·2는 accept한다. 이미 승인된 collection 입력 구체화에서 `source_files[T].sha256/size`, `source_digest`, `selection=[]`, `collection_sha256=null`을 명시한다. 비교는 `default_ids`, `factory_ids`, `ordered`, `duplicates` 네 필드의 정확 일치이며 source_digest를 포함하는 전체 collection hash는 새 값으로 기록한다. 새 INPUT은 R23이 열람한 자료라고 주장하지 않는다.
+- 선택3·4는 accept한다. 적용은 prepare와 같은 고정 Python3.14.7 `-I -S -B`이며 `-O`를 쓰지 않는다. 변환기의 후검사에 더해 Driver가 적용 후 정확한 test SHA와 31개 제품·문서/managed 입력을 별도 대조한다. 적용기 자체를 추가 수정하지 않는다.
+- 선택5는 defer한다. OLD order 재현 assert 추가는 비차단 제안이며 승인된 변환기를 확대하지 않는다. 기존 OLD bytes 보존과 새 순서 구성 검증/실제 후속 회귀의 구분을 유지한다.
+- 선택6은 accept한다. 다음 전체 실행안에서 timeout controls 변경→anchor 불일치→새 root/acquire/canary/smoke/recollection→새 collection SHA 및 예산을 명시한다. 이번 collection은 현재 controls에서의 membership/order 증거이며 미래 controls 후보의 최종 collection identity가 아니다. C4 일부 ID의 물리 경로가 바뀌므로 과거 per-ID 시간은 추정 자료이며 같은 사례의 qualification 증거로 승계하지 않는다.
+
+R23 이후 소스 적용은 승인된 14개 literal과 이 Work 기록뿐이다. 적용/수집 중 첫 실패·drift·범위 이탈에서는 STOP하고 자동 수정/재시도하지 않는다. 전체 runtime 회귀·artifact·최종 결과 수락·활성화·Done·Git은 아직 실행하지 않는다.
+
+### P4 Applied Candidate And Driver Preflight STOP — 2026-10-14
+
+#### Applied State And Actual Failure
+
+R23 필수0과 기존 Owner 조건부 승인을 확인하고 고정 Python3.14.7 `-I -S -B B/p4-final-preparation-37/rebind-candidate.py apply`를 1회 실행했다. exit0, 약0.506초다. 14개 선언만 적용했으며 적용기 전후 source102/controls12와 선언 밖 AST 동일 검증을 통과했다. 별도 Driver 입력 작성에서도 현재 test SHA `2e906f843f9045e170745304d51a6354350a8d9a55035c3c4bbd4950291077db`를 제안값과 대조했고, 제품·문서·매뉴얼31개 bytes 불변과 source102 mode/size/hash를 확인했다. test size 2698663 bytes, source digest `7423a22c3b9f618961b765f89f8f9d2a0cd8f7b39a650378d00c363e56f7fe08`, collection INPUT B/p4-final-preparation-37/p4-collect-input.json SHA `ae6e802eafdbb5c91a74f66dcfe95a5561a9785d461bf5d478f707afc5ea38a8`다. INPUT은 schema3/entry/factory true/selection empty/collection_sha256 null이며 아직 실행 결과가 아니다.
+
+수집 직전 Driver가 작성한 stdin 사전 확인 명령은 exit1이었다. `config()`(source/controls/runtime/Git/system config), OLD 검증, acquire/canary/smoke anchor, 새 collection identity, collect-final/complete/artifact 미사용, lock 비점유 확인을 지난 뒤 14행의 아래 확인식이 실패했다.
+
+```python
+policy = (C / 'test.sb').read_text()
+assert '(deny network*)' in policy
+```
+
+필수 failure output:
+
+```text
+Traceback (most recent call last):
+  File "<stdin>", line 14, in <module>
+AssertionError
+```
+
+이는 제품 test 실행 실패나 sandbox policy 변경이 아니라 Driver의 잘못된 literal preflight 검사다. 실제 test.sb는 3행 `(deny default)`로 기본 차단하며 network allow rule이 없다. 정책 SHA는 기존 `27de945d5a98549062ed1620351ed0578d4e97251f7693da15471cd9b71857f4` 그대로다. E5 canary-base/result.json은 동일 controls/runtime/Git/system config에서 exit0/0.901초/natural/group absent/input preserved이며, work/canaries.json 및 child-canary.json 모두 LOOPBACK_BIND=1/LOOPBACK_CONNECT=1의 명시적 거부를 기록한다. 이것은 그 named probes의 과거 결과이며 모든 네트워크 동작의 포괄적 실행 증명은 아니다.
+
+첫 예상 밖 검증 실패에서 중단하라는 Owner 지시와 이 P4 승인 묶음의 STOP 조건을 적용했다. 잘못된 검사를 바꿔 재실행하거나 controller를 호출하지 않았다. Source는 검토된 14개 선언이 적용된 상태로 보존한다. R23 결과는 입력 수정 전의 변환안 검토로 유효하며 이후 collection 결과 검토를 수행했다고 바꾸지 않는다. Controller1045/1046(남은1), root161/161, reviewer23/23·10512.74942879115/14400초다. collect-final slot은 아직 미사용이다.
+
+#### Proposed Minimal Recovery — Owner Approval Pending
+
+수정 대상은 task-local 사전 확인식과 기존 Work 기록뿐이다. 제품·문서·test 선언·변환기·controller/runner/test.sb·OLD는 더 수정하지 않는다. 기존 input SHA/현재 test SHA/31개 입력 불변, controls12 및 runtime/Git/system config/OLD/선행결과/lock/미사용 slot을 확인하는 동일 preflight를 1회 다시 수행하되, 잘못된 literal 요구를 다음 실제 근거 대조로 대체한다.
+
+```python
+assert digest((C / 'test.sb').read_bytes()) == c['controls']['test.sb']
+for leaf in ('canaries.json', 'child-canary.json'):
+    row = read_json(paths['exec'] / 'runs/canary-base/work' / leaf)
+    assert row['named_denials']['LOOPBACK_BIND'] == 1
+    assert row['named_denials']['LOOPBACK_CONNECT'] == 1
+```
+
+정책 전체를 읽어 default deny와 network allow 부재를 확인한 위 진단, 불변 policy hash, 동일 anchor와 명시된 canary 거부 결과를 함께 사용한다. 새로운 network probe/canary는 실행하지 않는다. 이 수정 확인식은 아직 실행하지 않았다.
+
+Preflight 통과 시 기존 고정 controller로 E5 collect-final 1회만 실행한다. 정확한 명령은 고정 Python3.14.7 `-I -S -B -c BOOTSTRAP CONTROLS controller.py INPUT INPUT_SHA collect final`, cwd S, CONTROLS=S/docs/development/verification/colvia-entry-cleanup-10, INPUT=P/p4-collect-input.json, INPUT_SHA=`ae6e802eafdbb5c91a74f66dcfe95a5561a9785d461bf5d478f707afc5ea38a8`다. BOOTSTRAP은 기존과 같은 `import runpy,sys; p=sys.argv.pop(1); f=sys.argv.pop(1); sys.path.append(p); runpy.run_path(p+"/"+f,run_name="__main__")`다. 상한300초, 기존 network-deny 정책, fixture/output E5/exec/runs/collect-final/work 경계를 유지한다. 새 root나 controls는 없다.
+
+완료 기준은 collection default_ids/factory_ids/ordered/duplicates가 기존 collect-p3와 정확히 같고 ordinary779+factory5884=6663 occurrence/6486 unique, 자연 종료·group absent·입력 보존·오류0인 것이다. 새로운 collection SHA와 source digest를 기록하고, 전체 normal/parent-O/artifact의 실제 시간·저장·controls/선행 호출 예산을 다음 별도 승인안으로 제시한다. Runtime 전체 PASS로 표현하지 않는다.
+
+추가 reviewer0·외부 Anthropic 전송0이며, 기존 R23의 변환기 판단은 불변 범위에서 재사용한다. 이번 Driver 검사식 오류에 새 R0를 추가하지 않는 최소 복구를 요청한다. Controller/root/review 한도 증가는 없고 controller 잔여1회만 쓴다. 사전 확인1회와 collection1회, 이후 실제 전체 실행안 정리에 예상10–20분이다. 첫 새 실패·drift·범위/보안/한도 이탈은 STOP하고 자동 수정/재시도하지 않는다. 전체 normal/parent-O/artifact 실행, 추가 review, 규범 활성화·최종 결과 수락·Done·Git·실제 adopter 적용·공개는 제외한다.
+
+#### Read-only Full-run Resource Observations
+
+수집 준비와 독립적으로 기존128 PASS roots의 executed.jsonl을 읽었다. 현재 P3 ordered6663 중5782 occurrence에 과거 per-ID 측정이 있으며 최신 기록 합58808.725초(약16.34h), 각 ID의 최대 기록 합58941.463초다. 나머지881개는 이 자료에서 미측정이다. C4는 일부 ID의 실제 경로가 달라지고 현재 bytes도 바뀌었으므로 시간은 추정 참고이며 현재 사례 PASS나 고정 실행시간 보장이 아니다. 전체 normal/parent-O는 각각 별도 실행이 필요하다.
+
+`du -sk`로 위128개 work 디렉터리를 읽기 전용 측정한 합은76544240KiB(약73GiB), 최대1784544KiB였으며 exit0이다. 현재 파일시스템 가용량은 약31GiB(`df -h`)였다. Full factory는 case 디렉터리를 남기므로 후속 전체 실행안에는 보존 소비자가 끝난 과거 실행 디렉터리의 정리 가능 여부와 필요한 공간 확보를 먼저 포함해야 한다. 이번에는 삭제하지 않았다. `sysctl` 자원 조회는 sandbox permission으로 unavailable이었고 CPU/RAM 수치를 추정하지 않는다.
+
+#### Preservation And Remaining Use
+
+R23 원문·actual identity·Driver 처분·적용 성공·이 실패와 최소 복구안을 기존 Work에 보존한다. 적용된 source tracked diff를 checkout 밖 B/r0-e-result/current-changes.patch로 갱신한다. P의 변환기/제안 patch/파생요약/입력은 승인 후 재개할 collection과 후속 계획의 소비 대상이다. source/E5/E6은 그 구체적 사용이 남아 유지한다. 전체 회귀용으로 과거 실행 원본을 무단 정리하지 않는다.
+
+### Owner-Approved Preflight Recovery And P4 Collection Result — 2026-10-14
+
+Owner는 직전 최소 복구 묶음에 “승인”으로 답했다(2026-10-13T23:19:58Z에 즉시 관측). 잘못된 literal 확인식을 실제 정책 hash와 기존 부모/자식 canary의 LOOPBACK_BIND/CONNECT 거부 결과 대조로 바꾸고, 동일 사전 확인1회와 수집1회 및 후속 전체 실행안 작성을 승인했다. 추가 review/외부 전송/한도 증가는 없으며 전체 runtime 실행은 아직 승인하지 않았다.
+
+수정된 preflight는 고정 Python3.14.7 `-I -S -B`로 1회 수행하여 exit0이다. source102·P3제품/문서31개·controls12·OLD·runtime/Git/system config·acquire/canary/smoke anchor·lock·미사용 slot을 확인했고 정책 hash와 기존 named denial 결과가 일치했다. 이 결과를 새로운 network probe 실행으로 표현하지 않는다.
+
+고정 controller의 `collect final`을 승인된 E5에서1회 실행했다. INPUT SHA `ae6e802eafdbb5c91a74f66dcfe95a5561a9785d461bf5d478f707afc5ea38a8`, 실제 parent inputs SHA `f99d0d8cc69660905ee9a2749d40b7072ecd31bd0e68cdb683a83eca9507b7f2`, exit0, 0.455초/300초다. 자연 종료·group absent·입력 보존 true, cleanup errors 빈 배열, input verification error null이다. 결과는 E5/exec/runs/collect-final/result.json, 수집은 같은 경로의 work/collection.json에 있다.
+
+현재 수집은 ordinary779 + factory5884 =6663 occurrence,6486 unique, 중복 ID177이다. 기존 collect-p3의 default_ids/factory_ids/ordered/duplicates 네 필드와 정확히 같음을 확인했다. 새 collection SHA `f84b82cc1546f8ba7ce4ce411402261b1310a565c937bb2abb1bd833f62d216d`, source digest `7423a22c3b9f618961b765f89f8f9d2a0cd8f7b39a650378d00c363e56f7fe08`다. 제품·문서 bytes는 유지되고 test14개 literal만 재결속된 후보다. 이는 실제 collection PASS이며 전체 테스트 실행 PASS가 아니다.
+
+Controller 누적1046/1046, root161/161, reviewer23/23·10512.74942879115/14400초다. 승인된 준비의 적용·수집은 완료됐고, 현재 남은 일은 실제 후보와 이 수집에 근거한 전체 실행안을 제시하는 것이다. 기존 complete5400초 cap으로 실행하지 않는다. source/E5/E6과 현재 변환·수집 입력은 그 후속 소비를 위해 유지한다. 이번 복구에서 추가 Claude 호출·전체 회귀·artifact 실행·Git·활성화는 없다.
+
+### P4 Full Qualification Proposal — Owner Approval Pending — 2026-10-14
+
+#### Decision And Fixed Candidate
+
+수집을 통과한 현재 후보에 대해 R24 계획 검토 → 조건부 controls 수정·공간 확보·입력 고정 → normal·parent-optimized 전체 회귀 → exact artifact → R25 결과 검토를 한 묶음으로 제안한다. 이 절은 계획이며 새 실행·삭제·review 승인이 아니다. 앞선 Owner 승인은 이 계획 작성까지만 포함했다. DR-007의 한국어 본문/영문 제목 원칙을 적용한다.
+
+누적 동작 변경은 entry-1 launcher/adapter, 일방향 checkout-1 전환, paired switch/detach schema, OLD recovery 진단 및 P2 경계 검증이다. P3는 규범11개·consumer6개·매뉴얼12개·display2개를 정렬했고 R22/P3 수락과 token3953/4000은 해당31개 bytes가 유지되는 범위에서 재사용한다. P4는 test14개 기대 literal을 현재 payload에 결속했다. P2 focused PASS와 과거 complete 요약은 현재 source102의 두 모드 전체 조합·ordinary tests·변경 payload의 installed lifecycle을 증명하지 못하므로 이번 complete 두 모드를 제안한다. 과거 일부 C4 ID는 물리 경로도 달라 시간 추정에만 사용한다.
+
+| Alias | Exact Location / Identity |
+| --- | --- |
+| S | `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-brand-transition` |
+| BASE | `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-full-p2-base-20261011` — 기존 non-Git baseline copy |
+| B | `/Users/kyungseo/dev-home/vibe/toolstead/temp/hv2-integrated-plan-20261008/colvia-verification-bundle-20261009/p1b-p2-batch-01/p2-preparation-01/p2-full-execution-01` |
+| F | `B/p4-full-execution-38` — 새 실행 입력·짧은 review 안내·결과 소비용, 아직 미생성 |
+| E5 / E6 | `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p2-s3b-fsync-20261013-r005` / 같은 접두의 `r006` |
+| E7 | `/Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-p4-final-20261014-r001` — 새 bounded non-Git execution root 1개; 계획 확인에서 미존재 |
+| Crel | `docs/development/verification/colvia-entry-cleanup-10` — S와 BASE에서 사용 |
+| Source Base | S branch `codex/colvia-brand-transition`, HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de` |
+| Final Source | source102 digest `7423a22c3b9f618961b765f89f8f9d2a0cd8f7b39a650378d00c363e56f7fe08`; test SHA `2e906f843f9045e170745304d51a6354350a8d9a55035c3c4bbd4950291077db` |
+| Baseline Source | BASE source101 digest `197699720edcfeda3a246e9120014444f64826984516ab9df95a2bdffedc6d36` |
+| Exact Payload | managed29, release `product-release-596946e9370c7de83313417b`, inventory SHA `596946e9370c7de83313417b7e23362a8ce19c5f25a5b8ce72e8dc422b9c49ea`; payload620464/inventory4740 bytes |
+| Existing Collection | E5 collect-final SHA `f84b82cc1546f8ba7ce4ce411402261b1310a565c937bb2abb1bd833f62d216d`; ordinary779+factory5884=6663 occurrence/6486 unique/177 duplicate IDs |
+
+INPUT의 source_files는 검증 대상의 exact bytes/mode 목록이다. Digest만으로 원본을 복원할 수 없으므로 아래 named qualification 소비자를 위한 원본 보존을 따로 수행한다.
+
+#### Exact Changes And Execution Sequence
+
+승인된 뒤 F에 작은 고정 실행 보조 파일·cleanup allowlist·review 안내/입력 identity를 작성한다. 새 registry·일반 scheduler·packet 압축기는 만들지 않는다. R24는 실행 전 이 파일들과 아래 두 줄의 제안 diff를 검토한다. R24 필수 미해결0이고 계약·파일·ID·예산이 그대로일 때만 Owner의 사전 조건부 승인으로 후속 단계에 진입한다. 새 필수 지적이나 authoring/validation 실패는 자동 수정하지 않는다.
+
+제품·문서·test·OLD·runner·Seatbelt 정책은 변경하지 않는다. 수정 대상은 `S/Crel/controller.py`와 `BASE/Crel/controller.py`의 LIMITS 두 값뿐이다. 양쪽 기존 SHA는 `d00074844bdb1f11674808dd251a48a3eb4de64b912c048d856ab2d96deff1b7`이며 byte-identical이다.
+
+```diff
+-          "focused": 1200, "complete-normal": 5400, "complete-parent-O": 5400, "artifact": 1800}
++          "focused": 1200, "complete-normal": 108000, "complete-parent-O": 108000, "artifact": 1800}
+```
+
+이는 controller 전체 실행 상한만 각30시간으로 늘린다. 개별 subprocess timeout·assertion·discovery·factory·failfast·환경·권한은 유지한다. Controls12 identity가 바뀌므로 E5 선행결과를 새 controls의 선행 PASS로 재사용하지 않고 E7에서 acquire/canary/base collect/seed smoke부터 다시 수행한다. S/BASE source102/101에는 controls가 포함되지 않아 candidate source digest와 managed payload는 그대로여야 한다.
+
+먼저 아래 과거 합성 산출물의 허용된 정리를 수행하고 가용 공간100GiB 이상을 확인한다. 다음 controls diff를 exact 대조하고 input 고정·보존을 완료한 뒤 아래8회만 순서대로 실행한다. BASE4회와 S4회는 동일 runtime/Git/system config/controls12를 공유한다.
+
+| Order | Mode / Slot | cwd / Source | Selection | Native Cap |
+| --- | --- | --- | --- | --- |
+| 1 | acquire / base | BASE | 기존 base 입력 | 300초 |
+| 2 | canary / base | BASE | 고정 부모·자식 named probes | 300초 |
+| 3 | collect / base | BASE | factory false; 기존 base 목록 | 300초 |
+| 4 | smoke / base | BASE | 기존 고정 seed20 IDs | 1200초 |
+| 5 | collect / final | S | factory true; selection empty | 300초 |
+| 6 | complete-normal / final | S | 6663 occurrence 전부 | 108000초 |
+| 7 | complete-parent-O / final | S | 동일 ordered6663 전부 | 108000초 |
+| 8 | artifact / final | S | 아래 exact15 IDs | 1800초 |
+
+고정 명령은 다음과 같다. PYTHON은 `/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14`; BOOTSTRAP은 `import runpy,sys; p=sys.argv.pop(1); f=sys.argv.pop(1); sys.path.append(p); runpy.run_path(p+"/"+f,run_name="__main__")`다. CONTROLS는 해당 cwd의 Crel이고 INPUT/INPUT_SHA는 F에서 해당 단계에 고정한 JSON과 SHA256이며 MODE/SLOT은 위 표의 enumerated 값만 허용한다. 새로운 임의 command argument는 허용하지 않는다.
+
+```text
+PYTHON -I -S -B -c BOOTSTRAP CONTROLS controller.py INPUT INPUT_SHA MODE SLOT
+```
+
+BASE 입력은 `B/s3b-fsync-correction-32/frozen-inputs/b005/base-collect-input.json`에서 E7 경로·새 controls SHA 및 실제 collection SHA만 결속하고 기존20 seed 목록을 유지한다. collect-base four fields는 E5 collect-base와 정확히 같아야 하며776 occurrence/599 unique다. Entry 입력은 `B/p4-final-preparation-37/p4-collect-input.json`에서 E7 경로·새 controls SHA를 결속한다. collect-final의 default_ids/factory_ids/ordered/duplicates 네 필드는 위 E5 collection과 정확히 일치해야 한다. controls가 포함되므로 전체 collection SHA는 새 값이며 이후 complete/artifact 입력은 이 실제 새 SHA 하나를 공유한다. 수집 membership/order가 다르면 후속 실행하지 않는다. 중복177개를 제거하지 않는다. parent-O는 부모 runner만 최적화하며 installed 자식의 최적화 상태는 기존 코드 그대로다.
+
+F의 비-fixture 준비·입력 보존·review 보조 자료는 합256MiB 이내로 제한하고 기존 B 자료는 복제하지 않는다. 필요한 고유 입력이 이를 넘으면 실행 전에 범위를 다시 제시한다. 실행은 한 번에 controller1개이고 새 subagent/병렬 test는 없다. 실제 tests는 기존 sandbox-exec 정책으로 fixture/output `E7/exec/runs/<mode>-<slot>/work` 안에서만 쓰고 SOURCE/OLD는 read-only다. Network·실제 credentials/service 접근은 기존 deny를 유지한다. Driver 고정 입력·리뷰 보조 자료 쓰기는 F와 기존 Work 기록에 한정한다. 실제 Git 저장소의 commit/push는 없고 tests 내부 synthetic Git만 기존 경계에서 허용한다.
+
+#### Exact Artifact Selection
+
+Artifact는 별도 배포 포맷을 만드는 작업이 아니다. 현재 managed29 inventory/payload bytes를 실제 init/update/rollback/repair/detach/installed reader에서 소비하는지를 같은 reviewed factory/loader로 검증한다. Source 보존 archive는 재현·qualification 입력 보존용이며 그 archive 자체를 배포 artifact라고 주장하지 않는다. 아래 ID는 E5 현재 collection에서 각각 occurrence1로 확인했고 selection에는 정확한 전체 문자열15개만 넣는다.
+
+```text
+test_entry_window_transition.EntryProductTests.test_entry_detach_schema3_positive_and_mixed_rejection
+test_entry_window_transition.EntryProductTests.test_first_entry_transition_cannot_rollback_to_old_window
+test_entry_window_transition.EntryProductTests.test_p2_c4_0260
+test_entry_window_transition.EntryProductTests.test_p2_c4_0261
+test_entry_window_transition.EntryProductTests.test_p2_c4_0262
+test_entry_window_transition.EntryProductTests.test_p2_c4_0266
+test_entry_window_transition.EntryProductTests.test_p2_c4_0267
+test_entry_window_transition.EntryProductTests.test_p2_c4_0268
+test_entry_window_transition.EntryProductTests.test_p2_c4_0292
+test_entry_window_transition.EntryProductTests.test_p2_c4_0296
+test_entry_window_transition.EntryProductTests.test_p2_t0_actual_member_trace_and_d3_map
+test_entry_window_transition.EntryProductTests.test_same_entry_update_rollback_and_exact_repair
+test_entry_window_transition.EntryProductTests.test_source_operation_matrix
+test_entry_window_transition.EntryFoundationTests.test_fresh_git_and_non_git_init_installed_reader
+test_entry_window_transition.EntryFoundationTests.test_literal_windows_and_source_identity
+```
+
+Foundation2는 source/inventory identity와 fresh Git/non-Git 설치·installed reader, named Product5는 source operation matrix·same-entry update/rollback/exact repair·OLD 전환 rollback 거부·schema3 detach·actual T0 bytes를 확인한다. C4 0260/0261/0262는 installed fresh update/rollback/replay, 0266/0267/0268은 installed transition, 0292/0296은 fresh/mixed schema3 directory plain-reader 사례다. 뒤2개를 native kill 증거라고 부르지 않는다. 실제 interruption matrix는 전체 회귀가 담당한다. 과거15개 ID 최대시간 합118.771초는 현재 payload PASS가 아닌 시간 참고이며 artifact cap1800초를 유지한다.
+
+#### Resource Budget And Stop Rules
+
+읽기 전용으로 성공한 과거322개 run의 executed.jsonl을 확인한 시간 자료에서 현재6663 keys 중6013개가 측정됐고 ID별 최대시간 합61525.853초(17.09h),650개는 미측정 ordinary 사례다. 이 시간은 bytes/C4 물리 경로 변경 때문에 엄밀한 현재 최소시간이 아니다. 미측정650개에 각각30초라는 계획 가정과 전체25% 여유를 더하면101282.316초(28.13h)이므로 한 모드108000초(30h)를 제안한다. 개별 미측정 사례가30초 안에 끝난다는 검증은 없다. 예상은 두 모드 합 약2일 수준이며 완료 약속이 아니다. controller8회의 native cap 합220200초,61시간10분이고 review·정리·입력 준비 시간은 별도다.
+
+| Cumulative Budget | Current | Proposed Maximum |
+| --- | --- | --- |
+| Controller calls | 1046/1046 | 1054 — 추가8회, 재시도0 |
+| Execution roots | 161/161 | 162 — E7 하나, 정리해도 누적 차감 없음 |
+| Claude calls | 23/23 | 25 — R24 R0·R25 R1 각1회 |
+| Claude admission time | 10512.74942879115초 | 기존14400초 유지, 잔여3887.25057120885초 |
+
+Host read-only 관측은24GiB RAM/14 logical CPU/kernel27.0.0이며 peak RSS는 측정하지 않았다. AC power 연결·충전100%를 확인했다. 현재 가용 약31.1GiB에 아래72.8GiB를 회수하면 산술상 약103.9GiB다. APFS 공유 블록/다른 프로세스 쓰기 때문에 실제 회수량은 보장되지 않으므로 삭제 후 statvfs/df 실측100GiB 이상을 launch 조건으로 둔다. 전체 합성 출력은 과거 footprint로부터 약80–90GiB를 계획 참고로 잡지만 ordinary cases·할당 특성의 불확실성이 남는다.
+
+각 complete 시작 전100GiB 이상, artifact 시작 전10GiB 이상의 가용 공간을 확인한다. 실행 중60초 이하 간격으로 completed/current ID·native PID/PGID·free disk를 관측하고 진행을 보고한다. 가용 공간이10GiB 미만이면 현재 controller가 시작한 child session의 exact PGID를 확인하여 한 번 SIGTERM하고 기존 controller의 group cleanup/result 기록에 맡긴다. 이 resource abort는 실패·미완료이며 재시작하지 않는다. 다른 프로세스 종료나 임의 kill 확대는 허용하지 않는다. Owner가 이 resource-abort 동작까지 승인한 경우에만 사용한다. 잠자기 방지는 각 controller PID에 결속한 `/usr/bin/caffeinate -i -w <PID>`만 사용하며 시스템 설정을 영구 변경하지 않는다. 전원 차단·OS 재시작·앱 종료 뒤 자동 재실행은 없다.
+
+첫 authoring/검증 실패, 새로운 필수 review 지적, 입력 drift, 보안·scope 이탈, 실제 timeout·중단·abnormal result, 공간/누적 cap 초과에서는 실제 상태를 보존하고 STOP한다. 자동 수정·재시도·두 번째 qualification 후보는 없다. 읽기 전용 원인 분석과 최소 복구안 작성은 가능하다. 확인된 Claude quota 소진만 기존 Owner 예외를 적용하며 R0/R1 의존 작업을 분리하고 부분 응답은 최종 판정으로 쓰지 않는다. Reviewer를 경과시간만으로 종료하지 않는 정책은 유지한다. 누적 시간 한도는 다음 호출 admission에 적용하며 초과 후 추가 호출하지 않는다.
+
+#### Bounded Fixture Cleanup
+
+초기 공간 확보 대상은 아래128 PASS roots의 `exec/runs/focused-p2/work/` 아래 표에 적힌 class/entry-scenarios 디렉터리227개뿐이다. `du -sk` exit0에서 합76372616KiB=72.8346GiB였다. 이들은 test가 생성한 synthetic fixture이며 등록된 Git worktree와 겹치지 않음을 계획 조사에서 확인했다. 실행 root 자체·OLD·실패 run·이름이 표에 없는 경로를 삭제하지 않는다. 공개/실사용 자료가 아니다. 과거 R1/P2 수락을 위한 raw fixture 소비가 종료됐는지 R24에서 확인하고, unresolved failure/recovery/재사용 소비자가 있으면 해당 경로를 삭제하지 않고 필요한 공간을 다시 판단한다.
+
+삭제 전에 각 result의 execution_pass/natural completion/group absent/input preserved를 확인하고 parent inputs 및 six work records를 hash로 고정한다. Root/경로 소유권·허용된 ancestors의 realpath/lstat·등록 worktree 비중첩·controller lock 비점유·관련 active process/open-file 부재를 다시 확인한다. 이를 확인할 수 없으면 삭제하지 않는다. 내부 symlink는 따라가지 않고 해당 fixture 내부 link entry로만 취급하며 외부 참조 대상은 보존한다. 삭제는 고정 allowlist의 synthetic 디렉터리만 대상으로 하는 reviewed helper로 수행한다. `rm -rf`, forced worktree removal, bulk pruning은 사용하지 않는다.
+
+모든 run의 parent `inputs.json`, `result.json`, `stdout.log`, boundary evidence 및 work의 `collection.json`, `selected.json`, `executed.jsonl`, `counts.json`, `unstarted.json`, `unfinished.json`은 기존 위치에 그대로 둔다. home/tmp/xdg 및 표 밖 디렉터리도 유지한다. 시간 추정·결과 검토 소비자는 이 기록을 사용하며 raw fixture 삭제를 새 PASS로 표현하지 않는다. 삭제 후 보호 파일 hash 불변과 대상 부재·실제 공간을 확인한다. 입력 source/controls/기록을 삭제하지 않아 결과 해석은 가능하지만 raw fixture exact bytes는 복구되지 않으며 필요 시 새 scope의 재실행이 필요하다.
+
+첫 normal이 selected=run=6663/abnormal0과 아래 결과 조건을 모두 만족한 뒤에는, 원본이 필요한 failure가 없고 R24에서 이 보존 경계를 승인한 경우에만 E7 `exec/runs/complete-normal-final/work/`의 `EntryControlTests`, `OldFixtureTests`, `EntryProductTests`, `EntryFoundationTests`, `entry-scenarios` 중 실제 생성된 디렉터리를 같은 검사로 정리한다. 전체 discovered/selected/executed/결과/input/로그와 아래 exact anchor는 보존한다. 이는 parent-O 전에 공간100GiB를 다시 확보하기 위한 조건부 정리다. ordinary output/home/tmp/xdg는 삭제하지 않으므로 공간이 부족하면 STOP한다. R25는 normal raw fixture를 볼 수 없다는 제한을 기록하고 보존 결과와 exact 입력을 검토한다. Parent-O와 artifact raw output의 이후 정리는 이번 자동 범위에 포함하지 않는다.
+
+아래 Root Leaf는 모두 `/Users/kyungseo/dev-home/agent-worktrees/` 직하의 정확한 이름이다. C=`EntryControlTests`, P=`EntryProductTests`, F=`EntryFoundationTests`, E=`entry-scenarios`; 조합은 각 이름의 디렉터리만 뜻한다. prefix glob 삭제는 허용하지 않는다.
+
+| Root Leaf | Allowed Directories Under focused-p2/work |
+| --- | --- |
+| `hv2-reference-private-colvia-full-p2-20261011-b001` | C, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b002` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b003` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b004` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b005` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b006` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b007` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b008` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b009` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b010` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b011` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b012` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b013` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b014` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b015` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b016` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b017` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b018` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b019` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b020` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b021` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b022` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b023` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b024` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b025` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b026` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b027` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b028` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b029` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b030` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b031` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b032` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b033` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b034` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b035` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b036` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b037` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b038` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b039` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b040` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b041` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b042` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b043` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b044` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b045` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b046` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b047` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b048` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b049` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b050` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b051` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b052` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b053` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b054` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b055` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b056` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b057` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b058` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b059` | P |
+| `hv2-reference-private-colvia-full-p2-20261011-b060` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b061` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b062` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b063` | P, E |
+| `hv2-reference-private-colvia-full-p2-20261011-b064` | P, E |
+| `hv2-reference-private-colvia-p2-recovery-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-recovery-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-recovery-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-lifecycle-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-lifecycle-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-repair-diagnostic-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-repair-diagnostic-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-repair-diagnostic-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-repair-diagnostic-20261012-r004` | P, E |
+| `hv2-reference-private-colvia-p2-repair-diagnostic-20261012-r005` | P, E |
+| `hv2-reference-private-colvia-p2-repair-diagnostic-20261012-r006` | P, E |
+| `hv2-reference-private-colvia-p2-repair-diagnostic-20261012-r007` | P, E |
+| `hv2-reference-private-colvia-p2-c1-staging-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c1-ignore-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c1-staged-diagnostic-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c1-staged-diagnostic-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-c1-staged-diagnostic-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-c2-graph-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-reap-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-reap-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-reap-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r004` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r005` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r006` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r007` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r008` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r009` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r010` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r011` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r012` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r013` | P, E |
+| `hv2-reference-private-colvia-p2-c2-refs-20261012-r014` | P, E |
+| `hv2-reference-private-colvia-p2-c2-revoked-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c2-revoked-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-c2-revoked-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-c2-revoked-20261012-r004` | P, E |
+| `hv2-reference-private-colvia-p2-c3-api-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c3-baseline-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c3-pending-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c3-pending-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-c3-pending-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-c3-pending-20261012-r004` | P, E |
+| `hv2-reference-private-colvia-p2-c3-pending-20261012-r005` | P, E |
+| `hv2-reference-private-colvia-p2-c3-optional-role-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-c3-optional-role-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-target-diagnostic-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-target-resume-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-spawn-resume-20261012-r001` | P, E |
+| `hv2-reference-private-colvia-p2-spawn-resume-20261012-r002` | P, E |
+| `hv2-reference-private-colvia-p2-spawn-resume-20261012-r003` | P, E |
+| `hv2-reference-private-colvia-p2-spawn-resume-20261012-r004` | P, E |
+| `hv2-reference-private-colvia-p2-spawn-resume-20261012-r005` | P, E |
+| `hv2-reference-private-colvia-p2-spawn-resume-20261012-r006` | P, E |
+| `hv2-reference-private-colvia-p2-mixed-history-resume-20261013-r001` | P, E |
+| `hv2-reference-private-colvia-p2-mixed-history-resume-20261013-r002` | P, E |
+| `hv2-reference-private-colvia-p2-same-entry-hook-resume-20261013-r001` | P, E |
+| `hv2-reference-private-colvia-p2-same-entry-hook-resume-20261013-r002` | P, E |
+| `hv2-reference-private-colvia-p2-sequence-resume-20261013-r001` |  |
+| `hv2-reference-private-colvia-p2-detach-membership-resume-20261013-r001` |  |
+| `hv2-reference-private-colvia-p2-detach-membership-resume-20261013-r002` | P, F, E |
+| `hv2-reference-private-colvia-p2-detach-membership-resume-20261013-r003` | P, E |
+
+#### Preservation And Review Contract
+
+최종 qualification/R25와 향후 complete-anchor 재사용이 named consumer다. Git 미승인 상태이므로 F에 source102·controls12·BASE101 중 기존 immutable 저장소로 복원할 수 없는 입력만 한 번 보존하고 exact bytes/modes/HEAD/code-diff SHA/OLD provenance/runtime/Git/system config를 결속한다. 단순 hash 목록을 원본 보존으로 간주하지 않는다. 이미 동일 bytes의 durable 사본이 있으면 재사용하고 whole checkout나 raw fixture를 복제하지 않는다. 실행 완료 후 두 complete·artifact의 기존 input/result/ordered selected/executed·환경·budget·known limits를 묶는 짧은 최종 anchor를 immutable retained bytes로 고정한다. Work는 요청·review 원문·Driver 처분·실제 Owner 결정을 계속 소유하며 새 장부를 만들지 않는다. Consumer는 exact qualification/승인된 차후 재사용 또는 동등한 Git 보존으로 대체될 때 종료되고 보관을 재평가한다.
+
+R24는 준비한 proposed controls diff, launcher/cleanup helper와 exact128 allowlist, source/base/runtime/OLD isolation, 새 root/anchor 재설정, membership/duplicate 의미, base seed20·artifact15의 계약 coverage, input/보존 bytes, 시간·디스크·resource abort·8회 한도·조건부 후속 실행을 필수 검토한다. R22/23의 변경 없는 의미 검토는 근거와 범위를 표시해 재사용한다. 모든 과거 giant literals와 이미 충족한 helper 감사를 처음부터 재검토하도록 요구하지 않는다. 이전에 필수였으나 미검토로 남은 의무가 발견되면 완료로 숨기지 않는다.
+
+R25는 실제 controls diff·input pre/post identity·새 canary/seed/collection·normal/O 전체 ordered/executed/counts·abnormal/중단 여부·managed inventory29와 artifact15 installed consumption·P3/token/R23 재사용 범위·불변/보존·남은 activation/adopter 제한을 필수 검토한다. Runtime 실행은 Driver의 bounded controller만 수행하며 Reviewer는 실행·source 수정·신규 test 권한이 없다. 정확한 call당 base revision/code diff SHA/추가 입력별 SHA와 실제 session/model identity를 기록하고 앞뒤 drift를 확인한다. Reviewer final 응답을 기존 Work에 verbatim 보존하고 Driver accept/revise/defend/needs-user 처분과 실제 Owner 결정을 분리한다.
+
+각 리뷰는 fresh Claude Opus 5.5 (`claude-opus-5-5`), effort `high`, 기존 subscription 인증 `claude.ai`/`firstParty`를 사용한다. 실행 직전 `claude auth status`의 비밀 제외 경로와 실제 사용량·환경·누적 한도를 확인한다. 기존15% 관측을 현재 사용량으로 재사용하지 않는다. 승인된 비밀 제외 usage UI 관측이 가능하면 사용하고 불가능하면 Owner의 현재 수치만 요청한다. Auth/provider/billing이 다르거나 확인 불가이면 호출하지 않는다. Model·과금 경로 전환은 포함하지 않는다. reviewer 도구는 Read/Glob/Grep만, MCP0, Bash/Write/Edit/실행 도구는 없음이다. 실제 model/session와 packet-only context independence가 제한된다는 점을 보고한다.
+
+외부 전송 대상은 S의 제품/문서/test/계약/controls/기존 Work, BASE의 고정 baseline/controls, B의 기존 승인 자료와 F의 파생 입력·실행 결과·review 보조 자료, E5/E6의 관련 원본·결과, 표의128 exact roots에 보존된 parent inputs/results 및 six work records, 새 E7의 OLD provenance/지정 실행 결과다. 이 정확한 디렉터리들만 read 허용 목록에 넣고 R24/R25 필수 경로가 실제 포함됐는지 launch 전에 확인한다. 다른 agent-worktree 전체나 실제 adopter checkout에는 접근하지 않는다. 해당 비공개 소스·테스트·계약·검증 자료는 Anthropic Claude 서비스로 전송된다. 키·토큰·계정 이메일·실제 adopter 민감 데이터는 제외한다. 같은 범위와 한도 안에서 작성되는 파생 입력/결과는 이 요청에 포함하며 범위 밖 자료나 호출은 포함하지 않는다.
+
+#### Completion And Exclusions
+
+R24 필수0/범위 불변 → 위 계획만 적용 →8회 지정 실행이 모두 통과 → R25 필수 미해결0까지가 이 묶음의 완료 기준이다. 각 controller 결과는 exit0·natural_completion true·group_absent true·inputs_unchanged_or_acquired_exact true·reason null·cleanup_errors empty·input_verification_error null이어야 한다. Normal/O 각각 selected=run=6663, 실행 순서가 실제 ordered discovery와 일치하고 failure/error/skip/expected failure/unexpected success/unstarted/unfinished 모두0이어야 한다. Artifact는 selected=run=15이고 같은 abnormal0 및 exact candidate inventory여야 한다. 하나라도 어긋나면 부분 결과를 보존하고 STOP한다.
+
+최종 보고는 현재 후보에서 실제 실행한 결과, 범위를 한정해 상속한 증거, 미검증/미해결을 나눈다. P4 결과가 준비돼도 최종 제품 결과 수락·규범 활성화는 exact 결과를 제시한 뒤 Owner에게 별도로 요청한다. Work Done·STATUS 변경·Git commit/push/PR/merge·실제 AI Gov/Spring 적용·공개 전환·추가 작업은 포함하지 않는다. S/BASE/E5/E6은 qualification과 provenance 소비가 남아 유지한다. 과거128 roots 자체도 이번 cleanup 대상이 아니며 whole-root 보존/퇴역 판단은 별도다.
+
+계획 작성 후 확인: source102와 controls12 hash/size/mode는 collection 입력과 불변이고 Work 제외 code diff SHA는 `1decc7bf29b7a1d4cf92768464b43ea16393e9f277a654249fc16df74dc380aa`다. 전체 Work를 marked GFM으로 렌더해 code 밖 literal emphasis0을 확인했다. `git diff --check`는 기존 Reviewer 원문12462/12849/12861/12908행 공백4건만 반환했고 새 계획의 경고는 없다. Tracked 전체 patch는 checkout 밖 기존 B/r0-e-result/current-changes.patch로 갱신했다. Untracked36개/고유hash15개 모두 기존 durable bundle에서 동일 bytes 사본을 확인했다. E7/F는 아직 생성하지 않았으며 controls 수정·fixture 삭제·추가 controller·Claude 호출은0이다. Owner 승인 대기다.
+
+### P4 Minimum Completion Reassessment — Proposal Only — 2026-10-14
+
+Owner requested a necessary/reused/removed assessment and a minimal finishing plan, without developing another verification system. This proposal replaces the preceding 30-hour-per-mode recommendation only if the Owner accepts the reduced completion criteria. It is not execution authorization, a new PASS, or an amendment to general product policy. Existing Work remains the owner. Risk L2 for this task-specific verification-scope change; no product, test, controller, sandbox or normative-source changes are proposed. DR-007 applies; the substantive plan below is Korean-primary.
+
+#### Current Evidence And Reuse Decision
+
+현재 source102의 파일 SHA/mode와 controls12를 기존 P4 collection 입력에 직접 대조했고 drift0이다. Source digest는 `7423a22c3b9f618961b765f89f8f9d2a0cd8f7b39a650378d00c363e56f7fe08`, collection SHA는 `f84b82cc1546f8ba7ce4ce411402261b1310a565c937bb2abb1bd833f62d216d`다. P3 교정 입력과 현재 source102의 차이는 entry test1개뿐이다. P2 최종 교정 이후 제품 변경은 P3의 cli/view 표시 문자열이고 product.py는 동일하다. P2 matrix 당시와 P2 교정의 product 차이는 기존 minimal-correction.patch의 읽기 진단 네 분기로 한정된다. P3의 변경과 P4 literal 재결속은 R22/R23 및 기존 정적 비교를 재사용한다. 이번에 제품/test import나 실행은 하지 않았다.
+
+| Remaining Obligation | Proposed Disposition | Boundary |
+| --- | --- | --- |
+| A1 1233 physical-write rows | 변경된 19개 member 길이의 middle/last short-write38개만 새 실행 | 나머지 사건/경로의 기존 실행과 R23 재결속 근거 재사용. 현재1233 전체 PASS 주장은 안 함 |
+| A2 2700 sync/state rows, B1/B2 fences, C1/C2/C3/X1 | 기존 P2 실행·262 보강·15 교정·R15–R17 처분 재사용 | 변경 없는 writer/recovery/guard 로직과 helper의 영향 범위에 한정. 과거 source 세대 및 미검토 한계 유지 |
+| C4 240 detach frontiers | 아래74개만 새 실행 | 166개 반복 파일 중간 위치의 현재 실행을 생략. 파일 순회 로직과 전체 ordered prefix static equality를 재사용하는 대표 경계 선택이며 전 위치 실행 증거는 아님 |
+| C4 negative16 | 전부 새 실행 | receipt/schema·잘못된 prefix·보존 거부를 새 release 순서에 확인 |
+| Exact artifact15 | 전부 새 실행 | 기존 제안의 동일15 IDs. 새 payload의 설치/전환/update/rollback/repair/detach/reader/T0 확인 |
+| Ordinary779 / C5 | Ordinary779 전체는 미검증. src/ordinary-test bytes가 같은 P3 focused16 occurrence(11 unique)만 한정 재사용. C5는 P2 96 unique/109 occurrence의 누적 변경 검토 재사용 | 현재143에는 ordinary 실행0. 식별되지 않은 complete anchor는 근거에서 제외한다. C5의 runtime-double·세대별 기록·bounded 독립 열람 한계를 유지한다 |
+| P3 docs31/token/links/GFM/EN-KO | R22 및 P3 실제 결과 재사용 | bytes 불변 확인만. 재편집·재측정·전면 재리뷰 없음 |
+| Parent-optimized whole run | 이번 잔여 실행에서 제외 | 현재 source 모듈 AST에서 assert/__debug__/optimize·debug 분기 미발견. 이것이 -O 실행 PASS는 아니며, 새 parent-O 조합 검증 공백은 명시 |
+| Acquire/canary/base collect/smoke | r005/r006 선행 PASS 재사용 | 두 root의 controls/runtime/Git/system-config 입력 등식 확인. 실행 직전 OLD/도구/경계/lock/current inputs 확인 유지 |
+
+식별되지 않은 과거 complete anchor는 이번 재사용 근거에서 제외한다. Ordinary779 전체는 미검증이며 P3 focused16 occurrence(11 unique)의 동일 src/ordinary-test bytes 근거만 한정 재사용한다. 전환의 근거는 기존 P2 matrix와 보강, 이번 current-payload 선택 실행의 합성이다. 이 판단은 MAINTAINING의 선택·재사용 원칙을 사용하되, 이 Work에 별도로 약속했던 최종 complete-normal/complete-parent-O 요구를 작업 한정으로 변경하는 Owner 결정이 필요하다. 일반 lifecycle-change 정책 면제나 다른 OS/runtime/실제 adopter/public 승인으로 확대하지 않는다.
+
+#### Exact Selection And Execution
+
+정확한 세 selection은 기존 bundle P4 준비 위치의 `reduced-selection-proposal.json`에 있다. Named consumer는 이번 Owner 판단과 승인된 선택 실행·마지막 결과 검토다. 별도 scheduler/registry/runner/검증 프레임워크는 만들지 않는다. JSON은 제안이며 controller input이 아니다. 적용 시 현재 collect input에서 selection/collection SHA 및 r006 root 경로만 결속한 기존 schema3 입력3개를 만든다.
+
+C4 74개는 파일96개 중 launcher/binding/init-plan/receipt6개와 각 release의 첫·끝 파일6개, 즉12개 위치의 unlink 전후24개, 모든 directory24개 위치의 rmdir 전후48개, 과거 원인 미확정 사례0033/0054의 재발 확인2개다. 모든 directory 경계를 남겨 release 간 UTF-8 순서 변경과 깊이별 부모 제거를 확인한다. 0033/0054가 통과해도 과거 원인이 규명됐다고 쓰지 않는다. 동일 순회 본문의 나머지 중간 file166개는 반복하지 않는다.
+
+A1 suffix38: `0063,0064,0129,0130,0195,0196,0228,0229,0273,0274,0345,0346,0384,0385,0423,0424,0462,0463,0501,0502,0540,0541,0579,0580,0618,0619,0657,0658,0696,0697,0735,0736,0870,0871,1050,1051,1140,1141`. C4 frontier suffixes는 `0001–0014,0033,0054,0071–0074,0131–0134,0191–0240`, negative는 `0241–0256`. Artifact15는 앞 절 Exact Artifact Selection 그대로다. 현재 ordered collection에143개가 각각 occurrence1로 존재하고 중복0이다. Assertions/fixtures를 수정하거나 테스트를 삭제하지 않는다.
+
+| Order | Existing Root / Mode / Slot | Selected | Prior ID Max-Time Sum | Existing Cap |
+| --- | --- | --- | --- | --- |
+| 1 | r006 / collect / final | 현재 source의 collection | collection만, test0 | 300초 |
+| 2 | r005 / focused / correction | C4 frontier의 앞33개(0199까지) | 879.985초 | 1200초 |
+| 3 | r006 / artifact / final | C4 frontier의 뒤41개(0200–0240) | 1075.015초 | 1800초 |
+| 4 | r005 / artifact / final | A1 38 + C4 negative16 + artifact15 =69개 | 507.982초 | 1800초 |
+
+세 실행 합143개, 과거 같은 ID 최대시간 합2462.982초(약41분), controller4회 cap합5100초(85분)다. 현재 bytes/path에서 같은 시간이 보장되지는 않는다. 두 artifact 모드는 기존 selected runner 경로를 쓰며, r006은 artifact detach-boundary 사례만, r005는 listed lifecycle와 short-write/refusal을 실행했다고 구분한다. complete mode로 포장하지 않는다. root별 미사용 slot과 선행 results/control identities를 읽기 전용 확인했다. r005 기존 collect-final을 재사용하고 r006의 새 collection 네 ordered fields와 전체 SHA가 같은지 대조한다.
+
+명령 형식은 앞 절의 고정 CPython3.14.7 `-I -S -B -c BOOTSTRAP CONTROLS controller.py INPUT INPUT_SHA MODE SLOT` 그대로이며 source cwd와 controls12/SBPL은 불변이다. 한 번에 controller1개, network/credentials 금지, source/OLD read-only, 지정 work 경계 안의 fixture writes만 허용한다. 신규 controller budget은1046→1050, roots161 유지다. Source branch/HEAD와 source digest, inputs, natural exit, selected/executed/order, fail/error/skip/unstarted/unfinished0을 기존 결과로 확인한다.
+
+현재 free31.09GiB, 선택143개에 해당하는 과거 per-test directory 합4.34GiB를 읽기 전용 관측했다. 공용 scenario/log 공간은 그 수치에 포함하지 않으므로 총량 예측으로 쓰지 않는다. 실행 전 free25GiB 이상, 실행 중 free10GiB 미만이면 기존 종료 절차로 정지한다. 앞 절의128root/227directory 정리·100GiB 확보·새 E7·30시간 cap 변경을 이번 계획에서 제거한다. 현재 checkout과 기존 근거는 모두 유지한다.
+
+#### Minimal Changes, Review And Completion
+
+변경 대상은 기존 Work의 이 제안/실행결과, 기존 bundle의 selection 제안과 실행 입력3개뿐이다. 제품·문서·test·BASE·controller·runner·SBPL 변경0, 새 실행 root0, cleanup0, 새 자동화0이다. Runtime/helper 재설계, 중복 discovery 제거, 테스트 tier 재편은 이번 마무리에 넣지 않는다. 이번 계획 작성에서 source 실행파일은 변경하지 않았다.
+
+별도 R24 계획 R0를 생략하고 마지막 결과 R1 1회만 제안한다. 이미 검토·실행된 controls/selection 기능을 그대로 쓰고 안전성 source 변경이 없기 때문이다. 이 생략도 이번 Owner의 변경 결정에 포함되며 기존 승인에서 자동 유추하지 않는다. 마지막 리뷰의 범위는143 실제 결과, 위 재사용 근거와 생략 한계, 현재 candidate identity, R22/R23 재사용뿐이다. 기존 대형 Work 전면 재심사나 선택 보강을 자동 의무로 추가하지 않는다. Claude Opus5.5 High, claude.ai/firstParty 구독, fresh Read/Glob/Grep/MCP0, 실제 auth/session/전후 drift·사용량 확인은 기존 방식 그대로이며 review 누적상한23→24, elapsed14400초 한도 유지다. 읽기/Anthropic 전송 범위는 기존 S/B/r005/r006의 해당 private source·계약·결과만이고 secret/account email/실제 adopter 자료는 제외한다. 호출은 이 계획 승인 뒤에만 한다.
+
+완료 조건은143개 현재 normal 실행의 비정상0, 정확한 입력 보존/자연 종료, 한정된 최종 리뷰 필수 미해결0과 Owner에게 제시할 P4 결과다. 보고는 현재 실행143/재사용 근거/생략 및 미확인으로 분리한다. 현재6663 전체 또는 parent-O PASS로 표현하지 않는다. 이 기준으로 P4 개발 검증을 마무리하도록 제안하며 최종 수락·규범 활성화·Git·adopter 적용·public은 기존 별도 결정 그대로다. 새 실질 결함/실행 실패/drift/권한·예산 위반은 보존 후 해당 범위에서 정지하며, 자동 전체 회귀나 무제한 보정으로 확대하지 않는다. 되돌리기는 아직 미실행인 제안을 철회하는 것으로 충분하며 기존 증거는 삭제하지 않는다. STATUS/PLAN/DR 파일 변경 제안은 없다.
+
+### Owner-Authorized P4 Reduced Completion And Cleanup — 2026-10-14
+
+Owner가 통합 지시문 전체와143개 축소 검증·최종 리뷰1회·불필요한 산출물 정리를 승인했다. P4 완료 조건은 앞 절의143개 선택 실행/재사용 판단/최종 결과 리뷰로 변경하고, 전체6663×두 모드·30시간 확대·새root·대량정리 선행조건과 별도 계획 R0는 제외한다. 최종 수락/활성화/commit/push/PR/merge/실제 적용은 별도다. Controller1046→1050, root161 유지, reviewer23→24 및 누적14400초 유지, per-call300/1200/1800/1800초와 합5100초 유지다. 기존 S/B/r005/r006의 해당 private source·근거를 구독 Claude Opus5.5 High Read/Glob/Grep/MCP0로 전송하는 최종 R1 한 회를 포함한다.
+
+통상적 준비 오류는 승인된 검사·판정·격리·예산 안에서 Driver가 수정한다. 실제 controller 착수는 실패해도 호출/시간에서 빼지 않으며 slot이나 결과를 덮어쓰지 않는다. 제품 동작·oracle·보안 경계 변경, 원인 불명 훼손, 예산 확대가 필요할 때만 해당 작업을 보류하고 최소 대안을 보고한다. 재사용 근거가 유지되는 독립 작업은 계속한다. 기존의 준비 오류마다 재승인 요구는 이번 지시로 대체한다.
+
+정리는 이번 작업 소유의 소비자 없는 재생성 가능 자료에 한정한다. 두 현재 실행 위치/입력과 재사용·리뷰·수락·복구에 필요한 고유 근거는 Owner 최종 수락까지 보존하고, 이후에도 구체적 재사용이 남으면 필요한 자료만 유지한다. 기존 cleanup 기준을 충족한 agent worktree archive/remove는 승인되지만 primary/shared/in-use와 마지막 고유 복구 사본은 제외한다. 삭제 전 별도 전체 복사본을 만드는 작업과 모든 역사 파일 분류는 하지 않는다.
+
+입력 준비: source102와 controls12/tool hashes drift0, free31.09GiB, r005/r006 acquire/canary/smoke의 control/runtime/Git/config 동일·PASS, OLD manifest·미사용slot·controller lock·기존 controller 부재를 확인했다. 일반 sandbox의 ps 접근 거부는 read-only 승격 확인으로 처리했고 controller 사용0이다. 기존 P4 준비 위치에 reduced-collect-input.json과 선택 입력3개를 생성했다. 제안의 “입력3개”는 선택 입력 수이며 r006 수집 입력1개가 별도 필요하다. 새 실행/검사를 추가하는 변경은 아니다.
+
+선택 proposal SHA `db1edcd97e979e78bc3de8468b42b539cb2bda858714f61b2f02769af546d595`; collect input `5eac24db6df033c9d95151b0c3bc365d30856f6f699100b0b1fcce97925968ac`; focused33 `4a1a9a66aa48e2a63caa73058a0c08ae8880d095f51163576c7714de5b4656b0`; detach41 `dde1b7969d58aea79f6c5f645da083c2e2125d64b626818b05d7764b99cb5325`; artifact69 `1a80deaa5c29ef5b1de20e5107c6c597905ba542cd538a6271f6d79d7045431c`. 제품/test/controls 편집0, controller 실행 전 checkpoint다.
+
+### P4 Reduced Execution Progress — 2026-10-14
+
+Controller1047의 r006 collect-final은0.693초/exit0/natural completion/group absent/input unchanged로 통과했다. 현재 ordered collection SHA는 `f84b82cc1546f8ba7ce4ce411402261b1310a565c937bb2abb1bd833f62d216d`이며 r005 collect-final과 동일하다. Collection은 테스트 실행0이다. Controller1048의 r005 focused-correction33이 진행 중이고 완료/실패를 아직 판정하지 않았다.
+
+최종 R24는 기존 supervisor의 라운드·scope·승인cap metadata만 변경해 준비 중이며 아직 호출하지 않았다. 사용량 화면 읽기가 자동 승인 검토에서 차단된 뒤 Owner가 “사용량 화면만 읽기 허용”으로 명시 승인했다. 2026-10-14T00:37Z Claude 설정의 현재 session31%, weekly29%를 관측했다. 리뷰 직전에10분 이내 관측을 다시 확보하며 계정 이메일·비밀을 기록하지 않는다. 대체 인증환경 부재와 claude.ai/firstParty/pro는 최초 실행 준비 때 확인했다.
+
+정리 후보는 기존 resource 산정에 포함된128 성공 실행의 work/EntryControlTests 또는 EntryProductTests 및 entry-scenarios227개 directory, 관측72.8346GiB다.128개의 원본 result/counts를 다시 읽어 성공/자연종료/abnormal0을 확인했고 root의 .git marker0이다. 이들은 agent Git worktree가 아니라 합성 실행경계다. 현재 검증·R24·수락의 소비자는 원본 inputs/result/counts/selected/executed/collection/unstarted/unfinished와 고정source/OLD이며 과거 성공 fixture의 소비자는 종료됐다. 실패root와 현재r005/r006은 후보에 없다. 실제 삭제 전에 활성 사용과 exact 경계/보존 기록을 다시 확인한다. 테스트와 I/O가 경쟁하지 않도록 현재 실행 뒤에 정리하며 아직 삭제0이다.
+
+Controller1048 r005 focused-correction33은886.875초/exit0/PASS로 완료됐다. Selected/executed는 proposal의33 IDs와 순서·occurrence1까지 일치하고 failure/error/skip/expected failure/unexpected success/unstarted/unfinished0이다. Natural completion/group absent/input unchanged true, reason null, cleanup_errors empty, input_verification_error null이며 collection SHA도 그대로다. C4_0033/0054는 현재 사례 재통과이며 과거 미확정 원인의 해결 주장은 하지 않는다. 실행 뒤 free29.41GiB를 확인하고 controller1049 r006 artifact-final41을 시작했다. 아직 두 번째 실행의 완료 판정은 없다.
+
+Controller1049 r006 artifact-final41은1207.094초/exit0/PASS로 완료됐다. Selected/executed41와 순서·occurrence1·collection SHA를 대조했고 abnormal7항목 모두0이다. Natural completion/group absent/input unchanged true, reason null, cleanup_errors empty, input_verification_error null이다. 실행 뒤 free27.43GiB를 확인한 뒤 controller1050 r005 artifact-final69을 시작했다. 실제 41개의 대상은 C4_0200–0240이며 artifact라는 mode명을 전체 또는 설치15개 실행으로 확대하지 않는다. 현재 누적74개 통과, 마지막69개는 진행 중이다.
+
+### P4 Reduced Execution Results — 2026-10-14
+
+Controller1050 r005 artifact-final69도539.863초/exit0/PASS로 완료됐다. 세 묶음33/41/69의 합143개는 중복0이며 proposal의 정확한 membership과 일치한다. 각 selected는 ordered discovery에서 membership을 필터한 순서이고 executed와 occurrence1까지 같다. Selection 입력의 그룹별 나열 순서 자체가 실행 순서는 아니다. Collection SHA는 세 실행 모두 동일하다. Failure/error/skip/expected failure/unexpected success/unstarted/unfinished 모두0, 네 controller 모두 natural completion/group absent/input unchanged true, reason null, cleanup_errors empty, input_verification_error null이다.
+
+| Current Execution | Selected / Run / Pass | Seconds | Cap |
+| --- | --- | --- | --- |
+| r006 collect-final | test0; collection6663 | 0.693 | 300 |
+| r005 focused-correction | 33 / 33 / 33 | 886.875 | 1200 |
+| r006 artifact-final | 41 / 41 / 41 | 1207.094 | 1800 |
+| r005 artifact-final | 69 / 69 / 69 | 539.863 | 1800 |
+| Total | 143 unique PASS | 2634.525 including collection | 5100 |
+
+실제 controller 경과는43분54.525초로85분 상한 이내다. 최종 controller1050/1050, root161/161, 현재 review23/24다. 제품/test/controls 변경0, 실제 테스트 재실행0, 새 실행root0이다. Driver의 읽기 전용 메타데이터 비교에서 controls 값을 dict로 가정한 TypeError1건은 hash 문자열로 올바르게 읽도록 즉시 고쳤다. 제품/test 실행이나 controller 호출을 발생시키지 않았고 실패를 테스트 성공 수에 포함하지 않는다.
+
+재사용 확인: current source102 sha/size/mode 및 controls12 hash drift0; accepted P2 correction과 현재 product.py 동일, P2→P3 src 차이는 cli.py/view.py, P3 correction→현재 source102 차이는 entry test1개뿐이다. Work 제외 code diff SHA는 `1decc7bf29b7a1d4cf92768464b43ea16393e9f277a654249fc16df74dc380aa`로 유지됐다. 현재143은 A1 short-write38/C4 frontier74/negative16/artifact15의 normal 실행이다. 과거 P2 5782/262/15와 R15–R17, P3/R22, 재결속/R23는 앞 표에 한정해 재사용한다. Current whole6663, ordinary779 전부, parent-O, 다른 OS/runtime, 실제 adopter/public의 새 PASS는 아니다. C4_0033/0054 원인 미확정과 C5 bounded 관측/독립 열람 한계는 남는다.
+
+최종 R24의5가지 의무는 선택·실제 결과·역사 재사용·R22/R23 재사용·완료 표현이다. 기존 supervisor는 R1 label/domain24/scope/호출cap24 metadata만 바꾸었고 보안·인증·도구·중단 guard는 그대로다. 2026-10-14T01:16:41Z Owner가 허용한 usage 화면에서 session31%/weekly29%를 새 관측했다. 누적review10512.749429/14400초,23/24회 안에서 fresh 최종 R1 한 회를 준비한다. 실제 호출/결과는 다음 절에 별도로 기록한다. 아직 Owner 최종 수락은 없다.
+
+### Authorized Regenerable Fixture Cleanup — 2026-10-14
+
+Owner가 승인한 소비자 없는 자료 정리로, 기존128 PASS 실행의 work 아래 합성 fixture227개 directory만 삭제했다. 대상 종류는 EntryControlTests/EntryFoundationTests/EntryProductTests/entry-scenarios다. 앞 진행 기록에서 EntryFoundationTests 한 종류를 생략했으며 실제 기존 목록에는 detach-membership-resume r002의 해당1개가 포함돼 있었다. 첫 사전검사는 이 누락으로 삭제 전에 멈췄고227개 전부 남아 있음을 확인했다. 같은 기존 목록/승인 범위 안에서 종류 검사를 바로잡아 진행했으며 제품·실행기·판정 변경이나 추가controller/review 호출은 없다.
+
+Exact 기존 root/run/name 목록의 SHA는 `655f42304ddc529dab34dfd13d3560f321064759bf7612b719919f0ca62a9839`다. 대상root는 앞128행 목록과 동일하며 root 전체를 지우지 않았다. 삭제 전 ps의 활성 참조0, lsof의 열린 파일0, 등록 Git worktree 일치0, 각 result의 PASS/자연종료/group absence와 counts abnormal0, 경로의 symlink/ancestor 경계·현재r005/r006 제외를 확인했다. 원본 inputs/result/stdout/counts/selected/executed/collection/unstarted/unfinished1152개 파일의 SHA를 전후 비교해 drift0이다. 실패 실행 위치와 OLD/source/provenance는 건드리지 않았다.
+
+`du -sk`로 확인한 삭제 대상 할당량72.834602GiB, 실제 삭제227개, 정리 작업73.207초다. Volume free는26.528030→99.834560GiB로 관측됐지만 다른 프로세스의 공간 변동까지 전적으로 이번 정리 효과로 주장하지 않는다. 별도 전체 복사본·새 archive·per-file permanent manifest를 만들지 않았다.128 실행root의 남은 입력·source/OLD·원본 결과는 P2 재사용 신원/미해결 이력 확인을 위해 유지한다. 현재 S/r005/r006과 보존bundle은 최종 리뷰·Owner 수락의 구체적 소비가 있어 유지하며 Git worktree 퇴역은0이다. 다른 작업의 checkout이나 소유/재사용이 불명확한 자료로 정리를 확대하지 않았다.
+
+### P4 R24 Final Review And Driver Disposition — 2026-10-14
+
+최종 R1 한 회는 fresh Claude Opus5.5 (`claude-opus-5-5`), requested High, claude.ai/firstParty/pro에서 실행됐다. 실제 session `40b6ead8-5958-493a-b84e-80b3baf7a31e`, Read/Glob/Grep only/MCP0,400.661초/exit0/natural group absence로 종료했다. Boundary/supervision anomaly0, review 전후186 입력과 Work prefix·HEAD·code diff drift0이다. CLI 자동 문맥의 가능성으로 packet-only 독립성은 주장하지 않는다. 누적review24/24,10913.410794/14400초다. 더 이상의 review 호출은 하지 않았다.
+
+Packet SHA `f9154281afc06cef72116cbaf0984e273b468d73cb32cf7d1a8e224d029a01e2`, response SHA `fce011255b7cd87a53f45da7f5a008759265d285f03fb13223e07746effeb9f4`, base `a17f35cf323ffde7a8642a85501fddbec858b6de`, Work 제외 code diff `1decc7bf29b7a1d4cf92768464b43ea16393e9f277a654249fc16df74dc380aa`다. 아래 원문은 수정하지 않았으며 F1의 과거 행번호는 리뷰 당시 입력 기준이다.
+
+#### Reviewer Response — Verbatim
+
+# R24 — P4 축소 완료 결과 독립 R1 검토
+
+**판정: 조건부 ready.** 143개 현재 실행 근거와 P2/R17·P3/R22·재결속/R23 재사용 경계에서는 필수 결함을 찾지 못했습니다. 다만 Ordinary779의 재사용 근거로 쓴 "기존 complete anchor"가 식별되지 않아, 이 한 줄을 고쳐야 Owner가 최종 수락을 판단할 수 있습니다. 추가 테스트는 필요 없습니다.
+
+저는 Read/Glob/Grep만 썼고 테스트 실행과 hash 재계산은 하지 않았습니다. "기록"은 원본 파일에서 읽은 값, "정적"은 제 추론입니다. CLI 자동 문맥이 있어 packet-only 독립성은 주장하지 않으며, 이 판정은 Owner 수락을 대신하지 않습니다.
+
+## 필수 수정
+
+**F1 (중간, 문구 수정만): "기존 complete anchor"가 식별되지 않습니다.**
+
+- **위치:** `W:15472`, `W:15477`.
+- **근거:**
+  - 두 행은 Ordinary779의 승계 근거로 "기존 complete anchor"를 들지만 위치, source 신원, 두 모드 결과, ordered ID가 없습니다.
+  - R24 `read-identity.json:18-204`의 입력 목록에도 complete 실행 근거가 없습니다.
+  - E5/E6 `exec/runs`에는 `complete-*` slot이 없고, `W:14675`는 complete-normal-final을 "아직 실행하지 않았다"고 기록합니다.
+  - 이 Work의 base 근거로 찾은 것은 수집 776 occurrence(test 0)와 seed 20개 smoke뿐입니다(`W:4212`, `W:15249`). 현재 ordinary는 779입니다(`W:15188`).
+  - `W:15198`은 "과거 complete 요약"이 현재 source102의 ordinary tests를 증명하지 못한다고 이미 적었습니다.
+  - Driver가 원용한 `docs/MAINTAINING.md:54`는 식별·복구 가능한 anchor를 요구하고 "Missing or unverifiable evidence cannot support the reuse that needs it"라고 합니다. `:60`은 "inherited from an identified anchor"를, `:62`는 역사 요약만으로 PASS를 승계하지 말 것을 요구합니다.
+- **최소 수정(둘 중 하나):**
+  - anchor의 정확한 위치, source/artifact 신원, 두 모드 결과, ordered ID, 알려진 실패를 `W` 결과 절에 적습니다.
+  - 식별할 수 없으면 Ordinary779를 "승계"에서 "미검증"으로 옮깁니다. 현재 bytes와 같은 src/ordinary-test bytes에서 실행된 것은 P3 focused 16 occurrence(11 unique)뿐이고, P2 C5 109는 이전 세대라고 적으면 됩니다.
+- **제 확인의 한계:** `W`는 15455행 이후와 Grep 표본만 봤습니다. 다른 표현으로 앞부분에 정의돼 있을 가능성은 배제하지 못했습니다.
+
+## 선택 제안 (완료 조건 아님)
+
+- **미실행 범위 한 줄 추가.** `W:15546`에 143개 밖 6520 occurrence는 현재 실행이 0임을 적으면 좋습니다. `W:15465-15475` 표가 이름으로 다루지 않는 항목이 있습니다:
+  - C4 tail 0257–0384 중 실행 8개를 뺀 120행.
+  - G2 31행(`test:353`). 재결속됐지만 현재 실행은 없습니다.
+  - 재결속된 A2/D3 fault 모델. 현재 실행으로 닿은 것은 T0의 S0 정상 모델뿐입니다(`test:3285`).
+- **C4 per-ID 승계 불가 재기재.** R23 `response.md:62`는 0073–0192와 0193–0240의 ID별 물리 경로가 바뀌어 과거 per-ID 결과를 승계할 수 없다고 했습니다. 미실행 166행 중 112행(0075–0130, 0135–0190)이 여기에 해당합니다. `W:15469`의 "전 위치 실행 증거 아님"은 맞지만 결과 절에 이 문장을 그대로 옮기길 권합니다.
+- **parent-O 표현 범위.** `W:15474`의 "assert/__debug__ 미발견"은 `src/`와 `colvia`에서 0건으로 확인됩니다. `tests/`에는 bare assert가 3건 있습니다(`test_worktree_integration.py:40,45`, `test_worktree_process_recovery.py:233`). 앞 두 건은 자식 프로그램 문자열입니다. "source 모듈 한정"이라고 적으면 정확합니다.
+- **update의 상대 release.** `test:2343-2344`에서 update 대상은 launcher에 주석을 덧붙인 합성 후보입니다. 두 번째 실제 release로 읽히지 않게 적어 두면 좋습니다.
+
+## 의무별 확인
+
+### 1. 정확한 선택 — 일치
+
+- **membership.** proposal 세 그룹(`reduced-selection-proposal.json:6-154`)과 세 입력의 `selection`이 33/41/69로 같고 서로 겹치지 않습니다. `reduced-collect-input.json:46`은 `selection: []`, `collection_sha256: null`입니다.
+- **구성.** A1 38 + C4 frontier 74 + negative 16 + artifact 15 = 143입니다.
+- **A1 38.** `derivation.json:281-510`의 `short_changes` 38개 index에 1을 더한 값이 선택 suffix와 전부 같습니다. 대상은 길이가 바뀐 19개 member의 middle/last입니다(`:22-99`).
+- **C4 frontier.** `test:333`의 행 표본으로 구조를 확인했습니다.
+  - 0001–0012는 launcher/binding/init-plan/receipt 3개의 unlink 전후입니다.
+  - 0013·0014, 0071–0074, 0131–0134, 0191·0192는 세 release(057b → 596 → 8bd0)의 첫·끝 파일입니다.
+  - 0193–0240은 rmdir 전후 48개, 0241–0256은 detach-negative입니다.
+  - 파일 위치 12개 × 2 = 24, directory 24개 × 2 = 48, 0033/0054 2개로 합 74입니다.
+- **수집 대응.** r006 `collect-final/work/collection.json`의 ordered 구간에서 표본 ID가 모두 occurrence 1로 존재합니다. 143개 전부를 열거 대조하지는 않았고, 실행이 exit 0이라는 기록과 `runner.py:106`의 포함 검사에 의존합니다.
+- **artifact15 범위.** 과장은 찾지 못했습니다.
+  - git/non-git 실제 init과 installed reader status(`test:4725-4737`).
+  - installed-new의 update/rollback/replay, fresh와 transition 이력(0260–0262, 0266–0268).
+  - plain-audit directories(0292, 0296).
+  - same-entry update/rollback/exact repair(`:2339-2359`).
+  - 첫 전환의 OLD rollback 거부(`:2372-2381`), schema 3 detach와 recover(`:2130-2148`).
+  - T0 실제 trace(`:3267-3287`), source operation matrix(`:1312`), literal window(`:4706`).
+
+### 2. 실제 실행 근거 — 기록과 일치
+
+| 실행 | 입력 SHA | selected / run | 초 / cap |
+| --- | --- | --- | --- |
+| r006 collect-final | `5eac24db…` | test 0, 6663 수집 | 0.693 / 300 |
+| r005 focused-correction | `4a1a9a66…` | 33 / 33 | 886.875 / 1200 |
+| r006 artifact-final | `dde1b796…` | 41 / 41 | 1207.094 / 1800 |
+| r005 artifact-final | `1a80deaa…` | 69 / 69 | 539.863 / 1800 |
+
+- **결과.** 네 `result.json` 모두 exit 0, `natural_completion`·`group_absent`·`inputs_unchanged_or_acquired_exact` true, `reason` null, `cleanup_errors` 빈 배열, source digest `7423a22c…`입니다.
+- **이상 0.** 세 `counts.json`은 discovered 6663에 failures/errors/skips/expected/unexpected/unstarted/unfinished가 모두 0이고, `unfinished.json`·`unstarted.json`은 `[]`입니다.
+- **순서.** 33과 41은 `selected.json`, `executed.jsonl`, stdout을 줄 단위로 대조해 순서와 occurrence 1, 전부 pass임을 확인했습니다. 69는 `selected.json`의 ID 순서와 `executed.jsonl` 69행이 같습니다.
+- **69의 실행 순서.** proposal 나열과 다르고 ordered discovery 순서와 같습니다: named 2개 → A1 38 → C4 0241–0256 → 0260–0296 → T0 → same-entry → source-matrix → Foundation 2개(`collection.json:10588-33501`). `W:15534`의 설명과 일치합니다.
+- **collect.** stdout은 `COLLECTED 6663 sha256 f84b82cc…` 한 줄이고 테스트는 0입니다.
+- **경계(정적).**
+  - CPython 3.14.7 `-I -S -B`이고 `-O`가 없습니다. `runner.py:68`이 normal을 강제합니다.
+  - `test.sb`는 `(deny default)`에 network 허용이 없고 `file-write*`는 WORK와 `/dev/null`뿐입니다. SOURCE/OLD는 읽기만 허용됩니다.
+  - cap은 `controller.py:21-22`의 300/1200/1800입니다.
+- **mode명.** `artifact`는 selection 필터 경로를 탑니다(`runner.py:102-111`). r006의 41개는 C4 0200–0240뿐이며 whole-suite가 아닙니다. `W:15530`이 이를 구분합니다.
+- **합계.** 2634.525초(43분 54.525초)이고 cap 합 5100초 이내입니다.
+- **확인하지 못한 것.** controller 누적 1046→1050과 root 161은 독립 계수 원본이 없어 `W` 서술과 "새 root 0"(기존 r005/r006 slot 사용)으로만 봤습니다. 실행 전후 OLD manifest, lock, free space는 Driver 기록입니다.
+
+### 3. 기존 증거 재사용 — F1 외 근거 유지
+
+- **R17.** `response.md`는 ready, 필수 0, N1–N4와 C5 "부분 유지"이고, `driver-disposition.json`과 `W:14244-14252`의 처분이 이와 같습니다. N1(동결 상수 재결속)은 R23과 이번 실행으로 이어집니다.
+- **P2 matrix → P2 교정.** `minimal-correction.patch:1-35`의 product hunk는 status 진단의 `next_action` 네 분기뿐이고 쓰기 경로 변경은 없습니다(정적).
+- **P2 교정 → P3.** `correction-focused-input.json`에서 product/jsonio/umbrella/work/workspace와 entry test `d39685bb…`가 P3 입력과 같고, cli/view만 다릅니다.
+- **P3 교정 → 현재.** `p3-correction-focused-input.json`의 src 7개와 `test_productization_safety`가 현재와 같고, entry test만 `d39685bb…` → `2e906f84…`입니다. 102개 전수가 아니라 src와 주요 test의 hash 문자열 대조입니다.
+- **한계 공개.** A2 2700, C4 166, ordinary 전체, parent-O의 현재 실행이 없다는 점은 `W:15467-15474`와 `:15546`에 있습니다. complete anchor를 entry-1 전환의 직접 증거로 쓰지 않는다는 문장은 `W:15477`에 있습니다. 다만 그 anchor 자체가 식별되지 않습니다(F1).
+- **C5.** runtime-double, 세대별 실행, bounded 열람 한계가 `W:15472`, `:15546`에 유지됩니다.
+
+### 4. R22/R23 재사용 — 결속 확인
+
+- **R22.** P3-result-ready, 필수 0입니다. 31개 문서 bytes와 focused 16 기록의 범위이며, 이번에 재심사하지 않았습니다.
+- **R23.** ready, 필수 0이고 스스로 "runtime·T0 도달성 판정 아님"이라고 한정했습니다(`response.md:1`, `:54`).
+- **이번 실행이 닫는 R23 한계.** T0 PASS가 현재 bytes에서 A1 selector 도달성, 파일별 raw-write 1회, S0 D3 모델을 관측합니다(`test:3273-3285`). 8192 buffer를 넘긴 OPERATIONS.md의 short-write 0579/0580과 C4 재정렬 경계도 pass입니다.
+- **14 literal.** `proposed-test.patch`의 ± 행이 정확히 14개 이름이고 hunk는 두 개입니다. `test:326-328`은 `596946e9…`이고 옛 ID(916e/45ef)는 0건입니다. 14개 이름은 `derivation.json:101-116`과 같습니다.
+- **수집 동등성.** r005와 r006의 collection SHA가 `f84b82cc…`로 같습니다. collect-p3와의 네 필드 일치는 `W:15188`의 Driver 기록이며 제가 대조하지 않았습니다.
+- **전수 열람 아님.** patch 본문과 거대 literal 행(329–355)은 이름·표본만 봤습니다.
+
+### 5. 완료 표현 — F1 수정 시 수락 판단 가능
+
+- `W:15506`, `:15530`, `:15546`은 현재 143, 역사 재사용, 미검증을 나누고 6663 whole-suite, parent-O, 다른 OS/runtime, adopter/public PASS로 넓히지 않습니다.
+- 0033/0054는 "재통과이며 원인 미확정"으로 유지됩니다(`W:15528`, `:15546`).
+- 완료 조건 변경은 `W:15510`의 Owner 명시 결정으로 기록돼 있고 일반 정책으로 확대하지 않습니다(`W:15477`).
+- 정리는 E5/E6, 입력, 재사용 원본, 실패 자료를 보존하는 별도 Driver 작업으로 기술돼 있습니다(`W:15514`, `:15526`). 정리 후보 128개 root는 허용 범위 밖이라 검토하지 않았습니다.
+
+## 미검토 영역 (통과로 세지 않음)
+
+- 모든 SHA256의 실제 값과 Git 수준 주장(HEAD, code diff SHA).
+- `W` 15455행 이전 본문 대부분.
+- `collection.json` ordered 6663행 전수, r005 artifact-final stdout 본문(요약 행만 Grep).
+- `common.py`, `observer.py`, `canary.py`, `acquire.*`, r005/r006의 acquire/canary/smoke 결과.
+- `rebind-candidate.py` 본문, P3 산출물 중 currentness/render/token 기록.
+- R17 이전 R15/R16 원문, P2 5782/262 실행 원본.
+- review-24 자체의 config, supervisor, stream.
+
+#### Driver Disposition — Separate From Reviewer And Owner
+
+- F1 — accept. 식별하지 못한 “기존 complete anchor”를 Ordinary779의 승계 근거로 사용한 표현은 부정확했다. 위 재사용 표와 다음 문단2곳을 수정하여 그 근거를 제외했고, Ordinary779 전체 미검증 및 P3 focused16 occurrence(11 unique)의 동일 src/ordinary-test bytes 근거만 명시했다. 현재 ordered default_ids와 실제 selection의 교집합은0이고 P3 focused16의11 unique는 모두 ordinary임을 읽기 전용 대조했다. 새로운 PASS나 추가 검사를 만들지 않았다.
+- 리뷰의 조건부 ready — F1의 허용된 문구 수정 후 Driver가 해당 조건 해소를 확인했다. Reviewer에게 교정 후 재리뷰를 받았다고 주장하지 않는다. 바뀐 것은 Work의 위2곳과 이 응답/처분 기록뿐이며 제품/test/controls/143결과는 그대로다. Owner의143개 완료 기준이나 실행 목록을 추가로 바꾸지 않았다.
+- 선택 제안 — 설명으로 반영하되 새 완료 조건으로 만들지 않는다. 현재 실행하지 않은6520 occurrence에는 C4 tail120/G2 31/A2-D3 fault 조합도 포함된다. T0는현재S0 모델 관측이다. 재정렬로 물리 경로가 달라진 C4 미실행166행 중112행(0075–0130,0135–0190)의 과거 per-ID PASS를 현재 경로의 PASS로 승계하지 않는다. Parent-O 미실행 판단의 assert/__debug__ 정적 확인은 source 모듈(src/ 및 colvia)에 한정되며 tests 전체 부재 주장이 아니다. Artifact update의 상대 release는 launcher 주석을 바꾼 합성 후보이며 두 번째 실제 배포release 검증으로 쓰지 않는다.
+- 미열람 범위 — 원문의 정적·기록·Driver 확인 경계를 그대로 유지한다. Driver는143의 membership/order/counts/hash·실행기 결과를 직접 대조했고 Reviewer는 원문에 밝힌 범위를 읽었다. 누적controller/root·OLD/free/lock은 Driver의 실행 기록이며 Reviewer의 독립 재실행이 아니다.
+
+현재143 PASS와 위 한정 재사용/미검증, R24 조건부 ready 및 문구 조건 해소를 포함하여 Owner가 P4 최종 결과 수락을 판단할 수 있는 상태다. 최종 수락/규범 활성화/Done·STATUS/Git/adopter/public 결정은 아직 없다. 승인된 범위 밖 추가 검증이나 자동 전체 회귀를 수행하지 않았다.
+
+### P4 Acceptance-Ready Closeout — 2026-10-14T01:30:40.741800+00:00
+
+승인 이후 경과는3566.933초다. Controller 수집+선택 실행2634.525초(43분54.525초), 최종 R1 400.661초(6분40.661초), 나머지 준비·입력확인·관측·결과/문구기록 등의 경과531.747초다. 이는 순수 작업시간 계측이 아니라 전체 경과에서 controller/reviewer 실행을 뺀 값이다. 정리73.207초는 리뷰와 병행했으므로 합계에 다시 더하지 않는다. 85분은 승인대로 controller 합상한이며 위 실행은 그 안에 있다.
+
+리뷰 후 사용량 화면의 session49%/weekly30%를 관측했다. 시작 관측31%/29%와의 차이를 전부 이번 호출만의 사용량으로 단정하지 않는다. 구독·모델·effort·권한 전환은 없었다. 응답과 actual metadata/Driver 처분을 보존한 뒤 소비가 끝난 해당 R24 stream/stderr 및 정리용 임시 목록1개(합1382514bytes)를 삭제했다. 입력 identity/guide/response/result/supervisor 기록은 수락의 소비가 남아 보존한다.
+
+최종 문구 교정 뒤185 non-Work review inputs와 HEAD/Work 제외 code diff를 다시 대조해 불변을 확인했다. R24가 끝난 뒤 변경한 Work2곳과 응답/처분/정리 기록은 알려진 문서 변경이며 리뷰 당시 결과를 사후 drift 실패로 바꾸거나 새 독립 리뷰 PASS로 표시하지 않는다. Whole Work GFM 렌더의 code 밖 literal emphasis0이다. diff --check의 기존 Reviewer 원문 공백4개(12462/12849/12861/12908행)는 verbatim 보존 때문에 남겨 두며 이번 문서 추가에서 새 경고는 없다.
+
+Source의 미추적36개는 고유내용15종이며 기존 전체 verification bundle에서 모두 동일 bytes를 확인했다. 좁은 p2-full-execution 하위 폴더만 본 첫 보존 확인의 누락은 상위 기존 bundle까지 읽어 해소했고 추가 source 복사본은 만들지 않았다. Tracked 변경 전체 patch는 기존 B/r0-e-result/current-changes.patch로 갱신·바이트 동등 확인한다. Current S/r005/r006 및 고유 근거는 최종 수락·복구에 필요해 유지한다. Work Done/STATUS/규범 활성화/Git/adopter/public 변경0. 이 P4 결과의 최종 수락 결정은 Owner에게 남긴다.
+
+
+### Ordinary Regression Normal Supplement Plan — 2026-10-14
+
+Owner 요청: 기존143개 결과를 유지하고 ordinary779 occurrence를 normal로 한 번 확인하는 최소 실행 계획이다. 이번 요청은 계획 작성이며 실행 승인은 아직 없다. 기존 Work에만 추가하며 새 Work·검증 체계·review·STATUS/PLAN/DR 변경은 제안하지 않는다. L1 테스트 보완으로 제품/test/controls 수정 없이 실행 결과를 보충한다. 기존 P4 결과 수락/규범 활성화/Git/adopter/public 결정과 분리한다.
+
+#### Scope And Reuse
+
+현재 source102 digest `7423a22c3b9f618961b765f89f8f9d2a0cd8f7b39a650378d00c363e56f7fe08`, controls12 및 r005 collect-final의 collection SHA `f84b82cc1546f8ba7ce4ce411402261b1310a565c937bb2abb1bd833f62d216d`를 그대로 사용한다. 계획 시 source102 hash/size/mode와 controls12 hash 불변을 읽기 전용 대조했다. Ordinary779는602 unique ID이며 factory ID와 교집합0이다. 기존143 PASS 및 P2/P3 한정 재사용 근거는 유지한다. 추가 parent-O나 factory 재실행은 없다.
+
+기존 controller/runner/SBPL/CPython3.14.7을 수정 없이 재사용할 수 있다. `complete-normal`은6663 전체를 실행하고 selection을 허용하지 않으므로 사용하지 않는다. 기존 `artifact/final`의 selected runner는 normal 모드와 ID 선택을 지원하고 1800초 한도를 갖는다. 여기서 artifact는 실행기 슬롯 이름이며 결과는 ordinary regression으로 기록한다. 기존 r001/r002 (`hv2-reference-private-colvia-p2-s3b-fsync-20261013-r001`, `-r002`)의 해당 슬롯이 비어 있고 두 root 모두 acquire/canary/smoke PASS, inputs receipt hash와 현재 controls/runtime/git/system-config 일치를 확인했다. 이 runner는 collection에 실행 root를 포함하지 않으며 실행 때 현재 collection SHA를 다시 검증하므로 r005 collection을 재사용하고 별도 collect 호출을 추가하지 않는다.
+
+#### Exact Selection And Execution
+
+고정 collection의 `default_ids`를 첫 등장 순서대로 unique화한602 ID에서 앞296 ID를 A, 나머지306 ID를 B로 선택한다. ID별 모든 discovery occurrence를 실행하므로 A390회+B389회=779회다. 두 selection의 ID 교집합0, 합집합=전체 ordinary이며 factory 선택0이다. A의 마지막 ID는 `test_productization_safety.ActualWorkspaceInitTests.test_init_preflight_rejects_product_symlink_before_reading_plan`, B의 첫 ID는 `test_productization_safety.ActualWorkspaceInitTests.test_installed_machine_input_rejects_unknown_fields_without_truth_write`다. 각 실행 내부 discovery 순서는 유지한다. imported duplicate 때문에 A/B 결과 단순 연결을 원래 전체 순서와 동일하다고 주장하지 않으며, 각 selection별 ordered identity와 전체 occurrence의 정확한 분할을 확인한다. 중복177 occurrence를 제거하지 않는다.
+
+| 순서 | 기존 root / mode / slot | 선택 | 실행 상한 |
+| --- | --- | --- | --- |
+| 1 | r001 / artifact / final | A:296 ID,390 occurrence | 1800초 |
+| 2 | r002 / artifact / final | B:306 ID,389 occurrence | 1800초 |
+
+명령은 기존 고정 Python의 `-I -S -B -c BOOTSTRAP CONTROLS controller.py INPUT INPUT_SHA artifact final`이며 source cwd를 그대로 쓴다. 실행 입력2개만 기존 B/p4-final-preparation-37에 `ordinary-a-input.json`, `ordinary-b-input.json`으로 배치한다. 기존 reduced-artifact-input에서 root/old/exec와 selection만 바꾸고 현재 source/controls/runtime/collection identity를 유지한다. 한 번에 controller1개, network/credentials 금지, source/OLD read-only, 지정 work 안 fixture writes만 허용한다. 실행 전 OLD·root 사용 여부/lock·free25GiB 이상 및 입력 drift를 확인하고 실행 중 free10GiB 미만이면 기존 절차로 정지한다. 계획 시 free 약100GiB다. 누적 controller 상한1050→1052, roots161 유지, reviewer24 유지다. 새 root·acquire·canary·smoke·collect·review 호출은0이다.
+
+#### Duration, Completion And Failure
+
+시간 근거는 MAINTAINING의 과거 N4 424 unique ID × normal/parent-O 합 약38분이다. 두 모드 시간이 비슷하다는 가정 아래 normal 약19분에779/424를 곱하면 약35분이다. 과거 unique 수와 현재 occurrence 수가 달라 단순 외삽이며 현재 source의 측정값이나 상한 보장이 아니다. 실행 예상35–45분, 입력 준비/결과 확인5–10분을 포함해 총40–55분을 제시한다. Controller hard cap은 두 실행 합60분이며 각30분에 종료 정리를 포함한다. ID 수로 균등 분할했으므로 실제 두 묶음 시간이 균등하다는 보장은 없다. 추가 계측 실행으로 예상치를 정교화하지 않는다.
+
+완료 기준: 각 selected ordered identity와 실제 started/finished identity 일치, 합779 실행, failure/error/skip/expected failure/unexpected success/unstarted/unfinished 모두0, controller exit0·natural completion·process group absence·input 불변·cleanup error0이다. 기존 결과 형식으로 확인하고 이 Work에 두 행의 실행 요약과 current ordinary779 normal PASS를 추가한다. 기존143 PASS와 합치더라도6663 전체/parent-O PASS로 확대하지 않는다. 별도 외부 리뷰나 새 검증 스크립트는 필요 없다.
+
+준비상의 오기 등은 승인될 범위/예산 안에서 Driver가 수정한다. 실제 실패·시간 초과·drift·권한/예산 초과는 해당 결과를 보존하고 보고하며 자동 재실행, 전체 회귀, 코드/oracle/보안 경계 수정을 하지 않는다. 테스트 한도 초과는 incomplete이며 PASS로 처리하지 않는다. 되돌리기 비용은 낮고 기존143 결과와 source를 그대로 보존한다. 중요한 근거는 기존 Work와 bundle에 남기며 재현 가능한 fixture/log의 불필요한 영구 복사본을 추가하지 않는다. 이 계획에 대한 Owner 승인 뒤 실행한다.
+
+
+### Owner-Authorized Ordinary Normal Execution — 2026-10-14T01:44:57.249040+00:00
+
+Owner가 위 최소 계획을 승인했다. 기존143 결과를 유지하고 ordinary779 occurrence만 normal로 실행한다. 추가 reviewer/검증 체계/소스 변경 없이 r001·r002 artifact/final의390/389회를 순차 실행한다. Controller 누적상한1052, root161, reviewer24 및 각1800초·합3600초 한도를 적용한다. 실행 전 현재 source/controls/runtime 및 OLD/lock/미사용 slot/free25GiB 이상을 확인했고 입력2개를 기존 bundle에 생성했다. 기존143 결과와 source에는 변경이 없다.
+
+
+### Ordinary Normal Supplement Result — 2026-10-14
+
+현재 결론: 승인된 controller2회를 실행했지만 ordinary779 전체 완료/PASS는 아니다. A는 assertion failure1로 failfast 종료했고, 독립된 B는 예정대로 실행했으나1800초 cap 중 cleanup 예약20초를 남긴1780초에 budget-exhausted로 종료했다. 추가 reviewer·검증 체계·코드/test/controls 변경·재실행은0이다. 기존143 PASS는 유지하며 이번 실패/미완료를 덮지 않는다.
+
+| 실행 | 선택 | 통과 | 실패 | 시작 후 미완료 | 미시작 | Controller 시간 | 종료 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| r001 artifact/final (A) | 390 | 263 | 1 | 0 | 126 | 566.410초 | child exit1, controller exit2, natural true |
+| r002 artifact/final (B) | 389 | 353 | 0 | 1 | 35 | 1780.286초 | child exit-15, controller exit2, budget-exhausted |
+| 합계 | 779 | 616 | 1 | 1 | 161 | 2346.696초(39분6.696초) | 전체 미완료 |
+
+두 실행 모두 group_absent true, input_verification_error null, inputs_unchanged_or_acquired_exact true, cleanup_errors empty다. A는 실제 assertion 실패, B는 시간 한도 소진으로 구분한다. B는 종료로 counts.json을 쓰지 못했으므로 위 B 집계는 Driver가 selected.json·executed.jsonl·stdout START 기록을 대조해 도출한 값이며 runner의 완결 counts로 위장하지 않는다. A264/B354 시작 기록은 각각 selected 순서의 prefix이고 완료 기록도 그 prefix와 일치한다. 합779 selection은 현재 ordinary ordered identities의 정확한 분할이며 factory0이다. A의 오류/skip/expected failure/unexpected success는0, B의 완료353행은 모두 pass다.
+
+입력 신원: source102/controls12 및 collection은 계획의 digest 그대로이며 종료 후 config 검증으로 재확인했다. A invocation SHA `b36baf4ff33d313f1a65df769cdaf822d6292c4bdff520bf3e9097e79d95a67a`, B invocation SHA `bc8037eb691b0084961b4963618a13b68b981512371fbe22a45c5907361f5847`; 각 parent inputs receipt SHA는 `c7b736a9f5bcc195b3d26deb8ba7e2f0f4b4a3dd81b1fe2b4ca40f30aa679ead`, `3fce12cadae14b47123329a7ad3dbb53884d3e3855bd50fadd2821df4b207c6b`다. 고정 CPython3.14.7·normal·기존 artifact/final 선택 실행 명령과 격리 정책을 유지했다. 누적 controller1052/1052, roots161, reviewer24다. 실행 중 관측한 free는99GiB 이상이었다.
+
+#### Failure And Remaining Limits
+
+A 실패 ID: `test_productization_safety.ActualWorkspaceInitTests.test_detach_and_repair_source_module_dispatch_is_defined_before_main`, occurrence1. 기록된 assertion은 tests/test_productization_safety.py:2437의 child returncode 0 기대 대 실제1이다. 실제 필수 출력:
+
+```text
+AssertionError: 0 != 1 : /opt/homebrew/opt/python@3.14/bin/python3.14: Error while finding module specification for 'hv2ref.cli' (ModuleNotFoundError: No module named 'hv2ref')
+```
+
+정적 확인과 실행 관측을 분리한다. 실행으로 확인한 것은 child의 module import 실패이며 repair/detach dispatch의 성공이나 제품 runtime 결함을 확인한 것은 아니다. 해당 테스트는 `sys.executable -B -m hv2ref.cli`를 호출하고 source에는 src/hv2ref/cli.py가 존재한다. 기존 runner의 sys.path 설정은 부모 Python에만 적용되고 controller child environment에는 PYTHONPATH가 없으므로, subprocess module 검색 경로가 원인이라는 정적 추정이 강하다. 수정·재현 검증은 수행하지 않았고 원인 해소/PASS로 처리하지 않는다.
+
+B에서 중단된 ID: `test_worktree_execution.InstalledWorkerPublicationTests.test_installed_entry_publishes_worker_result_and_worker_entry_refuses`, occurrence1. 해당1회와 미시작161회, A 실패1건이 남는다. 선택 수390/389를 균등하게 나누었지만 실행 시간은 균등하지 않았고 중복 discovery의 장시간 사례가 B 후반에도 있어 B의30분 cap으로 끝내지 못했다. 이 시간 배분 한계를 Driver 계획의 한계로 기록한다. 기존143+이번616 pass를 ordinary779 전체나6663 전체/parent-O PASS로 확대하지 않는다. 기존 P4 factory 미실행 조합, C4/C5 관측 제한, 다른 OS/runtime·실제 adopter 미검증 한계도 그대로다. 이 결과는 최종 수락/규범 활성화/Done/Git/adopter/public 승인이 아니다.
+
+#### Preservation
+
+기존143 결과의 inputs receipt/선택·실행 수/비정상0/PASS를 읽기 전용 재확인했다. 기존 result SHA는 r005 focused-correction `406780846e0acc10e4d67e4fcde5572b047aac96d503ad6cfc0b5ebdff406c29`, r006 artifact-final `0670d929d712d5649a9a3411365d47f6cdae3d9846112a4446b19c792879b7c1`, r005 artifact-final `aef93117f1ff050408caa243dfd18186605902c3373ddcd10f8ec6bcfeca79f6`다. source/controls 불변이며 기존 source 보존 사본을 재사용하고 tracked 전체 patch는 기존 B/r0-e-result/current-changes.patch로 갱신한다.
+
+A/B의 inputs/results/selected/executed/stdout와 A runner가 보존한 failures/0 (633011 counted bytes), B 중단 시 work는 미해결 실패 진단과 남은 occurrence 식별의 소비가 있어 그대로 보존한다. 소비자는 다음 Driver의 한정 원인 확인/재개 판단이며 종료 조건은 해당 실패·미완료의 처분 완료다. 그 전에는 S/r001/r002를 정리하지 않는다. r005/r006과 기존143 근거도 최종 수락 소비가 남아 유지한다. 새 전체 사본·review packet·회귀 체계는 만들지 않았다.
+
+
+### Owner-Authorized Ordinary Recovery — 2026-10-14
+
+Owner가 기존 PASS를 유지하고 module 탐색 실패의 최소 수정 및 실패1+미완료162=163 occurrence만 완료하도록 승인했다. 추가 review/검증 체계는 금지한다. Workflow-work-debug INIT→근거 확인→최소 PLAN→기존 승인 범위 EXEC 순서이며 실행기 보정은 L2 국소 변경, 테스트 경로 수정은 L1이다. STATUS/PLAN/DR/Git/활성화 변경은 없다.
+
+Maintaining의 정상 실행 명령은 PYTHONPATH=src를 공급하지만 격리 runner는 부모 sys.path만 설정한다. 해당 테스트가 별도 Python -m hv2ref.cli를 띄울 때 부모 sys.path는 상속되지 않고 controller 환경에는 PYTHONPATH가 없어 실제 module import가 실패했다. 해당 테스트의 repair/detach subprocess 두 곳에만 정확한 source/src 경로를 env로 공급한다. Product runtime/명령/assertion/timeout45초는 그대로다. 해당 함수 외 test AST와 모든 product source bytes 불변을 대조했다.
+
+기존 runner의 ID 선택으로는 남은130 unique ID 중61개의 이미 PASS한 다른 occurrence도 재실행된다. runner.py의 기존 selected 분기에 ID#occurrence 정확 선택만 추가하고 기존 bare-ID의 모든 occurrence 선택, P1-controls 제한과 discovery 순서는 유지한다. 새 framework/runner 파일/테스트는 만들지 않는다. controller.py의 기존 normal smoke cap만1200→3600초로 조정한다. 변경 파일은 이 Work와 tests/test_productization_safety.py, 기존 runner.py/controller.py다. 변경 전 세 파일은 기존 P/ordinary-recovery-before에 보존한다. 소비는 PASS 재사용의 동일성 비교 및 실패 수정 전후 확인이고 처분 뒤 보존 필요를 재평가한다.
+
+이번 실측에서 남은71회의 같은 ID PASS 시간 합은97.289초이며 나머지92회는 직접 대응 실측이 없다. 관련 ActualWorkspaceInitTests의 관측 median1.793초/P90 13.040초, worker process 안전성의 관측 약12.8초를 참고하되 미실행 integration/interruption의 상한으로 쓰지 않는다. 남은163은15–30분 예상, 여유를 포함한60분 cap(종료 정리 포함)으로 한 번 실행한다. 기존390/389 건수 균등 분할과30분 한도는 사용하지 않는다.
+
+Controls bytes가 바뀌므로 옛 root의 acquire/canary를 새 controls의 PASS로 재사용하지 않는다. 승인된 agent-worktrees 아래 /Users/kyungseo/dev-home/agent-worktrees/hv2-reference-private-colvia-ordinary-recovery-20261014-r001 한 곳에서 기존 acquire/base→canary/base→collect/base(ordinary779, test0)→smoke/base(남은163만, normal)를 쓴다. Base phase/factory false로 factory 검사는 추가하지 않는다. Acquisition/canary/collection cap 각300초, 선택 검사3600초, 합4500초다. Controller 누적1052→1056, roots161→162, reviewer24 유지다. 기존 SBPL/OLD/고정 CPython3.14.7·-I -S -B bootstrap·network/credential 차단을 유지한다. 미사용 목적지와 등록 worktree 비중복/free25GiB 이상을 확인했고 실행 중 free10GiB 미만이면 종료한다.
+
+입력 source digest 6e2b54d1ad9604b2ff84bd5de8d6ad4caf428e5523cae4314657250bde4aaa39, base invocation SHA d4232153e4d246f9e74e1f74c2691a248a95b805bc24f4a9829581867f329d6a다. Source manifest와 controls는 별도 목록이며 source102에서는 test 파일1개, controls12에서는 runner/controller2개만 바뀌었다. 준비 중 두 목록을 합쳐 예상한 assertion은 실행 전에 수정했으며 controller 호출이나 source 변경을 추가하지 않았다. 원래 ordinary collection과 기존 PASS616을 occurrence별 대조해 정확163을 고정한다. 새 collection의779 ID/order 불변과 PASS 교집합0을 확인한 뒤 실행하며 첫 occurrence는 실패한 source-module dispatch다. 완료 기준은163 PASS·비정상/미완료0, 자연 종료·group absence·입력 불변이다. 기존143/616 근거와 실제 실패/중단 기록은 보존한다. 새 결과와 한정 재사용의 합성으로 보고하고 기존 실패를 소급 PASS로 바꾸지 않는다. 추가 전체 회귀·외부 리뷰·oracle 완화는 하지 않는다.
+
+
+#### Preparation Correction
+
+첫 recovery root r001에서 acquire는0.879초 PASS였으나 canary는 sandbox child 시작 전 SOURCE probe의 옛 hv2 경로가 없어서 parent 준비 중 실패했다. 실제 회귀 실행0이다. FAIL→RECOVER→PLAN으로 해당 기록/slot을 보존하고, 기존 controller/canary의 SOURCE probe만 현재 colvia로 수정했다. 단순 이름 교정이며 source write 거부·OLD·network·credential·프로세스 경계는 그대로다. 추가 변경 파일 canary.py의 수정 전 bytes도 P/ordinary-recovery-before에 보존한다. 첫 root의 acquire PASS를 새 controls로 승계하지 않는다.
+
+동일 기존 실행 절차를 미사용 sibling r002에서 수행한다. 새 base invocation SHA fe88d318d048bb4b1067d4287c0d59400b21df3204c49d42180f2eb5c4efcfea이며 source digest는 불변이다. 실제 controller 두 호출(1053 acquire/1054 canary 준비 실패)을 누적에 포함하여 전체 상한1058, roots163으로 정정한다. 총 시간 cap4500초 안에서 재준비하고 선택 회귀3600초 cap과163개 범위는 그대로다. 이는 Owner가 승인한 최소 수정/마무리 범위의 준비 보정이며 추가 regression/review나 새 검증 체계를 만드는 결정이 아니다.
+
+
+### Ordinary Recovery Completion — 2026-10-14
+
+승인된 실패1+미완료162의 보완을 완료했다. Recovery r002 smoke/base에서 정확163 occurrence가 normal PASS이며 failure/error/skip/expected failure/unexpected success/unstarted/unfinished는 모두0이다. 실행 시간849.390초(14분9.390초), child/controller exit0, natural_completion true, group_absent true, reason null, input_verification_error null, inputs_unchanged_or_acquired_exact true, cleanup_errors empty다. 기존 통과616 occurrence와 겹침0이고 두 집합의 합이 원래 ordinary779 ordered identity 집합과 정확히 일치한다. 기존143 PASS와 그 result bytes도 그대로다.
+
+| 결과 | 근거와 범위 |
+| --- | --- |
+| 기존143 PASS | result SHA3개/inputs receipt를 재확인. 재실행/수정 없음 |
+| 기존 ordinary616 PASS | 이전 A263+B353의 통과 occurrence를 재사용. 새 선택과 교집합0 |
+| 이번 ordinary163 PASS | 원래 실패1+미완료162만 실행. 해당 selected/START/executed 순서가 모두 일치 |
+| Ordinary779 normal | 기존616+이번163의 합성 근거. 단일 무중단 full run이나 parent-O PASS가 아님 |
+
+#### Cause And Minimal Fix Verified
+
+실패한 `test_detach_and_repair_source_module_dispatch_is_defined_before_main`은 subprocess에 PYTHONPATH=현재 source/src를 명시한 뒤 occurrence1 1.172초, occurrence2 1.286초로 모두 PASS했다. 수정 전 occurrence1은 module 검색 단계의 ModuleNotFoundError로 returncode1이었고, 수정 후에는 같은 repair/detach 명령과 assertion으로 끝까지 통과했다. 부모 sys.path만 설정했던 실행 환경에서 하위 Python의 module 경로가 빠진 것이 원인이었다. 제품 runtime 결함으로 분류하지 않는다.
+
+제품 소스와 managed payload는 변경하지 않았다. 수정은 테스트의 해당 subprocess 환경, 기존 runner의 ID#occurrence 선택, controller의 smoke60분 cap, controller/canary의 SOURCE 보호 검사 대상 hv2→colvia 교정이다. SBPL/network/credential/write 경계와 assertion/fixture/45초 subprocess timeout은 그대로다. 해당 함수 외 테스트 AST와 모든 product source bytes 불변을 확인했으므로 기존616 PASS를 한정 재사용한다. 기존143 근거는 과거 실행으로 유지하며 새 controls로 재실행했다고 주장하지 않는다. 실제 adopter의 설치/update는 불필요하다. 수정 대상은 설치 payload 밖의 source 테스트/검증 제어이며 실제 adopter/다른 OS/runtime 검증은 여전히 없다.
+
+#### Exact Result And Retention
+
+Source digest `6e2b54d1ad9604b2ff84bd5de8d6ad4caf428e5523cae4314657250bde4aaa39`, ordinary-only collection SHA `3aee445679bf2039ea0a9ad65da093ca1031ca8d01f7a0559273fd90757ac84b`, smoke invocation SHA `7fb35647492fc57de2a7ecc812dabf686fd26fb2e75877ea2dd8009713da4278`, parent inputs receipt SHA `e155eb29771c2669fcf7b6a33584f12c549dbd49ad64bbcf044fee24724b32d6`다. 종료 후 config 검증으로 source102/controls12/runtime의 불변을 재확인했다. Root는 앞 절 recovery r002이며 결과는 exec/runs/smoke-base의 기존 result/inputs와 work의 collection/selected/counts/executed/unstarted/unfinished에 있다. Factory0, normal 실행이며 추가 reviewer/new framework/전체 rerun은0이다.
+
+Successful recovery 준비는 acquire0.654초/canary0.661초/collect0.454초였고 선택 검사849.390초다. 첫 준비 root의 acquire0.879초와 canary parent 준비 실패도 숨기거나 호출 수에서 빼지 않는다. 누적 controller1058/1058, root163, reviewer24이며 승인된 선택 검사3600초 한도를 지켰다. 경로 준비 오류를 범위 안에서 교정했고 새 수락/예산 승인을 Owner에게 반복 요구하지 않았다.
+
+현재 source의 미추적 변경 controls3개는 P/ordinary-recovery-current-controls에 현재 invocation과 같은 hash로 보존했고, tracked 전체 binary patch는 기존 B/r0-e-result/current-changes.patch로 갱신한다. 다른 source/controls bytes와 이전 보존 근거는 불변이다. 기존 실패/시간 초과/준비 실패 기록은 historical로 남기고 이번 결과로 disposition을 해소한다. 현재 source checkout과 결과 근거는 Owner의 최종 개발 결과 판단에 사용하므로 유지한다. 보완 요청은 완료했지만 Work Done/STATUS/규범 활성화/Git/adopter/public 결정을 대신하지 않는다.
+
+남은 한계는 기존과 같다: parent-O 미실행, current 전체6663 검증이 아닌 기존 factory 선택/재사용 범위, C4/C5의 기록된 관측 한계, 다른 OS/runtime·실제 adopter 미검증이다. 이번 ordinary 실패와162 미완료는 더 이상 열린 한계가 아니다.
+
+
+### Owner Result Acceptance And Contract Activation — 2026-10-14
+
+Owner 지시: “최적화 테스트는 아까 얘기한대로 스킵해도 되겠어? 그렇다면 제안한 다음 진행하자.” 앞선 제안은 현재143+ordinary779 및 한정 재사용/잔여 한계의 최종 수락, 규범11개 활성화 기록·종료 조건 정리·커밋안 준비였다. Driver는 source102 전 파일과 P3 exact11 hash drift0, 제품 source AST의 assert/__debug__0을 확인하고 조건 충족으로 판단했다. 이번 task의 parent-O 생략과 위 다음 단계 승인을 기록한다. 별도 reviewer 또는 전체 재실행을 추가하지 않는다. Commit/push/PR/merge와 실제 adopter/public 승인은 포함하지 않는다.
+
+#### Applied Scope And Checks
+
+[DR-0004 발효](../decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14)가 exact11개 hash·조항별 변경·효력 범위와 retained preparation labels의 해석을 소유한다. 이 Work는 진행·검증·Owner 결과 수락을 소유한다. DR-0002/0003은 기존 수락 bytes 뒤에 named amendment만 append하고 DR-0003 최초25338 bytes를 보존한다. Contributing/Development Index는 현재 발효로 안내하며, 승인된 intake의 managed launcher 절만 colvia로 정정한다. Toolstead STATUS나 별도 tracker는 갱신하지 않는다.
+
+검증된11개 원문과 managed29 payload는 수정하지 않는다. 따라서 이미 검증한 release identity와 문서 토큰3953/4000은 그대로이고 새 설치 artifact를 만들지 않는다. 후보 원문의 pending 표시는 준비 시점의 역사 상태로서 source-only 발효 기록이 현재 효력을 명시한다. Runtime/test/controls 변경0, 새 실행/CLI review0이다. 이번 문서 변경에 필요한 hash/보호 prefix/변경범위/링크/GFM/공백 확인만 수행한다.
+
+| Completion criterion | Disposition |
+| --- | --- |
+| C1/P2 entry implementation and accepted amendments | 기존 P2 결과·보정·review disposition 재사용, 현재 제품 bytes 불변 |
+| C2/P3 exact normative11 and consumers | 기존 수락/31개 정렬·R22·token 근거 유지; exact11 hash 일치 |
+| Revised P4 verification/result review | 143 normal PASS와 R24 필수 지적 처분 수락 |
+| Ordinary supplement | 기존616+보완163=779 normal PASS 수락, 과거 실패 기록 보존 |
+| Final result and normative activation | 이번 Owner 지시로 수락·발효, DR-0004와 DR-0002/3 amendment 기록 |
+| Remaining limits | Parent-O/전체 factory·C4/C5·다른 OS/runtime·실제 adopter/public 범위 밖, 기존 명시 한계 유지 |
+
+Source 개발 결과는 승인된 변경 완료 조건으로 종료한다. 이는 runtime Work 기록을 쓰거나 public qualification을 선언하는 일이 아니다. 현재 checkout은 다음 승인된 Git 단계의 구체적 사용처가 있으므로 보존한다.
+
+#### Adopter Impact And Commit Proposal
+
+Generic adopter impact: installation state unverified. Entry-1은 one-way 경계와 exact predecessor/recovery 조건이 있으므로 자동/일괄 업데이트를 권하지 않는다. 실제 대상을 확인하고 exact old/new source·외부 복원 근거를 준비한 별도 승인 적용이 필요하다. 이번 수락 기록만으로 설치 업데이트를 실행하지 않는다.
+
+커밋 제안은 HEAD `a17f35cf323ffde7a8642a85501fddbec858b6de` 이후 현재 tracked diff의 누적 구현/테스트/문서/Work 기록이다. Untracked cleanup/diagnostic 실행 복사본은 기본 Git 산출물에 넣지 않는다. 필요한 current controls와 결과 원본은 기존 verification bundle에 이미 보존되어 있으며, 이 커밋 제안이 그 보존 종료 조건을 대신하지 않는다. Raw 실행 root는 이 작업의 종료만으로 일괄 삭제하지 않는다. 등록 checkout과 사용처·고유내용 보존을 확인한 별도 eligibility 판정이 필요하다.
+
+제안 메시지(아직 commit하지 않음):
+
+```text
+feat: Colvia 전환 검증을 마무리하고 entry-1 규범을 활성화
+
+P2 보정과 P3 문서 정렬, 축소 P4 및 일반 회귀 결과를 기록한다.
+143회 선택 검사와 ordinary 779회 normal PASS를 구분해 보존한다.
+Owner 수락에 따라 exact 11개 규범을 발효하고 기존 수락 기록을 보존한다.
+Parent-O와 미실행 조합·다른 runtime·실제 adopter 한계는 유지한다.
+
+Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>
+Co-authored-by: Codex <noreply@openai.com>
+```
+
+수락 전 exact tracked 변경은 기존 r0-e-result/accepted-before-activation.patch에 HEAD와 함께 복원 가능하게 보존한다(SHA-256 `79ee59d415714aafd8ef7b5572e4ad1c092db5bb223f999337bc9ae1377a54be`). 현재 변경은 기존 current-changes.patch를 갱신해 보존한다. 이 근거의 소비자는 Owner의 수락/커밋 검토 및 그 전 복구이며, exact source/결과가 Git 등으로 보존된 뒤 중복 보존 필요를 재평가한다. Digest만으로 원문을 복원할 수 있다고 주장하지 않는다.
+
+
+#### Activation Closeout Verification
+
+소스 전용6개 문서를 GFM으로 렌더했고, 추가 문구의 상대 링크/anchor12개·code 밖 literal emphasis·신규 diff whitespace 확인을 통과했다. DR-0002/0003의 수정 전 전체 prefix와 DR-0003 최초25338 bytes가 같고, exact normative11/managed29/runtime/tests/controls의 원문도 같다. Source102 목록 중 이번에 바뀐 것은 Contributing·DR-0002·DR-0003·Development Index4개이며 나머지98개는 같다. Work와 DR-0004는 해당 source102 목록 밖의 수락/기록 문서다. 새 검증 실행과 reviewer 호출은0이다.
+
+HEAD 이후 전체 diff --check는 기존 verbatim reviewer 원문의 공백4곳(현재 Work12463/12850/12862/12909)을 계속 보고한다. 이번6개 문서의 before→after diff --check에는 새 공백 오류가 없다. 과거 reviewer 원문을 자동 정리하지 않았으며 전체 diff가 완전히 clean하다고 주장하지 않는다.
+
+현재 커밋 제안은 tracked56개다. Untracked36개(고유 내용18종)는 기존 verification bundle에서 각각 동일 bytes의 별도 보존본을 확인했다. Recovery에서 바뀐 controls3개도 포함되며 별도 source 실행 복사본을 Git에 추가하지 않는다. 현재 tracked binary patch를 기존 current-changes.patch에 저장하고 readback 일치를 확인했다. Source checkout은 정확히 등록된 codex/colvia-brand-transition이며 다음 커밋 검토/실행을 위해 유지한다. Commit/stage/push/PR/merge/실제 adopter 적용0이다.

@@ -16,7 +16,7 @@ def _print(value: object) -> None:
 
 
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(prog="hv2ref", description="Harness v2 private Public Core candidate CLI")
+    root = argparse.ArgumentParser(prog="hv2ref", description="Colvia private Public Core candidate CLI")
     sub = root.add_subparsers(dest="command", required=True)
 
     product_init = sub.add_parser("init", help="preview or initialize one project-local product binding")

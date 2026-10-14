@@ -477,7 +477,8 @@ def _entry_local_baselines(target: Path) -> dict[str, dict[str, Any]]:
         name = unicodedata.normalize("NFC", name).casefold()
         return any(name == entry or name.startswith(entry + "/") or entry.startswith(name + "/")
                    for entry in ("hv2", "colvia"))
-    for work_id, graph in WorkStore(target)._all().items():
+    graphs = WorkStore(target)._all()
+    for work_id, graph in graphs.items():
         if graph["current"] is None or graph["state"] == "completed":
             continue
         selected = graph["selections"][graph["current"]["selection_ref"]["id"]]
@@ -493,6 +494,21 @@ def _entry_local_baselines(target: Path) -> dict[str, dict[str, Any]]:
             for kind in ("document_refs", "evidence_refs"):
                 paths.extend(ref["path"] for ref in record.get(kind, []) if ref["required"])
         _serial_require(not any(depends(name) for name in paths), "entry path dependency in selected local Work: " + work_id)
+        if revision["schema_version"] == 2:
+            offending_children = set()
+            for child in revision["umbrella_evidence"]["children"]:
+                child_id = child["work"]["id"]
+                child_revision = _resolve(graphs[child_id]["revisions"], child["revision_ref"])
+                child_graph = read_workspace_intent_graph(target, child["intent_ref"]["id"])
+                _, child_bound = _resolve_workspace_intent(child_graph, child["intent_ref"]["id"],
+                                                          child["intent_ref"], require_current=False)
+                child_intent = _resolve(child_graph["acceptances"], child_bound["acceptance_ref"])["confirmation"]
+                if any(depends(ref["path"]) for record in (child_revision, child_intent)
+                       for kind in ("document_refs", "evidence_refs")
+                       for ref in record.get(kind, []) if ref["required"]):
+                    offending_children.add(child_id)
+            _serial_require(not offending_children, "entry path dependency in selected local parent Work: " + work_id
+                            + "; captured child Work IDs: " + repr(sorted(offending_children)))
         baselines[work_id] = graph["manifests"][revision["result_refs"]["manifest"]["id"]]["result"]
     return baselines
 
@@ -1161,21 +1177,29 @@ def _workspace_status_observation(target: Path, *, _share_intents: bool = True) 
             next_action = ("preserve remaining files; use the exact original detach request and confirmation token with --recover from an independent trusted source"
                            if result["classification"] == "partial" else
                            "read retained project truth with an independent trusted source; no active product runtime remains")
+            if result["classification"] == "partial" and result["receipt"]["plan"]["schema_version"] in (1, 2):
+                next_action = "preserve remaining files; use the exact original detach request and confirmation token with --recover from the retained matching OLD source; do not use the current entry-1 source"
             return {**result, "topology":topology["kind"], "authoritative_control":False, "next_action":next_action}, None
         except ContractError as exc:
             return {"classification":"degraded", "error_code":exc.code, "message":exc.message, "topology":topology["kind"]}, None
     if root["classification"] != "root-ready":
         classification = {"partial-candidate":"partial", "detach-candidate":"partial", "integrity-failure":"degraded", "unrecognized":"degraded", "unstable":"degraded"}.get(root["classification"], root["classification"])
-        return {**root, "root_classification":root["classification"], "classification":classification, "topology":topology["kind"]}, None
+        status = {**root, "root_classification":root["classification"], "classification":classification, "topology":topology["kind"]}
+        if root["classification"] == "partial-candidate":
+            status["next_action"] = "use an independent trusted source matching the candidate release in the exact original init request and confirmation token; for an OLD pending init, use the retained matching OLD source, not the current entry-1 source; unknown/torn bytes require manual preservation"
+        return status, None
     if not _exists(target / ".hrn/product/binding.json"):
         return {"classification": "partial", "product_verification": "incomplete", "topology": topology["kind"],
-                "next_action": "use independent trusted source and exact original init request; unknown/torn bytes require manual preservation"}, None
+                "next_action": "use an independent trusted source matching the candidate release in the exact original init request and confirmation token; for an OLD pending init, use the retained matching OLD source, not the current entry-1 source; unknown/torn bytes require manual preservation"}, None
     try:
         state = _workspace_observe(target, allow_pending=True)
         if state["pending"] is not None:
+            next_action = "recover exact lifecycle request from independent trusted source; receipt alone is not completion"
+            if state["pending"]["plan"]["candidate_release"]["inventory_id"] != "entry-1":
+                next_action = "preserve pending lifecycle bytes; recover only the exact original lifecycle request and confirmation token with the retained matching OLD source for its candidate release; do not use the current entry-1 source; receipt alone is not completion"
             return {"classification":"partial", "topology":topology["kind"],
                     "pending_lifecycle":state["pending"]["operation_id"], "binding_ref":state["binding_ref"],
-                    "next_action":"recover exact lifecycle request from independent trusted source; receipt alone is not completion"}, None
+                    "next_action":next_action}, None
         product = verify_workspace_product(target)
         observed_intents = {}
         topology_observation = _TopologyObservation(target) if _share_intents and topology["kind"] == "primary" else None
@@ -1403,6 +1427,8 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
     if candidate: _serial_require(candidate["release_ref"] == plan["candidate_release"], "candidate changed since preview")
     state, done = _switch_preflight(target, plan, recover=recover)
     if done:
+        if not plan["remove"]:
+            return _entry_replay_result(target, plan, classification="replayed")
         with writer_guard(target):
             if installed: require_workspace_runtime(target)
             state, done = _switch_preflight(target, plan, recover=recover)
@@ -1435,27 +1461,29 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
         def checkpoint():
             current, finished = _switch_preflight(target, plan, recover=True)
             _serial_require(not finished and current["binding_ref"] == state["binding_ref"], "binding changed during switch")
-            if candidate: _serial_require(candidate == workspace_candidate(source), "switch source changed")
+            if transition and candidate: _serial_require(candidate == workspace_candidate(source), "switch source changed")
             return current
         release = product / "releases" / rid
         if not _exists(release):
             _serial_require(candidate is not None, "rollback release is unavailable")
-            checkpoint()
+            if transition: checkpoint()
             staging = root / "staging"; durable(staging, "staging-directory")
             operation = staging / ("switch-" + plan["operation_id"]); durable(operation, "switch-directory")
-            _serial_require({p.name for p in operation.iterdir()} <= {rid}, "unknown switch staging member; preserve")
+            if transition:
+                _serial_require({p.name for p in operation.iterdir()} <= {rid}, "unknown switch staging member; preserve")
             staged = operation / rid; durable(staged, "candidate-directory")
             expected = {"inventory.json": canonical_json_bytes(candidate["inventory"])} | {"payload/" + p: b for p, b in candidate["payload"].items()}
             _init_partial_tree(staged, expected)
             for name, data in expected.items():
-                checkpoint()
+                if transition: checkpoint()
                 path = staged / name
                 for parent in reversed(path.relative_to(staged).parents): durable(staged / parent, "candidate-directory")
                 exact(path, data, "candidate-member-parent")
                 if name == "inventory.json" and inject_at == "after-staged-inventory": raise InjectedCrash(inject_at)
             if inject_at == "after-staged-payload": raise InjectedCrash(inject_at)
             _serial_require(verify_workspace_release(staged)["release_ref"] == plan["candidate_release"], "staged candidate mismatch")
-            checkpoint(); os.rename(staged, release)
+            if transition: checkpoint()
+            os.rename(staged, release)
             if transition:
                 _entry_sync(target, release.parent, phase="publication", role="release-parent")
                 _entry_sync(target, operation, phase="publication", role="release-operation-parent")
@@ -1465,7 +1493,7 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
             _entry_resync_release(target, plan, candidate["inventory"])
         _serial_require(verify_workspace_release(release)["release_ref"] == plan["candidate_release"], "published candidate mismatch")
         operation = root / "staging" / ("switch-" + plan["operation_id"])
-        if _exists(operation):
+        if transition and _exists(operation):
             _require_kind(operation, True)
             _serial_require(not any(operation.iterdir()), "unknown staging remains beside published release")
         if inject_at == "after-release": raise InjectedCrash(inject_at)
@@ -1502,9 +1530,11 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
             _entry_sync(target, binding_stage, phase="publication", role="binding-operation-parent", b1=True)
         else:
             if _serial_file(target / "colvia") != launcher_bytes:
-                checkpoint(); _replace_product_file(target, target / "colvia", launcher_bytes, executable=True)
+                _replace_product_file(target, target / "colvia", launcher_bytes, executable=True)
             if inject_at == "after-launcher": raise InjectedCrash(inject_at)
-            checkpoint(); _replace_product_file(target, product / "binding.json", binding_bytes, executable=False)
+            current, finished = _switch_preflight(target, plan, recover=True)
+            _serial_require(not finished and current["binding_ref"] == state["binding_ref"], "binding changed before publication")
+            _replace_product_file(target, product / "binding.json", binding_bytes, executable=False)
         if inject_at == "after-binding": raise InjectedCrash(inject_at)
         return _entry_replay_result(target, plan, classification="updated" if plan["action"] == "update" else "rolled-back")
 

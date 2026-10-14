@@ -1,5 +1,7 @@
 # Complete Your First Work
 
+This page describes the unactivated `entry-1` candidate. Use requires separate exact-artifact qualification and installation approval; the historical checkout-1 exercise below does not qualify these commands.
+
 [Previous: preparation](getting-started.md) · [Contents](README.md) · [Next: resume](resume.md)
 
 [한국어](../ko/first-work.md)
@@ -14,7 +16,7 @@ Ask Codex:
 
 > Use docs/plan.md and docs/first-work.md to prepare an intent draft for todo-lab's add/list feature. Carry the agreed CLI contract, four behavior criteria and material verification conditions into the typed request. Show me the goal, exact file scope, expected result, acceptance checks, result destination, exclusions and unresolved questions. Explain what I am being asked to accept. Before publishing, show me the acceptance authority you will declare and wait for my confirmation. After I confirm, publish the draft. Do not accept the draft or start implementation yet.
 
-The agent uses the installed `hv2 intent draft` interface and shows the draft with `./hv2 view intent INTENT_ID`, substituting its actual ID. You should see an unaccepted draft. A published proposal is not your acceptance.
+The agent uses the installed `colvia intent draft` interface and shows the draft with `./colvia view intent INTENT_ID`, substituting its actual ID. You should see an unaccepted draft. A published proposal is not your acceptance.
 
 Check all six parts:
 
@@ -36,7 +38,7 @@ Resolve material unknowns before acceptance. The agent can publish a new draft; 
 Ask the agent to prepare acceptance and show its confirmation in readable form. The agent saves only the returned `ticket` outside the project and runs:
 
 ```sh
-./hv2 view confirmation --input /absolute/path/todo-lab-inputs/intent-ticket.json
+./colvia view confirmation --input /absolute/path/todo-lab-inputs/intent-ticket.json
 ```
 
 The path is illustrative; use the actual saved ticket. Confirm the project, intent revision, acceptance authority, scope, exclusions and any required document references. Do not copy this guide's IDs, hashes or tokens into a real decision.
@@ -47,11 +49,11 @@ When correct, tell the agent:
 
 > I accept the intent revision shown in this confirmation for the add/list feature. Apply this exact intent ticket. Then start and implement the Work within the four-file scope and run the agreed checks. Stop if scope or required inputs change, verification fails without an in-scope correction, or an authority operation fails. Do not commit or push.
 
-Only after that decision does the agent use `hv2 intent apply` with the exact ticket/token. It verifies the selected accepted request, then publishes the Work's starting baseline. The [machine input contracts](../../docs/GENERAL-WORK.md#installed-machine-commands-development) are for the agent; you review the proposal and confirmation rather than composing JSON.
+Only after that decision does the agent use `colvia intent apply` with the exact ticket/token. It verifies the selected accepted request, then publishes the Work's starting baseline. The [machine input contracts](../../docs/GENERAL-WORK.md#installed-machine-commands-development) are for the agent; you review the proposal and confirmation rather than composing JSON.
 
 ## 3. Implement And Check The Result
 
-The agent implements the feature in the project and runs the fixed checks. It can make authorized corrections within the accepted scope. A wider feature, changed acceptance criterion or changed ignore policy needs a separate decision. Harness does not run an autonomous iteration loop or stop unrelated editors from changing files.
+The agent implements the feature in the project and runs the fixed checks. It can make authorized corrections within the accepted scope. A wider feature, changed acceptance criterion or changed ignore policy needs a separate decision. Colvia does not run an autonomous iteration loop or stop unrelated editors from changing files.
 
 For this example, from the project root:
 
@@ -59,7 +61,7 @@ For this example, from the project root:
 python3 -B -m unittest discover -s tests -v
 ```
 
-Expected: all four behavior criteria above pass. The synthetic exercise used four test functions; your test count may differ. This is the example application's verification, not the Harness regression suite.
+Expected: all four behavior criteria above pass. The synthetic exercise used four test functions; your test count may differ. This is the example application's verification, not the Colvia regression suite.
 
 Ask the agent to demonstrate the CLI using a fresh data file in the external practice-input directory. Its parent directory must already exist. Replace the illustrative path before running:
 
@@ -89,8 +91,8 @@ Ask Codex:
 The agent saves only the returned Work `ticket` outside the project and shows these views for the same selected revision: the submitted revision currently under review, not yet accepted.
 
 ```sh
-./hv2 view work WORK_ID --revision REVISION_ID
-./hv2 view confirmation --input /absolute/path/todo-lab-inputs/work-ticket.json
+./colvia view work WORK_ID --revision REVISION_ID
+./colvia view confirmation --input /absolute/path/todo-lab-inputs/work-ticket.json
 ```
 
 Use the actual IDs and saved ticket path. The Work view contains the author-declared `observed_scope` and `unavailable_scope`; the confirmation view does not repeat them. The agent explains every unavailable item against your acceptance criteria. You decide whether it is outside scope, needs more evidence or needs a new scope/request acceptance. An empty unavailable list does not prove that the criteria passed. If the revision or selection changes, prepare both views and the ticket again before deciding.
@@ -116,13 +118,13 @@ If apply fails or content no longer matches, preserve the request and files, sto
 
 ## 5. Decide How To Preserve The Work
 
-Harness records completion under `.hrn/`; it does not commit or push. Ask the agent to show the Git diff and status, the intended preservation set and any important ignored outputs. Installation files, authority records, source and project documents must be accounted for under the project's policy.
+Colvia records completion under `.hrn/`; it does not commit or push. Ask the agent to show the Git diff and status, the intended preservation set and any important ignored outputs. Installation files, authority records, source and project documents must be accounted for under the project's policy.
 
 Approve commit and remote publication separately if wanted. This tutorial stops before either operation. Keep the durable project and exact source/request files available, then move to [a new session](resume.md).
 
 Follow [Records And Retention](../../docs/REFERENCE.md#records-and-retention): reuse one suitable narrative for checks, material limits, review and decisions, and retain extra raw output or copies only for a named investigation, recovery, reuse or delivery. This local exercise creates no worker checkout; for worker projects, the agent separately verifies cleanup authority and preservation, then retires an eligible unused checkout or reports its remaining use and release condition.
 
-Edition: private development, `checkout-1`; checked 2026-10-05.
+Historical exercise — Edition: private development, `checkout-1`; checked 2026-10-05.
 
 ---
 

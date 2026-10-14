@@ -1,6 +1,6 @@
 # Colvia Entry Verification Controls
 
-Status: P1a bounded correction/review/synthetic-validation batch is Owner authorized (2026-10-10). Candidate 02 adds actual before hooks and root-fsync selection. Its runtime results remain pending; final control freeze, result acceptance, P1b and M3 remain separate.
+Status (2026-10-11): P2 is open. The current controls have executed bounded base and selected entry checks, including the descriptor-relative read recovery. The current evidence and remaining limits are below; historical P0/P1a authorizations remain dated records, not permission for another run.
 
 ## Historical P0 Bundle Authorization — 2026-10-09
 
@@ -24,9 +24,26 @@ The Owner approved a narrower correction continuation on 2026-10-10 after both a
 | [acquire.py](acquire.py), [acquire.sb](acquire.sb) | Offline reconstruction through synthetic Git metadata and source objects; separate OLD write allowance |
 | [canary.py](canary.py), [test.sb](test.sb) | Named boundary/runtime/Git/topology/observer probes; no whole-host isolation claim |
 | [observer.py](observer.py) | Instrumented flock witness and fd/namespace observations; synthetic self-canaries precede product use |
-| [runner.py](runner.py) | Occurrence-preserving discovery, object-linked execution records, explicit preservation status and authored exact-old factory interface; changed P1a behavior remains unexecuted |
+| [runner.py](runner.py) | Occurrence-preserving discovery, object-linked execution records, explicit preservation status, exact-old factory interface and fail-fast execution; selected current-input results are listed below |
 | [baseline-inputs.json](baseline-inputs.json) | Unchanged 101 committed blob identities and literal 27/28/29 path sets; historical `tree` field is informational |
 | [base-seed-ids.json](base-seed-ids.json), [prefix-oracle.json](prefix-oracle.json) | Unchanged 20 static seed IDs; amended 19-group oracle and late-lock ownership contract, without an executed coverage claim |
+
+## Current Controls And Evidence — 2026-10-11
+
+The runner stops on the first unexpected test failure (`failfast=True`) and records selected, executed, unstarted and unfinished occurrences. A partial run is not a pass. The controller retains its fixed time/output/preservation limits and process-group checks; another candidate or retry requires the applicable Owner authorization.
+
+The observer permits a descriptor-relative `os.open` only for a single-component read with `O_NOFOLLOW` and no flags outside `O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC` (where available). It verifies the parent and opened descriptor paths with macOS `F_GETPATH` and device/inode identity. The original syscall still receives the original `dir_fd`; path resolution supplies the observation witness. `open-before`, audit and `open-after` records remain distinct. Descriptor-relative namespace mutations remain unsupported. These checks do not establish buffered-write or power-loss durability.
+
+| Candidate in Driver P2 batch 02 | Actual evidence | Limit |
+| --- | --- | --- |
+| 01 | 64 focused A cases passed with the earlier observer | Historical input; not rerun with the current observer |
+| 03 | Five descriptor-read probes passed before a cross-WORK fixture failure | Partial 23-case attempt: 5 passed, 1 failed, 17 unstarted |
+| 04 | Corrected fixture and remaining 18 cases passed; actual NEW candidate returned `saved` after publication and descriptor-relative reads | Separate run from candidate 03; not a single 23-case pass |
+| 05 | Base smoke 20/20 and focused 5/5 passed; all six controller gates passed | Four writer-family cases plus one synthetic assertion self-check; no full-suite claim |
+
+The exact inputs, commands, results and Driver dispositions are in [CHORE-20261009-002](../../CHORE-20261009-002-colvia-verification-controls.md). Candidate 05 adds success-response assertions for the four writers and requires a NEW candidate publication followed by a same-process descriptor-relative read. Its synthetic malformed-row test checks the assertion itself; it is not another product scenario. Neither these selected checks nor the earlier candidates complete P2: S1/S2 buffered-write observation, B-07, the full writer action/state matrix and C remain open. P3/P4, final Owner acceptance, activation and real-adopter execution remain separate.
+
+The sections below preserve earlier authoring and authorization states. Statements such as “unexecuted,” “proposed” and “future” describe their recorded P0/P1a revision, not the current execution status above.
 
 ## Inputs And Execution Boundary
 
