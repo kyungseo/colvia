@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "authority": "DR-0004 A plus Owner-accepted D1-A/D2-A v2.1 design; test oracle, not activation",
+  "steps": [
+    {
+      "id": "S1-01",
+      "operation": "first schema2 receipt exclusive create",
+      "before": "S0",
+      "expected_after": "S1 or preserved torn-receipt refusal",
+      "evidence": "receipt shape/version and exact bytes; length 0/1/mid/L-1 synthetic tears",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "S1-02",
+      "operation": "receipt bytes/fsync/parent-sync",
+      "before": "S1",
+      "expected_after": "S1 or preserved torn-receipt refusal",
+      "evidence": "no receipt deletion; O/B0 intact does not promise recovery",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "S2-01",
+      "operation": "each staging directory create and directory sync",
+      "before": "S1/S2",
+      "expected_after": "exact known staging prefix or preserved refusal",
+      "evidence": "literal inventory-derived allowed paths, no unknown member exemption",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "S2-02",
+      "operation": "each staging inventory/payload member create/write/sync",
+      "before": "S2",
+      "expected_after": "complete-member forward recovery or torn-member refusal",
+      "evidence": "length 0/1/mid/L-1 synthetic tears labelled separately from kill",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "S3-01",
+      "operation": "verified complete release publication and directory sync",
+      "before": "S2",
+      "expected_after": "S3 or exact prior publication prefix",
+      "evidence": "observed namespace trace plus release bytes",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "N-01",
+      "operation": "exclusive nofollow N open initial0600",
+      "before": "S3",
+      "expected_after": "S3a",
+      "evidence": "umask checked before S1; collision stops without truncation",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "N-02",
+      "operation": "each os.write of N including short write",
+      "before": "S3a",
+      "expected_after": "S3a/S3b",
+      "evidence": "kill after fixed k bytes; fd/path identity and leading prefix",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "N-03",
+      "operation": "N fsync before executable mode",
+      "before": "S3b",
+      "expected_after": "S3b",
+      "evidence": "complete bytes0600",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "N-04",
+      "operation": "N fchmod0755",
+      "before": "S3b",
+      "expected_after": "S4 or unproven power-loss state",
+      "evidence": "complete bytes only; pre/post mode observation",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "N-05",
+      "operation": "N file and root directory fsync",
+      "before": "S4",
+      "expected_after": "S4",
+      "evidence": "no power-loss claim from process kill",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "O-01",
+      "operation": "verify exact old O and unlink",
+      "before": "S4",
+      "expected_after": "S5",
+      "evidence": "only recorded old bytes/mode/one regular link",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "O-02",
+      "operation": "root directory sync after O unlink",
+      "before": "S5",
+      "expected_after": "S5 or reobserved S4",
+      "evidence": "same exact O if visible again; no arbitrary absent entry",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "B-01",
+      "operation": "operation binding-staging directory create/sync",
+      "before": "S5",
+      "expected_after": "S5",
+      "evidence": "deterministic entry-operation_id path only",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "B-02",
+      "operation": "exclusive nofollow binding.next open0600",
+      "before": "S5",
+      "expected_after": "S5 binding-prefix",
+      "evidence": "no unknown temp names; umask checked",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "B-03",
+      "operation": "each os.write of binding.next",
+      "before": "S5",
+      "expected_after": "bounded canonical B1 prefix",
+      "evidence": "append only verified leading prefix; kill separate from synthetic",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "B-04",
+      "operation": "binding.next fsync and staging directory sync",
+      "before": "S5",
+      "expected_after": "S5 complete stagedB1",
+      "evidence": "mode0600 unchanged",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "B-05",
+      "operation": "exact B0 recheck and os.replace(binding.next,binding)",
+      "before": "S5",
+      "expected_after": "S6",
+      "evidence": "N executable and O absent prerequisite; B1 mode0600",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "B-06",
+      "operation": "sync binding parent and staging parent",
+      "before": "S6",
+      "expected_after": "S6",
+      "evidence": "current B1 retained; historical comparison may be unavailable",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    },
+    {
+      "id": "B-07",
+      "operation": "verified empty staging directory retirement",
+      "before": "S6",
+      "expected_after": "S6",
+      "evidence": "unknown member or B1 plus binding.next refuses; preserve truth",
+      "coverage": "required before/after each actual matching operation; unsupported observation is unavailable"
+    }
+  ],
+  "late_lock": {
+    "mode": "instrumented old code; no source byte changes",
+    "required": [
+      "S0 positive case with same executor and valid request",
+      "new executor demonstrably owns common writer.lock at lock-acquired pause; coordinator never owns it",
+      "old child emits lock-attempt for the same fd/path/inode while the new executor owns it",
+      "no old lock-acquired before the new executor receives matching release and reaches the specified prefix under its own guard",
+      "new executor exits or takes the reviewed downstream fault; old child acquires after lock release and refuses for the exact receipt/schema reason",
+      "snapshot preservation except contract-permitted empty writer.lock"
+    ],
+    "not_sufficient": [
+      "old process merely exists",
+      "old process first launched after S1",
+      "nonzero exit caused by runtime/topology/permission/input error"
+    ]
+  },
+  "limitations": [
+    "observer changes Python call delegation and timing; label instrumented evidence",
+    "audit-before does not prove completed operation; use post-operation wrappers and snapshot",
+    "Python C-buffered writes are not os.write hooks; S1/S2 tears are synthetic prefix evidence",
+    "power-loss persistence not established",
+    "P1a authors controls and fixture cases; product prefix/late-writer qualification remains P2 and complete integration remains P4"
+  ],
+  "additional_required": [
+    "late N collision S3 and explicit synthetic operator relocation then same recovery",
+    "unsupported umask before S1 with exact preservation",
+    "new source checkout-1 init/rollback/repair/detach refusal",
+    "old source fresh entry1 refusal",
+    "new source --profile checkout-1 refusal",
+    "schema2 detach from actual OLD, schema1 independently reviewed literal, entry1 schema3 positive and mixed/boolean/unknown negative"
+  ],
+  "control_contract": {
+    "execution_context_schema": 1,
+    "entry_slots_source": "controller.ENTRY_MODE_SLOTS",
+    "pause_event": "lock-acquired",
+    "pause_path": ".hrn/locks/writer.lock",
+    "pause_occurrence": 1,
+    "pause_timeout_seconds": [
+      15,
+      60
+    ],
+    "synthetic_child_seconds": 60,
+    "synthetic_coordinator_seconds": 90,
+    "old_fixture_child_seconds": 90,
+    "old_fixture_coordinator_seconds": 120,
+    "product_child_seconds": 150,
+    "product_coordinator_seconds": 180,
+    "focused_seconds": 1200,
+    "pause_fault_selectors": [
+      "new-source",
+      "installed-new",
+      "lock-prefix-canary"
+    ],
+    "synthetic_prefix_bytes": "synthetic-prefix-only\n",
+    "handshake_io": "original functions; no product fault events"
+  }
+}

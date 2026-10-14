@@ -99,7 +99,7 @@ class DetachTopologySharingTests(unittest.TestCase):
         unlink = Path.unlink; removed = []; changed = []
         def remove(path, *args, **kwargs):
             result = unlink(path, *args, **kwargs)
-            if path == self.target / 'hv2':
+            if path == self.target / 'colvia':
                 removed.append(str(path))
                 (self.target / '.hrn/product/unplanned').write_text('preserve me\n')
                 changed.append(fixtures.exact_snapshot(self.target))

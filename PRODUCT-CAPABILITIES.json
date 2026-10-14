@@ -15,14 +15,14 @@
       "status": "development-typed-artifacts"
     },
     {
-      "boundary": "checkout-1 development candidate; exact human-1/worker-1/umbrella-1/planning-1 history read; older-window downgrade, generation compatibility and attach unsupported",
+      "boundary": "unactivated entry-1 development candidate; exact allowlisted checkout-1 transition and same-window lifecycle only; literal human-1/worker-1/umbrella-1/planning-1/checkout-1 history retained; S1 one-way; older-window downgrade, generation compatibility and attach unsupported",
       "evidence": "source contains lifecycle and inventory-window fixtures; historical results do not qualify this artifact",
       "fallback": "independent trusted exact source and retained project truth",
       "id": "project-local-product-lifecycle",
       "status": "development-bounded-synthetic"
     },
     {
-      "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified; verified checkout-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
+      "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified; verified checkout-1 or entry-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
       "evidence": "source contains worker integration, process interruption/contention and checkout-byte fixtures; exact-candidate qualification and actual multi-worker use require separately identified evidence",
       "fallback": "one editing Work in control checkout",
       "id": "same-repository-parallel-integration",
@@ -45,7 +45,7 @@
     {
       "id": "candidate-planning",
       "status": "development-in-progress",
-      "boundary": "branch-local tracked candidates on checkout-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
+      "boundary": "branch-local tracked candidates on entry-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
       "evidence": "source contains candidate contract and installed synthetic fixtures; exact-candidate execution and real fresh-session use require separately identified evidence",
       "fallback": "preserve planning bytes and inspect from trusted independent source; no silent history compaction"
     }

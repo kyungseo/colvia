@@ -200,7 +200,17 @@ def _policy(target: Path, all_files: list[str]) -> str:
     return _digest(inputs)
 
 
-def _snapshot_once(target: Path, verified_launcher_sha256: str | None) -> dict[str, Any]:
+def _verified_launcher_path(sha: str | None, window: str | None) -> str | None:
+    if sha is None:
+        return None
+    paths = {"human-1": "hv2", "worker-1": "hv2", "umbrella-1": "hv2",
+             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia"}
+    if not _sha(sha) or not isinstance(window, str) or window not in paths:
+        raise _fail("managed launcher proof requires a supported verified inventory window")
+    return paths[window]
+
+
+def _snapshot_once(target: Path, verified_launcher_sha256: str | None, verified_inventory_id: str | None) -> dict[str, Any]:
     kind = classify_target(target)["kind"]
     if kind not in {"primary", "linked-worktree", "non-git"}:
         raise _fail("unsupported content target topology")
@@ -237,10 +247,11 @@ def _snapshot_once(target: Path, verified_launcher_sha256: str | None) -> dict[s
                 continue
             raise _fail("tracked path exists under a different filesystem spelling or type")
         policy = _policy(target, files)
-    if verified_launcher_sha256 is not None:
-        if not _sha(verified_launcher_sha256) or "hv2" not in files or _stable_file(target / "hv2")[0] != verified_launcher_sha256:
+    launcher = _verified_launcher_path(verified_launcher_sha256, verified_inventory_id)
+    if launcher is not None:
+        if launcher not in files or _stable_file(target / launcher)[0] != verified_launcher_sha256:
             raise _fail("managed launcher proof does not match live bytes")
-        members.discard("hv2")
+        members.discard(launcher)
     available = set(files)
     entries = []
     for path in sorted(members & available, key=lambda p: p.encode("utf-8")):
@@ -251,7 +262,7 @@ def _snapshot_once(target: Path, verified_launcher_sha256: str | None) -> dict[s
     return tree
 
 
-def snapshot(target: Path, *, verified_launcher_sha256: str | None = None) -> dict[str, Any]:
+def snapshot(target: Path, *, verified_launcher_sha256: str | None = None, verified_inventory_id: str | None = None) -> dict[str, Any]:
     """Read-only, whole project snapshot. No Work scope controls membership.
 
 Two complete observations must agree. This detects ordinary concurrent changes;
@@ -260,8 +271,8 @@ An optional launcher digest is supplied only by the bound-release verifier.
 """
     target = safe_target(target)
     try:
-        first = _snapshot_once(target, verified_launcher_sha256)
-        second = _snapshot_once(target, verified_launcher_sha256)
+        first = _snapshot_once(target, verified_launcher_sha256, verified_inventory_id)
+        second = _snapshot_once(target, verified_launcher_sha256, verified_inventory_id)
     except (OSError, ValueError) as exc:
         raise _fail("unstable or unavailable project snapshot") from exc
     if first != second:
@@ -363,7 +374,7 @@ resume needs durable Git sources, unchanged authority/intent/product/evidence.
     return {"whole_result_matches": current == manifest["result"], "changed_paths": states, "outside_drift": outside, "policy_matches": same_policy, "all_changed_paths_pre": same_policy and all(s == "pre" for s in states.values()), "content_resume_possible": not outside and same_policy and "neither" not in states.values(), "authority_verification": "required"}
 
 
-def _preflight_changed_paths(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None) -> dict[str, str]:
+def _preflight_changed_paths(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None, verified_inventory_id: str | None = None) -> dict[str, str]:
     """Inspect actual occupants including ignored files before worker apply/cancel.
 
 This read-only check does not reserve paths. Repeat under the outer writer guard
@@ -372,9 +383,10 @@ immediately before each write and before publication; outside actors are trusted
     target = Path(classify_target(target, mutation=True)["target"])
     validate_manifest(manifest)
     states: dict[str, str] = {}
+    launcher_name = _verified_launcher_path(verified_launcher_sha256, verified_inventory_id)
     for change in manifest["changes"]:
         path = change["path"]
-        if path == "hv2" and verified_launcher_sha256 is not None:
+        if path == launcher_name and launcher_name is not None:
             raise _fail("managed launcher cannot enter a Work diff")
         current = target
         missing = False
@@ -402,7 +414,7 @@ immediately before each write and before publication; outside actors are trusted
 
 def _allows_unchanged_crlf(verified_inventory_id: str | None) -> bool:
     """A verified active window, never a caller-facing conversion option."""
-    return verified_inventory_id == "checkout-1"
+    return verified_inventory_id in ("checkout-1", "entry-1")
 
 
 def _unchanged_crlf_matches(target: Path, manifest: dict[str, Any],
@@ -489,8 +501,7 @@ also verify whole-tree currentness, physical path preflight and the record graph
     changed = {p for p in tables["pre"].keys() | tables["post"].keys() if tables["pre"].get(p) != tables["post"].get(p)}
     if changed != {c["path"] for c in manifest["changes"]}:
         raise _fail("whole Git diff differs from manifest; metadata or omitted tracked change")
-    if verified_launcher_sha256 is not None and not _sha(verified_launcher_sha256):
-        raise _fail("invalid managed launcher proof")
+    launcher_name = _verified_launcher_path(verified_launcher_sha256, verified_inventory_id)
     # Whole commit trees bind unchanged paths too. Excluded authority may remain
     # identical in both commits; it cannot be hidden in a worker result diff.
     blobs: dict[str, bytes] = {}
@@ -500,7 +511,7 @@ also verify whole-tree currentness, physical path preflight and the record graph
         table = tables[side]
         project = {p: v for p, v in table.items() if not p.startswith(".hrn/")}
         if verified_launcher_sha256 is not None:
-            launcher = project.pop("hv2", None)
+            launcher = project.pop(launcher_name, None)
             if launcher is None or launcher[0] != "100755":
                 raise _fail("commit lacks verified executable managed launcher")
             data = _git(target, "cat-file", "blob", launcher[1]).stdout
@@ -563,10 +574,10 @@ def _offline_objects(target: Path) -> None:
             raise _fail("external object alternates are unsupported")
 
 
-def preflight_changed_paths(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None) -> dict[str, str]:
+def preflight_changed_paths(target: Path, manifest: dict[str, Any], *, verified_launcher_sha256: str | None = None, verified_inventory_id: str | None = None) -> dict[str, str]:
     """Read actual changed-path occupants; does not grant apply/cancel authority."""
     try:
-        return _preflight_changed_paths(target, manifest, verified_launcher_sha256=verified_launcher_sha256)
+        return _preflight_changed_paths(target, manifest, verified_launcher_sha256=verified_launcher_sha256, verified_inventory_id=verified_inventory_id)
     except (OSError, ValueError) as exc:
         raise _fail("changed-path preflight unavailable or unstable") from exc
 
@@ -983,13 +994,14 @@ def _publish_immutable(path: Path, value: dict[str, Any]) -> None:
     _write_exact(path, _canonical_record_bytes(value))
 
 
-def _live_external_refs(target: Path, revision: dict[str, Any], launcher_sha: str | None) -> None:
+def _live_external_refs(target: Path, revision: dict[str, Any], launcher_sha: str | None, *, verified_inventory_id: str | None = None) -> None:
+    launcher_name = _verified_launcher_path(launcher_sha, verified_inventory_id)
     for category in ("document_refs", "evidence_refs"):
         for ref in revision[category]:
             if not ref["required"]:
                 continue
             path = project_path(ref["path"])
-            _require(not (path == "hv2" and launcher_sha is not None), "managed release cannot be required evidence")
+            _require(not (path == launcher_name and launcher_name is not None), "managed release cannot be required evidence")
             current = safe_target(target)
             for component in path.split("/"):
                 _require(current.is_dir() and not current.is_symlink(), "required reference parent is not a directory")
@@ -1001,7 +1013,7 @@ def _live_external_refs(target: Path, revision: dict[str, Any], launcher_sha: st
 
 
 
-def _worker_required_refs(target, revision, manifest, launcher_sha, sources):
+def _worker_required_refs(target, revision, manifest, launcher_sha, sources, *, verified_inventory_id=None):
     from .intent import read_workspace_intent_graph
     intent_refs = [revision["intent_ref"]]
     if revision["schema_version"] == 2:
@@ -1027,13 +1039,13 @@ def _worker_required_refs(target, revision, manifest, launcher_sha, sources):
                 _require(post is not None and hashlib.sha256(post).hexdigest() == ref["sha256"], "required Work reference differs from retained post blob")
             else:
                 remaining[category].append(ref)
-    _live_external_refs(target, remaining, launcher_sha)
+    _live_external_refs(target, remaining, launcher_sha, verified_inventory_id=verified_inventory_id)
 
 
 def _worker_record_preflight(target: Path, revision: dict[str, Any], manifest: dict[str, Any], launcher_sha: str | None, *, verified_inventory_id: str | None = None, worker: Path | None = None, initial_baseline: bool = False) -> None:
     """Control-side observation only; it neither accepts nor applies worker bytes."""
     _require(classify_target(target, mutation=True)["kind"] == "primary", "worker publication requires primary control")
-    _require(snapshot(target, verified_launcher_sha256=launcher_sha) == manifest["base"], "control differs from worker baseline; human baseline refresh required")
+    _require(snapshot(target, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id) == manifest["base"], "control differs from worker baseline; human baseline refresh required")
     sources = verify_worker_sources(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id)
     if revision["operation"] == "submit-result":
         _require(worker is not None, "worker result requires explicit linked worktree")
@@ -1044,32 +1056,32 @@ def _worker_record_preflight(target: Path, revision: dict[str, Any], manifest: d
         registered = [row[len(b"worktree "):] for row in _git(target, "worktree", "list", "--porcelain", "-z").stdout.split(b"\0") if row.startswith(b"worktree ")]
         _require(os.fsencode(worker) in registered, "worker registration is missing")
         _require(_decode(_git(worker, "rev-parse", "--verify", "HEAD").stdout).strip() == manifest["candidate_commit"], "worker HEAD differs from candidate")
-        _require(snapshot(worker, verified_launcher_sha256=launcher_sha) == manifest["result"], "worker bytes differ from committed result")
-        _require(all(v == "pre" for v in preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha).values()), "control changed-path occupant is not pre")
-        _worker_required_refs(target, revision, manifest, launcher_sha, sources)
+        _require(snapshot(worker, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id) == manifest["result"], "worker bytes differ from committed result")
+        _require(all(v == "pre" for v in preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id).values()), "control changed-path occupant is not pre")
+        _worker_required_refs(target, revision, manifest, launcher_sha, sources, verified_inventory_id=verified_inventory_id)
     else:
         _require(worker is None, "baseline publication does not consume a worker locator")
         if initial_baseline:
             _require(_decode(_git(target, "rev-parse", "--verify", "HEAD").stdout).strip() == manifest["base_commit"], "new worker baseline must use current control commit")
-        _live_external_refs(target, revision, launcher_sha)
+        _live_external_refs(target, revision, launcher_sha, verified_inventory_id=verified_inventory_id)
 
 
-def _worker_content_state(target, manifest, launcher_sha, *, cancellation=False, initial=False, final=False):
-    observed = observe_recovery(manifest, snapshot(target, verified_launcher_sha256=launcher_sha))
-    physical = preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha)
+def _worker_content_state(target, manifest, launcher_sha, *, verified_inventory_id=None, cancellation=False, initial=False, final=False):
+    observed = observe_recovery(manifest, snapshot(target, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id))
+    physical = preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id)
     _require(physical == observed["changed_paths"], "physical occupants differ from visible worker snapshot")
     if cancellation:
         _require(observed["all_changed_paths_pre"], "worker cancellation requires every changed path still pre")
     else:
         _require(observed["content_resume_possible"], "worker recovery blocked by outside drift, policy or changed-path bytes")
         if initial:
-            _require(snapshot(target, verified_launcher_sha256=launcher_sha) == manifest["base"], "new worker acceptance requires exact baseline")
+            _require(snapshot(target, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id) == manifest["base"], "new worker acceptance requires exact baseline")
         if final:
             _require(observed["whole_result_matches"], "worker result is not fully applied")
     return physical
 
 
-def _apply_worker_path(target, change, post, launcher_sha, manifest, inject_at):
+def _apply_worker_path(target, change, post, launcher_sha, manifest, inject_at, *, verified_inventory_id=None):
     """Replace one verified pre image; never touch Git or restore other bytes."""
     from .workspace import _durable_directory, _require_kind
     from .jsonio import _sync_fd, sync_directory
@@ -1077,7 +1089,7 @@ def _apply_worker_path(target, change, post, launcher_sha, manifest, inject_at):
     import tempfile
     path = target / change["path"]
     if post is None:
-        _require(preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha)[change["path"]] == "pre", "worker path changed before deletion")
+        _require(preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id)[change["path"]] == "pre", "worker path changed before deletion")
         path.unlink(); sync_directory(path.parent)
         return
     staging = target / ".hrn/staging"
@@ -1090,7 +1102,7 @@ def _apply_worker_path(target, change, post, launcher_sha, manifest, inject_at):
         _sync_fd(handle.fileno())
     sync_directory(staging)
     if inject_at == "after-staged-file": raise InjectedCrash(inject_at)
-    _require(preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha)[change["path"]] == "pre", "worker path changed before replacement")
+    _require(preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id)[change["path"]] == "pre", "worker path changed before replacement")
     parent = target
     for component in change["path"].split("/")[:-1]:
         parent = parent / component
@@ -1149,7 +1161,8 @@ class WorkStore:
 runtime_check(target) MUST verify the executing bound release under this module's
 shared guard and return {binding_ref, launcher_sha256, inventory_id}. The default
 verifies the isolated installed applied binding. Older ordinary-Work fixture
-doubles may omit inventory_id; schema2 requires umbrella-1, planning-1 or checkout-1. Lifecycle publication
+doubles with launcher_sha256=None may omit inventory_id; non-null proof requires a
+verified supported window. Schema2 includes entry-1 capability. Lifecycle publication
 remains separate.
 Human confirmation is a trusted-local declaration, not OS authentication.
 """
@@ -1165,14 +1178,15 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         result = self.runtime_check(self.target)
         _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
         if "inventory_id" in result:
-            _require(result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1"), "unsupported writer inventory window")
+            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
+        _verified_launcher_path(result["launcher_sha256"], result.get("inventory_id"))
         return result
 
     @staticmethod
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1"), "umbrella writer requires umbrella-1, planning-1 or checkout-1 runtime")
+        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1"), "umbrella writer requires umbrella-1, planning-1, checkout-1 or entry-1 runtime")
 
     def _all(self, *, _intent_graph_reader=None, _topology_observation=None) -> dict[str, Any]:
         root = self.target / ".hrn/work"
@@ -1283,8 +1297,8 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                 if revision["execution_context"]["mode"] == "isolated-worktree":
                     _worker_record_preflight(self.target, revision, manifest, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"), worker=worker, initial_baseline=revision["record_id"] not in graph["revisions"] and revision["operation"] in ("start", "rebind"))
                 else:
-                    _live_external_refs(self.target, revision, runtime["launcher_sha256"])
-                    _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"]) == manifest["result"], "live result differs from proposed manifest")
+                    _live_external_refs(self.target, revision, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
+                    _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id")) == manifest["result"], "live result differs from proposed manifest")
             check_publication()
             selection = {k: revision[k] for k in _RECORD_BASE | _PROVENANCE}
             selection.update(schema_version=1, record_type="work-selection", record_id=selection_id, parent_selection_ref=parent, revision_ref=record_ref(revision), decision_ref=None, operation_id=operation_id)
@@ -1345,8 +1359,8 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         if ticket["execution_mode"] == "isolated-worktree":
             self._worker_confirmation(ticket, revision, manifest, runtime, initial=decision["record_id"] not in graph["decisions"])
         elif grants_authority:
-            _live_external_refs(self.target, revision, runtime["launcher_sha256"])
-            _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"]) == manifest["result"], "result changed before confirmation")
+            _live_external_refs(self.target, revision, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
+            _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id")) == manifest["result"], "result changed before confirmation")
         return {"ticket": ticket, "confirm_token": _digest(ticket)[:16]}
 
     @staticmethod
@@ -1390,8 +1404,8 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                 if worker_mode:
                     return self._worker_confirmation(ticket, revision, manifest, runtime, initial=initial, final=final)
                 if grants_authority:
-                    _live_external_refs(self.target, revision, runtime["launcher_sha256"])
-                    _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"]) == manifest["result"], "result changed since submission")
+                    _live_external_refs(self.target, revision, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
+                    _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id")) == manifest["result"], "result changed since submission")
             check_confirmation(initial=did not in graph["decisions"], final=bool(existing))
             selection = existing[0] if existing else {**{k: revision[k] for k in _RECORD_BASE | _PROVENANCE}, "schema_version": 1, "record_type": "work-selection", "record_id": "selection-" + _digest(ticket), "observed_at": ticket["observed_at"], "parent_selection_ref": ticket["expected_selection_ref"], "revision_ref": ticket["target_revision_ref"], "decision_ref": record_ref(decision), "operation_id": ticket["request_id"]}
             selections = graph["selections"] | {selection["record_id"]: selection}
@@ -1404,9 +1418,9 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             if worker_mode and ticket["action"] == "accept" and not existing:
                 for change in manifest["changes"]:
                     sources = check_confirmation()
-                    states = _worker_content_state(self.target, manifest, runtime["launcher_sha256"])
+                    states = _worker_content_state(self.target, manifest, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
                     if states[change["path"]] == "post": continue
-                    _apply_worker_path(self.target, change, sources[change["path"]]["post"], runtime["launcher_sha256"], manifest, inject_at)
+                    _apply_worker_path(self.target, change, sources[change["path"]]["post"], runtime["launcher_sha256"], manifest, inject_at, verified_inventory_id=runtime.get("inventory_id"))
                     if inject_at == "after-file": raise InjectedCrash(inject_at)
             check_confirmation(final=True)
             _publish_immutable(home / "selections" / (selection["record_id"] + ".json"), selection)
@@ -1422,12 +1436,12 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             _worker_record_preflight(self.target, revision, manifest, sha, verified_inventory_id=runtime.get("inventory_id"))
         elif ticket["action"] == "accept":
             sources = verify_worker_sources(self.target, manifest, verified_launcher_sha256=sha, verified_inventory_id=runtime.get("inventory_id"))
-            _worker_required_refs(self.target, revision, manifest, sha, sources)
-            _worker_content_state(self.target, manifest, sha, initial=initial, final=final)
-            if final: _live_external_refs(self.target, revision, sha)
+            _worker_required_refs(self.target, revision, manifest, sha, sources, verified_inventory_id=runtime.get("inventory_id"))
+            _worker_content_state(self.target, manifest, sha, initial=initial, final=final, verified_inventory_id=runtime.get("inventory_id"))
+            if final: _live_external_refs(self.target, revision, sha, verified_inventory_id=runtime.get("inventory_id"))
             return sources
         elif ticket["action"] == "reject" and ticket["supersedes_decision_ref"] is not None:
-            _worker_content_state(self.target, manifest, sha, cancellation=True)
+            _worker_content_state(self.target, manifest, sha, cancellation=True, verified_inventory_id=runtime.get("inventory_id"))
 
     def _runtime_equal(self, expected):
         _require(self._runtime() == expected, "bound runtime changed during publication")

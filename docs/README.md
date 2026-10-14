@@ -1,6 +1,6 @@
 # Documentation Index
 
-This index identifies current single-home development instructions. The `checkout-1` development profile has installed machine commands, local record writers, init/update/rollback, exact repair and receipt-bound detach. General usability and real-project multi-worker efficiency remain unverified. [Security and Support](SECURITY-AND-SUPPORT.md) distinguishes current limits from historical observations.
+This index identifies current single-home development instructions. The `entry-1` development candidate profile has installed machine commands, local record writers, init/update/rollback, exact repair and receipt-bound detach. General usability and real-project multi-worker efficiency remain unverified. [Security and Support](SECURITY-AND-SUPPORT.md) distinguishes current limits from historical observations.
 
 Verified active status exposes a derived, read-only `documentation_root`. Follow that release's index rather than guessing a newer document path. Project-authored DR, brief and Work documents remain project-owned Markdown referenced by path and digest; the product does not impose their repository layout.
 
@@ -25,12 +25,18 @@ Source checkouts retain `docs/GENERATION-1-CONTRACT.md`, `docs/GENERATION-2-PARA
 
 If a current document and source disagree, report the difference and preserve state. Align code and docs in the same qualified change; do not promote a historical receipt to current support. Public version and distribution remain unassigned.
 
-Human entry: run `./hv2 view` in the project and read the current managed adapter it identifies. [Reference](REFERENCE.md#human-review) defines command and observation boundaries.
+Human entry: run `./colvia view` in the project and read the current managed adapter it identifies. [Reference](REFERENCE.md#human-review) defines command and observation boundaries.
+
+## Entry-1 Candidate
+
+These working documents describe the Colvia `entry-1` successor candidate. They have not replaced the effective eleven-member M3 technical contract identified by the exact hashes in source record `docs/decisions/DR-0002-checkout-1-contract-baseline.md`, under DR-0003. The original M3 bytes remain recoverable from source revision `a17f35cf323ffde7a8642a85501fddbec858b6de` (the adapter member has moved from `adapters/harness-v2-work/SKILL.md` to `adapters/colvia-work/SKILL.md` with the same baseline bytes). The structural supplement retains its historical Draft label at that M3 hash.
+
+DR-0004 accepts the transition design and named amendments, not this candidate's qualification or activation. Exact successor hashes, final qualification and separate Owner result/activation acceptance remain required. A copied or installed candidate still carries this limitation; document location or an installation result does not activate it. Source decision/development paths above are provenance identifiers, not links shipped in the managed payload.
 
 ## Current Candidate
 
-The current window includes optional direct-child composition and parent acceptance checks. Qualification of the exact release candidate remains required; historical observations do not qualify these bytes. See [Direct-Child Umbrella](GENERAL-WORK.md#direct-child-umbrella) and [Transition To Checkout-1](GETTING-STARTED.md#transition-to-checkout-1).
+The current window includes optional direct-child composition and parent acceptance checks. Qualification of the exact release candidate remains required; historical observations do not qualify these bytes. See [Direct-Child Umbrella](GENERAL-WORK.md#direct-child-umbrella) and [Transition To Entry-1](GETTING-STARTED.md#transition-to-entry-1).
 
 Planning-1 introduced project-owned candidate notes, one recorded Owner selection, deferral and explicit resumption. Begin with [Candidate Planning](REFERENCE.md#candidate-planning).
 
-Checkout-1 retains that planning behavior and adds bounded proof for unchanged CRLF checkout files and paired schema 2 detach plans/receipts. See [Transition To Checkout-1](GETTING-STARTED.md#transition-to-checkout-1) for the one-way transition and recovery limits. This checkout is a development candidate; exact-candidate qualification and real fresh-session use are separate checks.
+Entry-1 retains candidate planning and the verified checkout-1 unchanged-CRLF exception, replaces the managed launcher and adapter paths, and writes paired schema 2 switch and schema 3 detach plans/receipts. See [Transition To Entry-1](GETTING-STARTED.md#transition-to-entry-1) for the one-way transition and recovery limits. This checkout is a development candidate; exact-candidate qualification and real fresh-session use are separate checks.

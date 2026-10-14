@@ -1,5 +1,6 @@
 """Worker publication fixtures; serial runtime double and installed entry separated."""
 from __future__ import annotations
+from test_productization_safety import verified_inventory_id
 import copy
 import hashlib
 import json
@@ -402,7 +403,7 @@ class InstalledWorkerPublicationTests(unittest.TestCase):
     apply_init=ActualWorkspaceInitTests.apply_init
 
     def call(self,command,value=None,*,env=None,launcher=None,expected=0):
-        args=[sys.executable,"-I","-B",str(launcher or self.source/"hv2"),*(["--source-checkout"] if launcher is None else []),*map(str,command)]
+        args=[sys.executable,"-I","-B",str(launcher or self.source/"colvia"),*(["--source-checkout"] if launcher is None else []),*map(str,command)]
         p=subprocess.run(args,input=canonical_json_bytes(value) if value is not None else None,capture_output=True,cwd=self.target,env=env,timeout=120)
         if expected is not None:self.assertEqual(expected,p.returncode,(p.stdout+p.stderr).decode(errors="replace"))
         return p
@@ -417,7 +418,7 @@ class InstalledWorkerPublicationTests(unittest.TestCase):
         self.git(self.target,"add",".");self.git(self.target,"commit","-qm","synthetic installed baseline")
         oid=self.git(self.target,"rev-parse","HEAD");self.git(self.target,"branch","retained-base",oid)
         from hv2ref.product import verify_workspace_product
-        sha=verify_workspace_product(self.target)["launcher_sha256"];tree=snapshot(self.target,verified_launcher_sha256=sha)
+        sha=verify_workspace_product(self.target)["launcher_sha256"];tree=snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target))
         identity={"record_type":"work-identity","schema_version":1,"authority_home_id":"home-a","work_id":"work-a","work_type":"change","created_at":TIME,"acceptance_authority":"owner","lineage":None}
         m=make_manifest(tree,tree,scope=scope,base_commit=oid,candidate_commit=oid,base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-base")
         r={"record_type":"work-revision","schema_version":1,"authority_home_id":"home-a","work_id":"work-a","record_id":"start","observed_at":TIME,"observed_scope":[],"unavailable_scope":[],"author":"agent","operation":"start","expected_prior_selection":None,"intent_ref":intent,"scope":scope,"document_refs":[],"evidence_refs":[],"result_refs":{"manifest":{"id":digest(m),"sha256":digest(m)}},"progress":"active","next_action":"compute","relations":[],"rebind_from":None,"execution_context":{"mode":"isolated-worktree","attempt_id":"attempt-a"}}
@@ -427,11 +428,11 @@ class InstalledWorkerPublicationTests(unittest.TestCase):
         (worker/"a").write_bytes(b"installed worker result\n")
         if two_files:(worker/"b").write_bytes(b"second result\n")
         self.git(worker,"add",*scope);self.git(worker,"commit","-qm","synthetic installed result")
-        m=make_manifest(tree,snapshot(worker,verified_launcher_sha256=sha),scope=scope,base_commit=oid,candidate_commit=self.git(worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/candidate")
+        m=make_manifest(tree,snapshot(worker,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target)),scope=scope,base_commit=oid,candidate_commit=self.git(worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/candidate")
         r=copy.deepcopy(r);r.update(record_id="result",operation="submit-result",expected_prior_selection=graph["current"]["selection_ref"],progress="review",result_refs={"manifest":{"id":digest(m),"sha256":digest(m)}})
         request={"identity":identity,"revision":r,"manifest":m,"selection_id":"result-s","operation_id":"result-op"}
         before=exact_snapshot(self.target)
-        refused=self.call(["work","publish","--target",self.target,"--worker",worker],request,launcher=worker/"hv2",expected=65)
+        refused=self.call(["work","publish","--target",self.target,"--worker",worker],request,launcher=worker/"colvia",expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
         graph=json.loads(self.installed(["work","publish","--worker",worker],request).stdout)
         self.assertEqual("review",graph["state"]);self.assertEqual(b"before\n",(self.target/"a").read_bytes())
@@ -455,7 +456,7 @@ class InstalledWorkerPublicationTests(unittest.TestCase):
         prior=graph["manifests"][revision["result_refs"]["manifest"]["id"]]
         (self.target/"a").write_bytes((self.base/"worker/a").read_bytes())
         from hv2ref.product import verify_workspace_product
-        tree=snapshot(self.target,verified_launcher_sha256=verify_workspace_product(self.target)["launcher_sha256"])
+        tree=snapshot(self.target,verified_launcher_sha256=verify_workspace_product(self.target)["launcher_sha256"], verified_inventory_id=verified_inventory_id(self.target))
         oid=prior["candidate_commit"]
         manifest=make_manifest(tree,tree,scope=["a"],base_commit=oid,candidate_commit=oid,base_retention_ref="refs/heads/candidate",candidate_retention_ref="refs/heads/candidate")
         revision.update(record_id="checkpoint",operation="checkpoint",expected_prior_selection=graph["current"]["selection_ref"],progress="active",result_refs={"manifest":{"id":digest(manifest),"sha256":digest(manifest)}})
@@ -470,7 +471,7 @@ class InstalledWorkerPublicationTests(unittest.TestCase):
         worker=self.prepare_worker_result();graph=read_work(self.target,"work-a")
         from hv2ref.product import verify_workspace_product
         from hv2ref.work import WorkStore
-        tree=snapshot(self.target,verified_launcher_sha256=verify_workspace_product(self.target)["launcher_sha256"])
+        tree=snapshot(self.target,verified_launcher_sha256=verify_workspace_product(self.target)["launcher_sha256"], verified_inventory_id=verified_inventory_id(self.target))
         identity={**graph["identity"],"work_id":"local-x"}
         revision=copy.deepcopy(graph["revisions"]["start"])
         manifest=make_manifest(tree,tree,scope=["a"])
@@ -483,7 +484,7 @@ class InstalledWorkerPublicationTests(unittest.TestCase):
         local=json.loads(self.installed(["work","prepare"],{"work_id":"local-x","action":"accept","actor":"owner","reason":"local result","request_id":"local-accept","observed_at":TIME,"revision_ref":None,"supersedes":None}).stdout)
         # Controlled prefix via verified-product fixture seam; subsequent checks use installed CLI.
         with self.assertRaises(InjectedCrash):
-            WorkStore(self.target,lambda target:{k:v for k,v in verify_workspace_product(target).items() if k in ("binding_ref","launcher_sha256")}).apply(local["ticket"],confirm_token=local["confirm_token"],inject_at="after-selection")
+            WorkStore(self.target,lambda target:(lambda observed:{"binding_ref":observed["binding_ref"],"launcher_sha256":observed["launcher_sha256"],"inventory_id":observed["inventory"]["inventory_id"]})(verify_workspace_product(target))).apply(local["ticket"],confirm_token=local["confirm_token"],inject_at="after-selection")
         self.assertTrue(read_work(self.target,"local-x")["pending_selections"])
         before=exact_snapshot(self.target)
         refused=self.installed(["work","apply","--confirm",worker["confirm_token"]],worker["ticket"],expected=65)

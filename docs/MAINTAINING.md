@@ -1,10 +1,12 @@
 # Maintaining
 
-Current document authority is indexed in [README.md](README.md). This source supports only the single-home `checkout-1` development profile.
+Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+
+Current document authority is indexed in [README.md](README.md). This source supports only the single-home `entry-1` development profile.
 
 ## Source Layout
 
-- `hv2`: isolated installed launcher and explicit trusted source entry.
+- `colvia`: isolated installed launcher and explicit trusted source entry.
 - `src/hv2ref/cli.py`: source/installed commands and exit codes.
 - `workspace.py`: root format, target classification, cooperating writer guard.
 - `work.py`: content observations, Work graph, publication and decisions.
@@ -13,7 +15,7 @@ Current document authority is indexed in [README.md](README.md). This source sup
 - `umbrella.py`: direct-child composition, captured references and history/current predicates; no scheduler.
 - `product.py`: exact inventory, binding, lifecycle and recovery.
 - `view.py`: read-only GFM projection and bounded document observations.
-- `adapters/harness-v2-work/SKILL.md`: manual natural-language entry guidance.
+- `adapters/colvia-work/SKILL.md`: manual natural-language entry guidance.
 - `jsonio.py`, `errors.py`: canonical JSON, durability primitives and errors.
 - `tests/`: stdlib contract tests, installed CLI fixtures and bounded independent auditor.
 - `receipts/`: immutable historical evidence; presence is not current qualification.
@@ -82,9 +84,9 @@ Runtime qualification uses an explicit patch allowlist, not a minimum-version pr
 
 ## Inventory Window Compatibility
 
-New candidates declare `WORKSPACE_INVENTORY_ID = "checkout-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The current managed set is 29 paths. The new reader retains planning-1 with the same 29 paths, the exact 28-path umbrella-1 and original 27-path human-1 and worker-1 history and rejects serial-1 or unknown windows.
+New candidates declare `WORKSPACE_INVENTORY_ID = "entry-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The current managed set is 29 paths with `colvia` and `adapters/colvia-work/SKILL.md`. The reader retains the literal old 29-path planning-1/checkout-1 inventories, exact 28-path umbrella-1 and original 27-path human-1/worker-1 history, and rejects serial-1 or unknown windows. Do not derive old memberships by renaming the new set.
 
-Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable checkout-1 receipt, downgrade to planning-1, umbrella-1, worker-1 or human-1 is refused even before any candidate record exists. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
+Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable entry-1 switch receipt, downgrade to checkout-1, planning-1, umbrella-1, worker-1 or human-1 is refused even before any candidate record exists. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
 
 The recorded N4 source completed bounded worker execution, complete 424-ID regression in both modes and exact-artifact checks. A later documentation or source change has a different release identity and requires the evidence assessment and exact-artifact checks above; it does not automatically invalidate every prior regression result. This document does not attest its own current bytes as qualified; use the candidate's separately identified immutable qualification evidence and artifact digest. An equivalently complete, fixed narrative can serve as that original receipt under [Evidence Reuse And Selection](#evidence-reuse-and-selection); a routine summary cannot. Previous human-1 evidence does not qualify worker-1.
 
@@ -92,7 +94,7 @@ The recorded N4 source completed bounded worker execution, complete 424-ID regre
 
 The umbrella-1 development result has recorded review, Driver disposition and Owner acceptance with limitations. The earlier fixed source passed complete normal/parent-optimized regression; the later test-source follow-up has focused evidence. Keep those identities separate. The exact release candidate still requires the complete regression anchor and cumulative change coverage described above, plus exact-artifact transition and recovery qualification; do not describe development acceptance as release qualification. Do not promote earlier worker-1 receipts or a focused pass to qualification of this checkout. Include schema2 intent/Work round trips, ordinary schema1 behavior, mixed old/new inventory history, old-artifact refusal, Q-created records on P, and detach/plain reading.
 
-The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Current installed writes require checkout-1; the internal schema2 seam retains umbrella-1 and planning-1 fixture support alongside checkout-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
+The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Current installed writes require entry-1; the internal schema2 seam retains umbrella-1, planning-1 and checkout-1 fixture support alongside entry-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
 
 ## Adopter Impact At Development Closeout
 
@@ -106,6 +108,12 @@ Do not add automatic monitoring, bulk updates, Core management state or an addit
 
 ## Checkout Proof And Detach Versions
 
-Only a verified active checkout-1 inventory enables the unchanged CRLF exception. Publication, same-intent rebind, acceptance/resume and view inspection use that verified value; absent, older or unknown windows keep exact-blob proof. Raw manifests and changed-path recovery are unchanged. Git must support `check-attr --source`; no minimum Git version is inferred. Live attributes/capability changes can refuse pending recovery until the original conditions are restored. Existing cancellation rules remain applicable; completed decision replay preserves recorded meaning while view reports fresh observations separately.
+Only a verified active checkout-1 or entry-1 inventory enables the unchanged CRLF exception. Publication, same-intent rebind, acceptance/resume and view inspection use that verified value; absent, older or unknown windows keep exact-blob proof. Raw manifests and changed-path recovery are unchanged. Git must support `check-attr --source`; no minimum Git version is inferred. Live attributes/capability changes can refuse pending recovery until the original conditions are restored. Existing cancellation rules remain applicable; completed decision replay preserves recorded meaning while view reports fresh observations separately.
 
-New detach plans and their enclosing receipts both use schema 2. Keys, null candidate release and removal/preservation semantics are unchanged. Readers retain schema 1 and reject mixed/unknown/non-integer versions; current writers and recovery require schema 2. This version boundary prevents retained planning-1 code from consuming a checkout-1 detach prefix. Preserve old bytes; legacy detach recovery requires the exact retained old source. The independent stdlib auditor checks paired versions and preserved inventory/bytes, not full Work/candidate semantics.
+New detach plans and their enclosing receipts both use schema 3. Keys and null candidate release remain; removal validates `colvia`, each retained release's exact inventory, and retired-entry collision preservation. Readers retain paired schema 1/2 and reject mixed/unknown/non-integer versions; current writers and recovery require schema 3. This version boundary keeps retained old detach writers from consuming entry-1 detach prefixes. Preserve old bytes; legacy detach recovery requires the exact retained old source. The independent stdlib auditor checks paired versions and preserved inventory/bytes, not full Work/candidate semantics.
+
+## Entry-1 Candidate Validation Boundary
+
+Entry-1 init/repair retain schema 1; update/rollback use paired schema 2, with `remove` containing exact old `hv2` only for the allowlisted checkout-1 transition and empty for same-entry switches. Validate both the ordinary lifecycle and [transition-specific admission/publication/replay](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication), including captured-child references, OLD writer refusal, collisions and synchronization. A production runtime result without a valid `inventory_id` refuses; injected verifier doubles remain test-only seams.
+
+This P3 document alignment does not issue an exact-artifact qualification receipt. Exact token counts are unmeasured here; the P4 plan must fix the stated tokenizer environment and measure the existing AGENTS/combined reading limits. Lines/bytes and readability review are not token-budget PASS. If measurement requires further document changes, identify the affected successor hashes and revalidation/review before using them as final candidate evidence.

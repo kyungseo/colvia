@@ -72,8 +72,8 @@ def instrument(name, globals=None, locals=None, fromlist=(), level=0):
         work._publish_immutable=publish;work._apply_worker_path=apply_path
     return module
 builtins.__import__=instrument
-sys.argv=[str(target/'hv2'),'work','apply','--input','-','--confirm',token]
-runpy.run_path(str(target/'hv2'),run_name='__main__')
+sys.argv=[str(target/'colvia'),'work','apply','--input','-','--confirm',token]
+runpy.run_path(str(target/'colvia'),run_name='__main__')
 """
 
 

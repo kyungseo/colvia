@@ -1,5 +1,7 @@
 # Contributing
 
+Current technical contract: [activated entry-1 successor set](docs/decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14). The exact validated document bytes retain their preparation labels; this source activation record identifies their effective status and limits.
+
 Use this source-only guide to propose and review product decisions. Begin with the [Documentation Index](docs/README.md) for the current product, [Maintaining](docs/MAINTAINING.md) for validation and adopter impact, and the decision below for the proposed continuation contract. These source decision documents are not installed into adopter projects.
 
 ## Decisions

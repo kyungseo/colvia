@@ -1,21 +1,23 @@
 ---
-name: harness-v2-work
+name: colvia-work
 description: Guide candidate planning, requested project briefs and decisions, intent, session handoff, targeted document checks, Work review and exact acceptance through the installed human interface.
 ---
 
-# Harness v2 Work Entry
+# Colvia Work Entry
+
+Entry-1 successor candidate; [qualification and activation remain pending](../../docs/README.md#entry-1-candidate).
 
 Use when the human asks to record an idea, author a brief or decision, choose what to do next, defer a candidate, or start, continue or review a project task. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
 
-1. Run `./hv2 view` at the control checkout. Follow its current verified manual/adapter path, not an old release path saved elsewhere. If the launcher fails, preserve the output and use an independent trusted source for `--source-checkout view --target PATH` or doctor. A worker copy is non-authoritative.
+1. Run `./colvia view` at the control checkout. Follow its current verified manual/adapter path, not an old release path saved elsewhere. If the launcher fails, preserve the output and use an independent trusted source for `--source-checkout view --target PATH` or doctor. A worker copy is non-authoritative.
 2. Explain the current intent, Work state, pending operations and unavailable evidence in ordinary language. Ask only for missing material goals, scope, forbidden actions, outcome and acceptance criteria. Propose the six intent facets; do not invent the human's decisions.
 3. Read project-authored DR, brief and Work Markdown at the declared paths. These documents are the narrative authority. Suggest path+digest references with explicit role and required boolean. Explain that changing a required intent document blocks related publication/acceptance until new intent acceptance, Work rebind, a new submission and new human acceptance. Do not silently choose this policy for the human.
 4. Prepare machine input yourself using the verified Reference/General Work contracts. The human must not edit JSON. Store tickets outside the project in durable task storage or pipe canonical input through stdin. Project Markdown created after Work start belongs in the Work scope. Never put secrets in records.
-5. Before each authorized publication, show the human the proposed scope and relevant Markdown. Use `./hv2 view intent ID`, `./hv2 view work ID` and `./hv2 view confirmation --input FILE` (or `-`) to explain the exact revision/action/token and each observation. A draft is not accepted; a displayed token is not approval.
+5. Before each authorized publication, show the human the proposed scope and relevant Markdown. Use `./colvia view intent ID`, `./colvia view work ID` and `./colvia view confirmation --input FILE` (or `-`) to explain the exact revision/action/token and each observation. A draft is not accepted; a displayed token is not approval.
 6. Return material scope, acceptance/rejection/revoke/rebind and result acceptance to the human. Apply an exact ticket only after explicit human authorization for that action. The display can become stale; apply performs its own guarded validation. Never edit records or bypass a refusal.
 7. Re-read the view after action. Report stored completion separately from live-file agreement. Rejection/revocation does not undo project bytes. Pending is not completed; preserve the exact ticket for documented recovery.
 
-For fresh resume, begin again with `./hv2 view`, open the current accepted intent and selected Work, read referenced project Markdown, and report the next action. Do not install this adapter into project entry files automatically. A human may add the stable instruction “Run ./hv2 view and read the current adapter it identifies” to their project entry.
+For fresh resume, begin again with `./colvia view`, open the current accepted intent and selected Work, read referenced project Markdown, and report the next action. Do not install this adapter into project entry files automatically. A human may add the stable instruction “Run ./colvia view and read the current adapter it identifies” to their project entry.
 
 This development adapter has no automatic agent-runtime discovery, scheduler or intake registry. Human comprehension, actual adoption and native runtime qualification need separate evidence.
 
@@ -24,7 +26,7 @@ This development adapter has no automatic agent-runtime discovery, scheduler or 
 
 The verified manual/adapter paths refer to Harness tool guidance inside the managed release. They do not replace the project root README or project-owned context, plan, DR, brief and Work. Explain this distinction when presenting the next entry; links inside the managed manual remain relative to that manual.
 
-Use the human's conversation language for your explanation, including Korean when the conversation is Korean. Preserve identifiers, exact commands, tokens and document meaning. The English diagnostic labels in `hv2 view` do not select the human's language.
+Use the human's conversation language for your explanation, including Korean when the conversation is Korean. Preserve identifiers, exact commands, tokens and document meaning. The English diagnostic labels in `colvia view` do not select the human's language.
 
 Use the existing project narrative and relevant DR or brief, with [Records And Retention](../../docs/REFERENCE.md#records-and-retention) as the common rule for what to record, retain and clean up. The view supplies verified observations; do not turn its field dump into the human report or create separate plan/review/result/closeout files by default.
 
@@ -50,7 +52,7 @@ Have the human declare important criteria in the intent acceptance oracle or sta
 
 Before requesting result acceptance:
 
-1. Read `./hv2 view work ID --revision REVISION_ID` for the revision named by the confirmation ticket and show that Work view together with `./hv2 view confirmation --input FILE` (or `-`). The confirmation view does not directly repeat the Work's observation arrays. Preserve exact identifiers and ticket bytes.
+1. Read `./colvia view work ID --revision REVISION_ID` for the revision named by the confirmation ticket and show that Work view together with `./colvia view confirmation --input FILE` (or `-`). The confirmation view does not directly repeat the Work's observation arrays. Preserve exact identifiers and ticket bytes.
 2. Explain all `observed_scope` and `unavailable_scope` items in the human's conversation language. Map each unavailable item to the human-declared criteria, its effect and a proposed next action. Do not hide an item, silently classify it as unimportant, or require the human to open JSON.
 3. Return the significance/exception decision to the human. If important criteria are unresolved or significance is undeclared, withhold the acceptance request until evidence or an authorized scope/intent revision resolves it. For an explicitly nonessential limit, record the human's reason, effect and follow-up responsibility in the existing Work narrative within authorized scope. Narrative edits still obey whole-content publication/resubmission rules; never alter accepted records or the submitted content behind a ticket.
 4. Use existing required document/evidence reference controls where byte-level verification fits the criterion; they do not replace semantic judgment. Missing/stale required references, unreadable authority and live-content mismatch must still be resolved through the documented refusal/recovery flow.
@@ -100,7 +102,7 @@ For a requested local adapter addition, follow [Project-Owned Adapter Additions]
 
 ## Candidate Conversation
 
-Use the human's language. Start with `./hv2 view` and `./hv2 view candidates`; read the current planning digest and actual intent/Work graphs. Candidate notes live only in this control checkout/branch. Absence here does not prove another branch has no ideas. Do not create a second backlog, report or hidden queue.
+Use the human's language. Start with `./colvia view` and `./colvia view candidates`; read the current planning digest and actual intent/Work graphs. Candidate notes live only in this control checkout/branch. Absence here does not prove another branch has no ideas. Do not create a second backlog, report or hidden queue.
 
 | Human request (Korean example) | Agent behavior and write boundary |
 | --- | --- |
@@ -110,7 +112,7 @@ Use the human's language. Start with `./hv2 view` and `./hv2 view candidates`; r
 | “이건 나중에 하자” | For an unlinked open candidate, `defer` with the stated reason and condition (empty means unspecified). A Work-linked candidate cannot pause the Work: show its actual state and use the separate authorized Work decision flow. |
 | “다시 이어가자” | Read only first. Explain pending recovery and active Work before candidates. Only an explicitly named deferred candidate authorizes `resume`; record the observed condition or unknown. Resume returns it to open and leaves another selection unchanged. Do not infer that its condition became true. |
 
-Prepare canonical machine input yourself from [Candidate Planning](../../docs/REFERENCE.md#candidate-planning). The human should not edit JSON or repeat authorization already given for the same named action. Show the impact before mutation: any outstanding lifecycle preview must be prepared again after a saved planning change. Never run init/update as an implied part of a note request; explain the explicit checkout-1 transition first if needed.
+Prepare canonical machine input yourself from [Candidate Planning](../../docs/REFERENCE.md#candidate-planning). The human should not edit JSON or repeat authorization already given for the same named action. Show the impact before mutation: any outstanding lifecycle preview must be prepared again after a saved planning change. Never run init/update as an implied part of a note request; explain the explicit entry-1 transition first if needed.
 
 Core checks exact IDs, typed links, history and durability. Semantic duplicates, recommendation quality and whether a condition is met are agent/human judgments. Do not silently combine similar titles, absorb another Work, reject a candidate or replace a linked object. With explicit authority use `disposition` for absorption/rejection, `amend` for narrative correction, and `reopen` for an unlinked rejected candidate. Absorbed candidates cannot reopen; with explicit authority create a successor related to the old candidate to correct a mistaken absorption. Keep the original decisions. Correct a mistaken selection with a new explicit selection/deferral, not record editing.
 
@@ -122,6 +124,6 @@ On a refusal, report that this call made no new write, quote the short requested
 
 ## Checkout-1 Transition Handoff
 
-An installation update requires its own exact-target approval. Explain that the first checkout-1 receipt commits the project to forward recovery with the exact new source and original request; it does not allow rollback to planning-1, even before new records exist. Existing worker results and refs must be preserved. Continuing an old worker requires a separately approved control commit with the new runtime, explicit same-intent baseline rebind and resubmission. Core performs no Git action automatically. Same-window updates still owe bidirectional compatibility; this handoff does not waive it.
+An installation update requires its own exact-target approval. Explain that the first entry-1 switch receipt commits the project to forward recovery with the exact new source and original request; it does not allow rollback to checkout-1 or earlier, even before new records exist. Existing worker results and refs must be preserved. Continuing an old worker requires a separately approved control commit with the new runtime, explicit same-intent baseline rebind and resubmission. Core performs no Git action automatically. Same-window updates still owe bidirectional compatibility; this handoff does not waive it.
 
-For a pending detach, preserve the original schema 2 request and use the exact new independent source. Legacy schema 1 remains readable but its recovery requires the retained old source. Detach does not authorize old reinstallation or attach. Read the current transition instructions before proposing any change.
+For a pending detach, preserve the original schema 3 request and use the exact new independent source. Legacy paired schema 1/2 remains readable but its recovery requires the retained old source. Detach does not authorize old reinstallation or attach. Read the [current transition instructions](../../docs/OPERATIONS.md#entry-1-transition) before proposing any change. The new source refuses OLD pending init/repair/detach with guidance to the matching OLD source and original request; never substitute an entry-1 request. Explain local/parent manifest and captured-child reference admission, unsupported torn/composite prefixes and the need for separately authorized external recovery when applicable. Current diagnostics, historical content-comparison availability and past operation completion are distinct. A collision or displayed confirmation grants no writer authority.

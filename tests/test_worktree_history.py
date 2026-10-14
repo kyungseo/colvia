@@ -4,6 +4,7 @@ Q differs only in a managed document; this tests the present window contract,
 not compatibility with an arbitrary future release.
 """
 from __future__ import annotations
+from test_productization_safety import verified_inventory_id
 import copy
 import hashlib
 import json
@@ -40,7 +41,7 @@ class InstalledWorkerHistoryTests(unittest.TestCase):
         worker=read_work(self.target,'work-a')
         identity=copy.deepcopy(worker['identity']);identity['work_id']='local-q'
         sha=verify_workspace_product(self.target)['launcher_sha256']
-        tree=snapshot(self.target,verified_launcher_sha256=sha)
+        tree=snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target))
         manifest=make_manifest(tree,tree,scope=[])
         digest=hashlib.sha256(canonical_json_bytes(manifest)).hexdigest();prior=None
         for number,operation in [(1,'start'),(2,'submit-result')]:
@@ -55,7 +56,7 @@ class InstalledWorkerHistoryTests(unittest.TestCase):
         (self.target/'unchanged.bat').write_bytes(b'@echo off\r\necho fixture\r\n')
         old_worker_ticket=self.prepare_worker_result()  # Includes real P -> Q.
         binding_q=json.loads((self.target/'.hrn/product/binding.json').read_text())
-        self.assertEqual('checkout-1',binding_q['active_release']['inventory_id'])
+        self.assertEqual('entry-1',binding_q['active_release']['inventory_id'])
         local_q=self.local_review();worker_q=read_work(self.target,'work-a')
         truth_q=self.truth();git_q=exact_snapshot(self.target/'.git')
         preview=json.loads(self.installed(['rollback','--operation-id','back-to-p','--observed-at',self.TIME]).stdout)

@@ -366,7 +366,7 @@ class WorkspaceIntentStore:
         ticket = {"record_type": "confirmation-ticket", "schema_version": 1, "authority_home_id": graph["identity"]["authority_home_id"], "object": {"authority_home_id": graph["identity"]["authority_home_id"], "kind": "intent", "id": intent_id}, "action": "accept", "actor": actor, "reason": reason, "request_id": request_id, "observed_at": observed_at, "target_fingerprint": target_fingerprint(self.target), "target_revision_ref": revision_ref, "expected_selection_ref": graph["current"]["selection_ref"] if graph["current"] else None, "intent_ref": None, "product_binding_ref": runtime["binding_ref"], "document_refs": document_refs if document_refs is not None else [], "evidence_refs": evidence_refs if evidence_refs is not None else [], "execution_mode": None, "supersedes_decision_ref": None}
         self._accepted_data(graph, ticket)
         if graph["drafts"][revision_ref["id"]]["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
-        _live_external_refs(self.target, ticket, runtime["launcher_sha256"])
+        _live_external_refs(self.target, ticket, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
         return {"ticket": ticket, "confirm_token": _digest(ticket)[:16]}
 
     def apply(self, ticket: dict[str, Any], *, confirm_token: str, inject_at: str | None = None) -> dict[str, Any]:
@@ -394,13 +394,13 @@ class WorkspaceIntentStore:
             if graph["drafts"][ticket["target_revision_ref"]["id"]]["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
             current = {**graph["identity"], "record_type": "intent-current", "selection_ref": record_ref(selection, "selection_id")}
             for value in (acceptance, selection, current): _canonical_record_bytes(value)
-            _live_external_refs(self.target, ticket, runtime["launcher_sha256"])
+            _live_external_refs(self.target, ticket, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
             home = self.target / ".hrn/intents" / iid
             _visible_truth(self.target, [f".hrn/intents/{iid}/acceptances/{aid}.json", f".hrn/intents/{iid}/selections/{selection['selection_id']}.json", f".hrn/intents/{iid}/current.json"])
             _publish_immutable(home / "acceptances" / (aid + ".json"), acceptance)
             if inject_at == "after-acceptance": raise InjectedCrash(inject_at)
             self.work_store._runtime_equal(runtime)
-            _live_external_refs(self.target, ticket, runtime["launcher_sha256"])
+            _live_external_refs(self.target, ticket, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
             _publish_immutable(home / "selections" / (selection["selection_id"] + ".json"), selection)
             if inject_at == "after-selection": raise InjectedCrash(inject_at)
             _publish_current(self.target, home / "current.json", current, inject_at)

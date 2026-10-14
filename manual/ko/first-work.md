@@ -1,5 +1,7 @@
 # 첫 Work 완료하기
 
+이 문서는 활성화 전 `entry-1` 후보를 설명합니다. 사용하려면 정확한 artifact의 별도 qualification과 설치 승인이 필요하며, 아래의 과거 checkout-1 실습은 현재 명령의 검증 근거가 아닙니다.
+
 [이전: 준비](getting-started.md) · [목차](README.md) · [다음: 재개](resume.md)
 
 [English](../en/first-work.md)
@@ -14,7 +16,7 @@ Codex에게 요청합니다.
 
 > docs/plan.md와 docs/first-work.md를 바탕으로 todo-lab 추가·조회 기능의 작업 요청서(intent) 초안을 준비해 줘. 합의한 CLI 규격, 네 가지 동작 기준, 중요한 검증 조건을 정해진 형식의 요청서에 담아 줘. 목표, 정확한 파일 범위, 기대 결과, 수락 검사, 결과 보관 위치, 제외 범위, 미해결 질문을 보여주고 내가 무엇을 수락하게 되는지 설명해 줘. publish 전에 선언할 수락 권한자를 보여주고 내 확인을 기다려 줘. 내가 확인한 뒤 초안을 publish해 줘. 아직 초안을 수락하거나 구현을 시작하지는 마.
 
-agent는 설치본의 `hv2 intent draft`를 사용하고, 실제 ID를 넣어 `./hv2 view intent INTENT_ID`로 초안을 보여줍니다. 아직 수락되지 않은 초안으로 표시돼야 합니다. 제안 기록을 publish한 것과 사용자가 수락한 것은 다릅니다.
+agent는 설치본의 `colvia intent draft`를 사용하고, 실제 ID를 넣어 `./colvia view intent INTENT_ID`로 초안을 보여줍니다. 아직 수락되지 않은 초안으로 표시돼야 합니다. 제안 기록을 publish한 것과 사용자가 수락한 것은 다릅니다.
 
 여섯 항목을 확인합니다.
 
@@ -36,7 +38,7 @@ agent는 설치본의 `hv2 intent draft`를 사용하고, 실제 ID를 넣어 `.
 agent에게 수락을 준비하고 confirmation을 읽을 수 있는 형태로 보여달라고 요청합니다. agent는 응답의 `ticket`만 프로젝트 밖에 저장한 뒤 실행합니다.
 
 ```sh
-./hv2 view confirmation --input /absolute/path/todo-lab-inputs/intent-ticket.json
+./colvia view confirmation --input /absolute/path/todo-lab-inputs/intent-ticket.json
 ```
 
 경로는 예시이므로 실제 저장한 ticket을 사용합니다. 프로젝트, 작업 요청서 판본, 수락 권한을 가진 사람, 범위, 제외 항목, 필수 참조 문서를 확인하세요. 이 안내의 ID·hash·token을 실제 결정에 복사하지 않습니다.
@@ -47,11 +49,11 @@ agent에게 수락을 준비하고 confirmation을 읽을 수 있는 형태로 �
 
 > 이 confirmation에 표시된 추가·조회 기능의 작업 요청서 판본을 수락해. 이 정확한 intent ticket을 적용해 줘. 그다음 네 파일 범위에서 Work를 시작하고 구현과 합의한 검사를 진행해 줘. 범위나 필수 입력이 달라지거나, 검증 실패를 범위 안에서 고칠 수 없거나, 수락·설치 등 기록 적용이 실패하면 멈춰 줘. commit과 push는 하지 마.
 
-이 결정 뒤에만 agent가 정확한 ticket·token으로 `hv2 intent apply`를 실행합니다. 현재 수락된 작업 요청서를 확인하고 Work의 시작 기준을 publish합니다. [machine 입력 계약](../../docs/GENERAL-WORK.md#installed-machine-commands-development)은 agent가 따르는 자료입니다. 사용자는 JSON을 작성하는 대신 제안과 confirmation을 검토합니다.
+이 결정 뒤에만 agent가 정확한 ticket·token으로 `colvia intent apply`를 실행합니다. 현재 수락된 작업 요청서를 확인하고 Work의 시작 기준을 publish합니다. [machine 입력 계약](../../docs/GENERAL-WORK.md#installed-machine-commands-development)은 agent가 따르는 자료입니다. 사용자는 JSON을 작성하는 대신 제안과 confirmation을 검토합니다.
 
 ## 3. 구현하고 결과 확인하기
 
-agent가 프로젝트에서 기능을 구현하고 정해진 검사를 실행합니다. 수락된 범위 안에서는 승인된 보정을 이어갈 수 있습니다. 기능 확대, 수락 기준 변경, ignore 정책 변경은 별도 결정이 필요합니다. Harness가 자율 반복 실행기를 제공하거나 다른 편집기의 파일 변경을 막아주지는 않습니다.
+agent가 프로젝트에서 기능을 구현하고 정해진 검사를 실행합니다. 수락된 범위 안에서는 승인된 보정을 이어갈 수 있습니다. 기능 확대, 수락 기준 변경, ignore 정책 변경은 별도 결정이 필요합니다. Colvia가 자율 반복 실행기를 제공하거나 다른 편집기의 파일 변경을 막아주지는 않습니다.
 
 이 예제에서는 프로젝트 root에서 실행합니다.
 
@@ -59,7 +61,7 @@ agent가 프로젝트에서 기능을 구현하고 정해진 검사를 실행합
 python3 -B -m unittest discover -s tests -v
 ```
 
-기대 결과는 앞에서 정한 네 가지 동작 기준 충족입니다. 합성 실습에서는 테스트 함수 네 개로 검사했으며 실제 작성한 테스트 수는 다를 수 있습니다. 예제 애플리케이션의 검사이며 Harness 회귀 테스트가 아닙니다.
+기대 결과는 앞에서 정한 네 가지 동작 기준 충족입니다. 합성 실습에서는 테스트 함수 네 개로 검사했으며 실제 작성한 테스트 수는 다를 수 있습니다. 예제 애플리케이션의 검사이며 Colvia 회귀 테스트가 아닙니다.
 
 agent에게 외부 실습 입력 디렉터리의 새 데이터 파일로 CLI를 시연하도록 요청합니다. 상위 디렉터리는 미리 있어야 합니다. 실행 전에 예시 경로를 바꿉니다.
 
@@ -89,8 +91,8 @@ Codex에게 요청합니다.
 agent는 반환된 Work `ticket`만 프로젝트 밖에 저장하고, 같은 선택 판본의 두 조회 화면을 보여줍니다. 여기서 선택 판본은 검토용으로 제출된 판본이며, 아직 결과를 수락한 상태는 아닙니다.
 
 ```sh
-./hv2 view work WORK_ID --revision REVISION_ID
-./hv2 view confirmation --input /absolute/path/todo-lab-inputs/work-ticket.json
+./colvia view work WORK_ID --revision REVISION_ID
+./colvia view confirmation --input /absolute/path/todo-lab-inputs/work-ticket.json
 ```
 
 실제 ID와 저장한 ticket 경로를 사용합니다. Work view에는 작성자가 선언한 관측 범위(`observed_scope`)와 미관측 범위(`unavailable_scope`)가 있으며, confirmation view에는 이 항목들이 반복 표시되지 않습니다. agent는 미관측 항목을 수락 기준에 하나씩 대조해 설명합니다. 범위 밖인지, 증거가 더 필요한지, 새 범위·작업 요청서 수락이 필요한지는 사용자가 결정합니다. 미관측 목록이 비어 있어도 수락 기준을 통과했다는 증거는 아닙니다. 판본이나 선택이 바뀌면 결정 전에 두 조회 화면과 ticket을 다시 준비합니다.
@@ -116,16 +118,16 @@ apply가 실패하거나 현재 내용이 일치하지 않으면 요청과 파�
 
 ## 5. 보존 방법 결정하기
 
-Harness는 `.hrn/`에 완료를 기록하며 commit이나 push를 수행하지 않습니다. agent에게 Git diff와 status, 보존할 파일 목록, 중요한 ignored 산출물을 보여달라고 요청하세요. 프로젝트 정책에 맞게 설치 파일, 권위 기록, source, 프로젝트 문서를 모두 확인해야 합니다.
+Colvia는 `.hrn/`에 완료를 기록하며 commit이나 push를 수행하지 않습니다. agent에게 Git diff와 status, 보존할 파일 목록, 중요한 ignored 산출물을 보여달라고 요청하세요. 프로젝트 정책에 맞게 설치 파일, 권위 기록, source, 프로젝트 문서를 모두 확인해야 합니다.
 
 원한다면 commit과 원격 게시를 별도로 승인합니다. 이 실습은 그 전에 멈춥니다. 프로젝트와 정확한 source·request 파일을 보관한 채 [새 세션](resume.md)으로 이동하세요.
 
 [Records And Retention](../../docs/REFERENCE.md#records-and-retention)에 따라 검사·중요 한계·리뷰·결정은 알맞은 기존 문서 한 곳에 모으고, 원본 출력이나 사본은 구체적인 조사·복구·재사용·전달에 필요할 때만 추가로 보존합니다. 이 local 실습에는 worker checkout이 없으며, worker를 사용하는 프로젝트에서는 agent가 정리 권한과 보존 상태를 별도로 확인한 뒤 사용이 끝난 적격 checkout을 정리하거나 남은 사용처와 정리 조건을 설명합니다.
 
-판본: private 개발판, `checkout-1`; 확인일 2026-10-05.
+과거 실습 — 판본: private 개발판, `checkout-1`; 확인일 2026-10-05.
 
 ---
 
 [이전: 준비](getting-started.md) · [목차](README.md) · [다음: 재개](resume.md)
 
-<!-- en_content_sha256: 5769e2632cfad0425b8dda1b821fcb539e1bcc6713049e2f9f52ecc29450e2c4 -->
+<!-- en_content_sha256: 1044d764f8fa88b048cc4ebbed69d86924a3f8377946f3e1cfa58d82047cbdcb -->

@@ -1,10 +1,12 @@
 # The Records And Decisions You Need
 
+This page describes the unactivated `entry-1` candidate. Use requires separate exact-artifact qualification and installation approval; the historical checkout-1 exercise below does not qualify these commands.
+
 [Contents](README.md) · [First Work](first-work.md) · [Resume](resume.md)
 
 [한국어](../ko/concepts.md)
 
-For the first project, keep three things distinct: the plan for the project, the exact request you accept, and the Work that carries it out. You can read explanations in Markdown while Harness keeps the records that identify the accepted revisions.
+For the first project, keep three things distinct: the plan for the project, the exact request you accept, and the Work that carries it out. You can read explanations in Markdown while Colvia keeps the records that identify the accepted revisions.
 
 ## Plan, Intent And Work
 
@@ -91,11 +93,11 @@ The [Reference](../../docs/REFERENCE.md) explains exact error codes and the [Man
 
 ## Keep The First Work Stable
 
-Harness compares whole project content, not only the changed-file list. Prepare ignore rules and out-of-scope setup before the baseline; include the intended Work narrative edits in scope. Keep test data out of the result tree and finish result explanations before submission. A required document reference binds exact bytes: changing it can require a newly accepted intent and rebind, so choose required inputs deliberately.
+Colvia compares whole project content, not only the changed-file list. Prepare ignore rules and out-of-scope setup before the baseline; include the intended Work narrative edits in scope. Keep test data out of the result tree and finish result explanations before submission. A required document reference binds exact bytes: changing it can require a newly accepted intent and rebind, so choose required inputs deliberately.
 
 These boundaries keep “what I approved” meaningful when an agent continues later. They do not provide an execution sandbox or prevent another process from editing the project.
 
-Edition: private development, `checkout-1`; checked 2026-10-05.
+Historical exercise — Edition: private development, `checkout-1`; checked 2026-10-05.
 
 ---
 

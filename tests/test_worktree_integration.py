@@ -4,6 +4,7 @@ Compute is a deterministic fixture transformation, not an agent or application
 benchmark. All commits and rebase are operator fixture actions outside Work apply.
 """
 from __future__ import annotations
+from test_productization_safety import verified_inventory_id
 import hashlib
 import json
 import os
@@ -117,7 +118,7 @@ class InstalledTwoWorkerIntegrationTests(unittest.TestCase):
         self.assertEqual(before,exact_snapshot(self.target/'.git'))
         return json.loads(result.stdout)
 
-    def observe(self,target):return snapshot(target,verified_launcher_sha256=self.sha)
+    def observe(self,target):return snapshot(target,verified_launcher_sha256=self.sha, verified_inventory_id=verified_inventory_id(self.target))
 
     def manifest(self,base,result,base_commit,candidate_commit,base_ref,candidate_ref):
         return make_manifest(base,result,scope=['a'],base_commit=base_commit,candidate_commit=candidate_commit,base_retention_ref='refs/heads/'+base_ref,candidate_retention_ref='refs/heads/'+candidate_ref)

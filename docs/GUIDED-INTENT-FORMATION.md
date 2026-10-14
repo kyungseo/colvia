@@ -1,12 +1,14 @@
 # Guided Intent Formation
 
+Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+
 Current surface: typed single-home intent records, machine commands and a read-only human view. The manual natural-language adapter guides the human through existing commands; it does not decide acceptance.
 
 ## Draft And Acceptance
 
 An intent draft describes six facets: goal, scope, expected_outcome, acceptance_oracle, destination, and forbidden_scope. A facet is known with a value, or unknown/deferred with an owner. Statements distinguish fact, assumption, unknown, and human-decision. Material unresolved gaps prevent acceptance; an entirely unknown/deferred draft cannot grant Work authority.
 
-Drafts form a single predecessor chain within one intent and retain one acceptance authority. New drafts do not automatically replace current intent. `hv2 intent draft` publishes a proposal. `hv2 intent prepare` creates an exact ticket binding the proposed revision and prerequisites. The human decides; `hv2 intent apply --confirm TOKEN` publishes acceptance and selection. Only the selected accepted draft is current.
+Drafts form a single predecessor chain within one intent and retain one acceptance authority. New drafts do not automatically replace current intent. `colvia intent draft` publishes a proposal. `colvia intent prepare` creates an exact ticket binding the proposed revision and prerequisites. The human decides; `colvia intent apply --confirm TOKEN` publishes acceptance and selection. Only the selected accepted draft is current.
 
 All machine input uses canonical JSON from `--input FILE` or stdin. Prepare requires `intent_id`, `revision_ref`, `actor`, `reason`, `request_id`, and `observed_at`, with optional `document_refs` (omission means an empty list). Apply consumes the returned ticket, not its response envelope. See [General Work](GENERAL-WORK.md) for integration and [Reference](REFERENCE.md) for diagnostics.
 

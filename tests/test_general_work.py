@@ -156,9 +156,9 @@ class ContentContractTests(unittest.TestCase):
         self.write("hv2", b"launcher\n")
         digest = hashlib.sha256(b"launcher\n").hexdigest()
         self.assertEqual(len(snapshot(self.target)["entries"]), 1)
-        self.assertEqual(snapshot(self.target, verified_launcher_sha256=digest)["entries"], [])
+        self.assertEqual(snapshot(self.target, verified_launcher_sha256=digest, verified_inventory_id="checkout-1")["entries"], [])
         with self.assertRaises(ContractError):
-            snapshot(self.target, verified_launcher_sha256="0" * 64)
+            snapshot(self.target, verified_launcher_sha256="0" * 64, verified_inventory_id="checkout-1")
 
     def test_symlink_special_and_nested_git_are_not_silently_excluded(self):
         self.init()
@@ -337,7 +337,7 @@ class ContentContractTests(unittest.TestCase):
         manifest["changes"][0]["path"] = "hv2"
         manifest["changes"][0]["post"]["path"] = "hv2"
         with self.assertRaises(ContractError):
-            preflight_changed_paths(self.target, manifest, verified_launcher_sha256="0" * 64)
+            preflight_changed_paths(self.target, manifest, verified_launcher_sha256="0" * 64, verified_inventory_id="checkout-1")
 
     def worker_manifest(self):
         self.init()
@@ -556,13 +556,13 @@ class WorkerWholeSourceTests(unittest.TestCase):
         self.git("add","."); self.git("commit","-qm","initial fixture")
         self.write(".hrn/record",b"second\n");self.git("add",".hrn");self.git("commit","-qm","record only fixture")
         oid=self.git("rev-parse","HEAD").strip().decode();self.git("tag","retained")
-        sha=hashlib.sha256(launcher.read_bytes()).hexdigest(); tree=snapshot(self.target,verified_launcher_sha256=sha)
+        sha=hashlib.sha256(launcher.read_bytes()).hexdigest(); tree=snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id="checkout-1")
         manifest=make_manifest(tree,tree,scope=["a"],base_commit=oid,candidate_commit=oid,base_retention_ref="refs/tags/retained",candidate_retention_ref="refs/tags/retained")
         before=(self.git("show-ref"),self.git("rev-parse","HEAD"),(self.target/".git/index").read_bytes())
-        self.assertEqual({},verify_worker_sources(self.target,manifest,verified_launcher_sha256=sha))
+        self.assertEqual({},verify_worker_sources(self.target,manifest,verified_launcher_sha256=sha, verified_inventory_id="checkout-1"))
         self.assertEqual(before,(self.git("show-ref"),self.git("rev-parse","HEAD"),(self.target/".git/index").read_bytes()))
         with self.assertRaisesRegex(ContractError,"launcher differs"):
-            verify_worker_sources(self.target,manifest,verified_launcher_sha256="0"*64)
+            verify_worker_sources(self.target,manifest,verified_launcher_sha256="0"*64, verified_inventory_id="checkout-1")
 
 
 if __name__ == "__main__":

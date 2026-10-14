@@ -1,8 +1,8 @@
 # Checkout-1 Structural Contract
 
-Status: Draft supplement to [DR-0002](../decisions/DR-0002-checkout-1-contract-baseline.md). Prepared 2026-10-07. Source development only; this file is not part of the managed installation.
+Status: unactivated entry-1 successor candidate. The M3 version of this supplement retains its historical "Draft" label and SHA-256 `5797a6c2052c17f911551bdfd0205dcffb5e7c0dd2600dad5b64ae130a417944`; prepared 2026-10-07. [DR-0002](../decisions/DR-0002-checkout-1-contract-baseline.md) remains effective until separate successor qualification and activation. Source development only; this file is not part of the managed installation.
 
-This supplement specifies the exact objects, references and graph constraints needed to interpret checkout-1 records without a private schema document. Read it when changing a record reader, writer or compatibility rule. The lifecycle and authority procedures remain in the contract set named by DR-0002. A structurally valid object alone never authorizes publication, acceptance, content application or recovery.
+This supplement specifies the exact objects, references and graph constraints needed to interpret entry-1 and retained supported records without a private schema document. Read it when changing a record reader, writer or compatibility rule. The lifecycle and authority procedures remain in the contract set named by DR-0002. A structurally valid object alone never authorizes publication, acceptance, content application or recovery.
 
 These clauses become normative only when the Owner activates their exact revision with the baseline. Until then they are a proposal checked against the current validators. The implementation is a comparison target, not an alternative source of authority. A disagreement must be reported and resolved explicitly; copying observed code into this document does not settle a policy change.
 
@@ -25,7 +25,7 @@ CLI convenience inputs and diagnostic output are not persisted records. Document
 | `Int` | A JSON integer; a boolean is not an integer |
 | `TextArray` | Array of `Text`; no implicit sorting or deduplication |
 | `Path` | Literal nonempty relative NFC path with `/` separators; no empty, `.` or `..` components, backslash or NUL; no component whose casefold is `.git` or `.hrn` |
-| `Window` | Current `checkout-1`; readable earlier inventory history may name `human-1`, `worker-1`, `umbrella-1` or `planning-1`. `serial-1` and generation formats are not supported aliases |
+| `Window` | Candidate writer `entry-1`; readable earlier inventory history may name `human-1`, `worker-1`, `umbrella-1`, `planning-1` or `checkout-1`. `serial-1` and generation formats are not supported aliases |
 | `Oid` | 40 or 64 lowercase hexadecimal characters |
 | `ShortText` | String of at most 2,000 characters, normally non-whitespace; only fields expressly permitting empty text may be empty |
 
@@ -311,7 +311,7 @@ A release ref has `sha256: Sha`, `inventory_id: Window` and `id = "product-relea
 
 ### Exact Managed Membership
 
-Current planning-1/checkout-1 membership is the following 29 paths, sorted by UTF-8 bytes in an inventory. Umbrella-1 uses this set without `src/hv2ref/candidates.py` (28). Human-1/worker-1 use that set without `src/hv2ref/umbrella.py` (27). Earlier receipts retain their own window's exact set; no new source-only development document is added implicitly.
+Historical planning-1/checkout-1 membership is the following literal 29 paths, sorted by UTF-8 bytes in an inventory. Umbrella-1 uses this set without `src/hv2ref/candidates.py` (28). Human-1/worker-1 use that set without `src/hv2ref/umbrella.py` (27). Earlier receipts retain their own window's exact set; no new source-only development document is added implicitly.
 
 ```text
 .gitignore
@@ -345,7 +345,7 @@ src/hv2ref/work.py
 src/hv2ref/workspace.py
 ```
 
-A retained release directory contains exactly `inventory.json` plus those payload paths and their required ancestor directories. Every payload size/digest and the launcher's declared window must agree with its inventory. Files not in this set cannot silently enter the release.
+Current entry-1 membership replaces only `hv2` with `colvia` and `adapters/harness-v2-work/SKILL.md` with `adapters/colvia-work/SKILL.md` in membership; its actual ordered inventory is UTF-8 sorted and still has 29 paths. Retain the old lists literally in readers, independently of the new set. A retained release directory contains exactly `inventory.json` plus its window's payload paths and their required ancestor directories. Every payload size/digest and the launcher's declared window must agree with its inventory. Files not in this set cannot silently enter the release.
 
 ### Plans, Bindings And Receipts
 
@@ -356,13 +356,13 @@ A plan is `lifecycle-plan`. Its operation/home IDs are `Id`, created time is `Te
 | Action | Version | Binding / candidate | Truth and file lists |
 | --- | --- | --- | --- |
 | Init | 1 | Expected binding null; candidate release non-null | `truth_refs`, `remove`, `preserve` all empty. `InitRequest.format` and plan format/home/target agree |
-| Update / rollback | 1 | Expected binding non-null; candidate release non-null | Exact observed truth; remove/preserve empty |
+| Update / rollback | Paired 2 for entry-1; paired 1 historical | Expected binding non-null; candidate entry-1 for new writes | Exact observed truth; preserve empty. Same-entry remove empty; admitted checkout-1→entry-1 update removes exactly verified old `hv2` |
 | Repair | 1 | Expected binding non-null; candidate equals exact active release | Exact observed truth, allowing valid Work/intent pending; remove and preserve are the same list of original damaged files that exist |
-| Detach | 2 for new writes; paired 1 readable as history | Expected binding non-null; candidate null | Exact truth and exact managed removal / authority preservation inventories described below |
+| Detach | 3 for new writes; paired 1/2 readable as history | Expected binding non-null; candidate null | Exact truth and exact managed removal / authority preservation inventories described below |
 
 A `TruthRef` has a path relative to `.hrn/` and `Sha`. Paths are `planning/candidates.json` or paths under `intents/` / `work/` with at least three components, no empty/dot/parent components or backslash. The actual list binds every saved truth file, not merely current pointers. Names are unique and sorted by UTF-8 bytes. A valid-looking path alone does not prove the file belongs to a valid object graph.
 
-A receipt is `lifecycle-receipt` with operation ID, complete plan and two `Ref`-or-null binding refs. Its version is 1 for init/update/rollback/repair, and exactly the embedded detach plan's version for detach. Outer and plan operation IDs agree. The whole receipt must equal the canonical expected record:
+A receipt is `lifecycle-receipt` with operation ID, complete plan and two `Ref`-or-null binding refs. Its version is 1 for init/repair and historical switches, 2 for entry-1 switches, and exactly the embedded detach plan's version (paired 1/2/3) for detach. Mixed pairs and bool/non-integer versions are refused. Outer and plan operation IDs agree. The whole receipt must equal the canonical expected record:
 
 - Init result binding has candidate active, null prior and this operation ID; receipt prior is null and result names that binding.
 - Switch result binding has candidate active, previous active as prior and this operation ID; receipt prior names the exact previous binding and result names the new binding.
@@ -371,7 +371,7 @@ A receipt is `lifecycle-receipt` with operation ID, complete plan and two `Ref`-
 
 Product receipts form a complete nonforking chain from the init receipt; orphan/cyclic receipts, case aliases and a receipt inconsistent with its reconstructed binding are refused. Applied binding bytes match exactly either the chain tip or its single pending predecessor. A receipt alone is not applied completion. Every retained release is verified against its named window; launcher bytes must be among the permitted active/pending bytes under the lifecycle procedure.
 
-Window rank is human-1 < worker-1 < umbrella-1 < planning-1 < checkout-1; history cannot downgrade. Rollback names exactly the prior release recorded by the applied binding, still subject to that rank rule. Current writers switch only to checkout-1 from planning-1/checkout-1. Earlier readable windows do not gain current write support. Planning records require an applied planning-capable binding. Runtime provenance and the first durable receipt barrier remain as specified in [Workspace Contract](../WORKSPACE-CONTRACT.md).
+Window rank is human-1 < worker-1 < umbrella-1 < planning-1 < checkout-1 < entry-1; history cannot downgrade. Rollback names exactly the prior release recorded by the applied binding, still subject to that rank rule. Current writers switch only to entry-1 from the exact allowlisted checkout-1 predecessor or entry-1. The full old release reference and entry-specific receipt/retirement rules are in [Workspace Contract](../WORKSPACE-CONTRACT.md#entry-1-admission-and-publication); a matching window alone does not admit a predecessor. Earlier readable windows do not gain current write support. Planning records require an applied planning-capable binding. Runtime provenance and the first durable receipt barrier remain as specified in [Workspace Contract](../WORKSPACE-CONTRACT.md).
 
 ### Exact Repair Request
 
@@ -383,11 +383,11 @@ The plan's preservation lists include each non-null before image as path/digest/
 
 ### Detach Plan And Receipt
 
-Removal entries are sorted, unique under casefold, relative metadata paths with exact raw digests/sizes. They comprise the launcher, product init plan, binding, every lifecycle receipt, and each retained release's exact inventory/payload membership. At least one release and receipt exist. The detach operation ID does not alias a removed receipt ID. Each release ID matches its removed inventory digest prefix; the removed binding digest equals the expected binding ref. The launcher digest/size matches a removed release's payload launcher.
+Removal entries are sorted, unique under casefold, relative metadata paths with exact raw digests/sizes. They comprise the launcher, product init plan, binding, every lifecycle receipt, and each retained release's exact inventory/payload membership. At least one release and receipt exist. The detach operation ID does not alias a removed receipt ID. Each release ID matches its removed inventory digest prefix; the removed binding digest equals the expected binding ref. The launcher digest/size matches a removed release's payload launcher: `colvia` for schema 3, historical `hv2` for paired 1/2. Schema 3 checks the retired-entry collision after exact prefix validation, including when no active binding remains; do not add that occupant to removal or infer an active product. See [diagnostic context](../REFERENCE.md#entry-1-diagnostic-context).
 
 Preserve entries are exactly `.hrn/format.json`, `.hrn/.gitignore` and `.hrn/` plus every truth-ref path. Format and ignore entries match their exact canonical bytes, and truth digests agree. Entries do not authorize arbitrary project-file deletion.
 
-The durable detach receipt equals the expected paired-version receipt before removal. Remaining files must match an exact suffix of the removal order: launcher first, then remaining paths in canonical order. Directories are removed only after files, deepest first and then UTF-8 order. Unknown, changed or out-of-order remnants remain unavailable and preserved. New writes require schema 2 and exact original request/target; schema 1 history is read-only here and requires its retained old source for recovery.
+The durable detach receipt equals the expected paired-version receipt before removal. Remaining files must match an exact suffix of the removal order: launcher first, then remaining paths in canonical order. Directories are removed only after files, deepest first and then UTF-8 order. Unknown, changed or out-of-order remnants remain unavailable and preserved. New writes require schema 3 and exact original request/target; paired schema 1/2 history is read-only here and requires its retained old source for recovery.
 
 ## Derived Identities And Tokens
 

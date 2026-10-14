@@ -208,6 +208,8 @@ class UnchangedCrlfTests(unittest.TestCase):
             self.assertIsNotNone(observed['source_error'])
         self.assertEqual({},verify_worker_sources(self.target, manifest, verified_inventory_id='checkout-1'))
         self.assertIsNone(_worker_inspection(self.target, manifest, {'launcher_sha256':None,'inventory':{'inventory_id':'checkout-1'}})['source_error'])
+        self.assertEqual({},verify_worker_sources(self.target,manifest,verified_inventory_id='entry-1'))
+        self.assertIsNone(_worker_inspection(self.target,manifest,{'launcher_sha256':None,'inventory':{'inventory_id':'entry-1'}})['source_error'])
 
     def test_empty_info_attributes_allowed_and_symlink_refused(self):
         self.crlf_input(); proposal = self.baseline()
@@ -290,6 +292,11 @@ class UnchangedCrlfTests(unittest.TestCase):
         cancel=self.prepare('reject',supersedes=record_ref(decision))
         self.assertFalse(self.apply(cancel)['pending_decisions'])
         self.assertEqual(b'before\n',(self.target/'a').read_bytes())
+
+    def test_entry_window_capability_retains_exact_crlf_completion(self):
+        # Keep the original checkout-1 double and exercise its entry-1 successor separately.
+        self.store.runtime_check=lambda target:{'binding_ref':self.binding.copy(),'launcher_sha256':None,'inventory_id':'entry-1'}
+        self.test_unchanged_crlf_start_submit_accept_keeps_exact_checkout_bytes()
 
 
 class InstalledUnchangedCrlfTests(unittest.TestCase):
