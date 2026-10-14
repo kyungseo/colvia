@@ -15864,3 +15864,15 @@ Co-authored-by: Codex <noreply@openai.com>
 HEAD 이후 전체 diff --check는 기존 verbatim reviewer 원문의 공백4곳(현재 Work12463/12850/12862/12909)을 계속 보고한다. 이번6개 문서의 before→after diff --check에는 새 공백 오류가 없다. 과거 reviewer 원문을 자동 정리하지 않았으며 전체 diff가 완전히 clean하다고 주장하지 않는다.
 
 현재 커밋 제안은 tracked56개다. Untracked36개(고유 내용18종)는 기존 verification bundle에서 각각 동일 bytes의 별도 보존본을 확인했다. Recovery에서 바뀐 controls3개도 포함되며 별도 source 실행 복사본을 Git에 추가하지 않는다. 현재 tracked binary patch를 기존 current-changes.patch에 저장하고 readback 일치를 확인했다. Source checkout은 정확히 등록된 codex/colvia-brand-transition이며 다음 커밋 검토/실행을 위해 유지한다. Commit/stage/push/PR/merge/실제 adopter 적용0이다.
+
+
+### Owner-Approved Verification Carry-Forward — 2026-10-14
+
+Owner는 “이월 문구는 제안대로 세 곳에 반영해.”라고 승인했다. 완료된 private 개발 결과와 기존 실행/미실행 증거를 유지하고, 남은 한계의 확인 시점을 다음 두 갈래로 기록한다. 이 기록은 새 검증 PASS나 일반 qualification 기준의 면제가 아니다.
+
+1. Parent-O 생략은 미검증 상태로 유지하며 public qualification 전에 확인한다.
+2. 축소 P4에서 현재 후보에 실행하지 않고 P2 결과 재사용에 기댄 factory 조합과 C4/C5 한계는 public qualification과 첫 실제 adopter 적용 중 먼저 오는 시점 전에 재사용 타당성과 필요한 추가 검증을 확인한다. 실제 대상의 판단·잔여 한계·적용 승인과 결과는 target-owned 적용 기록이 소유하며, 이 절만으로 한계가 해소되지는 않는다.
+
+두 경우 모두 해당 시점에 적용하거나 공개할 exact 후보를 고정하고, [Maintaining의 기존 qualification 기준과 증거 재사용 조건](../MAINTAINING.md#evidence-reuse-and-selection)을 유지한 채 누적 변경·미검증 위험에 필요한 검증을 정한다. Normal·parent-optimized 전체 회귀 요구를 완화하지 않으며, 식별 가능한 전체 실행 근거와 누적 변경 검증이 요구를 충족하는지 먼저 확인한다. 기존 근거가 요구를 충족하지 못하거나 영향 범위를 한정할 수 없으면 필요한 전체 회귀를 수행한다. 전체 반복 여부는 그때 추가로 확인할 위험과 기존 기준을 근거로 판단하며, private 한정 수락을 public qualification으로 확대하지 않는다.
+
+이 Work가 상세 한계를 소유한다. [Public Preview 항목](README.md#public-preview-readiness)과 실제 adopter 적용 조건에는 이 기록과 해당 시점의 판단만 연결해 같은 검증 목록을 중복 관리하지 않는다. 이번 변경은 Owner 결정 기록과 기존 기준의 연결이며 runtime·tests·managed payload·규범 문서를 수정하거나 기존 완료 결과를 재개하지 않는다.

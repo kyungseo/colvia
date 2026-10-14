@@ -153,6 +153,8 @@ Before a publication task, disposition earlier development artifacts whose custo
 
 Verification includes anonymous acquisition/native install, source→artifact→publish→refetch equality, exact-candidate isolated smoke, first-work and interrupted-resume scenarios, active/prior entry selection, disclosure/history/fixture checks, support parity and live release/link inspection. If a managed root pointer is selected, test marker damage/duplication/migration/cleanup and user-edit preservation against the alternative entry paths; an external precedent is not product evidence. Actual public mutations remain separately authorized.
 
+For the private candidate's residual verification limits, follow the [Owner-approved carry-forward record](CHORE-20261009-002-colvia-verification-controls.md#owner-approved-verification-carry-forward--2026-10-14). Fix the exact public candidate and check the inherited and still-unverified evidence under Maintaining's existing normal/parent-optimized regression and reuse requirements. This pointer neither waives those criteria nor duplicates the Work's limit inventory; actual adopter admission and its earlier check remain target-owned.
+
 ### Windows Admission
 
 After macOS Preview, select exact Windows 11 edition/build, architecture, filesystem, shell, Git and final supported CPython. Native standard-user local/guest NTFS with PowerShell or cmd is required for the selected acceptance; hosted x64 CI/mocks cannot replace real Windows evidence. Account/environment provision is an Owner responsibility. Review POSIX locking/imports, launcher semantics, directory durability/replace, CRLF/case, reserved names and reparse boundaries without treating the current macOS implementation as Windows support.
