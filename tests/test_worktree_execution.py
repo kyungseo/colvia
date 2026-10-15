@@ -13,20 +13,22 @@ import unittest
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.work import make_manifest, snapshot, record_ref, read_work
 from hv2ref.workspace import git_environment
-from test_general_work_recovery import SerialWriterTests, digest, TIME
-from test_productization_safety import ActualWorkspaceInitTests, canonical_json_bytes, exact_snapshot
+import test_general_work_recovery
+from test_general_work_recovery import digest, TIME
+import test_productization_safety
+from test_productization_safety import canonical_json_bytes, exact_snapshot
 
 
 class WorkerPublicationTests(unittest.TestCase):
-    accept_intent=SerialWriterTests.accept_intent
-    proposal=SerialWriterTests.proposal
-    publish=SerialWriterTests.publish
-    prepare=SerialWriterTests.prepare
-    apply=SerialWriterTests.apply
-    bytes=SerialWriterTests.bytes
+    accept_intent=test_general_work_recovery.SerialWriterTests.accept_intent
+    proposal=test_general_work_recovery.SerialWriterTests.proposal
+    publish=test_general_work_recovery.SerialWriterTests.publish
+    prepare=test_general_work_recovery.SerialWriterTests.prepare
+    apply=test_general_work_recovery.SerialWriterTests.apply
+    bytes=test_general_work_recovery.SerialWriterTests.bytes
 
     def setUp(self):
-        SerialWriterTests.setUp(self)
+        test_general_work_recovery.SerialWriterTests.setUp(self)
         self.git(self.target,"init","-q")
         self.git(self.target,"config","user.name","Fixture")
         self.git(self.target,"config","user.email","fixture@example.invalid")
@@ -394,13 +396,13 @@ class WorkerApplicationTests(unittest.TestCase):
 
 
 class InstalledWorkerPublicationTests(unittest.TestCase):
-    setUp=ActualWorkspaceInitTests.setUp
-    TIME=ActualWorkspaceInitTests.TIME
-    draft=ActualWorkspaceInitTests.draft
-    accept_intent=ActualWorkspaceInitTests.accept_intent
-    installed=ActualWorkspaceInitTests.installed
-    preview=ActualWorkspaceInitTests.preview
-    apply_init=ActualWorkspaceInitTests.apply_init
+    setUp=test_productization_safety.ActualWorkspaceInitTests.setUp
+    TIME=test_productization_safety.ActualWorkspaceInitTests.TIME
+    draft=test_productization_safety.ActualWorkspaceInitTests.draft
+    accept_intent=test_productization_safety.ActualWorkspaceInitTests.accept_intent
+    installed=test_productization_safety.ActualWorkspaceInitTests.installed
+    preview=test_productization_safety.ActualWorkspaceInitTests.preview
+    apply_init=test_productization_safety.ActualWorkspaceInitTests.apply_init
 
     def call(self,command,value=None,*,env=None,launcher=None,expected=0):
         args=[sys.executable,"-I","-B",str(launcher or self.source/"colvia"),*(["--source-checkout"] if launcher is None else []),*map(str,command)]
