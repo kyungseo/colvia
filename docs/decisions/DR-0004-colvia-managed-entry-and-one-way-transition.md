@@ -424,3 +424,30 @@ DR-0002의 M3 current writer/reader-window·checkout/detach·worker-integration 
 수락 대상은 recovery source102 digest `6e2b54d1ad9604b2ff84bd5de8d6ad4caf428e5523cae4314657250bde4aaa39`, managed29 inventory SHA `596946e9370c7de83313417b7e23362a8ce19c5f25a5b8ce72e8dc422b9c49ea`의 개발 결과다. 현재 선택143 PASS, ordinary616 재사용+163 보완=779 normal PASS, 기록된 P2/P3 한정 재사용 및 R24 필수 지적 처분을 함께 수락한다. 이번 소스 전용 수락/안내 기록은 runtime/test/managed payload를 바꾸지 않는다. 과거 source102 digest를 이 추가 기록까지 포함한 새 전체 source digest라고 부르지 않는다.
 
 Parent-O는 이번 task에서 생략한다. Source AST 확인은 실행 증거가 아니며 tests 전체 assert 부재도 주장하지 않는다. 전체6663×두 모드 PASS, 생략한 factory 조합, C4 원인 미확정·C5 관측 제한, 다른 OS/runtime·실제 adopter·public qualification을 새로 주장하지 않는다. 승인된 축소 완료 조건의 수락이며 Maintaining의 일반 lifecycle 검증 정책을 바꾸지 않는다. 향후 최적화에 의존하는 코드, 해당 모드의 장애 또는 새 runtime 지원 필요가 생기면 그 변경 범위에서 재검토한다.
+
+
+## First B1 Permission Observation Activation — 2026-10-15
+
+Status: Accepted (Amended), following the Owner decision recorded in the existing binding-permissions-r0-plan.md task record. This activates only the exact source-development supplement below. Adopter application remains separately authorized; this is not public release qualification.
+
+### Exact Activated Supplement
+
+The amendment to C0-M and the S6/wrong-mode observation clauses permits an exact completed current first-transition B1 at 0600 or 0644. Initial B1 and binding.next publication remain 0600. Readers do not chmod. Exclusive publication, exact bytes, one-link/type checks, synchronization, rejection of other modes or residual binding.next, and launcher 0755 are unchanged. Historical replay cannot synchronize a newer binding. Same-entry B2/B3 and typed local/worker/parent/planning record meaning remain unchanged.
+
+| Member | Exact SHA-256 |
+| --- | --- |
+| docs/WORKSPACE-CONTRACT.md | 3a3d7359d37fb4ac9254dab89b89110b3cbfcb12096ecf157a7996be6a0b79f8 |
+| docs/OPERATIONS.md | 554c1982f698ab811af704b9aa88b63760681376341b5ea98c9558a8c70f2d15 |
+| src/hv2ref/product.py (implementation identity) | 0bb14cae96cc3ccc63677cba3b4f3fff50ee83ad2464759dbcb9ae61b7fedc06 |
+
+The frozen amendment preparation bytes have SHA-256 734a81d737444c34f4face3cd0c2f579dda8707e58386f256eeb78ebe8f522b6. The managed29 inventory is 2216a2634eb3fa5d6a8bfa7c7d4847b29fb2443ba7b367156c15b15ddb5a17e0, preserved in source merge 43a10086f28da32097c7687b6bd74e58dd45abdf. This source-only activation changes none of those managed bytes or the release identity.
+
+### Evidence And Limits
+
+The Owner-accepted cumulative development evidence consists of 42 regression/document cases, one separate logical predicate case and four actual special-mode subcases. Four additional current-document A1 cases passed in separate executions of three and one. A verified independent copy of one private adopter completed L-to-Q update, installed status/doctor/view after Git recreated the unchanged binding as 0644, and Q-to-L rollback. Eleven completed Work records, eleven intents, no pending records, and 461 protected entries were preserved. The actual adopter was unchanged by that rehearsal.
+
+These bounded results do not establish a current complete normal/parent-optimized anchor, a full factory/C4/C5 matrix, another OS/runtime, public qualification or actual adopter acceptance. The existing parent-O/public qualification condition, unreproduced historical detach failure and its investigation triggers, and C4/C5 reuse limits remain. The general MAINTAINING qualification policy is unchanged. Separately authorized private application must bind its exact target, candidate, retained recovery material, request and confirmation token and record its own result.
+
+### Frozen Preparation Labels
+
+Following the existing Entry-1 Amendment Activation convention, retained Proposed/unactivated labels in the exact managed documents and amendment preparation prefix describe their preparation revision. This named Owner activation controls the current effect of the supplement. Do not edit installed payloads to change those labels or manufacture a new release solely for this record. The earlier accepted record and unrelated contract clauses retain their original bytes and meaning.
