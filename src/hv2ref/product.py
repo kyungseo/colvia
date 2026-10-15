@@ -5,6 +5,7 @@ import os
 import re
 import stat
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -233,6 +234,19 @@ def _serial_require(condition: bool, detail: str) -> None:
 
 
 def _launcher_inventory_window(data: bytes, *, allow_legacy: bool = False) -> str:
+    """Reuse only declaration parsing; callers still read and verify current bytes."""
+    if type(data) is bytes and type(allow_legacy) is bool and len(data) <= 1024 * 1024:
+        return _cached_launcher_inventory_window(data, allow_legacy)
+    return _parse_launcher_inventory_window(data, allow_legacy=allow_legacy)
+
+
+@lru_cache(maxsize=4)
+def _cached_launcher_inventory_window(data: bytes, allow_legacy: bool) -> str:
+    # At most four 1 MiB inputs; exceptions are not retained by lru_cache.
+    return _parse_launcher_inventory_window(data, allow_legacy=allow_legacy)
+
+
+def _parse_launcher_inventory_window(data: bytes, *, allow_legacy: bool = False) -> str:
     """Read a candidate's declaration without executing it; not a code trust check."""
     _serial_require(isinstance(data, bytes) and len(data) <= 1024 * 1024,
                     "invalid or oversized launcher declaration input")
