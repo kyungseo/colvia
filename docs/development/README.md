@@ -202,3 +202,8 @@ None created by this proposal. Allocate a plain development record ID only when 
 - [CHORE-20261009-001: Colvia Entry Contract](CHORE-20261009-001-colvia-entry-contract.md) — authorization, progress and review record.
 
 - [CHORE-20261009-002: Colvia Verification Controls](CHORE-20261009-002-colvia-verification-controls.md#owner-result-acceptance-and-contract-activation--2026-10-14) — accepted development result and contract activation; Git/adopter/public actions remain separate.
+
+
+## First B1 Permission Observation Supplement
+
+[DR-0004: First B1 Permission Observation Activation](../decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#first-b1-permission-observation-activation--2026-10-15) records the accepted exact supplement and retained preparation-label interpretation. [Preparation and verification history](binding-permissions-amendment.md) remains preserved. Exact adopter application and public qualification retain their separate decisions.

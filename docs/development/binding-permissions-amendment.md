@@ -21,3 +21,8 @@ The accepted DR-0004 record, C0-M publication requirement and historical activat
 위 Adjusted Verification Scope는 당시 sandbox 내부에서 특수 권한 파일을 생성할 수 없었던 시점의 범위 기록이다. 2026-10-15 Owner는 합성 시험 파일 준비만 sandbox 밖에서 수행하는 좁은 예외를 승인했다. 실제 검증은 기존 sandbox와 실행 상한 안에서 수행했으며, 실제04600/04644 파일에 대한 verifier 거부2개와 source/installed status·doctor·view 거부 및 파일 불변성2개, 총4개 하위 사례가 PASS했다. 이 실제 파일 검증 공백은 해소됐다. 논리 단위검사는 실제 파일 검증과 별도의 증거로 유지한다.
 
 Owner는 재사용한 회귀·문서42개와 논리1개, 이번 실제 파일4개 하위 사례의 누적 검증 결과를 최종 수락했다. 전체42개를 다시 실행했거나47개 독립 test ID를 통과했다는 의미는 아니다. 이후 별도 비용 보정은 기본 절차로 삼지 않고, 유효한 완료 결과를 재사용하며 검증 실행 중 시간·자원을 측정한다. 상세 실행 증거와 수락은 기존 binding-permissions-r0-plan.md 작업 기록에 있다. 계약 발효·exact release qualification·실제 adopter update는 이 검증 결과 수락과 별도다.
+
+
+## Activation Record — 2026-10-15
+
+The Owner accepted the exact permission observation supplement under [DR-0004: First B1 Permission Observation Activation](../decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#first-b1-permission-observation-activation--2026-10-15). The preceding preparation text is preserved. The linked record owns the exact member hashes, current normative effect and evidence limits. This source-only appendix does not change managed29 bytes, qualify a public release or authorize an adopter update by itself.
