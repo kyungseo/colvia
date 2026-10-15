@@ -913,8 +913,8 @@ def _workspace_product_once(target: Path, *, allow_pending: bool = False, repair
         if position <= index and receipt["plan"]["remove"]:
             _entry_binding_stage(target, receipt["plan"], canonical_json_bytes(bindings[position]), allowed=False)
             if position == index:
-                _serial_require(stat.S_IMODE((product / "binding.json").lstat().st_mode) == 0o600,
-                                "entry transition B1 mode is not 0600")
+                _serial_require(stat.S_IMODE((product / "binding.json").lstat().st_mode) in (0o600, 0o644),
+                                "entry transition B1 mode is not 0600 or 0644")
     expected = {"init-plan.json", "binding.json"} | {"receipts/"+op+".json" for op in receipts}
     for rid in releases:
         expected |= {"releases/"+rid+"/inventory.json"} | {"releases/"+rid+"/payload/"+p for p in _managed_paths(releases[rid]["inventory"]["inventory_id"])}

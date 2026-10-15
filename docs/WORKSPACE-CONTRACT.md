@@ -320,7 +320,9 @@ Each such local/parent manifest result must equal the admission snapshot excludi
 | S3a / S3b | N is a zero/strict byte prefix at 0600, or complete bytes at 0600; exact recovery rechecks descriptor/path/prefix, appends only missing bytes, syncs, sets 0755 and syncs file/root |
 | S4 | Exact executable N and exact O with B0; verify both, unlink only O and sync root; if O is visible again, re-observe this same state |
 | S5 | N only/B0; exclusively create `.hrn/staging/entry-<operation_id>/binding.next` at 0600, exact prefix-append canonical B1, sync, recheck B0 and replace binding; sync both directories |
-| S6 | N only/B1 at 0600; verify and synchronize current state before content comparison; never rewind binding |
+| S6 | N only/exact complete B1 at 0600 or 0644; verify and synchronize current state before content comparison; never rewind binding |
+
+Candidate permission amendment (not activated): S5 still publishes `binding.next` and the first B1 at 0600. Only an exact complete current first-transition B1 may be observed at 0600 or 0644, including after a Git checkout. This does not attest that the final sync completed: current-B1 recovery/replay repeats its existing synchronization obligations. Readers never chmod the binding. Staged or incomplete `binding.next` remains strictly 0600; executable N remains exactly 0755. Other modes, types, links, altered bytes and B1 plus remaining `binding.next` remain refused. Retained older entry-1 readers require 0600 for the first B1. The C0-M publication rule and historical activation hashes remain unchanged; exact successor qualification and separate Owner activation are pending.
 
 All steps recheck exact plan, binding, truth and supported prefix under the guard. New installed `colvia` requires entry-1 binding and cannot write before S6. Audited old writers recheck the shared schema/window fence after acquiring the guard; the lock alone is not that fence. New independent source is the S1–S5 recovery executor, with original request/token and exact candidate. Retain recovery inputs and restoration-verified external target recovery material before actual transition.
 
