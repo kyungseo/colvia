@@ -1,0 +1,117 @@
+#!/usr/bin/env -S python3 -I -B
+from __future__ import annotations
+
+WORKSPACE_INVENTORY_ID = "entry-1"
+
+import hashlib
+import json
+import re
+import stat
+import sys
+from pathlib import Path
+
+
+def fail(code: str, message: str) -> int:
+    print(json.dumps({"classification": "fail", "code": code, "message": message}, sort_keys=True))
+    return 65
+
+
+def regular_bytes(path: Path) -> bytes:
+    for parent in reversed(path.parents):
+        if not stat.S_ISDIR(parent.lstat().st_mode):
+            raise ValueError("non-directory launcher ancestor")
+    before = path.lstat()
+    if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+        raise ValueError("non-regular or shared launcher input")
+    data = path.read_bytes()
+    after = path.lstat()
+    if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+        raise ValueError("unstable launcher input")
+    return data
+
+
+def json_file(path: Path):
+    data = regular_bytes(path)
+    if len(data) > 4 * 1024 * 1024:
+        raise ValueError("oversized bootstrap JSON")
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result: raise ValueError("duplicate bootstrap key")
+            result[key] = value
+        return result
+    value = json.loads(data, object_pairs_hook=pairs, parse_constant=lambda value: (_ for _ in ()).throw(ValueError("nonfinite JSON")))
+    if (json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n").encode() != data:
+        raise ValueError("noncanonical bootstrap JSON")
+    return value, data
+
+
+def workspace_source(root: Path) -> Path:
+    if not sys.flags.isolated or not sys.dont_write_bytecode:
+        raise ValueError("workspace launcher requires isolated Python and no bytecode")
+    binding, _ = json_file(root / ".hrn/product/binding.json")
+    ref = binding["active_release"]
+    rid = ref["id"]
+    if not isinstance(rid, str) or re.fullmatch(r"product-release-[0-9a-f]{24}", rid) is None:
+        raise ValueError("invalid bound release id")
+    release = root / ".hrn/product/releases" / rid
+    inventory, raw = json_file(release / "inventory.json")
+    digest = hashlib.sha256(raw).hexdigest()
+    if rid != "product-release-" + digest[:24] or ref != {"id": rid, "sha256": digest, "inventory_id": WORKSPACE_INVENTORY_ID}:
+        raise ValueError("release reference mismatch")
+    if not isinstance(inventory, dict) or inventory.get("record_type") != "release-inventory" or type(inventory.get("schema_version")) is not int or inventory["schema_version"] != 1 or inventory.get("inventory_id") != WORKSPACE_INVENTORY_ID:
+        raise ValueError("unsupported inventory")
+    entries = {}
+    for entry in inventory["entries"]:
+        name = entry["path"]
+        if not isinstance(name, str) or name in entries: raise ValueError("duplicate or invalid inventory path")
+        entries[name] = entry
+    # Validate every importable module before any package code executes. Full
+    # product/record verification still belongs to the imported readers/guards.
+    modules = ("__init__", "candidates", "cli", "errors", "intent", "jsonio", "product", "umbrella", "view", "work", "workspace")
+    expected = {"src/hv2ref/" + name + ".py" for name in modules}
+    package = release / "payload/src/hv2ref"
+    for directory in reversed((package, *package.parents)):
+        if not stat.S_ISDIR(directory.lstat().st_mode): raise ValueError("unsafe package directory")
+    if {p.name for p in package.parent.iterdir()} != {"hv2ref"}:
+        raise ValueError("unexpected import root member")
+    if {p.name for p in package.iterdir()} != {name + ".py" for name in modules}:
+        raise ValueError("unexpected importable package member")
+    for name in sorted(expected | {"colvia"}):
+        entry = entries[name]
+        data = regular_bytes(release / "payload" / name)
+        if type(entry["size_bytes"]) is not int or entry["size_bytes"] != len(data) or entry["sha256"] != hashlib.sha256(data).hexdigest():
+            raise ValueError("bootstrap payload mismatch")
+        if name == "colvia" and data != regular_bytes(root / "colvia"):
+            raise ValueError("launcher differs from bound release")
+    return release / "payload/src"
+
+
+def main() -> int:
+    root = Path(__file__).absolute().parent
+    workspace = root / ".hrn"
+    try:
+        if workspace.exists() or workspace.is_symlink():
+            source = workspace_source(root)
+            sys.path.insert(0, str(source))
+            from hv2ref.cli import main as cli_main
+            return cli_main(workspace_target=root)
+        # Source entry is an explicit trusted operator mode.
+        # Missing workspace metadata must never select project code implicitly.
+        mode = sys.argv[1] if len(sys.argv) > 1 else None
+        if mode != "--source-checkout":
+            return fail("HV2-WORKSPACE-LAUNCHER", "missing .hrn; use an independent trusted source checkout for recovery")
+        del sys.argv[1]
+        source = root / "src"
+        if source.is_symlink() or not (source / "hv2ref/cli.py").is_file():
+            return fail("HV2-PRODUCT-LAUNCHER-SOURCE", str(source))
+        sys.dont_write_bytecode = True
+        sys.path.insert(0, str(source))
+        from hv2ref.cli import main as cli_main
+        return cli_main()
+    except (KeyError, OSError, TypeError, ValueError, RecursionError):
+        return fail("HV2-WORKSPACE-LAUNCHER", "invalid or unavailable binding/payload; a pending transition may require recovery from independent trusted source")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

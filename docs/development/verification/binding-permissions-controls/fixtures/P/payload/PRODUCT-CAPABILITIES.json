@@ -1,0 +1,69 @@
+{
+  "capabilities": [
+    {
+      "boundary": "trusted local account; serial edits by procedure; historical private use does not qualify this candidate",
+      "evidence": "source contains local content/recovery fixtures; exact-candidate execution and qualification require a separately identified result",
+      "fallback": "preserve project-owned records and inspect from trusted independent source",
+      "id": "single-home-serial-work",
+      "status": "development-bounded-local"
+    },
+    {
+      "boundary": "exact typed acceptance; general intent quality and onboarding acceptance require separate evidence",
+      "evidence": "source contains draft/acceptance/selection and recovery fixtures; fixture presence is not an execution result",
+      "fallback": "human-authored draft via machine interface",
+      "id": "guided-intent-formation",
+      "status": "development-typed-artifacts"
+    },
+    {
+      "boundary": "unactivated entry-1 development candidate; exact allowlisted checkout-1 transition and same-window lifecycle only; literal human-1/worker-1/umbrella-1/planning-1/checkout-1 history retained; S1 one-way; older-window downgrade, generation compatibility and attach unsupported",
+      "evidence": "source contains lifecycle and inventory-window fixtures; historical results do not qualify this artifact",
+      "fallback": "independent trusted exact source and retained project truth",
+      "id": "project-local-product-lifecycle",
+      "status": "development-bounded-synthetic"
+    },
+    {
+      "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified; verified checkout-1 or entry-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
+      "evidence": "source contains worker integration, process interruption/contention and checkout-byte fixtures; exact-candidate qualification and actual multi-worker use require separately identified evidence",
+      "fallback": "one editing Work in control checkout",
+      "id": "same-repository-parallel-integration",
+      "status": "development-bounded-synthetic"
+    },
+    {
+      "boundary": "read-only GFM plus manual narrative adapter; no automatic report or independent human authorization",
+      "evidence": "source contains view/adapter fixtures; general usability remains unverified",
+      "fallback": "machine interface and project-authored documents",
+      "id": "human-readable-view-and-entry",
+      "status": "development-bounded-local"
+    },
+    {
+      "id": "same-home-direct-child-umbrella",
+      "status": "development-in-progress",
+      "boundary": "direct same-home children; human parent acceptance; no nested umbrella, scheduler, automatic completion or cross-home support",
+      "evidence": "source contains schema2 writer/local recovery and installed same-window lifecycle fixtures; fixture presence does not establish full qualification or actual adoption",
+      "fallback": "retain exact history and review the parent plan and child evidence without automatic acceptance"
+    },
+    {
+      "id": "candidate-planning",
+      "status": "development-in-progress",
+      "boundary": "branch-local tracked candidates on entry-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
+      "evidence": "source contains candidate contract and installed synthetic fixtures; exact-candidate execution and real fresh-session use require separately identified evidence",
+      "fallback": "preserve planning bytes and inspect from trusted independent source; no silent history compaction"
+    }
+  ],
+  "evidence_as_of": "2026-10-07",
+  "internal_lineage": "Harness v2",
+  "public_version": null,
+  "record_type": "product-capability-declaration",
+  "runtime": {
+    "dependency_count": 0,
+    "free_threaded_supported": false,
+    "implementation": "CPython",
+    "required_releaselevel": "final",
+    "supported_versions": [
+      "3.14.6",
+      "3.14.7"
+    ]
+  },
+  "schema_version": 1,
+  "trust_boundary": "trusted-local-os-account-logical-actor-declarations"
+}

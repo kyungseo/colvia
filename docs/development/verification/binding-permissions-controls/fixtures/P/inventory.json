@@ -1,0 +1,152 @@
+{
+  "entries": [
+    {
+      "path": ".gitignore",
+      "sha256": "98d072672a5aedc11b6684596dd176ba1f8ab254033b6f2588faa83c5c85d3fc",
+      "size_bytes": 59
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "49d5ee862002ca7576a98f510bb19daf5fdfeadeb65772c8008a7726c869395c",
+      "size_bytes": 3640
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "5bda5bf79779716d004ba9611529f84bc9c8e9fbe29fe715fa53ef80c0a76993",
+      "size_bytes": 230
+    },
+    {
+      "path": "PRODUCT-CAPABILITIES.json",
+      "sha256": "89d99783381680caa3b02536f7ab9e13de61ce06ab9b1b05dca29e7207c941ca",
+      "size_bytes": 4195
+    },
+    {
+      "path": "README.md",
+      "sha256": "596862046472c12b9f2cd38fca46fd95d38f6fafcbb915aaa3307e76a6644dd8",
+      "size_bytes": 2845
+    },
+    {
+      "path": "adapters/colvia-work/SKILL.md",
+      "sha256": "df7db5f79613164de946e17bca732686f94715546c67158d63effd0105adf3df",
+      "size_bytes": 24647
+    },
+    {
+      "path": "colvia",
+      "sha256": "96734dc78f56335dbd2188e0ac60a55ab29a96ab53eeb3fb586841cc208338c9",
+      "size_bytes": 5702
+    },
+    {
+      "path": "docs/CONCEPTS.md",
+      "sha256": "bca9ff94f0623225ea6f17d6db9cb53e332cd5cf61ef5fff0d97a8134b943888",
+      "size_bytes": 3091
+    },
+    {
+      "path": "docs/GENERAL-WORK.md",
+      "sha256": "0e81c6a62b6a5e33d29d163662c1b1feb9be5626b65e6d04d6353747bf176074",
+      "size_bytes": 43948
+    },
+    {
+      "path": "docs/GETTING-STARTED.md",
+      "sha256": "9d9e38128e459c890361d5a6e3bcbd83f6d3765b478eafde4fe0208dfac62e94",
+      "size_bytes": 13161
+    },
+    {
+      "path": "docs/GUIDED-INTENT-FORMATION.md",
+      "sha256": "b86b713b265379712b08216db07253f938e59db39fafd8d39c13a25eb4163001",
+      "size_bytes": 3814
+    },
+    {
+      "path": "docs/MAINTAINING.md",
+      "sha256": "cc0268ca3859405ad0ecf6640e729c232c1adba7d3d9afe2266fc491901410f2",
+      "size_bytes": 19653
+    },
+    {
+      "path": "docs/MANUAL-OPERATION.md",
+      "sha256": "3341bb934dca5244ca12c449587c094b50ef4fdc32b8f454843991743d6d5f3c",
+      "size_bytes": 3195
+    },
+    {
+      "path": "docs/OPERATIONS.md",
+      "sha256": "1ee6ee7045d1570fff3a5f6cae14322d89d0509f312a76460822818ece3e1350",
+      "size_bytes": 10919
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "24b96f0fb685c1aba8b4bb698376f6b300bc14e7dd130e5373fb54a094eece7c",
+      "size_bytes": 5258
+    },
+    {
+      "path": "docs/REFERENCE.md",
+      "sha256": "ee4ce947e5c10ce7de18ab770e1b47f1fb96310e54463561a155903896f6fda4",
+      "size_bytes": 58458
+    },
+    {
+      "path": "docs/SECURITY-AND-SUPPORT.md",
+      "sha256": "0da19e169b0c1eedcd01e594ba242e9c9ea55b64f72252fe692eb9e3db436f84",
+      "size_bytes": 7120
+    },
+    {
+      "path": "docs/WORKSPACE-CONTRACT.md",
+      "sha256": "3796f658d304e726a337f9b06040b488ae17561195fd02c516cec746a6490e3a",
+      "size_bytes": 35299
+    },
+    {
+      "path": "src/hv2ref/__init__.py",
+      "sha256": "9f56d182be547f3fae080f1ad18dd07e91fb7a9b3e6a483069b150fb3cb3e43a",
+      "size_bytes": 98
+    },
+    {
+      "path": "src/hv2ref/candidates.py",
+      "sha256": "001bb3f69a11a1539ce506beb9dbf501697612c6ed92bb278868b81858f7337e",
+      "size_bytes": 18695
+    },
+    {
+      "path": "src/hv2ref/cli.py",
+      "sha256": "0bd9861efc55534fa56ccd9f919dc2cdebb145f99122b963fb9b77aa88e8131e",
+      "size_bytes": 18331
+    },
+    {
+      "path": "src/hv2ref/errors.py",
+      "sha256": "63cae866bc847606e097d3acd62e6a460d994436873d21a95da39caf384decd9",
+      "size_bytes": 480
+    },
+    {
+      "path": "src/hv2ref/intent.py",
+      "sha256": "f32ba7a1be036827d6a375a619a41753870e704fb3d6d99ee3bc13a18e4f313c",
+      "size_bytes": 27089
+    },
+    {
+      "path": "src/hv2ref/jsonio.py",
+      "sha256": "6432f0d2b2a09dcbdc1c473ab0596def1751d2733b691684349fb62a536e69fe",
+      "size_bytes": 8007
+    },
+    {
+      "path": "src/hv2ref/product.py",
+      "sha256": "f71dcecc98813bd63e37524315cb1263c2fd860d9531e7cbe72e8c377188c256",
+      "size_bytes": 127078
+    },
+    {
+      "path": "src/hv2ref/umbrella.py",
+      "sha256": "fef162a8b41e2e4c643e473392540377c38c208e50acf7dba723692f09e08f1d",
+      "size_bytes": 14938
+    },
+    {
+      "path": "src/hv2ref/view.py",
+      "sha256": "bb32311b46dab38e2283f43a994a8198db2d6dfb94a1b3a1aabf432b21490bd5",
+      "size_bytes": 44246
+    },
+    {
+      "path": "src/hv2ref/work.py",
+      "sha256": "c390f656cca9e981ec3ad9957a48f55bc80b3e5a805b93674e1a97169822d043",
+      "size_bytes": 93033
+    },
+    {
+      "path": "src/hv2ref/workspace.py",
+      "sha256": "4913d185ec81e1c19a3bfa46773aacdf401ab4eb6fe06dc8649e92b245012e09",
+      "size_bytes": 23934
+    }
+  ],
+  "inventory_id": "entry-1",
+  "record_type": "release-inventory",
+  "schema_version": 1
+}
