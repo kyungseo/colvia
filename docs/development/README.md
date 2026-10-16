@@ -207,3 +207,5 @@ None created by this proposal. Allocate a plain development record ID only when 
 ## First B1 Permission Observation Supplement
 
 [DR-0004: First B1 Permission Observation Activation](../decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#first-b1-permission-observation-activation--2026-10-15) records the accepted exact supplement and retained preparation-label interpretation. [Preparation and verification history](binding-permissions-amendment.md) remains preserved. Exact adopter application and public qualification retain their separate decisions.
+
+[Binding permission technical closeout](binding-permissions-amendment.md#technical-closeout--2026-10-16) — source result, exact identities, accepted evidence and remaining limits; existing preparation and private originals remain preserved.
