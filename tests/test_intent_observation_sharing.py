@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import subprocess
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from hv2ref import intent, product, view, work, workspace
 from hv2ref.errors import ContractError
@@ -96,7 +96,8 @@ class IntentObservationSharingTests(unittest.TestCase):
         with patch.object(intent, 'read_workspace_intent_graph', wraps=intent.read_workspace_intent_graph) as reads:
             legacy = product._workspace_status_observation(self.target, _share_intents=False)
         self.assertEqual((status, graphs), legacy)
-        self.assertEqual(5, reads.call_count)
+        self.assertEqual(3, reads.call_count)  # One graph per Work, then an independent final read.
+        self.assertEqual([call(self.target, 'intent-a')] * 3, reads.call_args_list)
 
     def test_different_intents_are_never_conflated(self):
         other = self.accept({**self.f.draft(), 'intent_id': 'intent-b'})
@@ -126,9 +127,12 @@ class IntentObservationSharingTests(unittest.TestCase):
 
     def test_default_readers_and_current_live_checks_stay_fresh(self):
         product.workspace_status(self.target)
-        with patch.object(intent, 'read_workspace_intent_graph', wraps=intent.read_workspace_intent_graph) as reads:
+        with patch.object(intent, 'read_workspace_intent_graph', wraps=intent.read_workspace_intent_graph) as reads, \
+             patch.object(intent, '_resolve_workspace_intent', wraps=intent._resolve_workspace_intent) as bindings:
             work.WorkStore(self.target)._all()
-        self.assertEqual(4, reads.call_count)
+        self.assertEqual(2, reads.call_count)  # Fresh graph for each Work; no cross-Work cache.
+        self.assertEqual([call(self.target, 'intent-a')] * 2, reads.call_args_list)
+        self.assertEqual(4, bindings.call_count)  # Every revision still resolves its exact binding.
         with patch.object(work, '_live_external_refs', wraps=work._live_external_refs) as live:
             intent.read_workspace_intent(self.target, 'intent-a', self.ref)
         self.assertEqual(1, live.call_count)

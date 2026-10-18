@@ -141,7 +141,9 @@ class UmbrellaWriterTests(unittest.TestCase):
     def test_old_window_cannot_write_schema2_draft(self):
         old=WorkspaceIntentStore(self.target,lambda t:{'binding_ref':self.binding,'launcher_sha256':None})
         d={**self.draft(intent_id='new-parent'),'schema_version':2,'composition':self.composition};before=self.bytes()
-        with self.assertRaisesRegex(ContractError,'umbrella-1'):old.publish_draft(d)
+        with self.assertRaises(ContractError) as caught:old.publish_draft(d)
+        self.assertEqual('HV2-WORK-RECORD',caught.exception.code)
+        self.assertEqual('umbrella writer requires an installed umbrella-capable runtime',caught.exception.message)
         self.assertEqual(before,self.bytes())
 
     def test_local_pending_parent_publication_blocks_other_work(self):
@@ -184,6 +186,13 @@ class UmbrellaWriterTests(unittest.TestCase):
     def test_entry_window_parent_capability_keeps_schema2_completion(self):
         # Capability double only; native entry execution has independent factory cases.
         runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':'entry-1'}
+        self.store.runtime_check=runtime;self.intents.work_store.runtime_check=runtime
+        self.test_schema2_parent_completes_with_v1_selector_and_ticket()
+
+
+    def test_delegation_window_parent_capability_keeps_schema2_completion(self):
+        # Capability double only; native entry execution has independent factory cases.
+        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':'delegation-1'}
         self.store.runtime_check=runtime;self.intents.work_store.runtime_check=runtime
         self.test_schema2_parent_completes_with_v1_selector_and_ticket()
 

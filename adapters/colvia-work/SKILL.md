@@ -5,7 +5,7 @@ description: Guide candidate planning, requested project briefs and decisions, i
 
 # Colvia Work Entry
 
-Entry-1 successor candidate; [qualification and activation remain pending](../../docs/README.md#entry-1-candidate).
+Use this adapter with the verified `delegation-1` installed profile; read [Profile and authorization](../../docs/README.md#delegation-1-implementation-candidate). A verified binding or this adapter's presence does not prove human authorization.
 
 Use when the human asks to record an idea, author a brief or decision, choose what to do next, defer a candidate, or start, continue or review a project task. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
 
@@ -26,7 +26,7 @@ This development adapter has no automatic agent-runtime discovery, scheduler or 
 
 The verified manual/adapter paths refer to Harness tool guidance inside the managed release. They do not replace the project root README or project-owned context, plan, DR, brief and Work. Explain this distinction when presenting the next entry; links inside the managed manual remain relative to that manual.
 
-Use the human's conversation language for your explanation, including Korean when the conversation is Korean. Preserve identifiers, exact commands, tokens and document meaning. The English diagnostic labels in `colvia view` do not select the human's language.
+Use the human's conversation language for your explanation, including Korean when the conversation is Korean. Preserve identifiers, exact commands, tokens and document meaning. The English diagnostic labels in `colvia view` do not select the human's language. For saved documents, follow [Document Language](../../docs/REFERENCE.md#document-language): explicit artifact request, project default, then conversation language, with mandatory-language conflicts exposed before writing.
 
 Use the existing project narrative and relevant DR or brief, with [Records And Retention](../../docs/REFERENCE.md#records-and-retention) as the common rule for what to record, retain and clean up. The view supplies verified observations; do not turn its field dump into the human report or create separate plan/review/result/closeout files by default.
 
@@ -112,7 +112,7 @@ Use the human's language. Start with `./colvia view` and `./colvia view candidat
 | “이건 나중에 하자” | For an unlinked open candidate, `defer` with the stated reason and condition (empty means unspecified). A Work-linked candidate cannot pause the Work: show its actual state and use the separate authorized Work decision flow. |
 | “다시 이어가자” | Read only first. Explain pending recovery and active Work before candidates. Only an explicitly named deferred candidate authorizes `resume`; record the observed condition or unknown. Resume returns it to open and leaves another selection unchanged. Do not infer that its condition became true. |
 
-Prepare canonical machine input yourself from [Candidate Planning](../../docs/REFERENCE.md#candidate-planning). The human should not edit JSON or repeat authorization already given for the same named action. Show the impact before mutation: any outstanding lifecycle preview must be prepared again after a saved planning change. Never run init/update as an implied part of a note request; explain the explicit entry-1 transition first if needed.
+Prepare canonical machine input yourself from [Candidate Planning](../../docs/REFERENCE.md#candidate-planning). The human should not edit JSON or repeat authorization already given for the same named action. Show the impact before mutation: any outstanding lifecycle preview must be prepared again after a saved planning change. Never run init/update as an implied part of a note request; explain the exact supported delegation-1 transition first if needed.
 
 Core checks exact IDs, typed links, history and durability. Semantic duplicates, recommendation quality and whether a condition is met are agent/human judgments. Do not silently combine similar titles, absorb another Work, reject a candidate or replace a linked object. With explicit authority use `disposition` for absorption/rejection, `amend` for narrative correction, and `reopen` for an unlinked rejected candidate. Absorbed candidates cannot reopen; with explicit authority create a successor related to the old candidate to correct a mistaken absorption. Keep the original decisions. Correct a mistaken selection with a new explicit selection/deferral, not record editing.
 
@@ -124,6 +124,17 @@ On a refusal, report that this call made no new write, quote the short requested
 
 ## Checkout-1 Transition Handoff
 
+Retained entry-1 handoff only. For the current candidate, use [Delegation-1 operation](../../docs/OPERATIONS.md#delegation-1-implementation-candidate); do not apply these older profiles or schema versions to it.
+
 An installation update requires its own exact-target approval. Explain that the first entry-1 switch receipt commits the project to forward recovery with the exact new source and original request; it does not allow rollback to checkout-1 or earlier, even before new records exist. Existing worker results and refs must be preserved. Continuing an old worker requires a separately approved control commit with the new runtime, explicit same-intent baseline rebind and resubmission. Core performs no Git action automatically. Same-window updates still owe bidirectional compatibility; this handoff does not waive it.
 
 For a pending detach, preserve the original schema 3 request and use the exact new independent source. Legacy paired schema 1/2 remains readable but its recovery requires the retained old source. Detach does not authorize old reinstallation or attach. Read the [current transition instructions](../../docs/OPERATIONS.md#entry-1-transition) before proposing any change. The new source refuses OLD pending init/repair/detach with guidance to the matching OLD source and original request; never substitute an entry-1 request. Explain local/parent manifest and captured-child reference admission, unsupported torn/composite prefixes and the need for separately authorized external recovery when applicable. Current diagnostics, historical content-comparison availability and past operation completion are distinct. A collision or displayed confirmation grants no writer authority.
+
+
+## Exact Delegated Ordinary Acceptance
+
+For a delegation-1 installation whose exact installation and source-contract activation the Owner has authorized, the preceding human-acceptance steps have one bounded exception: an Owner-accepted schema-3 intent draft may name a distinct delegate for one ordinary isolated-worker Work, exact scope-path set and `accept` action. First read the verified bound grant and full Work/intent view. Never infer a grant, change Owner identity, self-issue a grant, use a provider/model label as authentication, or transfer it to a parent or another Work. No grant preserves the ordinary human flow.
+
+Before a delegated accept, verify that the current selected revision has the exact granted Work, mode and scope; show both the revision and confirmation views; resolve required/stale/unavailable evidence under the existing rules. A composition revision anywhere in the selected ancestry, supersession, a used key or selected same-key revoke makes it ineligible. Prepare/apply using the actual named delegate as actor. The durable decision consumes the key even if interrupted, cancelled or later revoked. Retry only the original pending ticket/actor for exact recovery; never change request IDs or refresh a baseline to manufacture another use.
+
+Human authorization remains necessary for intent acceptance, baseline refresh/rebind, reject/revoke, parent integration, source-development result acceptance, contract activation, lifecycle and Git actions. Report stored delegated completion and live content separately, retaining the exact grant/draft identity and decision actor in existing evidence. Host caller enforcement and unattended model use are unverified. Follow the current Operations candidate section for schema-4 transition/recovery, including the external repair-backup completion limit.

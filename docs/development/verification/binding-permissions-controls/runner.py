@@ -26,6 +26,10 @@ CONTEXT_FIELDS = frozenset({"schema", "phase", "invocation_path", "invocation_sh
 
 
 def build_execution_context(c, p, input_path, input_sha, out):
+    if c["phase"] == "delegation":
+        require(out.name == "work" and out.parent.name in control_slots.DELEGATION_RUN_NAMES and out.parent.parent == p["exec"] / "runs", "delegation WORK boundary")
+        require(digest(regular(input_path)) == input_sha, "context invocation drift")
+        return MappingProxyType({"schema": 2, "phase": "delegation", "invocation_path": str(input_path), "invocation_sha256": input_sha, "controls_dir": str(p["controls"]), "work_root": str(out), "runtime_path": c["runtime"]["path"], "runtime_sha256": c["runtime"]["sha256"]})
     require(c["phase"] == "entry", "factory context is entry-only")
     out = unlinked_path(out)
     require(out.name == "work" and out.parent.name in control_slots.ENTRY_RUN_NAMES and
@@ -75,7 +79,11 @@ def main():
     ordinary = list(flatten(loader.discover("tests")))
     require(not loader.errors, "collection load errors: " + repr(loader.errors))
     factory_tests = []
-    if c["factory"]:
+    if c["phase"] == "delegation":
+        module = importlib.import_module("test_delegation_window_transition")
+        suite = module.build_delegation_suite(candidate_source=p["source"], predecessor_source=p["predecessor"], artifact_source=p["artifacts"], execution_context=build_execution_context(c, p, sys.argv[1], sys.argv[2], out))
+        factory_tests = factory_members(suite, ordinary)
+    elif c["factory"]:
         module = importlib.import_module("test_entry_window_transition")
         suite = module.build_entry_suite(old_source=p["old"], candidate_source=p["source"],
             expected_predecessor=read_json(p["controls"] / "baseline-inputs.json"),
@@ -93,6 +101,11 @@ def main():
     collection = {"source_digest": c["source_digest"], "source_root_entries": c["source_root_entries"], "controls": c["controls"],
                   "default_ids": [t.id() for t in ordinary], "factory_ids": [t.id() for t in factory_tests],
                   "ordered": ordered, "duplicates": {k: v for k, v in occurrence.items() if v > 1}}
+    require(not collection["duplicates"], "unexpected duplicate test IDs")
+    expected_source = p["source"] / "src"
+    for name, module in tuple(sys.modules.items()):
+        if name == "hv2ref" or name.startswith("hv2ref."):
+            require(Path(module.__file__).resolve().is_relative_to(expected_source), "product import crossed lanes")
     payload = canonical(collection)
     exclusive_json(out / "collection.json", collection)
     if mode == "collect":
@@ -100,8 +113,10 @@ def main():
         return
     require(isinstance(c["collection_sha256"], str) and digest(payload) == c["collection_sha256"], "collection identity not fixed or changed")
     if mode in {"complete-normal", "complete-parent-O"}:
-        require(c["phase"] == "entry" and not c["selection"], "complete suite cannot have selection")
-        selected = list(zip(tests, ordered))
+        require(c["phase"] in {"entry", "delegation"}, "complete phase")
+        selected_rows = control_slots.selected_identities(c,collection,mode)
+        selected_ids = {row["id"] for row in selected_rows}
+        selected = [(test,row) for test,row in zip(tests,ordered) if row["id"] in selected_ids]
     else:
         selection = set(c["selection"])
         occurrence_tokens = {f"{item['id']}#{item['occurrence']}": item["id"] for item in ordered}
@@ -114,6 +129,8 @@ def main():
         # Bare IDs retain every occurrence; ID#occurrence resumes only the named execution.
         selected = [(t, identity) for t, identity in zip(tests, ordered)
                     if (f"{identity['id']}#{identity['occurrence']}" in selection if exact_occurrences else t.id() in selection)]
+    if mode == "artifact" and c["phase"] == "delegation":
+        require({t.id() for t,_ in selected} == {t.id() for t in factory_tests}, "artifact must execute the entire delegation factory")
     exclusive_json(out / "selected.json", [identity for _, identity in selected])
     identities = {}
     for test, identity in selected:
@@ -230,10 +247,13 @@ def main():
         def addFailure(self, test, err):
             self.outcome_event(test, "fail"); self.preserve(test); super().addFailure(test, err)
         def addSubTest(self, test, subtest, err):
+            self.write_row("subtests.jsonl", {"identity": self.identity, "subtest_id": subtest.id(), "parameters": {str(k): repr(v) for k,v in subtest.params.items()}, "outcome": "error" if err and not issubclass(err[0], test.failureException) else "fail" if err else "pass", "elapsed_from_test_start": round(time.monotonic()-self.started, 3)})
             if err:
                 self.outcome_event(test, "subtest-failure"); self.preserve(test)
             super().addSubTest(test, subtest, err)
         def addSkip(self, test, reason):
+            if getattr(test, "test_case", None) is not None:
+                self.write_row("subtests.jsonl", {"identity": self.identity, "subtest_id": test.id(), "outcome": "skip", "reason": reason})
             self.outcome_event(test, "skip", skip_reason=reason); super().addSkip(test, reason)
         def addExpectedFailure(self, test, err):
             self.outcome_event(test, "expected-failure"); super().addExpectedFailure(test, err)

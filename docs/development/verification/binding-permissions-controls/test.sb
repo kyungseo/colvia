@@ -14,15 +14,17 @@
   (subpath "/private/var/db/dyld") (subpath "/private/var/db/timezone"))
 (allow file-read* (subpath (param "SOURCE")) (subpath (param "OLD"))
   (subpath (param "CONTROLS")) (subpath (param "WORK"))
+  (subpath (param "PREDECESSOR")) (subpath (param "ARTIFACTS"))
   (literal (param "INPUT")) (literal (param "BOUNDARY")))
-; Owner-approved names-only enumeration at nine fixed ancestor directories.
+; Owner-approved names-only enumeration at twelve fixed campaign ancestor directories.
 ; Literal directory grants do not permit reading their descendant file contents.
 (allow file-read-data
   (literal (param "ANCESTOR_0")) (literal (param "ANCESTOR_1"))
   (literal (param "ANCESTOR_2")) (literal (param "ANCESTOR_3"))
   (literal (param "ANCESTOR_4")) (literal (param "ANCESTOR_5"))
   (literal (param "ANCESTOR_6")) (literal (param "ANCESTOR_7"))
-  (literal (param "ANCESTOR_8")))
+  (literal (param "ANCESTOR_8")) (literal (param "ANCESTOR_9"))
+  (literal (param "ANCESTOR_10")) (literal (param "ANCESTOR_11")))
 (allow file-read-data (literal "/dev/fd") (literal "/dev/null")
   (literal "/dev/random") (literal "/dev/urandom"))
 (allow file-write* (subpath (param "WORK")) (literal "/dev/null"))

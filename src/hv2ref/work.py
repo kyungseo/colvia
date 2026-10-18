@@ -204,7 +204,7 @@ def _verified_launcher_path(sha: str | None, window: str | None) -> str | None:
     if sha is None:
         return None
     paths = {"human-1": "hv2", "worker-1": "hv2", "umbrella-1": "hv2",
-             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia"}
+             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia", "delegation-1": "colvia"}
     if not _sha(sha) or not isinstance(window, str) or window not in paths:
         raise _fail("managed launcher proof requires a supported verified inventory window")
     return paths[window]
@@ -414,7 +414,7 @@ immediately before each write and before publication; outside actors are trusted
 
 def _allows_unchanged_crlf(verified_inventory_id: str | None) -> bool:
     """A verified active window, never a caller-facing conversion option."""
-    return verified_inventory_id in ("checkout-1", "entry-1")
+    return verified_inventory_id in ("checkout-1", "entry-1", "delegation-1")
 
 
 def _unchanged_crlf_matches(target: Path, manifest: dict[str, Any],
@@ -754,7 +754,26 @@ def _resolve(records: dict[str, Any], ref: Any, *, nullable: bool = False) -> An
     return records[ref["id"]]
 
 
-def work_graph(identity: dict[str, Any], revisions: dict[str, Any], decisions: dict[str, Any], selections: dict[str, Any], manifests: dict[str, Any], current: dict[str, Any] | None) -> dict[str, Any]:
+def _bound_delegation(identity, revision, intent_graphs):
+    """Resolve K from verified exact intent context, never a caller verdict."""
+    from .intent import _resolve_workspace_intent, validate_delegation
+    ref = revision["intent_ref"]
+    _require(intent_graphs is not None and ref["id"] in intent_graphs,
+             "delegated decision requires complete verified intent context")
+    bound, _ = _resolve_workspace_intent(intent_graphs[ref["id"]], ref["id"], ref)
+    _require(bound["acceptance_authority"] == identity["acceptance_authority"], "Work and intent authorities differ")
+    grant = bound["acceptance_delegation"]
+    if grant is None:
+        return None, None
+    validate_delegation(grant, identity["authority_home_id"], identity["acceptance_authority"])
+    if grant["work"]["id"] != identity["work_id"]:
+        return grant, None
+    key = (identity["authority_home_id"], identity["work_id"], ref["id"],
+           ref["revision_ref"]["id"], ref["revision_ref"]["sha256"])
+    return grant, key
+
+
+def work_graph(identity: dict[str, Any], revisions: dict[str, Any], decisions: dict[str, Any], selections: dict[str, Any], manifests: dict[str, Any], current: dict[str, Any] | None, *, intent_graphs: dict[str, Any] | None = None) -> dict[str, Any]:
     """Validate every record and derive state from exact selections, never recency.
 
 This checks persisted Work semantics. Intent graph, release binding, live content,
@@ -831,13 +850,15 @@ relations across Works and human confirmation remain publication prerequisites.
                 _require(manifest["base"] == previous["result"], "submission base differs from selected baseline")
 
     # Validate all decisions, including orphan/pending ones, before deriving current.
+    delegated = []
     request_ids: dict[str, str] = {}
     superseded: dict[str, str] = {}
     for key, decision in decisions.items():
         t = decision["confirmation"]
         r = _resolve(revisions, t["target_revision_ref"])
         prior = _resolve(selections, t["expected_selection_ref"])
-        _require(t["actor"] == identity["acceptance_authority"], "decision actor is not acceptance authority")
+        if t["actor"] != identity["acceptance_authority"]:
+            delegated.append((key, t, r))
         for field in ("intent_ref", "document_refs", "evidence_refs"):
             _require(t[field] == r[field], "ticket differs from revision " + field)
         _require(t["execution_mode"] == r["execution_context"]["mode"], "ticket mode differs")
@@ -885,6 +906,29 @@ relations across Works and human confirmation remain publication prerequisites.
         _require(node not in chain, "selection cycle")
         chain.append(node); node = children.get(node)
     _require(len(chain) == len(selections), "disconnected or cyclic selection graph")
+    # Only traverse ancestry after its complete shape, references and acyclicity
+    # are established. Later revocation never invalidates an earlier decision.
+    consumed = {}
+    for decision_id, ticket, target_revision in delegated:
+        grant, key = _bound_delegation(identity, target_revision, intent_graphs)
+        _require(grant is not None and key is not None, "no grant for this Work")
+        _require(ticket["actor"] == grant["delegate_actor"] and ticket["action"] == "accept"
+                 and ticket["supersedes_decision_ref"] is None, "actor/action outside delegation")
+        _require(target_revision["schema_version"] == 1 and ticket["execution_mode"] == "isolated-worktree"
+                 and set(target_revision["scope"]) == set(grant["scope"]), "delegated Work scope/mode/role differs")
+        _require(key not in consumed or consumed[key] == decision_id, "delegation already consumed")
+        consumed[key] = decision_id
+        node = _resolve(selections, ticket["expected_selection_ref"])
+        while node is not None:
+            ancestor_revision = revision(node)
+            _require(ancestor_revision["schema_version"] == 1, "parent ancestry cannot delegate")
+            ancestor_decision = _resolve(decisions, node["decision_ref"], nullable=True)
+            if ancestor_decision and ancestor_decision["confirmation"]["action"] == "revoke":
+                revoked = _resolve(decisions, ancestor_decision["confirmation"]["supersedes_decision_ref"])
+                revoked_revision = _resolve(revisions, revoked["confirmation"]["target_revision_ref"])
+                _, revoked_key = _bound_delegation(identity, revoked_revision, intent_graphs)
+                _require(revoked_key != key, "selected revoke bars this delegation draft")
+            node = _resolve(selections, node["parent_selection_ref"], nullable=True)
     current_id = current["selection_ref"]["id"] if current else None
     selected_index = chain.index(current_id) if current_id is not None else -1
     pending_selections = chain[selected_index + 1:]
@@ -963,14 +1007,19 @@ def read_work(target: Path, work_id: str, *, _intent_graph_reader=None, _topolog
         identity = validate_work_record(data["identity.json"])
         _require(identity.get("authority_home_id") == authority and identity.get("work_id") == work_id, "directory identity mismatch")
         maps = [{key.split("/")[1][:-5]: value for key, value in data.items() if key.startswith(folder + "/")} for folder in ("revisions", "decisions", "selections", "results")]
-        graph = work_graph(identity, *maps, data.get("current.json"))
+        from .intent import read_workspace_intent_graph
+        intents = {}
+        for value in maps[0].values():
+            validate_work_record(value)
+            iid = value["intent_ref"]["id"]
+            if iid not in intents:
+                intents[iid] = (read_workspace_intent_graph(target, iid) if _intent_graph_reader is None
+                                else _intent_graph_reader(iid))
+        graph = work_graph(identity, *maps, data.get("current.json"), intent_graphs=intents)
         from .intent import read_workspace_intent, _resolve_workspace_intent
         for revision in graph["revisions"].values():
             ref = revision["intent_ref"]
-            if _intent_graph_reader is None:
-                bound = read_workspace_intent(target, ref["id"], ref, require_current=False)
-            else:
-                bound, _ = _resolve_workspace_intent(_intent_graph_reader(ref["id"]), ref["id"], ref)
+            bound, _ = _resolve_workspace_intent(intents[ref["id"]], ref["id"], ref)
             _require(bound["acceptance_authority"] == identity["acceptance_authority"], "Work and intent authorities differ")
             _require((revision["schema_version"] == 2) == (bound["composition"] is not None), "Work schema and bound intent composition differ")
             if bound["composition"] is not None:
@@ -1178,15 +1227,27 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         result = self.runtime_check(self.target)
         _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
         if "inventory_id" in result:
-            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1"), "unsupported writer inventory window")
+            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
         _verified_launcher_path(result["launcher_sha256"], result.get("inventory_id"))
+        from .intent import workspace_intents
+        if any(d["schema_version"] == 3 for g in workspace_intents(self.target).values() for d in g["drafts"].values()):
+            self._delegation_runtime(result)
         return result
 
     @staticmethod
+    def _delegation_runtime(runtime: dict[str, Any]) -> None:
+        _require(runtime.get("inventory_id") == "delegation-1", "delegation history requires delegation-1 writer")
+
+    def _graph(self, identity, revisions, decisions, selections, manifests, current):
+        from .intent import workspace_intents
+        return work_graph(identity, revisions, decisions, selections, manifests, current,
+                          intent_graphs=workspace_intents(self.target))
+
+    @staticmethod
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1"), "umbrella writer requires umbrella-1, planning-1, checkout-1 or entry-1 runtime")
+        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1"), "umbrella writer requires an installed umbrella-capable runtime")
 
     def _all(self, *, _intent_graph_reader=None, _topology_observation=None) -> dict[str, Any]:
         root = self.target / ".hrn/work"
@@ -1307,7 +1368,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             revisions = graph["revisions"] | {revision["record_id"]: revision}
             manifests = graph["manifests"] | {_digest(manifest): manifest}
             selections = graph["selections"] if revision["operation"] == "rebind" else graph["selections"] | {selection_id: selection}
-            work_graph(identity, revisions, graph["decisions"], selections, manifests, graph["current"])
+            self._graph(identity, revisions, graph["decisions"], selections, manifests, graph["current"])
             # Cross-Work relations are checked before any truth writes.
             for relation in revision["relations"]:
                 _require(relation["target"]["id"] in graphs, "relation target missing")
@@ -1350,7 +1411,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         revision = _resolve(graph["revisions"], rref)
         ticket = {"record_type": "confirmation-ticket", "schema_version": 1, "authority_home_id": graph["identity"]["authority_home_id"], "object": {"authority_home_id": graph["identity"]["authority_home_id"], "kind": "work", "id": work_id}, "action": action, "actor": actor, "reason": reason, "request_id": request_id, "observed_at": observed_at, "target_fingerprint": target_fingerprint(self.target), "target_revision_ref": rref, "expected_selection_ref": graph["current"]["selection_ref"], "intent_ref": revision["intent_ref"], "product_binding_ref": runtime["binding_ref"], "document_refs": revision["document_refs"], "evidence_refs": revision["evidence_refs"], "execution_mode": revision["execution_context"]["mode"], "supersedes_decision_ref": supersedes}
         decision = self._decision(ticket)
-        work_graph(graph["identity"], graph["revisions"], graph["decisions"] | {decision["record_id"]: decision}, graph["selections"], graph["manifests"], graph["current"])
+        self._graph(graph["identity"], graph["revisions"], graph["decisions"] | {decision["record_id"]: decision}, graph["selections"], graph["manifests"], graph["current"])
         self._pending_guard(self._all(), work_id, content_write=ticket["execution_mode"] == "isolated-worktree" and action == "accept")
         grants_authority = action in ("accept", "rebind")
         self._intent(revision, graph["identity"], require_current=grants_authority)
@@ -1391,7 +1452,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             _require(graph["current"] is not None and graph["current"]["selection_ref"] == ticket["expected_selection_ref"], "stale confirmation selection")
             _require(not any(d["confirmation"]["supersedes_decision_ref"] == record_ref(decision) and d["confirmation"]["action"] == "reject" for d in graph["decisions"].values()), "cancelled decision cannot resume")
             decisions = graph["decisions"] | {did: decision}
-            work_graph(graph["identity"], graph["revisions"], decisions, graph["selections"], graph["manifests"], graph["current"])
+            self._graph(graph["identity"], graph["revisions"], decisions, graph["selections"], graph["manifests"], graph["current"])
             revision = _resolve(graph["revisions"], ticket["target_revision_ref"])
             grants_authority = ticket["action"] in ("accept", "rebind")
             self._intent(revision, graph["identity"], require_current=grants_authority)
@@ -1409,7 +1470,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             check_confirmation(initial=did not in graph["decisions"], final=bool(existing))
             selection = existing[0] if existing else {**{k: revision[k] for k in _RECORD_BASE | _PROVENANCE}, "schema_version": 1, "record_type": "work-selection", "record_id": "selection-" + _digest(ticket), "observed_at": ticket["observed_at"], "parent_selection_ref": ticket["expected_selection_ref"], "revision_ref": ticket["target_revision_ref"], "decision_ref": record_ref(decision), "operation_id": ticket["request_id"]}
             selections = graph["selections"] | {selection["record_id"]: selection}
-            work_graph(graph["identity"], graph["revisions"], decisions, selections, graph["manifests"], graph["current"])
+            self._graph(graph["identity"], graph["revisions"], decisions, selections, graph["manifests"], graph["current"])
             _canonical_record_bytes(decision); _canonical_record_bytes(selection)
             home = self.target / ".hrn/work" / wid
             _visible_truth(self.target, [f".hrn/work/{wid}/decisions/{did}.json", f".hrn/work/{wid}/selections/selection-{_digest(ticket)}.json", f".hrn/work/{wid}/current.json"])

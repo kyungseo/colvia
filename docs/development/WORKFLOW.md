@@ -20,7 +20,7 @@ For Colvia source development, the explicitly supplied [CONTRIBUTING entry](../.
 
 In an installed project, start with `./colvia view`, read its currently verified manual/adapter and follow that project's own rules. This source-only workflow is not installed or required by that entry. The original protections for external contributors and adopter roles in this procedure remain applicable; this reorganization does not decide a licensing or public contribution policy.
 
-The unchanged AGENTS/CLAUDE entry does not provide a direct route to these source rules. An agent given only that entry has no verified automatic discovery path here. Adding or changing a shipped entry requires a separately selected scope and its applicable verification; explicit source-entry reading is the boundary of this reorganization.
+At the DR-0006 source-only relocation, the unchanged AGENTS/CLAUDE entry had no verified automatic route to these source rules. The separately accepted entry amendment identified in PATCH-20261018-002 adds a conditional route through source-only CONTRIBUTING when the agent is explicitly asked to develop Colvia itself in its trusted source checkout. An installed project still starts with its own rules and the verified manual/adapter from ./colvia view; presence inside a managed manual never selects source development. This route does not require runtime installation or typed Work creation, and adds no task-selection or execution authority. DR-0006's other relocated obligations and historical identities remain unchanged.
 
 ## Find Rules For The Task
 

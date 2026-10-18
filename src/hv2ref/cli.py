@@ -23,7 +23,7 @@ def parser() -> argparse.ArgumentParser:
     product_init.add_argument("--target", type=Path, required=True)
     product_init.add_argument("--source", type=Path, default=product_source_root())
     product_init.add_argument("--apply", action="store_true")
-    product_init.add_argument("--profile", choices=("entry-1",))
+    product_init.add_argument("--profile", choices=("delegation-1",))
     product_init.add_argument("--authority-home-id")
     product_init.add_argument("--operation-id")
     product_init.add_argument("--observed-at")
@@ -59,7 +59,7 @@ def parser() -> argparse.ArgumentParser:
     )
 
     for p in (product_update, product_rollback):
-        p.add_argument("--profile", choices=("entry-1",))
+        p.add_argument("--profile", choices=("delegation-1",))
         p.add_argument("--operation-id")
         p.add_argument("--observed-at")
         p.add_argument("--input")
@@ -85,7 +85,7 @@ def parser() -> argparse.ArgumentParser:
         "--inject-at", choices=("after-receipt", "after-launcher", "after-file", "after-files", "after-directory", "after-product"), help=argparse.SUPPRESS
     )
 
-    product_detach.add_argument("--profile",choices=("entry-1",))
+    product_detach.add_argument("--profile",choices=("delegation-1",))
     product_detach.add_argument("--operation-id")
     product_detach.add_argument("--observed-at")
     product_detach.add_argument("--input")
@@ -109,8 +109,8 @@ def run(args: argparse.Namespace) -> object:
     if args.command == "repair":
         return _workspace_repair(args)
     if args.command in ("init", "update", "rollback", "detach"):
-        if args.profile != "entry-1":
-            raise ContractError("HV2-WORKSPACE-COMMAND", "source lifecycle requires explicit entry-1 profile; use retained old source for older windows")
+        if args.profile != "delegation-1":
+            raise ContractError("HV2-WORKSPACE-COMMAND", "source lifecycle requires explicit delegation-1 profile; use retained old source for older windows")
         if args.command == "init":
             return _source_workspace_init(args)
         if args.command == "detach":

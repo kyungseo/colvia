@@ -187,7 +187,7 @@ class SerialWriterTests(unittest.TestCase):
         with self.assertRaises(ContractError) as caught:
             self.store.prepare("work-a", action="rebind", actor="agent", reason="wrong actor", request_id="bad-rebind", observed_at=TIME, revision_ref=record_ref(proposal[0]))
         self.assertEqual(caught.exception.code, "HV2-WORK-RECORD")
-        self.assertEqual(caught.exception.message, "decision actor is not acceptance authority")
+        self.assertEqual(caught.exception.message, "no grant for this Work")
         self.assertEqual(self.bytes(), before)
         confirmed = self.apply(self.prepare("rebind", revision_ref=record_ref(proposal[0])))
         self.assertEqual(confirmed["identity"]["acceptance_authority"], "owner")
@@ -699,9 +699,17 @@ class SerialWriterTests(unittest.TestCase):
             tip.update(parent_selection_ref=record_ref(reviewed),revision_ref=record_ref(r),decision_ref=record_ref(d))
             g["current"]["selection_ref"]=record_ref(tip)
             return g
-        def inspect(g):return work_graph(g["identity"],g["revisions"],g["decisions"],g["selections"],g["manifests"],g["current"])
+        def inspect(g,*,intent_graphs=None):return work_graph(g["identity"],g["revisions"],g["decisions"],g["selections"],g["manifests"],g["current"],intent_graphs=intent_graphs)
         self.assertEqual(inspect(changed(action="reject"))["state"],"rejected")
-        with self.assertRaisesRegex(ContractError,"acceptance authority"):inspect(changed(actor="agent"))
+        from hv2ref.intent import workspace_intents
+        intents=workspace_intents(self.target);before=self.bytes();unauthorized=changed(actor="agent")
+        records_before=copy.deepcopy((unauthorized,intents))
+        for context,message in ((None,"delegated decision requires complete verified intent context"),(intents,"no grant for this Work")):
+            with self.subTest(context_present=context is not None), self.assertRaises(ContractError) as caught:
+                inspect(unauthorized,intent_graphs=context)
+            self.assertEqual("HV2-WORK-RECORD",caught.exception.code)
+            self.assertEqual(message,caught.exception.message)
+            self.assertEqual(records_before,(unauthorized,intents));self.assertEqual(before,self.bytes())
         for field,value in (("progress","failed"),("progress","completed"),("outcome","failed")):
             with self.subTest(field=field,value=value),self.assertRaisesRegex(ContractError,"agent cannot declare completion|unexpected|keys|fields"):
                 inspect(changed(field=field,value=value))

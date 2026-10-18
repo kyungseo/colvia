@@ -35,7 +35,9 @@ def boundary_probes(c, p, input_path, work):
                 "INPUT": Path(input_path), "PARENT_INPUTS": work.parent / "inputs.json",
                 "PRIOR_RESULT": p["exec"] / "runs/acquire-base/result.json",
                 "OLD_MODE": p["old"] / ".gitignore", "COMMON_GIT": p["common_git"] / "HEAD",
-                "SENTINEL": p["root"] / "denied-sentinel"}
+                "SENTINEL": p["root"] / "denied-sentinel", "SIBLING": p["exec"] / "sibling-sentinel", "CREDENTIAL": p["root"] / "credential-sentinel"}
+    if c["schema"] == 4:
+        expected.update({"PREDECESSOR": p["predecessor"] / "colvia", "ARTIFACTS": p["artifacts"] / "q/colvia"})
     require(set(evidence["probes"]) == set(expected), "positive control membership")
     observed = {}
     for label, path in expected.items():
@@ -45,7 +47,7 @@ def boundary_probes(c, p, input_path, work):
             require(row["operation"] == "chmod-same-mode" and stat.S_IMODE(path.stat().st_mode) == row["mode"], "OLD mode probe mismatch")
             observed[label] = denied(lambda: os.chmod(path, row["mode"], follow_symlinks=False))
             require(stat.S_IMODE(path.stat().st_mode) == row["mode"] and digest(path.read_bytes()) == row["sha256"], "OLD probe changed bytes/mode")
-        elif label in {"COMMON_GIT", "SENTINEL"}:
+        elif label in {"COMMON_GIT", "SENTINEL", "SIBLING", "CREDENTIAL"}:
             require(row["operation"] == "open-read", "read probe mismatch")
             observed[label] = denied(lambda: open_only(path, os.O_RDONLY))
         else:
@@ -162,9 +164,11 @@ def main():
         (target / ".hrn/locks/writer.lock").touch()
         (target / ".hrn/product/binding.json").write_bytes(b'{"synthetic": "B0"}\n')
         events = out / (label + "-events.jsonl")
-        request = out / (label + "-scenario.json")
+        scenario_root=out/'entry-scenarios' if c['phase']=='delegation' else out
+        scenario_root.mkdir(exist_ok=True)
+        request = scenario_root / (label + "-scenario.json")
         exclusive_json(request, {"entry": entry, "target": str(target), "argv": [], "events": str(events), "fault": fault})
-        command = python_command(c, p, "observer.py", sys.argv[1], sys.argv[2], request, digest(request.read_bytes()))
+        command = python_command(c, p, "delegation_observer.py" if c["phase"]=="delegation" else "observer.py", sys.argv[1], sys.argv[2], request, digest(request.read_bytes()))
         return target, events, command
     target, events, command = scenario("primitive", "primitive-canary")
     subprocess.run(command, stdin=subprocess.DEVNULL, check=True, timeout=30)

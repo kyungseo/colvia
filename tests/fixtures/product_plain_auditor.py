@@ -9,6 +9,7 @@ from pathlib import Path
 
 SERIAL_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/harness-v2-work/SKILL.md', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'hv2', 'src/hv2ref/__init__.py', 'src/hv2ref/cli.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
 ENTRY_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/colvia-work/SKILL.md', 'colvia', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'src/hv2ref/__init__.py', 'src/hv2ref/candidates.py', 'src/hv2ref/cli.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/umbrella.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
+DELEGATION_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/colvia-work/SKILL.md', 'colvia', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'src/hv2ref/__init__.py', 'src/hv2ref/candidates.py', 'src/hv2ref/cli.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/umbrella.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
 
 
 # Independent stdlib receipt/byte auditor. This intentionally does not import or
@@ -111,13 +112,13 @@ def audit_once(target):
     receipt_raw=raw_file(home/"detached.json");receipt=strict_json(receipt_raw)
     keys(receipt,{"record_type","schema_version","operation_id","plan","prior_binding_ref","result_binding_ref"})
     plan=keys(receipt["plan"],{"record_type","schema_version","operation_id","action","target_fingerprint","authority_home_id","expected_binding_ref","candidate_release","format_sha256","truth_refs","remove","preserve","created_at"})
-    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3)
+    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4)
             and plan["record_type"]=="lifecycle-plan" and type(plan["schema_version"]) is int and plan["schema_version"]==receipt["schema_version"] and plan["action"]=="detach","detach-record-type")
     require(valid_id(plan["operation_id"]) and receipt["operation_id"]==plan["operation_id"] and isinstance(plan["created_at"],str) and plan["created_at"].strip(),"detach-operation")
     require(plan["authority_home_id"]==fmt["authority_home_id"] and plan["format_sha256"]==sha(fmt_raw) and valid_sha(plan["target_fingerprint"]),"detach-identity")
     require(receipt["prior_binding_ref"]==ref(plan["expected_binding_ref"]) and receipt["result_binding_ref"] is None and plan["candidate_release"] is None,"detach-binding")
     remove=entries(plan["remove"]);preserve=entries(plan["preserve"])
-    launcher="colvia" if plan["schema_version"]==3 else "hv2"
+    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia"}[plan["schema_version"]]
     expected={launcher,".hrn/product/init-plan.json",".hrn/product/binding.json"};releases=set();receipt_ids=set()
     for name in set(remove)-expected:
         parts=name.split("/")
@@ -132,8 +133,8 @@ def audit_once(target):
         paths = set(SERIAL_PATHS) | {"src/hv2ref/umbrella.py"} if prefix+"payload/src/hv2ref/umbrella.py" in remove else SERIAL_PATHS
         if prefix+"payload/src/hv2ref/candidates.py" in remove:paths=set(paths)|{"src/hv2ref/candidates.py"}
         if prefix+"payload/colvia" in remove:
-            require(plan["schema_version"]==3,"old-schema-entry-membership")
-            paths=ENTRY_PATHS
+            require(plan["schema_version"] in (3,4),"old-schema-entry-membership")
+            paths={3:ENTRY_PATHS,4:DELEGATION_PATHS}[plan["schema_version"]]
         expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in paths}
         require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24],"release-inventory")
     require(set(remove)==expected and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"],"remove-completeness")
@@ -166,7 +167,7 @@ def audit_once(target):
     require(remaining_names==files_order[len(files_order)-len(remaining_names):],"invalid-file-prefix")
     if remaining_names:require(present_dirs==dirs,"early-directory-removal")
     else:require([n for n in dir_order if n in present_dirs]==dir_order[len(dir_order)-len(present_dirs):],"invalid-directory-prefix")
-    if plan["schema_version"]==3:
+    if plan["schema_version"] in (3,4):
         import unicodedata
         require(not any(unicodedata.normalize("NFC",p.name).casefold()=="hv2" for p in target.iterdir()),"retired-entry-collision-preserved")
     selected={}

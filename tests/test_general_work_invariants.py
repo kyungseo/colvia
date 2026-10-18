@@ -547,7 +547,15 @@ class WorkerBaselineGraphTests(unittest.TestCase):
     def setUp(self):
         from hv2ref.work import make_manifest, record_ref
         self.identity={"record_type":"work-identity","schema_version":1,"authority_home_id":"home-a","work_id":"work-a","work_type":"change","created_at":"fixture","acceptance_authority":"owner","lineage":None}
-        self.intent={"authority_home_id":"home-a","kind":"intent","id":"intent-a","revision_ref":{"id":"r","sha256":"a"*64},"acceptance_ref":{"id":"a","sha256":"b"*64},"selection_ref":{"id":"s","sha256":"c"*64}}
+        from hv2ref.intent import FACET_KEYS, workspace_intent_graph
+        base={"schema_version":1,"authority_home_id":"home-a","intent_id":"intent-a"}
+        draft={**base,"record_type":"intent-draft","revision_id":"r","sequence":1,"prior_revision_ref":None,"actor":"agent","acceptance_authority":"owner","observed_at":"fixture","facets":{k:{"status":"known","value":"fixture"} for k in FACET_KEYS},"gaps":[],"statements":[],"route":"direct-entry"}
+        ticket={"record_type":"confirmation-ticket","schema_version":1,"authority_home_id":"home-a","object":{"authority_home_id":"home-a","kind":"intent","id":"intent-a"},"action":"accept","actor":"owner","reason":"fixture acceptance","request_id":"intent-request","observed_at":"fixture","target_fingerprint":"a"*64,"target_revision_ref":record_ref(draft,"revision_id"),"expected_selection_ref":None,"intent_ref":None,"product_binding_ref":{"id":"binding","sha256":"b"*64},"document_refs":[],"evidence_refs":[],"execution_mode":None,"supersedes_decision_ref":None}
+        accepted={**base,"record_type":"intent-acceptance","acceptance_id":"acceptance-"+digest(ticket),"confirmation":ticket}
+        selected={**base,"record_type":"intent-selection","selection_id":"s","revision_ref":record_ref(draft,"revision_id"),"acceptance_ref":record_ref(accepted,"acceptance_id"),"prior_selection_ref":None}
+        data={"identity.json":{**base,"record_type":"intent-identity"},"drafts/r.json":draft,"acceptances/"+accepted["acceptance_id"]+".json":accepted,"selections/s.json":selected,"current.json":{**base,"record_type":"intent-current","selection_ref":record_ref(selected,"selection_id")}}
+        self.intent_graphs={"intent-a":workspace_intent_graph(data,"intent-a","home-a")}
+        self.intent={"authority_home_id":"home-a","kind":"intent","id":"intent-a","revision_ref":selected["revision_ref"],"acceptance_ref":selected["acceptance_ref"],"selection_ref":record_ref(selected,"selection_id")}
         self.tree={"policy_version":1,"ignore_fingerprint":"d"*64,"entries":[]}
         self.tree["sha256"]=digest(self.tree)
         self.manifest=make_manifest(self.tree,self.tree,scope=[],base_commit="e"*40,candidate_commit="e"*40,base_retention_ref="refs/heads/base",candidate_retention_ref="refs/heads/base")
@@ -613,8 +621,14 @@ class WorkerBaselineGraphTests(unittest.TestCase):
         done=work_graph(self.identity,revisions,decisions,{"selected":self.selection,"human-selected":selected},manifests,current)
         self.assertEqual("active",done["state"]);self.assertEqual([],done["pending_decisions"])
         wrong=copy.deepcopy(ticket);wrong["actor"]="agent";wrong_decision=WorkStore._decision(wrong)
-        with self.assertRaisesRegex(ContractError,"acceptance authority"):
-            work_graph(self.identity,revisions,{wrong_decision["record_id"]:wrong_decision},{"selected":self.selection},manifests,self.current)
+        inputs=(self.identity,revisions,{wrong_decision["record_id"]:wrong_decision},{"selected":self.selection},manifests,self.current)
+        before=copy.deepcopy((inputs,self.intent_graphs))
+        for context,message in ((None,"delegated decision requires complete verified intent context"),(self.intent_graphs,"no grant for this Work")):
+            with self.subTest(context_present=context is not None), self.assertRaises(ContractError) as caught:
+                work_graph(*inputs,intent_graphs=context)
+            self.assertEqual("HV2-WORK-RECORD",caught.exception.code)
+            self.assertEqual(message,caught.exception.message)
+            self.assertEqual(before,(inputs,self.intent_graphs))
 
     def test_agent_cannot_select_refresh_without_human_decision(self):
         from hv2ref.work import work_graph, record_ref

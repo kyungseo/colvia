@@ -342,15 +342,17 @@ def inspect_root(target: Path) -> dict[str, Any]:
 
 def _validate_plan_shape(plan: Any) -> None:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] != 1 or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not all(_id(plan[k]) for k in ("operation_id", "authority_home_id")) or not _text(plan["created_at"]) or not all(_sha(plan[k]) for k in ("target_fingerprint", "format_sha256")):
         raise _error("invalid init identity or digest")
     if plan["expected_binding_ref"] is not None or any(plan[k] != [] for k in ("truth_refs", "remove", "preserve")):
         raise _error("invalid fresh init claims")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1"}):
+    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1"}):
         raise _error("invalid init release")
+    if (plan["schema_version"] == 4) != (release["inventory_id"] == "delegation-1"):
+        raise _error("init schema/window pair")
 
 
 def _bootstrap_prefix(root: Path) -> None:
@@ -386,7 +388,7 @@ def _write_exact(path: Path, data: bytes) -> None:
 
 def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[str, Any]:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] != 1 or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not _id(plan["operation_id"]) or plan["authority_home_id"] != value["authority_home_id"] or not _text(plan["created_at"]):
         raise _error("init plan identity")
@@ -395,8 +397,10 @@ def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[
     if plan["expected_binding_ref"] is not None or plan["truth_refs"] != [] or plan["remove"] != [] or plan["preserve"] != []:
         raise _error("fresh init plan cannot claim existing truth")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1"}):
+    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1"}):
         raise _error("init plan candidate")
+    if (plan["schema_version"] == 4) != (release["inventory_id"] == "delegation-1"):
+        raise _error("init schema/window pair")
     if release["id"] != "product-release-" + release["sha256"][:24]:
         raise _error("init plan release identity")
     return plan
