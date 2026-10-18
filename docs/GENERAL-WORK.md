@@ -1,8 +1,8 @@
 # General Work Development Slice
 
-Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
 
-Status: development machine CLI with local record writing, worker publication, human baseline refresh and exact worker result application. Exact-candidate qualification and actual adoption require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md).
+Status: development machine CLI with local record writing, worker publication, human baseline refresh and exact worker result application. Human acceptance is the default; [Delegation-1](#delegation-1-implementation-candidate) defines the sole exact ordinary-worker accept exception. Exact-candidate qualification and actual adoption require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md).
 The default writer verifies an isolated installed applied binding. Tests may explicitly supply a verifier double. Actual source init and
 installed launcher tests exercise intent and Work commands plus update/rollback round trips; exact active repair is available from independent source. Receipt-bound detach and a bounded independent auditor are implemented; their presence does not establish general adoption or qualification of these exact bytes.
 Only explicit source-checkout and installed single-home entry modes remain. Generation runtime, readers and commands are removed.
@@ -55,7 +55,7 @@ this exception. A source change is not same-window rollback qualification;
 validate exact old/new artifacts and resulting records before an adopter switch.
 This bounded path is not Windows qualification or general Git filter support.
 
-The unchanged CRLF exception requires verified active checkout-1 or entry-1 inventory. Older/unknown or omitted inventory values keep strict blob matching, including in read-only worker inspection. An older-window worker's retained launcher is not silently accepted after transition: preserve its result/refs and follow the explicit baseline rebind/resubmission procedure in [Getting Started](GETTING-STARTED.md#transition-to-entry-1). Attribute/capability drift after a decision can refuse resume; restore the original environment for exact recovery or use cancellation only where its existing conditions permit. Completed replay remains historical, while view observations can become unavailable.
+The unchanged CRLF exception requires verified active checkout-1, entry-1 or delegation-1 inventory. Older/unknown or omitted inventory values keep strict blob matching, including in read-only worker inspection. An older-window worker's retained launcher is not silently accepted after transition: preserve its result/refs and follow the explicit baseline rebind/resubmission procedure in [Getting Started](GETTING-STARTED.md#transition-to-entry-1). Attribute/capability drift after a decision can refuse resume; restore the original environment for exact recovery or use cancellation only where its existing conditions permit. Completed replay remains historical, while view observations can become unavailable.
 
 Recovery observation distinguishes full result, mixed pre/post, unknown changed content and outside drift. The content-only
 `all_changed_paths_pre` observation cannot authorize cancellation: actual ignored occupants and safe ancestors must also pass
@@ -167,7 +167,7 @@ inspection; the installed entry cannot repair its own missing binding.
 
 Installed startup never guesses source-checkout mode when `.hrn` is missing. Invoke an independent
 trusted source launcher with `--source-checkout` for init or diagnostic commands. Source init/update/rollback/detach
-commands require the explicit `entry-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
+commands require the explicit `delegation-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
 there is no legacy fallback mode.
 Confirmation tokens bind request bytes; they are not independent evidence of human authorization.
 
@@ -209,7 +209,7 @@ backup bytes are refused. The installed launcher cannot invoke this operation.
 Use the installed `colvia detach --operation-id detach-1 --observed-at TIME` to
 preview. Save its `request` object, then run `colvia detach --apply --input request.json
 --confirm TOKEN`. An independent source can use the same command with explicit
-`--source-checkout`, `--profile entry-1`, and `--target /path/to/project`.
+`--source-checkout`, `--profile delegation-1`, and `--target /path/to/project`.
 
 Detach writes `.hrn/detached.json` before removing anything. It removes the verified
 launcher and managed product files, then their empty directories. Format, ignore
@@ -315,3 +315,15 @@ Writer validation is fail-closed for the authority home: existing Work relation 
 Entry-1 adds no Work, parent or candidate operation. Transition admission preserves selected/orphan worker records but blocks pending durable operations. Non-completed selected local Work and local parents require the exact stored-manifest equality and renamed-path dependency checks in [Entry-1 admission](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication). A parent's required references include its sealed direct captured child revisions/intent confirmations, not the child's current state, scope, optional references or deeper descendants. Completed or worker-mode captured children can therefore intentionally block a local parent. Ordinary parent acceptance rules are unchanged.
 
 After cutover, old worker result bytes/refs remain historical evidence; direct acceptance under old launcher proof is refused. A new runtime control commit needs separate Git authorization, followed by explicit same-intent worker baseline rebind and resubmission. No automatic acceptance, cancellation, baseline refresh or Git action occurs. Current source repair is exact active entry-1 only; old pending operations require matching OLD source. Current detach uses schema 3; historical schema 1/2 writes use retained old sources. Historical transition-content unavailability is distinct from current Work content/ref checks; see [diagnostic context](REFERENCE.md#entry-1-diagnostic-context).
+
+## Delegation-1 Implementation Candidate
+
+This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+
+For an ordinary isolated-worker Work, a non-Owner accept actor must exactly match the non-null grant in the accepted schema-3 intent draft bound to that Work revision. The qualified Work, execution mode and scope-path set must match. The accepted revision is schema 1, contains no composition and has no `supersedes`; no schema-2 revision may occur in its selected ancestry. These restrictions also apply when the ordinary Work is a child of a parent.
+
+One use is keyed by `(authority home, Work ID, intent ID, draft ID, draft digest)`. Any lawful durable delegated accept decision for that key consumes it, including an orphan decision, cancelled pending accept or revoked completion. The accepted intent acceptance/selection ID is not a reset key. A selected revoke of an accept for the same key blocks another delegated acceptance, including when the revoked accept was Owner-issued. A newly accepted draft produces a new key only through the existing lawful lifecycle and rebind rules; completed Work cannot be reopened by a grant.
+
+Owner accept remains available under the existing gates. All non-accept actions remain Owner-only. The decision records the actual actor, and exact pending recovery must retain that actor and ticket. Required intent/Work references, baseline and candidate content, retained sources, CAS, ignore policy and guarded currentness all remain mandatory. Grant permission never excuses unavailable evidence or unsafe content.
+
+A delegated ordinary child can satisfy existing parent readiness if its accepted result and capture are valid. It cannot delegate the parent's acceptance or create a transitive grant. A mixed chain containing a composition revision is ineligible. Parallel decision actors still serialize through the existing writer lock; no same-Work concurrent content-editing authority is added.

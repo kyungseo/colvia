@@ -451,3 +451,14 @@ These bounded results do not establish a current complete normal/parent-optimize
 ### Frozen Preparation Labels
 
 Following the existing Entry-1 Amendment Activation convention, retained Proposed/unactivated labels in the exact managed documents and amendment preparation prefix describe their preparation revision. This named Owner activation controls the current effect of the supplement. Do not edit installed payloads to change those labels or manufacture a new release solely for this record. The earlier accepted record and unrelated contract clauses retain their original bytes and meaning.
+
+
+## Delegation-1 Successor Activation — 2026-10-18
+
+Owner accepted the completed PATCH result and authorized this exact source-contract activation on 2026-10-18. The accepted PATCH bytes have SHA-256 `8e40ba85f241d9f37e66ff0276310742b0139ed1a4660c0f58815643263d381f`; the pre-activation DR-0005 input is 5,690 bytes / SHA-256 `737c34eb9cc323185af0ceef0709c5a889b02a5a8ba5d04fbce3f203c09dbc5c`. The complete [activation record](DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation) identifies all 17 successor documents, their exact clause scope and P `98e4b0aa321383d648843d6bb05ea150bf15da5816a60403c04d0c5ea42f6a35`. Git, release and actual adopter application remain withheld.
+
+> 결과는 수락해. 새 P와 17개 문서의 정확한 제출안으로 source 계약 활성화를 진행해. Git·release·adopter 적용은 계속 보류하고, 기존 증거를 재사용해 영향받는 부분만 검증해.
+
+Only the ordinary-accept authority, schema-3 intent shape, delegation-1 rank-6 window, paired schema-4 lifecycle, writer/recovery and source-entry/language clauses enumerated in DR-0005's exact 17-document table are replaced or amended. The 11 technical members remain distinct from the six entry/explanation/data members. Explanation does not create another normative authority. DR-0002, DR-0003 and this decision are not superseded as a whole.
+
+The exact entry-1 predecessor remains `2216a2634eb3fa5d6a8bfa7c7d4847b29fb2443ba7b367156c15b15ddb5a17e0`. Preserve the First B1 0600/0644 reader allowance, initial 0600 publication, exact bytes/type/one-link checks, synchronization and unrelated identity, content, evidence, concurrency and recovery guarantees. Existing historical preparation labels retain their original meaning; the dated named activation determines only its explicit scope. The complete prior DR-0004 prefix and accepted identities are preserved byte-for-byte.

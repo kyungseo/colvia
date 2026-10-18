@@ -41,7 +41,7 @@ def load(path):
 
 
 def record(value, kind, authority, iid):
-    require(value.get("record_type") == kind and type(value.get("schema_version")) is int and value["schema_version"] in ((1, 2) if kind == "intent-draft" else (1,)), "record-type")
+    require(value.get("record_type") == kind and type(value.get("schema_version")) is int and value["schema_version"] in ((1, 2, 3) if kind == "intent-draft" else (1,)), "record-type")
     require(value.get("authority_home_id") == authority and value.get("intent_id") == iid, "record-identity")
 
 
@@ -73,7 +73,7 @@ def inspect(target, iid):
     require(ticket.get("action") == "accept" and ticket.get("actor") == draft.get("acceptance_authority"), "acceptance-actor")
     require(acceptance["acceptance_id"] == "acceptance-" + digest and selection["selection_id"] == "selection-" + digest, "ticket-bound-id")
     require(ticket.get("target_revision_ref") == selection["revision_ref"] and ticket.get("expected_selection_ref") == selection["prior_selection_ref"], "acceptance-selection-binding")
-    return {"classification":"pass","scope":"selected-chain-only","authority_home_id":authority,"intent_id":iid,"revision_id":draft["revision_id"],"revision_ref":selection["revision_ref"],"selection_ref":current["selection_ref"]}
+    return {"classification":"pass","scope":"selected-chain-only","authority_home_id":authority,"intent_id":iid,"revision_id":draft["revision_id"],"revision_ref":selection["revision_ref"],"selection_ref":current["selection_ref"],"acceptance_delegation":draft.get("acceptance_delegation"),"delegation_authorization":"not-verified"}
 
 
 def main():

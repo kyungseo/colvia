@@ -1,13 +1,13 @@
 # Agent Entry
 
-This is the canonical agent entry for the Colvia single-home development candidate.
+This is the canonical agent entry for Colvia’s single-home `delegation-1` profile.
 Read [docs/README.md](docs/README.md) for document authority and currentness.
 
-These instructions describe the unactivated `entry-1` candidate; see [Candidate status](docs/README.md#entry-1-candidate). Editing these files does not activate the contract.
+These instructions describe the `delegation-1` profile; in an installed project, use the verified installed release; see [Profile and authorization](docs/README.md#delegation-1-implementation-candidate). Document presence and a verified binding do not prove Owner authorization or source-contract activation. Editing these files does not activate the contract.
 
 ## Authority Floor
 
-- The human owner decides material scope and acceptance. Agent output and confirmation tokens do not prove human authorization.
+- The human owner decides material scope and acceptance. An activated exact intent-bound grant may permit only the named ordinary isolated-worker accept described in General Work. All other decisions and source-development result acceptance remain human. Agent output and confirmation tokens do not prove human authorization.
 - `.hrn/format.json`, `.hrn/intents/`, and `.hrn/work/` are project-owned authority. Select current state only through verified typed references; never by timestamp or filename.
 - `.hrn/product/` and the root `colvia` are managed runtime. Do not customize them. `.hrn/staging/` and `.hrn/locks/` are scratch, not authority.
 - Actor strings declare roles inside one trusted local OS account; they are not authentication.
@@ -16,9 +16,10 @@ These instructions describe the unactivated `entry-1` candidate; see [Candidate 
 
 ## Start
 
-1. In an installed project run `./colvia view`. Read the current verified manual and adapter paths it displays; never pin a release directory in the project entry.
-2. For setup or broken-launcher diagnosis, use an independent trusted source with explicit `--source-checkout`; see [Getting Started](docs/GETTING-STARTED.md) and [Operations](docs/OPERATIONS.md).
-3. Propose scope and evidence. Obtain human acceptance of the exact intent and result. Keep one editing Work at a time during serial use.
+1. When explicitly asked to develop Colvia itself in its trusted source checkout, read source-only `CONTRIBUTING.md`, then its Development Workflow and existing task record. The Workflow's unchanged-entry statement describes the earlier source-only relocation; this candidate adds the conditional route. Do not install a runtime or create typed Work to begin source development.
+2. In an installed project run `./colvia view`, follow project-owned rules and read the verified manual/adapter paths it displays. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
+3. For setup or broken-launcher diagnosis, use an independent trusted source with explicit `--source-checkout`; see [Getting Started](docs/GETTING-STARTED.md) and [Operations](docs/OPERATIONS.md).
+4. Propose scope and evidence. Obtain human acceptance of the exact intent and result. Keep one editing Work at a time during serial use.
 
 Lifecycle commands preview by default. Intent/Work publication writes machine records; prepare is read-only and apply requires the exact ticket/token. Obtain the relevant authorization before invoking a writer. Worker worktrees cannot write control authority.
 

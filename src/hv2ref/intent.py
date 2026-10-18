@@ -119,6 +119,23 @@ def classify_entry(consequence: str, gaps: list[dict[str, Any]]) -> dict[str, An
     return {"artifact_required": True, "route": route}
 
 
+def validate_delegation(value: Any, authority: str, owner: str) -> dict[str, Any]:
+    """Exact ordinary accept capability; actor labels do not authenticate callers."""
+    from .work import _keys, _require, _identifier, _qualified, _path_set, _text
+    _keys(value, {"action", "delegate_actor", "execution_mode", "scope", "work"})
+    _text(owner); _identifier(value["delegate_actor"])
+    delegate = value["delegate_actor"]
+    _require(delegate != owner and (not owner.isascii() or delegate.lower() != owner.lower()),
+             "delegate and Owner must be distinct")
+    _require(value["action"] == "accept" and value["execution_mode"] == "isolated-worktree",
+             "unsupported delegated action or execution mode")
+    _qualified(value["work"], kind="work")
+    _require(value["work"]["authority_home_id"] == authority, "cross-home delegation")
+    _require(isinstance(value["scope"], list) and bool(value["scope"]), "delegation scope must be nonempty")
+    _path_set(value["scope"])
+    return value
+
+
 def workspace_intent_graph(data: dict[str, Any], intent_id: str, authority: str) -> dict[str, Any]:
     """Validate all new-format intent records, including unpublished prefixes."""
     from .work import _require, _keys, _identifier, _text, _resolve, _digest, validate_ticket
@@ -137,12 +154,14 @@ def workspace_intent_graph(data: dict[str, Any], intent_id: str, authority: str)
         _require(len({key.casefold() for key in group}) == len(group), "intent record ID case collision")
         for key, record in group.items():
             version = record.get("schema_version") if isinstance(record, dict) else None
-            _require(type(version) is int and version in ((1, 2) if kind == "intent-draft" else (1,)), "unsupported intent record version")
-            _keys(record, base | extra | ({"composition"} if version == 2 else set()))
+            _require(type(version) is int and version in ((1, 2, 3) if kind == "intent-draft" else (1,)), "unsupported intent record version")
+            _keys(record, base | extra | ({"composition"} if version == 2 else {"acceptance_delegation"} if version == 3 else set()))
             _require(record["record_type"] == kind and record[id_key] == key and record["authority_home_id"] == authority and record["intent_id"] == intent_id, "intent record type/identity mismatch")
             if version == 2:
                 from .umbrella import validate_composition
                 validate_composition(record["composition"], authority)
+            if version == 3:
+                validate_delegation(record["acceptance_delegation"], authority, record["acceptance_authority"])
             _identifier(key)
     for draft in drafts.values():
         _require(type(draft["sequence"]) is int and draft["sequence"] > 0, "draft sequence must be a positive integer")
@@ -273,7 +292,7 @@ def _resolve_workspace_intent(graph: dict[str, Any], intent_id: str, expected_re
     _require(graph["chain"].index(bound["selection_id"]) <= graph["chain"].index(current["selection_ref"]["id"]), "intent reference is not yet published")
     _require(expected_ref == {"authority_home_id": graph["identity"]["authority_home_id"], "kind": "intent", "id": intent_id, "revision_ref": bound["revision_ref"], "acceptance_ref": bound["acceptance_ref"], "selection_ref": expected_ref["selection_ref"]}, "intent binding mismatch")
     draft = _resolve(graph["drafts"], bound["revision_ref"])
-    return {"acceptance_authority": draft["acceptance_authority"], "composition": draft.get("composition"), "intent_ref": expected_ref, "is_current": expected_ref["selection_ref"] == current["selection_ref"]}, bound
+    return {"acceptance_authority": draft["acceptance_authority"], "composition": draft.get("composition"), "acceptance_delegation": draft.get("acceptance_delegation"), "intent_ref": expected_ref, "is_current": expected_ref["selection_ref"] == current["selection_ref"]}, bound
 
 
 def workspace_intents(target: Path, *, _graph_reader=None) -> dict[str, Any]:
@@ -333,6 +352,7 @@ class WorkspaceIntentStore:
             data["drafts/" + rid + ".json"] = draft
             workspace_intent_graph(data, iid, authority)
             if draft["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
+            if draft["schema_version"] == 3: self.work_store._delegation_runtime(runtime)
             _visible_truth(self.target, [f".hrn/intents/{iid}/identity.json", f".hrn/intents/{iid}/drafts/{rid}.json"])
             self.work_store._runtime_equal(runtime)
             root = self.target / ".hrn/intents"; _durable_directory(root)
@@ -366,6 +386,7 @@ class WorkspaceIntentStore:
         ticket = {"record_type": "confirmation-ticket", "schema_version": 1, "authority_home_id": graph["identity"]["authority_home_id"], "object": {"authority_home_id": graph["identity"]["authority_home_id"], "kind": "intent", "id": intent_id}, "action": "accept", "actor": actor, "reason": reason, "request_id": request_id, "observed_at": observed_at, "target_fingerprint": target_fingerprint(self.target), "target_revision_ref": revision_ref, "expected_selection_ref": graph["current"]["selection_ref"] if graph["current"] else None, "intent_ref": None, "product_binding_ref": runtime["binding_ref"], "document_refs": document_refs if document_refs is not None else [], "evidence_refs": evidence_refs if evidence_refs is not None else [], "execution_mode": None, "supersedes_decision_ref": None}
         self._accepted_data(graph, ticket)
         if graph["drafts"][revision_ref["id"]]["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
+        if graph["drafts"][revision_ref["id"]]["schema_version"] == 3: self.work_store._delegation_runtime(runtime)
         _live_external_refs(self.target, ticket, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
         return {"ticket": ticket, "confirm_token": _digest(ticket)[:16]}
 
@@ -392,6 +413,7 @@ class WorkspaceIntentStore:
             _require(ticket["expected_selection_ref"] == expected, "stale intent confirmation")
             data, acceptance, selection = self._accepted_data(graph, ticket)
             if graph["drafts"][ticket["target_revision_ref"]["id"]]["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
+            if graph["drafts"][ticket["target_revision_ref"]["id"]]["schema_version"] == 3: self.work_store._delegation_runtime(runtime)
             current = {**graph["identity"], "record_type": "intent-current", "selection_ref": record_ref(selection, "selection_id")}
             for value in (acceptance, selection, current): _canonical_record_bytes(value)
             _live_external_refs(self.target, ticket, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))

@@ -1,22 +1,22 @@
 # Reference
 
-Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
 
 Document authority and currentness: [Documentation Index](README.md).
 
 ## Single-Home Development Commands
 
-The current development candidate profile is `entry-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./colvia`. An independent contribution source uses `./colvia --source-checkout` explicitly.
+The current development candidate profile is `delegation-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./colvia`. An independent contribution source uses `./colvia --source-checkout` explicitly.
 A source path or a successful test suite is not permission to modify an adopter.
 
 | Entry | Command | Input and effect |
 | --- | --- | --- |
-| Independent source | `init --profile entry-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
+| Independent source | `init --profile delegation-1 --target PATH --source PATH --authority-home-id ID --operation-id ID --observed-at TIME` | Preview only; save its `request` and token. Apply with the same target/source/profile plus `--apply --input FILE --confirm TOKEN`. |
 | Installed or independent source | `status`, `doctor` | Read-only product and complete record-graph diagnostics. Source accepts `--target PATH`. Healthy product output derives `documentation_root` and its README entry from the verified active release. |
 | Installed | `update --source PATH --operation-id ID --observed-at TIME` | Preview a candidate; `--apply --input FILE --confirm TOKEN` applies the exact request. |
 | Installed | `rollback [--to RELEASE] --operation-id ID --observed-at TIME` | Preview a receipt-backed release; apply the exact request and token. |
 | Installed | `detach --operation-id ID --observed-at TIME` | Preview exact managed removal; apply the exact request and token. Project truth remains. |
-| Independent source | `update`, `rollback`, `detach` with `--profile entry-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
+| Independent source | `update`, `rollback`, `detach` with `--profile delegation-1 --target PATH` | Exact original request/token plus `--apply --recover` resumes a supported publication prefix. Preserve unknown/torn bytes. |
 | Independent source | `repair --target PATH --source PATH --backup NEW_EXTERNAL_PATH --operation-id ID --observed-at TIME` | Preview restoration of the exact active product. Apply its request/token; interrupted repair uses `--recover`. Installed repair is not exposed. |
 | Installed | `intent draft`, `intent prepare`, `intent apply` | Canonical JSON from `--input FILE` or stdin. Apply additionally needs `--confirm TOKEN`. |
 | Installed | `work publish [--worker PATH]`, `work prepare`, `work apply` | Canonical JSON from `--input FILE` or stdin. Worker result publish requires the registered linked worker path; start/baseline rebind omit it. Apply additionally needs `--confirm TOKEN`. Worker accept records the decision before exact file application and selects completion only after whole-result checks; human baseline rebind is separate. |
@@ -92,13 +92,13 @@ recovery path for previously oversized receipts.
 
 `classify-intent-entry --consequence consequential|non-consequential [--input FILE]` classifies provided gaps without publishing records. An input file has exactly one `gaps` field. `durability-probe --root PATH` writes disposable diagnostic files to an explicitly chosen scratch directory; it refuses a workspace root or descendant. It is not a read-only status command.
 
-Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile entry-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
+Generation commands and `--legacy-baseline` are removed. A source init/update/rollback/detach call without `--profile delegation-1` fails instead of selecting an old profile. Installed commands select their bound profile. Source help and installed help deliberately expose different operations.
 
 ### Checkout Compatibility Limits
 
-Current source updates only the exact allowlisted checkout-1 predecessor or an entry-1 target. A durable entry-1 switch receipt commits to forward recovery; there is no rollback to checkout-1 or earlier, including the first prior release. The complete predecessor reference, admission and physical prefix rules are in [Workspace Contract](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication). Use the exact new source and original request/token for an admitted transition prefix. Old worker manifests need a separately authorized new control commit, explicit same-intent worker baseline rebind and resubmission.
+Current source updates only the exact audited entry-1 predecessor or a delegation-1 target. The first durable schema-4 switch receipt commits to forward recovery; rollback to entry-1 or earlier is refused. Use the exact new source and original request/token for an admitted prefix. Existing worker results need separately authorized control Git integration, explicit same-intent worker rebind and resubmission. See [Delegation-1 operation](OPERATIONS.md#delegation-1-implementation-candidate).
 
-New switches use paired schema 2 and new detach uses paired schema 3. Historical switch schema 1 and detach schemas 1/2 retain their original interpretation; old-window operations and OLD pending init/repair/detach require matching retained OLD source. New source reports preservation/recovery guidance; it does not recover those operations with a new profile. Retained OLD source is not a rollback path after S1. See [Transition To Entry-1](GETTING-STARTED.md#transition-to-entry-1).
+All new lifecycle plans/receipts use paired schema4. Historical action/version pairs retain their meaning; old pending operations need their matching retained source. The older checkout-1 to entry-1 admission and schema2/schema3 recovery remain documented in [Workspace Contract](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication) and [Transition To Entry-1](GETTING-STARTED.md#transition-to-entry-1). Retained source is not a downgrade path after a one-way receipt.
 
 ## Human Review
 
@@ -110,7 +110,7 @@ Confirmation consumes canonical ticket bytes, not the prepare response envelope.
 
 Document bodies remain project Markdown. The view displays role, path, recorded digest and current observation; open those documents or have your agent explain them. Advisory reads reject links, special/unstable inputs and files over 4 MiB. A Core-readable large file can therefore be unavailable in the view. Worker-observed evidence is not reverified on control.
 
-The entry-1 runtime rejects serial-1 and unknown windows. Independent-source reading retains valid human-1, worker-1, umbrella-1, planning-1 and checkout-1 history; current candidate creation and execution require entry-1. The installed launcher refuses old bindings before loading managed code. Old source profiles are parser errors. Transition uses the qualified independent new source; see [Transition To Entry-1](GETTING-STARTED.md#transition-to-entry-1).
+The delegation-1 runtime rejects serial-1 and unknown windows. Independent-source reading retains valid human-1, worker-1, umbrella-1, planning-1, checkout-1 and entry-1 history; current candidate creation and execution require delegation-1. The installed launcher refuses old bindings before loading managed code. Old source profiles are parser errors. Transition uses the qualified independent new source; see [Delegation-1 operation](OPERATIONS.md#delegation-1-implementation-candidate).
 
 Command syntax/argument errors retain argparse stderr and exit2; the GFM error contract begins after argument parsing. The default human view omits the managed file inventory; status/doctor retain machine diagnostics.
 
@@ -150,7 +150,7 @@ snapshot or a performance guarantee.
 
 Candidate planning records ideas before they become execution work. Ask the agent naturally; the installed adapter prepares machine input. `./colvia view candidates` is read-only and shows the recorded choice, reasons, conditions and actual linked Work state. The root `./colvia view` includes the same section. A recommendation writes nothing; selection is not intent acceptance or execution approval.
 
-Only an explicitly installed entry-1 runtime writes candidates. `./colvia candidate ACTION --input FILE` (or `-` for stdin) accepts one canonical JSON object. Source mode has no candidate writer. Supported actions are `add`, `amend`, `select`, `defer`, `resume`, `link`, `disposition`, `reopen`. Success returns `saved` or exact-retry `unchanged`, the resulting store and digest. Before writing, tell the human any outstanding lifecycle preview will need preparation again.
+Only an explicitly installed delegation-1 runtime writes candidates. `./colvia candidate ACTION --input FILE` (or `-` for stdin) accepts one canonical JSON object. Source mode has no candidate writer. Supported actions are `add`, `amend`, `select`, `defer`, `resume`, `link`, `disposition`, `reopen`. Success returns `saved` or exact-retry `unchanged`, the resulting store and digest. Before writing, tell the human any outstanding lifecycle preview will need preparation again.
 
 The request has exactly these fields: `record_type: "candidate-request"`, integer `schema_version: 1`, `authority_home_id`, unique `request_id`, `candidate_id`, `action`, `expected_sha256` (null only for the first absent store), `writer`, `owner_statement`, `reason`, `observed_at`, and `payload`. IDs use the existing 1–96-character ASCII ID grammar; request IDs and candidate IDs reject case aliases. Narrative fields are nonempty strings up to 2,000 characters, except an unspecified resume condition may be empty. Writer and short Owner statement are declarations, not authentication; never save secrets or the full conversation.
 
@@ -179,7 +179,13 @@ A candidate-only read error makes active `status`/`view` partial, with planning 
 
 ## Project Document Assistance
 
-Load this section when the human requests a comparison, decision record or unresolved-question note. It is an optional agent authoring procedure; Core does not generate these documents. Project rules own their language, location, identifiers, index and lifecycle. Read the project README and directly relevant existing narrative first, not every archive or a previous workflow's templates.
+Load this section when the human requests a comparison, decision record or unresolved-question note. It is an optional agent authoring procedure; Core does not generate these documents. Project rules own document locations, identifiers, indexes and lifecycle; use [Document Language](#document-language) for language selection. Read the project README and directly relevant existing narrative first, not every archive or a previous workflow's templates.
+
+### Document Language
+
+Before composing a saved plan, Work narrative, brief, decision or other document, establish its audience and purpose from the request and applicable project rules. Use an explicit language requested for that artifact first, then the project's language default, then the conversation language. Do not ask again when these already settle the choice. If a request conflicts with a mandatory distribution, contractual or legal language requirement, expose the conflict and obtain the human's decision before the affected write; do not silently override it.
+
+Conversation explanations still use the human's conversation language. An English template, example, identifier or diagnostic label does not select the language of a saved artifact. Preserve exact commands, identifiers, quoted evidence, numbers and technical meaning. Follow the project's existing paired-language requirements when applicable; do not create translations or new language fields merely to use this guidance.
 
 ### Choose The Smallest Record
 
@@ -213,6 +219,8 @@ When the checks permit the requested write, make the smallest narrative change, 
 Use repository rules for project-specific documentation, validation or domain procedures. Core continues to own typed state, exact acceptance and integrity checks; a repository rule cannot override them. The Product supplies the application guidance below. The project owns the adopted rule, its local choices and the evidence that it was followed. Rules are instructions to agents and maintainers, not a runtime enforcement engine or a new authority record.
 
 ### Locate And Describe A Rule
+
+Choose the entry from the task context. In an installed project, use project-owned instructions plus `./colvia view` and its verified manual/adapter; managed manual links stay relative to that manual. Only an explicit request to develop Colvia in a trusted source checkout uses source-only `CONTRIBUTING.md` and the workflow it names. Those source procedures are not installed-project rules.
 
 Reuse the project's existing shared instructions or maintainer document. Keep one canonical rule and a short pointer from the relevant agent entry; retain tool-specific instructions where they are needed. No rule directory, manifest, package format, STATUS file or registry is required. Load a rule when its scope or trigger applies, not as a demand to audit every document at session start.
 
@@ -327,3 +335,13 @@ Interpret the classification together with verified target state, error code/mes
 | Truth drift during comparison, content mismatch, invalid product/prefix, collision or required sync failure | Preserve the applicable refusal (including 65); historical comparison unavailability does not swallow it or authorize rollback. A newer current binding is never rewound or synchronized as an older operation's B1. |
 
 `view confirmation` can display a ticket and independent reader checks with conflict/12. Display is not confirmation, readiness or approval; current binding, required-reference, content, selection and pending rules remain mandatory. Never execute or snapshot-exclude an unowned retired occupant. For OLD pending init/repair/detach, preserve the original source/request/token and use matching OLD source; the new source's diagnostic is not a recovery executor. Exact managed O during the admitted transition is governed by its physical table, not the unowned-collision rule.
+
+## Delegation-1 Implementation Candidate
+
+This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+
+The exact profile is `delegation-1`. Existing command names and ticket fields remain unchanged. New lifecycle requests and their receipts are paired schema 4; ordinary delegated intent drafts use schema 3 as defined in Guided Intent. These two version numbers belong to different record families. `work prepare` with the exact `actor` in its canonical input may prepare an eligible ordinary accept; applying the exact returned ticket performs the existing guarded content operation and records that actor. It creates no additional command or permission.
+
+`view work` exposes the bound `acceptance_delegation` and existing decision actor/history. View output is advisory; the full reader and each writer independently validate the selected and historical graph. Owner absence, unknown required evidence or an invalid grant is not a reason to bypass refusal. Use the normal exact-ticket recovery flow for an interrupted delegated accept, retaining its actor. Record the result and remaining limits in the existing Work narrative.
+
+Source-development result acceptance, contract activation, commit/push/PR, release and adopter changes stay separately authorized. A delegated project Work decision grants none of those actions. A plain retained-file audit that says delegation authorization is not verified cannot be presented as full Core validation.

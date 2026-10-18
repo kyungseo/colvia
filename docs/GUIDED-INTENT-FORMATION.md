@@ -1,6 +1,6 @@
 # Guided Intent Formation
 
-Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
 
 Current surface: typed single-home intent records, machine commands and a read-only human view. The manual natural-language adapter guides the human through existing commands; it does not decide acceptance.
 
@@ -29,3 +29,25 @@ Use `view intent ID` for the selected accepted intent and drafts; acceptance-tic
 A parent intent draft uses schema_version2 and adds exactly `composition={parent, required_children}`. Each child row declares a qualified Work and intent identity in the same home; exact accepted revisions are captured later by the parent Work. The original six facets still hold purpose, scope, constraints and integration criteria. An ordinary request stays schema1.
 
 Once a composition draft is accepted, later acceptance for that intent must preserve composition and its parent identity. Unaccepted drafts do not lock the role. Changing the required set uses a new accepted draft and human parent rebind, not editing accepted bytes. IDs can be declared before publication but are not reserved. Nested/cross-home umbrella is unsupported; see [General Work](GENERAL-WORK.md#direct-child-umbrella).
+
+## Delegation-1 Implementation Candidate
+
+This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+
+An ordinary draft may use schema 3 with exactly the schema-1 ordinary fields plus a non-null `acceptance_delegation`. Schema 1 remains the no-grant ordinary format; schema 2 remains composition. A schema-3 draft cannot also contain composition, and null does not mean no grant.
+
+The grant has exactly these fields:
+
+```json
+{
+  "delegate_actor": "agent-acceptor",
+  "action": "accept",
+  "work": {"authority_home_id": "home-example", "kind": "work", "id": "work-example"},
+  "execution_mode": "isolated-worktree",
+  "scope": ["src/example.py"]
+}
+```
+
+The delegate uses the ASCII record-ID grammar and must differ from the Owner exactly and after ASCII case-folding. The Work is in the same authority home. Scope is a nonempty duplicate-free set of valid paths; order does not grant a different scope. The Owner accepts the exact draft bytes through the existing intent acceptance operation. Draft publication alone grants nothing, but its presence requires a delegation-1 writer for later mutations of that history.
+
+Before acceptance, explain the exact delegate, Work, scope and one-use boundary. The grant does not accept an intent, authorize execution beyond scope, authenticate a caller, or grant reject/revoke/rebind, lifecycle, Git, parent or continuation authority. Preserve required document and currentness rules. Every writer and recovery still validates the full history under the existing control guard.

@@ -56,7 +56,7 @@ class InstalledWorkerHistoryTests(unittest.TestCase):
         (self.target/'unchanged.bat').write_bytes(b'@echo off\r\necho fixture\r\n')
         old_worker_ticket=self.prepare_worker_result()  # Includes real P -> Q.
         binding_q=json.loads((self.target/'.hrn/product/binding.json').read_text())
-        self.assertEqual('entry-1',binding_q['active_release']['inventory_id'])
+        self.assertEqual('delegation-1',binding_q['active_release']['inventory_id'])
         local_q=self.local_review();worker_q=read_work(self.target,'work-a')
         truth_q=self.truth();git_q=exact_snapshot(self.target/'.git')
         preview=json.loads(self.installed(['rollback','--operation-id','back-to-p','--observed-at',self.TIME]).stdout)

@@ -15,14 +15,14 @@
       "status": "development-typed-artifacts"
     },
     {
-      "boundary": "unactivated entry-1 development candidate; exact allowlisted checkout-1 transition and same-window lifecycle only; literal human-1/worker-1/umbrella-1/planning-1/checkout-1 history retained; S1 one-way; older-window downgrade, generation compatibility and attach unsupported",
+      "boundary": "delegation-1 profile; source-contract activation and exact installation require separate Owner authorization; exact audited entry-1 transition and same-window lifecycle; paired schema4 new lifecycle records; historical versions retained; first new receipt is one-way; old-window downgrade and attach unsupported",
       "evidence": "source contains lifecycle and inventory-window fixtures; historical results do not qualify this artifact",
       "fallback": "independent trusted exact source and retained project truth",
       "id": "project-local-product-lifecycle",
       "status": "development-bounded-synthetic"
     },
     {
-      "boundary": "cooperating linked workers; one control writer/finalizer; general usability and real-project multi-worker efficiency unverified; verified checkout-1 or entry-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
+      "boundary": "cooperating linked workers; one serialized cooperating control writer; Owner default with exact granted ordinary accept exception; general usability and real-project multi-worker efficiency unverified; verified checkout-1, entry-1 or delegation-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
       "evidence": "source contains worker integration, process interruption/contention and checkout-byte fixtures; exact-candidate qualification and actual multi-worker use require separately identified evidence",
       "fallback": "one editing Work in control checkout",
       "id": "same-repository-parallel-integration",
@@ -36,18 +36,26 @@
       "status": "development-bounded-local"
     },
     {
-      "id": "same-home-direct-child-umbrella",
-      "status": "development-in-progress",
       "boundary": "direct same-home children; human parent acceptance; no nested umbrella, scheduler, automatic completion or cross-home support",
       "evidence": "source contains schema2 writer/local recovery and installed same-window lifecycle fixtures; fixture presence does not establish full qualification or actual adoption",
-      "fallback": "retain exact history and review the parent plan and child evidence without automatic acceptance"
+      "fallback": "retain exact history and review the parent plan and child evidence without automatic acceptance",
+      "id": "same-home-direct-child-umbrella",
+      "status": "development-in-progress"
     },
     {
-      "id": "candidate-planning",
-      "status": "development-in-progress",
-      "boundary": "branch-local tracked candidates on entry-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
+      "boundary": "branch-local tracked candidates on delegation-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
       "evidence": "source contains candidate contract and installed synthetic fixtures; exact-candidate execution and real fresh-session use require separately identified evidence",
-      "fallback": "preserve planning bytes and inspect from trusted independent source; no silent history compaction"
+      "fallback": "preserve planning bytes and inspect from trusted independent source; no silent history compaction",
+      "id": "candidate-planning",
+      "status": "development-in-progress"
+    },
+    {
+      "boundary": "Owner-accepted schema3 intent; one exact named delegate accept for one ordinary isolated-worker Work and scope; no parent, intent, rebind, reject, revoke, lifecycle, Git or host authentication authority",
+      "evidence": "An identified predecessor candidate completed 656 normal, 656 parent-optimized and 16 exact-artifact synthetic checks; its development result was accepted. These changed documentation bytes require their own scoped consumer and exact-artifact evidence; see Maintaining. No contract activation, host authentication, actual adoption or general agent quality is established.",
+      "evidence_as_of": "2026-10-18",
+      "fallback": "Owner-only ordinary acceptance under existing checks",
+      "id": "delegated-ordinary-acceptance",
+      "status": "development-synthetic-result-accepted"
     }
   ],
   "evidence_as_of": "2026-10-07",

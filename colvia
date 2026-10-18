@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -I -B
 from __future__ import annotations
 
-WORKSPACE_INVENTORY_ID = "entry-1"
+WORKSPACE_INVENTORY_ID = "delegation-1"
 
 import hashlib
 import json

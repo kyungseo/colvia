@@ -1,5 +1,7 @@
 # Checkout-1 Structural Contract
 
+Current reading boundary: [DR-0004](../decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14) activated the exact entry-1 supplement and its named later First B1 permission clauses. The preparation labels below retain their historical meaning. The [Delegation-1 Successor Delta](#delegation-1-successor-delta) is the proposed replacement for the named clauses only; [DR-0005](../decisions/DR-0005-delegated-ordinary-work-acceptance.md) and its exact Owner activation record must make it effective. This source-only file is outside managed29.
+
 Status: unactivated entry-1 successor candidate. The M3 version of this supplement retains its historical "Draft" label and SHA-256 `5797a6c2052c17f911551bdfd0205dcffb5e7c0dd2600dad5b64ae130a417944`; prepared 2026-10-07. [DR-0002](../decisions/DR-0002-checkout-1-contract-baseline.md) remains effective until separate successor qualification and activation. Source development only; this file is not part of the managed installation.
 
 This supplement specifies the exact objects, references and graph constraints needed to interpret entry-1 and retained supported records without a private schema document. Read it when changing a record reader, writer or compatibility rule. The lifecycle and authority procedures remain in the contract set named by DR-0002. A structurally valid object alone never authorizes publication, acceptance, content application or recovery.
@@ -433,3 +435,52 @@ For changes to these structures, update the relevant declaration and its graph/i
 | Product inventory/lifecycle | `src/hv2ref/product.py`: membership, plan/receipt construction, chain verification, repair and detach |
 
 These locators support maintenance; their names do not delegate normative authority to code. The baseline record identifies this supplement's exact proposed bytes and records the actual checks and remaining limits. Document/validator correspondence is not a new full runtime qualification, proof of every historical assertion, or evidence of real adopter use.
+
+
+## Delegation-1 Successor Delta
+
+This proposed delta changes Common Types (`Window`), Intent Shapes And Selection, the ordinary Work Decisions And Selections actor predicate, and Product Inventory And Lifecycle's window/version/current-writer clauses. It adds the following exact rules; all other identity, content, graph, reference, encoding, concurrency and recovery guarantees remain as specified above and in the effective contract. This is a proposal for exact activation, not a new source of runtime authority.
+
+### Intent Draft And Grant Shape
+
+```text
+IntentDraft3 = IntentDraft1 + {acceptance_delegation}
+AcceptanceDelegation = {action, delegate_actor, execution_mode, scope, work}
+```
+
+`IntentDraft3.schema_version` is integer 3; `acceptance_delegation` is a required non-null `AcceptanceDelegation`. It has no `composition`. Saved schema-1 and schema-2 drafts retain their exact old keys and Owner-only acceptance behavior; their absent grant is interpreted as no grant, not rewritten into their saved bytes. Intent identity, acceptance, selection and current records stay schema 1. Draft history/authority, required inputs and exact Owner acceptance gates remain unchanged.
+
+| Grant field | Exact constraint |
+| --- | --- |
+| `action` | Literal `accept` |
+| `delegate_actor` | `Id` (the 1–96-character ASCII grammar above), distinct from the Owner string; if the Owner string is ASCII, case-insensitive equality is also forbidden. Existing Owner/legacy actor fields retain `Text`; this does not globally narrow them |
+| `execution_mode` | Literal `isolated-worktree` |
+| `work` | Exact `Object` with `kind: work` and the same authority home |
+| `scope` | Nonempty array of `Path` satisfying the existing path-set constraints; Work scope equality compares sets, without changing the saved array's digest/order |
+
+A grant binds the accepted draft's exact revision ID and digest, not an independent registry. Re-acceptance or reselection of the same draft does not create a fresh grant identity. Presence of any saved or prospective schema-3 draft requires a verified delegation-1 writer, including Owner writes, replay and a later no-grant draft. Historical graph reading and live writer admission are separate checks; repeat writer admission under the existing guard.
+
+### Ordinary Work Actor And Consumption
+
+The only non-Owner action allowed by this delta is one exact ordinary isolated-worker `accept`. Resolve the Work revision's complete intent reference through its verified intent graph. Work and intent Owner identities agree; the grant's qualified Work, scope set, mode and delegate match the exact ticket and revision. The accepted Work revision is schema 1 without composition; the delegated ticket has no supersedes decision. Every revision in its selected ancestry is schema 1. An ordinary child may qualify; a parent/composition revision or mixed composition ancestry cannot.
+
+Consumption key: `(authority_home_id, work_id, intent_id, draft_revision_id, draft_sha256)`. Every lawful durable delegated accept decision consumes that key, including an orphan decision, a pending accept later cancelled, or a completed result later revoked. One key cannot support another delegated decision. A selected revoke of an accept for the same key bars later delegated acceptance even when that revoked accept was Owner-issued. Traverse the validated selection ancestry; a new request, reselection or baseline-refresh rebind cannot erase it. Earlier lawful history does not become invalid merely because a later revoke exists. A new draft changes the key only through existing lawful acceptance/rebind rules; completed Work does not reopen.
+
+The existing ticket/decision stores the actual actor, and exact recovery retains it. Owner acceptance remains available under existing gates. Intent acceptance, rebind, reject, revoke, cancellation, lifecycle, Git and parent acceptance remain human-authorized; this delta grants none of them to the delegate. A valid delegated ordinary child may satisfy the existing parent's readiness, without transferring parent authority or creating a transitive grant. Serial control writes and the prohibition on concurrent same-Work content editing remain. Actor strings provide no caller authentication or immutable-payload enforcement.
+
+### Window And Lifecycle Pairing
+
+Append `delegation-1` at rank 6 after `entry-1`. Root format, inventory and binding remain schema 1; launcher remains `colvia`; exact managed membership equals the existing entry-1 29 paths. Source-only documents, including this supplement, do not join that inventory.
+
+| Action | New plan / receipt pair | Unchanged action-specific boundary |
+| --- | --- | --- |
+| Init | 4 / 4; candidate delegation-1 | Null binding, exact format and empty truth/remove/preserve |
+| Update / rollback | 4 / 4; candidate delegation-1 | Existing binding/truth checks, empty remove/preserve, same-window prior-release rollback only |
+| Repair | 4 / 4; exact active delegation-1 | Existing request fields, exact damaged-file before/after evidence and external backup, unchanged binding |
+| Detach | 4 / 4 | Existing exact removal/preservation order, prefix checks, receipt and `colvia` collision protection |
+
+The only admitted cross-window update begins at the exact entry-1 predecessor inventory SHA-256 `2216a2634eb3fa5d6a8bfa7c7d4847b29fb2443ba7b367156c15b15ddb5a17e0`, not any entry-1 release. Preserve old source and original input for old pending recovery. The first durable schema-4 switch receipt establishes the one-way boundary before schema-3 intent publication; old writers must refuse even in the late-lock case. Return to entry-1 after that boundary is unsupported. Same-window rollback is permitted only when the exact retained prior release and all current history satisfy the existing checks.
+
+Retained init/repair schema 1, switch pairs 1/1 and 2/2, and detach pairs 1/1, 2/2 and 3/3 retain their historical meaning. Current mutation uses 4/4; a version is an integer, never boolean, and mixed/unknown/action-incompatible pairs are refused. Schema 4 is not admission for a future window. Saved detach history validates its exact pair and removed membership. Once all payloads are removed, identical entry-1/delegation-1 membership cannot independently prove old active-window provenance; writer admission enforces that boundary before deletion. Do not infer a reconstructible release identity from that history.
+
+The current [Workspace Contract](../WORKSPACE-CONTRACT.md#delegation-1-implementation-candidate) and [General Work](../GENERAL-WORK.md#delegation-1-implementation-candidate) carry the corresponding candidate lifecycle and authority clauses. Static comparison with unchanged validators/writers supports correspondence only; the owning A record distinguishes inherited runtime assertions, newly executed artifact/consumer checks and unavailable coverage. No runtime, real-adopter or authentication qualification arises from this document edit.

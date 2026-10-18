@@ -55,7 +55,7 @@ class HumanViewInstalledTests(unittest.TestCase):
         a=self.screen([]);b=self.screen([],source=True)
         self.assertIn('No Work',a);self.assertIn('natural_language_adapter',a);self.assertNotIn('inventory:',a);self.assertNotIn('src/hv2ref/view.py',a)
         self.assertIn('not the bound release',b)
-        self.assertEqual('entry-1',workspace_candidate(self.source)['inventory']['inventory_id'])
+        self.assertEqual('delegation-1',workspace_candidate(self.source)['inventory']['inventory_id'])
         self.assertEqual(29,len(workspace_candidate(self.source)['inventory']['entries']))
 
     def test_draft_is_not_acceptance_and_hostile_facets_are_escaped(self):
@@ -88,7 +88,13 @@ class HumanViewInstalledTests(unittest.TestCase):
         path=next((self.target/'.hrn/work/work-a/decisions').glob('*.json'));ticket=json.loads(path.read_text())['confirmation']
         result=self.screen(['confirmation','--input','-'],ticket);self.assertIn('already_applied: True',result);self.assertIn('do not revoke the historical decision',result)
         changed=copy.deepcopy(ticket);changed['actor']='agent'
-        result=self.screen(['confirmation','--input','-'],changed);self.assertIn('decision actor is not acceptance authority',result)
+        result=self.screen(['confirmation','--input','-'],changed);self.assertIn('request ID reused with different ticket',result)
+        self.assertIn('already_applied: False',result)
+        # A separate request reaches the no-grant actor rule, rather than the
+        # earlier immutable request-ID reuse refusal. Both views stay read-only.
+        changed['request_id']='distinct-unauthorized-request'
+        result=self.screen(['confirmation','--input','-'],changed);self.assertIn('no grant for this Work',result)
+        self.assertIn('already_applied: False',result)
         (self.target/'a').write_text('drift\n');self.assertIn('stale: current files differ',self.screen(['work','work-a']))
         self.assertIn('stored result',self.screen(['confirmation','--input','-'],ticket))
 
@@ -258,7 +264,7 @@ class HumanWorkerViewTests(unittest.TestCase):
         from hv2ref import view
         from hv2ref.intent import workspace_intents
         f=self.f;before=f.bytes();works=f.store._all();intents=workspace_intents(f.target)
-        # An unverified runtime double keeps exact-blob proof; it does not enable entry-1.
+        # An unverified runtime double keeps exact-blob proof; it does not enable delegation-1.
         product={"binding_ref":f.binding,"launcher_sha256":None,"inventory":{"inventory_id":None}}
         with patch.object(view.WorkStore,'prepare',side_effect=AssertionError('view called prepare')),patch.object(view.WorkStore,'apply',side_effect=AssertionError('view called apply')),patch.object(view.WorkStore,'publish',side_effect=AssertionError('view called publish')):
             lines=view._confirmation(f.target,ticket,works,intents,product) if ticket else view._work(f.target,works['work-a'],revision,product,intents,works)

@@ -1,23 +1,20 @@
 # Colvia
 
-Colvia records human intent, proposed work, exact acceptance, and recovery evidence in one project-owned `.hrn/` directory. The development candidate provides local Work records and bounded linked-worker submission, human acceptance and sequential application in one control checkout. A manual natural-language adapter connects project narratives with read-only review. General usability and real-project multi-worker efficiency remain unverified. See [Security and Support](docs/SECURITY-AND-SUPPORT.md) for the limits of the available evidence.
+Colvia keeps intent, Work, exact acceptance and recovery evidence in one project-owned `.hrn/` directory. Cooperating linked workers can submit results for sequential application in one control checkout. A manual agent adapter connects project narratives with read-only review. General usability and real-project multi-worker efficiency remain unverified.
 
-An installed project starts human review with `./colvia view` and machine diagnostics with `./colvia status`. A fresh project must first be initialized from an independent trusted source with the explicit `entry-1` development profile. See [Getting Started](docs/GETTING-STARTED.md).
+In an installed project, start with `./colvia view` and its verified manual/adapter; `./colvia status` provides machine diagnostics. Fresh setup uses an independent trusted source and the explicit `delegation-1` profile. Follow [Getting Started](docs/GETTING-STARTED.md) and project-owned rules.
 
-The runtime version gate accepts final, GIL-enabled CPython 3.14.6 or 3.14.7, with no third-party runtime dependencies. This gate does not qualify an operating system or distributor build; see the evidence limits in [Security and Support](docs/SECURITY-AND-SUPPORT.md). Primary Git checkouts and standalone non-Git projects can host control authority. Linked worktrees cannot mutate it. Local container tests are not native-platform or real-adopter acceptance.
+The delegation-1 profile supports an optional exact ordinary-worker acceptance grant and a one-way transition from one audited predecessor. [Profile and authorization](docs/README.md#delegation-1-implementation-candidate) explains the grant and the separate decisions for source-contract activation and exact installation. A verified installation does not by itself authorize an action.
 
-This is an unactivated `entry-1` documentation candidate. The effective M3 contract remains separately identified; see [Candidate status](docs/README.md#entry-1-candidate). Exact-artifact qualification and Owner activation are still required.
+The runtime admits final, GIL-enabled CPython 3.14.6 or 3.14.7, with no third-party runtime dependencies. Later patches, prereleases and free-threaded builds are rejected. Admission does not qualify an OS or distributor build. Primary Git checkouts and standalone non-Git projects can host control authority; linked worktrees cannot mutate it. See [Security and Support](docs/SECURITY-AND-SUPPORT.md) for trust and evidence limits.
 
 ## Read Next
 
 - [Documentation Index](docs/README.md): current procedures and technical contracts.
-- [Concepts](docs/CONCEPTS.md): who owns intent, work, product bytes, and acceptance.
-- [Reference](docs/REFERENCE.md): installed and source command surfaces.
-- [Operations](docs/OPERATIONS.md): update, rollback, repair, and detach.
-- [Security and Support](docs/SECURITY-AND-SUPPORT.md): trust and unresolved support limits.
+- [Concepts](docs/CONCEPTS.md): ownership and acceptance.
+- [Reference](docs/REFERENCE.md): source and installed commands.
+- [Operations](docs/OPERATIONS.md): update, rollback, repair and detach.
 
-Generation 1/2 commands, readers, and migration are not supported. Use fresh targets. Historical contracts and receipts are retained for audit, not as current operating instructions. Public version, release distribution, and production support are unassigned.
+For ideas before Work, use [Candidate Planning](docs/REFERENCE.md#candidate-planning). `./colvia view candidates` shows this branch's recorded choice and Work links; selection grants no execution authority.
 
-Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds matching the accepted version conditions may execute; that is not a claim that they have been qualified. See [Security and Support](docs/SECURITY-AND-SUPPORT.md).
-
-For ideas that are not ready to become Work, ask the agent to record, compare, select or defer a candidate. `./colvia view candidates` shows this branch’s stored choice, reasons and links to actual Work state. A candidate selection does not accept an intent or authorize execution. See [Candidate Planning](docs/REFERENCE.md#candidate-planning).
+Generation1/2 commands, readers and migration are unsupported. Historical contracts and receipts are audit material. Public version, distribution, production support, actual adoption and host authentication require separate decisions and evidence.

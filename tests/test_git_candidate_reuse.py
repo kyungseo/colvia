@@ -57,7 +57,7 @@ class InstalledCandidateReuseTests(unittest.TestCase):
     def verify_sources(self):
         verify_worker_sources(self.target, self.manifest,
                               verified_launcher_sha256=self.launcher,
-                              verified_inventory_id="entry-1")
+                              verified_inventory_id="delegation-1")
 
     def accept_a(self):
         prepared = self.prepare_worker_result()
@@ -252,7 +252,7 @@ class InstalledCandidateReuseTests(unittest.TestCase):
         self.assertEqual(expected_refs, self.refs())
         self.assertFalse(worker.exists())
         verify_worker_sources(self.target, result, verified_launcher_sha256=self.launcher,
-                              verified_inventory_id="entry-1")
+                              verified_inventory_id="delegation-1")
         self.assertEqual(final, read_work(self.target, "work-b"))
         self.assertEqual(after_authority, exact_snapshot(self.target / ".hrn"))
         self.check_reader("work-b")
@@ -262,14 +262,14 @@ class InstalledCandidateReuseTests(unittest.TestCase):
         self.assertEqual(candidate, self.git(self.target, "rev-parse", "HEAD"))
         with self.assertRaises(ContractError) as missing_ref:
             verify_worker_sources(self.target, result, verified_launcher_sha256=self.launcher,
-                                  verified_inventory_id="entry-1")
+                                  verified_inventory_id="delegation-1")
         self.assertEqual("HV2-WORK-CONTENT", missing_ref.exception.code)
         self.assertEqual("Git content probe failed: show-ref", missing_ref.exception.message)
         self.assertEqual(final, read_work(self.target, "work-b"))
         self.assertEqual(after_authority, exact_snapshot(self.target / ".hrn"))
         self.git(self.target, "tag", "second-candidate", candidate)
         verify_worker_sources(self.target, result, verified_launcher_sha256=self.launcher,
-                              verified_inventory_id="entry-1")
+                              verified_inventory_id="delegation-1")
 
     def test_non_fast_forward_refusal_preserves_acceptance_and_sources(self):
         self.accept_a()

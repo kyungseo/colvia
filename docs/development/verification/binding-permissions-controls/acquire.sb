@@ -17,6 +17,7 @@
   (subpath "/private/var/db/dyld") (subpath "/private/var/db/timezone"))
 (allow file-read* (subpath (param "SOURCE")) (subpath (param "OLD"))
   (subpath (param "CONTROLS")) (subpath (param "WORK"))
+  (subpath (param "PREDECESSOR")) (subpath (param "ARTIFACTS"))
   (literal (param "INPUT")) (literal (param "BOUNDARY")))
 (allow file-read-data (literal "/dev/fd") (literal "/dev/null")
   (literal "/dev/random") (literal "/dev/urandom"))

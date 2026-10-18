@@ -47,7 +47,7 @@ class CandidateContractTests(unittest.TestCase):
     bytes=serial.SerialWriterTests.bytes
     def setUp(self):
         serial.SerialWriterTests.setUp(self)
-        self.candidates=CandidateStore(self.target, lambda target:{'inventory_id':'entry-1','binding_ref':self.binding,'launcher_sha256':None})
+        self.candidates=CandidateStore(self.target, lambda target:{'inventory_id':'delegation-1','binding_ref':self.binding,'launcher_sha256':None})
     def act(self,action='add',cid='idea-a',**kw):
         return self.candidates.mutate(proposal(self.target,action,cid,**kw))
     def lines(self):

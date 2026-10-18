@@ -16,7 +16,7 @@ from .product import _workspace_status_observation, verify_workspace_product
 from .workspace import safe_target, target_fingerprint
 from .work import (WorkStore, _digest, _resolve, _require, project_path, record_ref,
                    snapshot, validate_ticket, work_graph, _RECORD_BASE, _PROVENANCE,
-                   verify_worker_sources, observe_recovery, preflight_changed_paths)
+                   verify_worker_sources, observe_recovery, preflight_changed_paths, _bound_delegation)
 
 READ_LIMIT = 4 * 1024 * 1024
 EXITS = {"degraded": 10, "incompatible": 11, "conflict": 12, "stale": 13,
@@ -247,6 +247,72 @@ def _changes(before, after):
     return rows or ["- no path/mode/size/digest changes"]
 
 
+def _delegation_observation(target, graph, revision, intents, works):
+    """Advisory recorded conditions, never an authorization or a prepared ticket.
+
+The supplied graphs come from strict shared readers. Live evidence/content and
+caller authentication remain outside these observations; apply checks its guard.
+"""
+    from .intent import _resolve_workspace_intent
+    identity = graph["identity"]
+    grant, key = _bound_delegation(identity, revision, intents)
+    if grant is None:
+        return None
+    bound, _ = _resolve_workspace_intent(intents[revision["intent_ref"]["id"]],
+                                        revision["intent_ref"]["id"], revision["intent_ref"])
+    consumed = []
+    for decision in graph["decisions"].values():
+        ticket = decision["confirmation"]
+        if ticket["actor"] != identity["acceptance_authority"]:
+            prior = _resolve(graph["revisions"], ticket["target_revision_ref"])
+            _, used_key = _bound_delegation(identity, prior, intents)
+            if key is not None and used_key == key:
+                consumed.append(record_ref(decision))
+    revoked = []; ordinary_ancestry = True
+    ref = graph["current"]["selection_ref"] if graph["current"] else None
+    while ref is not None:
+        selected = _resolve(graph["selections"], ref)
+        ancestor = _resolve(graph["revisions"], selected["revision_ref"])
+        ordinary_ancestry &= ancestor["schema_version"] == 1
+        decision = _resolve(graph["decisions"], selected["decision_ref"], nullable=True)
+        if decision is not None and decision["confirmation"]["action"] == "revoke":
+            accepted = _resolve(graph["decisions"], decision["confirmation"]["supersedes_decision_ref"])
+            prior = _resolve(graph["revisions"], accepted["confirmation"]["target_revision_ref"])
+            _, revoked_key = _bound_delegation(identity, prior, intents)
+            if key is not None and revoked_key == key:
+                revoked.append(record_ref(decision))
+        ref = selected["parent_selection_ref"]
+    blockers = []
+    if key is None: blockers.append("grant names another Work")
+    if consumed: blockers.append("delegation already consumed")
+    if revoked: blockers.append("selected revoke bars this delegation draft")
+    if not bound["is_current"]: blockers.append("stale intent selection")
+    intent = intents[revision["intent_ref"]["id"]]
+    if intent["pending_acceptances"] or intent["pending_selections"]:
+        blockers.append("intent publication pending")
+    if graph["pending_decisions"] or graph["pending_selections"]:
+        blockers.append("Work publication pending")
+    if revision["record_id"] != _current_revision(graph):
+        blockers.append("displayed revision is not current")
+    if graph["state"] != "review" or revision["operation"] != "submit-result":
+        blockers.append("new accept needs an undecided submitted result")
+    if (revision["schema_version"] != 1 or not ordinary_ancestry
+            or revision["execution_context"]["mode"] != "isolated-worktree"
+            or set(revision["scope"]) != set(grant["scope"])):
+        blockers.append("delegated Work scope/mode/role differs")
+    try:
+        WorkStore(target)._pending_guard(works, identity["work_id"], content_write=True)
+    except ContractError as exc:
+        blockers.append(exc.message)
+    return {"grant_ref": revision["intent_ref"], "Owner": identity["acceptance_authority"],
+            "declared_delegate": grant["delegate_actor"],
+            "consumed_decisions": sorted(consumed, key=lambda r: r["id"]),
+            "selected_revoke_barriers": revoked,
+            "current_record_conditions": "blocked" if blockers else "no recorded blocker observed",
+            "blockers": sorted(set(blockers)),
+            "limit": "Advisory only. Live documents/content, runtime, caller and guarded apply remain required; historical acceptance is unchanged."}
+
+
 def _umbrella_lines(target, revision, graph, works, intents):
     from .umbrella import bound_composition, capture, check_baseline_binding, prior_revision
     composition = bound_composition(revision, intents)
@@ -258,6 +324,17 @@ def _umbrella_lines(target, revision, graph, works, intents):
     lines += fields({"부모 Work": composition["parent"]["id"], "필수 하위 작업": composition["required_children"],
                      "이 판본의 기준점 또는 제출 근거": evidence,
                      "현재 참조 가능한 결과": captured["children"], "현재 미충족 이유": captured["unavailable"]})
+    actors = []
+    for child in evidence["children"]:
+        child_graph = works[child["work"]["id"]]
+        child_revision = _resolve(child_graph["revisions"], child["revision_ref"])
+        decision = _resolve(child_graph["decisions"], child["decision_ref"])
+        grant, _ = _bound_delegation(child_graph["identity"], child_revision, intents)
+        actors.append({"work": child["work"], "actual_acceptance_actor": decision["confirmation"]["actor"],
+                       "Owner": child_graph["identity"]["acceptance_authority"],
+                       "grant_ref": child["intent_ref"] if grant is not None else None,
+                       "acceptance_delegation": grant})
+    lines += fields({"포착된 하위 수락의 역사적 주체와 근거": actors})
     first = {}
     ref = graph["current"]["selection_ref"] if graph["current"] else None
     chain = []
@@ -302,7 +379,10 @@ def _work(target, graph, rid, product, intents, works):
         lines += _umbrella_lines(target, r, graph, works, intents)
     try:
         bound = read_workspace_intent(target, r["intent_ref"]["id"], r["intent_ref"], require_current=False)
-        lines += fields({"bound_intent_current": bound["is_current"]})
+        lines += fields({"bound_intent_current": bound["is_current"], "acceptance_delegation": bound["acceptance_delegation"]})
+        observed = _delegation_observation(target, graph, r, intents, works)
+        if observed is not None:
+            lines += fields({"current_delegation_conditions": observed})
         if not bound["is_current"]:
             lines.append("- A newer intent is already accepted. Historical completion is unchanged. To continue work under that intent: human Work rebind, new submit-result, then new human accept.")
     except ContractError as exc:
@@ -449,10 +529,10 @@ def _confirmation(target, ticket, works, intents, product):
         check("expected selection", lambda: _require(graph["current"] is not None and graph["current"]["selection_ref"] == ticket["expected_selection_ref"], "selection changed"))
         def proposed_graph():
             decisions = graph["decisions"] | {decision["record_id"]: decision}
-            work_graph(graph["identity"], graph["revisions"], decisions, graph["selections"], graph["manifests"], graph["current"])
+            work_graph(graph["identity"], graph["revisions"], decisions, graph["selections"], graph["manifests"], graph["current"], intent_graphs=intents)
             existing = [v for v in graph["selections"].values() if v["decision_ref"] == record_ref(decision)]
             selection = existing[0] if existing else {**{k: r[k] for k in _RECORD_BASE | _PROVENANCE}, "schema_version": 1, "record_type": "work-selection", "record_id": "selection-" + _digest(ticket), "observed_at": ticket["observed_at"], "parent_selection_ref": ticket["expected_selection_ref"], "revision_ref": ticket["target_revision_ref"], "decision_ref": record_ref(decision), "operation_id": ticket["request_id"]}
-            work_graph(graph["identity"], graph["revisions"], decisions, graph["selections"] | {selection["record_id"]: selection}, graph["manifests"], graph["current"])
+            work_graph(graph["identity"], graph["revisions"], decisions, graph["selections"] | {selection["record_id"]: selection}, graph["manifests"], graph["current"], intent_graphs=intents)
         check("actor and decision/selection graph", proposed_graph)
         check("not cancelled", lambda: _require(not any(d["confirmation"]["action"] == "reject" and d["confirmation"]["supersedes_decision_ref"] == record_ref(decision) for d in graph["decisions"].values()), "cancelled decision cannot resume"))
         def bound_intent():

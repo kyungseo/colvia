@@ -1,6 +1,6 @@
 # Workspace Contract
 
-Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
 
 Status: single-home development contract with bounded worker integration. General adoption and public release remain unqualified. Historical observations in [Security and Support](SECURITY-AND-SUPPORT.md) do not qualify these exact bytes.
 
@@ -72,7 +72,7 @@ Exact-candidate process/recovery checks, real-project multi-worker use and measu
 
 ## Initial Installed Runtime Verification (Development Checkpoint)
 
-The exact `entry-1` inventory contains 29 managed paths, including `candidates.py`, `umbrella.py` and existing `workspace.py`
+The exact `delegation-1` inventory contains 29 managed paths, including `candidates.py`, `umbrella.py` and existing `workspace.py`
 and `work.py` and excluding retired generation modules. `workspace_candidate`
 reads that subset without publishing it. `verify_workspace_release` checks the
 inventory encoding, ordered exact set, release ID and full digest, every payload
@@ -104,10 +104,10 @@ Python object mutation or undetectable outside edits between observations.
 
 ## Actual Init And Recovery (Development)
 
-From the trusted source checkout, `colvia --source-checkout init --profile entry-1 --target PATH
+From the trusted source checkout, `colvia --source-checkout init --profile delegation-1 --target PATH
 --authority-home-id ID --operation-id ID --observed-at UTC` emits a preview with
 `request` (format plus lifecycle plan) and its `confirm_token`. It writes nothing.
-Apply uses `colvia --source-checkout init --profile entry-1 --target PATH --apply --input -
+Apply uses `colvia --source-checkout init --profile delegation-1 --target PATH --apply --input -
 --confirm TOKEN`, with the exact request on stdin; `--source PATH` selects the
 candidate in both calls. A changed source, target, format, or confirmation fails.
 This machine interface does not replace the future human-facing onboarding.
@@ -131,7 +131,7 @@ importing package code it checks the bound inventory digest, all eleven module
 bytes and its own bytes. The import root must contain only `hv2ref`, whose members are exactly the eleven managed modules.
 With `.hrn` absent the installed launcher fails closed; it never automatically imports project `src`
 or an old home. Trusted developer invocation explicitly uses `--source-checkout` before the command.
-Generation runtime/readers and `--legacy-baseline` are removed. Source init/update/rollback/detach require `--profile entry-1`. Repair has no profile option and requires the exact active entry-1 release. Valid human-1/worker-1 history retains each original 27-path set; umbrella-1 retains 28, and planning-1/checkout-1 each retain the literal old 29. Entry-1 ships 29 paths with root `colvia` and `adapters/colvia-work/SKILL.md` replacing the old launcher/adapter memberships. No old membership is derived by renaming the new set. After the first durable entry-1 switch receipt, downgrade to checkout-1 or earlier is refused. See [Entry-1 admission and publication](#entry-1-admission-and-publication).
+Generation runtime/readers and `--legacy-baseline` are removed. Source init/update/rollback/detach require `--profile delegation-1`. Repair has no profile option and requires the exact active delegation-1 release. Valid human-1/worker-1 history retains each original 27-path set; umbrella-1 retains 28, and planning-1/checkout-1 each retain the literal old 29. Entry-1 ships 29 paths with root `colvia` and `adapters/colvia-work/SKILL.md` replacing the old launcher/adapter memberships. No old membership is derived by renaming the new set. Delegation-1 preserves that same 29-path membership and writes paired schema4 lifecycle records. After its first durable switch receipt, downgrade to entry-1 or earlier is refused. See [Delegation-1](#delegation-1-implementation-candidate); the earlier [Entry-1 admission](#entry-1-admission-and-publication) remains historical.
 Explicit source mode does not override a present `.hrn`. These operator choices are not an authentication boundary.
 Loaded-module provenance and full product checks still run at writer entry and
 before publication. This is a trusted-local guard, not a signature/trust service.
@@ -149,7 +149,7 @@ a LifecyclePlan and token. Apply takes the exact plan on stdin with `--apply
 --input - --confirm TOKEN` and the same source. `rollback` uses the recorded
 previous active release; optional `--to ID` must name that release. It needs no
 source candidate. Source recovery uses an independent trusted launcher with
-`--source-checkout update|rollback --profile entry-1 --target PATH ... --recover`.
+`--source-checkout update|rollback --profile delegation-1 --target PATH ... --recover`.
 The command must match the plan action. Same-active updates and reused operation
 IDs with different bytes are refused. These are machine interfaces, not human approval.
 
@@ -176,7 +176,7 @@ This prevents new unreadable output; it does not increase capacity or recover an
 already oversized stored receipt. Preserve such existing bytes for explicit disposition.
 
 For a same-window switch, publication is receipt (planned result), staged candidate, immutable release, atomic
-executable launcher replacement, then atomic binding replacement. The first entry-1 transition instead follows the exclusive-publication sequence below. The receipt alone
+executable launcher replacement, then atomic binding replacement. The retained checkout-1 to entry-1 transition instead follows its historical exclusive-publication sequence below. Current entry-1 to delegation-1 transition keeps the same launcher path and follows the schema4 boundary in [Delegation-1](#delegation-1-implementation-candidate). The receipt alone
 is not completion. Exact explicit recovery resumes supported complete-file prefixes.
 Unknown/torn bytes or drift are preserved; no automatic undo or deletion is attempted.
 A launcher/binding mismatch can temporarily prevent installed startup: use independent
@@ -188,7 +188,7 @@ releases and is not yet measured as a production-scale claim. Tests cover cooper
 serial process interruptions, not power-loss atomicity or a malicious outside writer.
 Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed. Historical observations summarized in [Security and Support](SECURITY-AND-SUPPORT.md) do not qualify general adoption or later modified release bytes.
 
-Rollback selects the current binding's previous release when permitted by the inventory window (checkout-1 and earlier windows are refused after a durable entry-1 receipt): a second rollback
+Rollback selects the current binding's previous release when permitted by the inventory window (entry-1 and earlier windows are refused after a durable delegation-1 receipt; historical entry-1 receipts retain their checkout-1 barrier): a second rollback
 can therefore reselect the release just left. Each switch still requires a new exact
 plan/token. Same-window binding replacement preserves existing ordinary permission bits; the first entry-1 transition explicitly publishes B1 at 0600. Launcher replacement sets executable mode 0755.
 
@@ -286,12 +286,12 @@ preserved by excluding them from the entire removal surface.
 
 ## Planning Preservation
 
-`planning` is an optional root directory containing only `candidates.json`. It is project-owned planning, not execution authority. A planning-1, checkout-1 or entry-1 binding admits retained planning while product is present; current writers require entry-1. Init does not create an empty planning directory. Candidate bytes join lifecycle truth refs and detach preservation; changing them invalidates an earlier preview. Candidate temporary files stay in ignored staging. Detached source view can inspect retained planning; the independent plain auditor verifies its receipt/digest/bytes, not the full planning state machine. See [Candidate Planning](REFERENCE.md#candidate-planning).
+`planning` is an optional root directory containing only `candidates.json`. It is project-owned planning, not execution authority. A planning-1, checkout-1, entry-1 or delegation-1 binding admits retained planning while product is present; current writers require delegation-1. Init does not create an empty planning directory. Candidate bytes join lifecycle truth refs and detach preservation; changing them invalidates an earlier preview. Candidate temporary files stay in ignored staging. Detached source view can inspect retained planning; the independent plain auditor verifies its receipt/digest/bytes, not the full planning state machine. See [Candidate Planning](REFERENCE.md#candidate-planning).
 
 
 ## Checkout-1 Transition And Detach Schema
 
-Historical checkout-1 source contract; the following schema-2 writer belongs to its retained old source. Current entry-1 writers follow the next section.
+Historical checkout-1 source contract; the following schema-2 writer belongs to its retained old source. Retained entry-1 writers follow the next section; current delegation-1 writers use paired schema4 as specified at the end of this document.
 
 The new source admits only planning-1 or checkout-1 as an update predecessor, in both preview and apply preflight. Older supported history is read-only here. The first durable checkout-1 receipt requires exact forward recovery; direct acceptance of old worker manifests requires a separately authorized new baseline/rebind/resubmission as described in Getting Started.
 
@@ -300,6 +300,8 @@ Detach plan and receipt schema 2 retain the existing field sets and `candidate_r
 A schema-1-only plain auditor copied from an older source cannot verify schema 2 detach receipts and reports them as degraded without writing. Use an auditor from the qualified checkout-1 source for paired schema 2; this does not expand its receipt/inventory/selected-reference scope into full Work or candidate semantic validation.
 
 ## Entry-1 Admission And Publication
+
+Retained entry-1 technical clauses, including their preparation-era labels. Source decision DR-0004 identifies the effective entry-1 set and its accepted First B1 permission supplement. They do not make the following older profiles/schema versions current delegation-1 commands; use [Delegation-1](#delegation-1-implementation-candidate) for that candidate.
 
 Entry-1 changes only the managed entry/lifecycle/proof clauses described here; `.hrn/`, `HV2-`, internal `hv2ref`, authority IDs and intent/Work/candidate record meanings remain unchanged. Init and repair retain schema 1. Update/rollback plan and receipt use paired schema 2 for entry-1 candidates. Same-entry switches have empty `remove`; only the admitted checkout-1→entry-1 update has exactly one retirement entry for `hv2`, with bytes/size verified from that exact predecessor. `preserve` stays empty. Reject mixed/non-integer versions, arbitrary retirement entries and any other window pairing.
 
@@ -335,3 +337,15 @@ Directory synchronization is mandatory for the bounded transition path. Under th
 New detach plans/receipts use paired integer schema 3 and null candidate release. Retained paired 1/2 history stays readable and requires its exact retained old source for mutation/recovery. Schema 3 removes current `colvia` and the verified product, including each retained release's literal historical membership; it does not authorize deleting a root `hv2` occupant. The plain auditor reads paired 1/2/3 within its existing receipt/inventory/selected-reference scope.
 
 Scoped retired-entry collision applies to independently verified live entry-1 (including supported repair), exact entry-1 init, or verified schema-3 detach evidence, not a filename guess. Exact managed O in an admitted S0–S5 transition remains governed by the physical table. On collision, lifecycle calls—including completed replay—refuse further publication/removal with `HV2-WORKSPACE-PRODUCT`/65 and preserve history, binding, occupant and prefix. Ordinary otherwise-valid live diagnostics return conflict/12 with derived collision fields and `lifecycle_ready: false`; prior damaged/partial/unsupported outcomes keep precedence. Readable content and confirmation display still require fresh checks and grant no write authorization. For schema-3 detach without binding, otherwise-valid source diagnostics report degraded/10 with the collision error and preservation guidance, not clean completion or a fabricated active binding. See [diagnostic context](REFERENCE.md#entry-1-diagnostic-context).
+
+## Delegation-1 Implementation Candidate
+
+This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+
+`delegation-1` is rank 6 after `entry-1`, with the same literal 29 managed paths, root/format/binding/inventory schema 1 and `colvia` launcher. New init plan/receipt, switch plan/receipt, repair request/receipt and detach plan/receipt use schema 4 with each action's existing fields. Switch removal is the empty list. Booleans, mixed pairs, unknown versions/windows and cross-window mismatches are invalid; schema 4 is not a wildcard for future windows.
+
+Historical init/repair schema 1, switch schemas 1/2 and detach schemas 1/2/3 keep their historical meaning. A detach receipt proves its exact historical plan/receipt pairing and removed membership, not a reconstructible active-window identity after all managed bytes have gone. In particular the equal entry-1/delegation-1 path sets cannot independently establish old window provenance; current writer admission enforces that boundary before deletion.
+
+Any validated or prospective schema-3 intent history requires delegation-1 at writer admission, including Owner actions, replay and later no-grant draft publication. Historical readers validate exact references and actor/grant semantics separately from live writer admission. The schema-4 switch receipt itself excludes old writers before schema-3 publication. Repeat admission under the existing lock; an old late-lock writer that proceeds after this boundary is a design failure, not a recoverable test skip.
+
+No new authority directory, runtime grant registry, service, SDK or persistence marker is introduced. Keep existing project truth, Git refs/index and unrelated content untouched through lifecycle transitions. Actor strings remain trusted-local-account declarations rather than authentication.

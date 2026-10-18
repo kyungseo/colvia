@@ -208,3 +208,16 @@ Timeout values remain closed duplicated constants: the oracle test compares the 
 The six-call order is acquire-base → canary-base → collect-base → smoke-base → collect-p1-controls → focused-p1-controls. The smoke-base and focused-p1-controls runs require the exact successful collection identity, source/control/phase matching and independently checked selection; entry focused additionally needs the prior collect WORK for its cross-WORK refusal case. Runtime failures stop the batch without retries or policy widening. The existing runner preservation callback can fail while a child is still live; exit 87 or incomplete preservation remains non-pass, not a repair of that limitation.
 
 The primitive fsync edge assertions establish event/call order, not persisted state; chmod-before likewise has no umask-independent physical mode assertion. Other operations (including os.link/symlink/truncate/pwrite and native-copy paths) have no selectable before/after hooks. Such observations remain unavailable for future product qualification. The first candidate-02 static review found no confirmed execution blocker; source metadata and actual execution identities remain distinct from executed evidence.
+
+
+## Delegation Candidate Controls — 2026-10-16
+
+These source-only changes are unqualified. The approved implementation record owns execution and limits. New schema-4/delegation inputs and a separate observer preserve the retained schema-3/entry context and original observer bytes. The twelve literal ancestor grants and named read-only PREDECESSOR/ARTIFACTS inputs add no write or network access. Fixed historical L/P fixtures remain under controls because the unchanged retained factory uses those exact paths; they are not the new current-candidate P/Q artifacts.
+
+The parent checks prerequisites and exact collection/selection before consuming a process slot. It seals collection, selected/executed IDs, counts, unfinished/unstarted lists and subtest results after verified process-group absence. Exit zero alone cannot pass. Admission rejections are charged as wall time but do not consume execution-correction slots. A reviewed input change may enter a bounded corrected attempt without a fabricated failure; exact controls/runtime and per-phase limits remain enforced. No automatic review acceptance is implied by a stored disposition.
+
+The calibration reporter accepts retained base samples only when base and final ordinary discovery are identical. It reports each sampled ID, kind histogram, unknown family/kind and measured collection overhead. A measured-family extrapolated subtotal is a subtotal of the approved estimator, not a lower bound on actual duration. Complete admission requires every family/kind, the approved margins, total reserve and per-lane deadline. A separate static/mock checkpoint cannot qualify the product or a future changed control map.
+
+## Owner-Approved Continuous Qualification
+
+2026-10-17 M1/M2의 후속 Owner 승인은 schema2 campaign의 누적/phase 시간 및 global/phase 보정 횟수 상한을 자동 중단 조건에서 해제한다. 기존 schema1의 역사 정책과 결과는 변경하지 않는다. schema2의 null은 무제한 계상이며 0초 예산이 아니다. 시간·실패·호출 횟수는 계속 기록한다. 전체 검증·격리·권한·저장·프로세스 정리와 개별 테스트 timeout은 유지한다. 실패 뒤에는 원인/영향 검토와 봉인된 보정 입력으로 새 exclusive 회차를 만들며 Owner 재승인을 요구하지 않는다. 실제 안전 문제는 중단한다. 최종 R1은 통합 결과가 준비됐을 때만 수행한다. 결과 수락·활성화·Git·실제 adopter는 별도다.

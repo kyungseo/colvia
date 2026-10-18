@@ -1,6 +1,6 @@
 # Getting Started
 
-Entry-1 successor candidate; [qualification and activation remain pending](README.md#entry-1-candidate).
+Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
 
 Use a fresh project and final, GIL-enabled CPython 3.14.6 or 3.14.7. Installation is an explicit operator action; do not infer permission to install into another repository from a successful local test.
 
@@ -49,14 +49,14 @@ For project-specific adapter additions and their maintenance boundaries, use [Pr
 
 These are project-owned files prepared by the agent/operator within the approved adoption scope. Core init/update/rollback/detach do not generate or overwrite them. Managed payload entries describe the Harness source and are not substitutes for the project's own entry.
 
-Use [Repository-Owned Rules](REFERENCE.md#repository-owned-rules) to add applicable documentation, validation or domain procedures to that entry. For a new project, select a small set and connect its canonical location. For an existing project, compare affected rules and preserve local instructions before applying an authorized diff. Record the adopted source and any local choice in the existing rule or maintainer document. A runtime update does not update these rules automatically; compare relevant changes explicitly, including their verification and removal impact.
+Use [Repository-Owned Rules](REFERENCE.md#repository-owned-rules) to connect applicable documentation, validation and domain procedures. Include the project language default when one exists; [Document Language](REFERENCE.md#document-language) distinguishes it from an explicit artifact request and conversation explanations. For a new project, select a small set and connect its canonical location. For an existing project, compare affected rules and preserve local instructions before applying an authorized diff. Record the adopted source and any local choice in the existing rule or maintainer document. A runtime update does not update these rules automatically; compare relevant changes explicitly, including their verification and removal impact.
 
 ## Initialize A Fresh Project
 
 From a trusted source checkout:
 
 ```sh
-./colvia --source-checkout init --profile entry-1 --target /path/to/project \
+./colvia --source-checkout init --profile delegation-1 --target /path/to/project \
   --source /path/to/source --authority-home-id project-home \
   --operation-id init-1 --observed-at 2026-01-01T00:00:00Z
 ```
@@ -64,7 +64,7 @@ From a trusted source checkout:
 This previews the candidate and returns a `request` and `confirm_token`. Review the target and source; save only the `request` object as canonical JSON outside the target. Then apply that exact request:
 
 ```sh
-./colvia --source-checkout init --profile entry-1 --target /path/to/project \
+./colvia --source-checkout init --profile delegation-1 --target /path/to/project \
   --source /path/to/source --apply --input /path/to/init-request.json --confirm TOKEN
 ```
 
@@ -75,7 +75,7 @@ Run `/path/to/project/colvia status` after installation. A verified active produ
 1. An agent prepares a typed intent draft with goal, scope, expected outcome, acceptance oracle, destination, forbidden scope, and unresolved gaps. `colvia intent draft` publishes the proposed record; it does not accept it.
 2. `colvia intent prepare` returns a ticket for the human to review. `colvia intent apply --confirm TOKEN` consumes the exact accepted ticket. Material gaps must be resolved first.
 3. The agent publishes a Work baseline referencing the accepted intent, edits within the declared scope, and submits the full result manifest for review using `colvia work publish`.
-4. `colvia work prepare` binds the exact result and current prerequisites. The human decides acceptance; `colvia work apply --confirm TOKEN` records that decision and selection. A selected accepted result derives completed state.
+4. `colvia work prepare` binds the exact result and current prerequisites. The human decides acceptance; `colvia work apply --confirm TOKEN` records that decision and selection. A selected accepted result derives completed state. The optional exact ordinary-worker grant is described in [Delegation-1](#delegation-1-implementation-candidate); it does not authorize intent or parent acceptance.
 
 See [General Work](GENERAL-WORK.md) for exact input fields and [Guided Intent](GUIDED-INTENT-FORMATION.md) for acceptance semantics. Machine inputs are canonical JSON from `--input FILE` or stdin. The agent prepares these machine inputs; use the review flow below to review without editing JSON. General onboarding and actual use of the installed candidate require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md). For serial use, keep one editing Work at a time; the tool cannot stop arbitrary processes editing ordinary files.
 
@@ -101,18 +101,18 @@ For a requested brief, decision record or unresolved question, ask the agent to 
 
 ## Transition To Checkout-1
 
-Historical checkout-1 procedure, for its retained qualified source only. The current entry-1 source does not implement this older transition.
-
-The checkout-1 window retains candidate planning and direct-child umbrella behavior and adds bounded verification of unchanged CRLF checkout files. It ships the same 29 managed paths. Qualify the exact candidate and obtain human approval before upgrading a project; historical qualification does not qualify these bytes.
-
-Use a qualified independent checkout-1 source with `--source-checkout update --profile checkout-1 --target PROJECT --source CANDIDATE`. Only an active planning-1 or checkout-1 target can transition with this source. Older human-1/worker-1/umbrella-1 history remains readable; use retained qualified sources for their operations and a separate transition to planning-1 first. Preserve exact old/new sources and the original request/token outside the target.
-
-After the first durable checkout-1 receipt, only the exact new candidate and original request support forward recovery. Downgrade to planning-1 or earlier windows is refused even before any new Work or candidate exists. The first rollback target is the older release and is therefore unavailable. Loss of the exact recovery source or request can leave no supported recovery path. Backup preserves evidence; it is not permission to undo the transition.
-
-Existing local Work, parent/child graphs and candidate history retain their meaning. An old worker manifest contains the old launcher: direct acceptance on the new runtime is refused. Preserve its unique result and refs, separately approve a control commit containing the new installation, then explicitly rebind the same-intent baseline and resubmit the result. Core does not commit, move worker HEADs or authorize rebind automatically.
-
-Within checkout-1, update/rollback must preserve record meaning in both directions. Pending writes must be resolved before lifecycle changes. A synthetic document-only counterpart tests one exact pair; future code or launcher changes need their own compatibility evidence. Exact repair uses the active checkout-1 source. New detach plans and receipts use schema 2; the new reader retains schema 1 history, whose writes/recovery require its retained old source. Detach does not enable old reinstallation or attach.
+Historical procedure for a retained qualified checkout-1 source only. The current candidate cannot perform this earlier transition. Use its exact retained manual and source; do not substitute a new profile. The first durable checkout-1 switch receipt is one-way even before new records, and loss of the original source/request can leave no supported recovery. Preserve restoration-verified recovery material before an authorized transition.
 
 ## Transition To Entry-1
 
-Use a separately qualified independent `entry-1` source and obtain exact-target approval. Only the exact allowlisted checkout-1 predecessor or a same-window entry-1 installation is eligible. Stop cooperating writers and retire prepared tickets; retain exact old/new sources, original request/token and restoration-verified external recovery material before applying. See [Entry-1 transition](OPERATIONS.md#entry-1-transition) for admission, commands, S1 one-way recovery, torn-prefix limits and explicit worker rebind. Ordinary Work/parent/candidate meaning is unchanged; no Git or project-entry edits happen automatically.
+Historical procedure for a retained qualified entry-1 source only. Read [Entry-1 transition](OPERATIONS.md#entry-1-transition) for its exact checkout-1 predecessor, one-way schema-2 boundary, original-request recovery, unsupported prefixes and separate worker rebind. These instructions do not authorize applying the current delegation-1 candidate with an old profile.
+
+## Delegation-1 Implementation Candidate
+
+This section describes the `delegation-1` profile; its heading is retained for existing links. Before actual installation or update, obtain the responsible Owner's authorization for source-contract activation and the exact qualified release. Development acceptance, exact-artifact checks and real adoption remain distinct. Installed readers use their verified release and project authorization; source-only decision files are not installed prerequisites.
+
+Fresh installation uses `--profile delegation-1`; the exact release requires qualification, source-contract activation and Owner installation authorization before actual adoption. Synthetic verification does not establish those approvals. Continue to use `./colvia view` and its verified manual/adapter paths. Begin ordinary work with an Owner-accepted intent and keep acceptance separate from Git integration.
+
+Before an authorized transition, verify the active entry-1 inventory SHA-256 is `2216a2634eb3fa5d6a8bfa7c7d4847b29fb2443ba7b367156c15b15ddb5a17e0`. Other older releases require their own supported sequence, not a forced direct transition. Resolve old pending operations with their exact old source and original requests first. Preserve the exact candidate source and transition request for forward recovery.
+
+An Owner may explicitly include the schema-3 grant described in [Guided Intent](GUIDED-INTENT-FORMATION.md#delegation-1-implementation-candidate). The adapter must explain its exact scope and cannot infer it from an agent's role or a broad instruction to continue. Ordinary no-grant use remains supported. First-session usability and host caller enforcement are unverified.
