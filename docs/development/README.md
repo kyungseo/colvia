@@ -201,6 +201,8 @@ None created by this proposal. Allocate a plain development record ID only when 
 
 ## Authorized Development Records
 
+- [PATCH-20261020-001: Lifecycle Checkpoint Observation Source Integration](PATCH-20261020-001-lifecycle-checkpoint-observation.md#owner-result-acceptance-and-source-closeout--2026-10-20) — bounded source result accepted and Done on 2026-10-20; qualification and publication remain separate.
+
 - [CHORE-20261018-001: Rule Entry, Document Language And Activation Preparation](CHORE-20261018-001-rule-entry-language-activation-preparation.md#owner-result-acceptance--2026-10-18) — A result accepted and completed on 2026-10-18; the linked follow-up owns its separate result acceptance and [exact source activation](../decisions/DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation). Activation was withheld at A closeout; Git, release and adopter application remain on hold.
 
 - [FEAT-20261016-001: Delegated Ordinary Acceptance](FEAT-20261016-001-delegated-ordinary-acceptance.md) — accepted M1/M2 development and synthetic qualification result; contract activation, Git and actual adopter actions remain separate.

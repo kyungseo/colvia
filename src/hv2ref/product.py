@@ -1426,6 +1426,12 @@ def workspace_switch_preview(target: Path, *, action: str, source: Path | None, 
 
 
 def _switch_preflight(target: Path, plan: dict[str, Any], *, recover: bool) -> tuple[dict[str, Any], bool]:
+    from .work import _lifecycle_git_observation
+    with _lifecycle_git_observation(target):
+        return _switch_preflight_records(target, plan, recover=recover)
+
+
+def _switch_preflight_records(target: Path, plan: dict[str, Any], *, recover: bool) -> tuple[dict[str, Any], bool]:
     _serial_require(plan["schema_version"] == 4 and plan["candidate_release"]["inventory_id"] == "delegation-1",
                     "new source switches only schema4 delegation-1; use retained source for old pending operations")
     state = _workspace_observe(target, allow_pending=True)
