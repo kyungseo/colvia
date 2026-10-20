@@ -6,6 +6,8 @@ Record graph, intent/product binding and human confirmation are separate prerequ
 from __future__ import annotations
 
 import copy
+from contextlib import contextmanager
+from contextvars import ContextVar
 import hashlib
 import os
 from pathlib import Path
@@ -983,7 +985,145 @@ def _record_tree(home: Path, folders: set[str]) -> dict[str, Any]:
     return data
 
 
+_lifecycle_visibility = ContextVar("lifecycle_visibility", default=None)
+
+
+class _LifecycleVisibility:
+    """Batch Git reads within one checkpoint, bracketed by independent reads."""
+
+    def __init__(self, target: Path):
+        from .workspace import _TopologyObservation
+        self.target = target
+        self.topology = _TopologyObservation(target)
+        self.before = self._snapshot()
+        self.paths = {name for name, value in self.before.items() if value[-1] is not None}
+        self.policy = self._policy()
+        classify_target(target, _topology_observation=self.topology)
+        self.ignored = self._ignored()
+
+    @staticmethod
+    def _signature(path: Path):
+        try:
+            value = path.lstat()
+        except (FileNotFoundError, NotADirectoryError):
+            return None
+        return (value.st_dev, value.st_ino, value.st_mode, value.st_nlink,
+                value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+
+    def _snapshot(self):
+        root = self.target / ".hrn"
+        root_signature = self._signature(root)
+        _require(root_signature is not None and stat.S_ISDIR(root_signature[2]),
+                 "unsupported lifecycle observation root")
+        result = {".hrn": (*root_signature, None)}
+        pending = [self.target / name for name in (
+            "colvia", ".hrn/format.json", ".hrn/.gitignore", ".hrn/product",
+            ".hrn/work", ".hrn/intents", ".hrn/planning")]
+        while pending:
+            path = pending.pop()
+            signature = self._signature(path)
+            if signature is None:
+                continue
+            mode = signature[2]
+            _require(stat.S_ISDIR(mode) or stat.S_ISREG(mode),
+                     "unsupported lifecycle observation member")
+            digest = None
+            if stat.S_ISDIR(mode):
+                pending.extend(path.iterdir())
+            else:
+                digest = _stable_file(path)[0]
+            _require(signature == self._signature(path), "unstable lifecycle observation member")
+            result[path.relative_to(self.target).as_posix()] = (*signature, digest)
+        _require(root_signature == self._signature(root), "lifecycle root changed during observation")
+        return result
+
+    def _policy(self):
+        # Values such as credentials are not requested. Track config origins and
+        # effective exclude paths, including their identities and change times.
+        config = _git(self.target, "config", "--null", "--show-origin", "--name-only", "--list").stdout
+        exclude_query = _git(self.target, "config", "--null", "--path", "--get-all",
+                             "core.excludesfile", allowed=(0, 1))
+        excludes = exclude_query.stdout
+        watched = {self.target / ".git/info/exclude"}
+        if exclude_query.returncode == 1:
+            # Unset uses Git's default; an explicitly empty value does not.
+            xdg = os.environ.get("XDG_CONFIG_HOME")
+            default_ignore = (Path(xdg) if xdg else Path.home() / ".config") / "git/ignore"
+            watched.add(default_ignore if default_ignore.is_absolute() else self.target / default_ignore)
+        for item in config.split(b"\0"):
+            if item.startswith(b"file:"):
+                path = Path(os.fsdecode(item[5:]))
+                watched.add(path if path.is_absolute() else self.target / path)
+        for item in excludes.split(b"\0"):
+            if item:
+                path = Path(os.fsdecode(item)).expanduser()
+                watched.add(path if path.is_absolute() else self.target / path)
+        for name in self.paths:
+            parent = (self.target / name).parent
+            while parent != self.target.parent:
+                watched.add(parent / ".gitignore")
+                parent = parent.parent
+        # Follow a config symlink only for metadata; its target identity must
+        # remain stable too. Git itself remains the ignore-policy interpreter.
+        signatures = {}
+        for path in watched:
+            signatures[str(path)] = self._signature(path)
+            if path.is_symlink():
+                signatures[str(path) + ":target"] = self._signature(path.resolve())
+        # Index locks and fetch metadata change the directory's times, not its
+        # policy. Keep replacement/type/mode detection independently of those.
+        git_directory = self._signature(self.target / ".git")
+        git_identity = git_directory[:3] if git_directory is not None else None
+        return config, excludes, signatures, git_environment(), git_identity
+
+    def _ignored(self):
+        raw = b"\0".join(os.fsencode(name) for name in sorted(self.paths)) + b"\0"
+        result = _git(self.target, "check-ignore", "--no-index", "-z", "--stdin",
+                      input_data=raw, allowed=(0, 1))
+        return {os.fsdecode(name) for name in result.stdout.split(b"\0") if name}
+
+    def visible(self, target: Path, paths: list[str]):
+        _require(target == self.target, "lifecycle observation target changed")
+        classify_target(target, _topology_observation=self.topology)
+        _require(set(paths) <= self.paths, "lifecycle truth membership changed")
+        _require(not self.ignored.intersection(paths), "truth hidden by effective Git ignore policy")
+
+    def finish(self):
+        _require(self.before == self._snapshot(), "lifecycle inputs changed during checkpoint")
+        _require(self.policy == self._policy(), "Git policy changed during checkpoint")
+        self.topology.finish()
+        _require(self.ignored == self._ignored(), "Git visibility changed during checkpoint")
+
+
+@contextmanager
+def _lifecycle_git_observation(target: Path):
+    """Never share observations across checkpoint calls, threads or writers."""
+    target = safe_target(target)
+    if classify_target(target)["kind"] != "primary":
+        yield
+        return
+    _require(_lifecycle_visibility.get() is None, "nested lifecycle observation")
+    observed = None
+    token = None
+    try:
+        observed = _LifecycleVisibility(target)
+        token = _lifecycle_visibility.set(observed)
+        yield
+        observed.finish()
+    except (OSError, ValueError, RecursionError) as exc:
+        raise _fail("lifecycle observation unavailable or unstable") from exc
+    finally:
+        if token is not None:
+            _lifecycle_visibility.reset(token)
+        if observed is not None:
+            observed.topology.close()
+
+
 def _visible_truth(target: Path, paths: list[str], *, _topology_observation=None) -> None:
+    observed = _lifecycle_visibility.get()
+    if observed is not None and _topology_observation is None:
+        observed.visible(target, paths)
+        return
     topology = (classify_target(target) if _topology_observation is None else
                 classify_target(target, _topology_observation=_topology_observation))
     if topology["kind"] != "non-git" and paths:
