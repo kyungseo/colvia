@@ -35,8 +35,14 @@ A candidate keeps an idea, reason and deferral condition before execution. The h
 
 ## Delegation-1 Implementation Candidate
 
-This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
 
 The Owner remains the Work and intent owner. A delegate is an exact actor label declared by an Owner-accepted ordinary intent draft; it does not identify an authenticated person or model. The grant names one qualified Work, action `accept`, execution mode `isolated-worktree` and the exact scope-path set. No grant means the existing Owner-only flow.
 
 The durable accept decision consumes the grant, before content application and selected completion. Exact recovery uses the original actor/ticket. Cancellation or later revocation does not refund that use. A new selection, request ID or same-grant baseline refresh cannot reset it. New lawful delegation requires new Owner-accepted intent content and the ordinary rebind/submission rules. Parent integration remains a separate human acceptance.
+
+## Following A Result
+
+A Work result answers “what was accepted?” Its continuation answers “what next did the human select?” The answer can be a proposal, an existing Work or explicit none; undecided is a different state. Choosing a proposal does not accept its intent. Choosing a Work does not start or complete it. Withdrawal returns to undecided and preserves the earlier history.
+
+On resume, connect the project plan item → Work → accepted result → remaining items → selected follow-up. Use the existing narrative, not a second tracker. Valid candidate and Work choices can disagree; show both and let the human resolve the next action. See [Work Follow-Up](REFERENCE.md#work-follow-up) for pending, freshness and the 256-operation limit.

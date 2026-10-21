@@ -1,8 +1,8 @@
 # Maintaining
 
-Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
+Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
-Current document authority is indexed in [README.md](README.md). These instructions describe the single-home `delegation-1` profile. For source development, consult the exact decision records for Owner acceptance and activation of the successor under DR-0005. Verified installation alone does not establish source-contract activation.
+Current document authority is indexed in [README.md](README.md). These instructions describe the single-home `continuation-1` profile. For source development, consult the exact decision records for Owner acceptance and activation of the successor under DR-0001. Verified installation alone does not establish source-contract activation.
 
 ## Source Layout
 
@@ -13,6 +13,7 @@ Current document authority is indexed in [README.md](README.md). These instructi
 - `intent.py`: guided intent validation, graph and publication.
 - `candidates.py`: bounded planning history, guarded writes and read-only candidate view; no execution authority.
 - `umbrella.py`: direct-child composition, captured references and history/current predicates; no scheduler.
+- `continuation.py`: bounded Work-local follow-up graph, Owner selection, exact retry/cancellation and shared pending guard.
 - `product.py`: exact inventory, binding, lifecycle and recovery.
 - `view.py`: read-only GFM projection and bounded document observations.
 - `adapters/colvia-work/SKILL.md`: manual natural-language entry guidance.
@@ -70,7 +71,7 @@ For unexplained failures, preserve the original run and capture failing syntheti
 
 ## Release Inventory
 
-`DELEGATION_MANAGED_PATHS` in `product.py` defines the candidate's 29 shipped files; `ENTRY_MANAGED_PATHS` and `SERIAL_MANAGED_PATHS` retain their literal historical 29-path sets; `UMBRELLA_MANAGED_PATHS` retains 28 paths; `LEGACY_MANAGED_PATHS` retains the exact 27-path old history set. Canonical inventory names, byte counts and SHA-256 determine release identity. Exact membership includes directories; missing, extra, linked, reordered, or mismatched bytes fail. The launcher validates all eleven importable modules before executing them. Tests, historical generation contracts and receipts are not shipped.
+`CONTINUATION_MANAGED_PATHS` in `product.py` defines the candidate's 30 shipped files; `DELEGATION_MANAGED_PATHS` preserves the literal historical 29; `ENTRY_MANAGED_PATHS` and `SERIAL_MANAGED_PATHS` retain their literal historical 29-path sets; `UMBRELLA_MANAGED_PATHS` retains 28 paths; `LEGACY_MANAGED_PATHS` retains the exact 27-path old history set. Canonical inventory names, byte counts and SHA-256 determine release identity. Exact membership includes directories; missing, extra, linked, reordered, or mismatched bytes fail. The launcher validates all twelve importable modules before executing them. Tests, historical generation contracts and receipts are not shipped.
 
 Keep inventory, bootstrap module allowlist, docs and detach tests aligned. Do not add project truth, configuration or secrets to the managed set. Updating launcher bytes requires the existing receipt-bound switch and independent-source recovery path. Release compatibility requires qualification; a valid digest is not compatibility proof.
 
@@ -84,9 +85,9 @@ Runtime qualification uses an explicit patch allowlist, not a minimum-version pr
 
 ## Inventory Window Compatibility
 
-New candidates declare `WORKSPACE_INVENTORY_ID = "delegation-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The current managed set is 29 paths with `colvia` and `adapters/colvia-work/SKILL.md`. The reader retains the literal old 29-path entry-1 and planning-1/checkout-1 inventories, exact 28-path umbrella-1 and original 27-path human-1/worker-1 history, and rejects serial-1 or unknown windows. Do not derive old memberships by renaming the new set.
+New candidates declare `WORKSPACE_INVENTORY_ID = "continuation-1"` once as a literal in the existing managed launcher. Packaging reads that declaration without importing candidate code. A declaration is not a trust credential; source identity and qualification remain necessary. The current managed set is 30 paths with `colvia` and `adapters/colvia-work/SKILL.md`. The reader retains the literal old 29-path delegation-1 and entry-1 and planning-1/checkout-1 inventories, exact 28-path umbrella-1 and original 27-path human-1/worker-1 history, and rejects serial-1 or unknown windows. Do not derive old memberships by renaming the new set.
 
-Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable schema-4 delegation-1 switch receipt, downgrade to entry-1 or any older window is refused even before a schema-3 draft exists. Historical entry-1 transitions retain their original one-way schema-2 boundary. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
+Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable schema-5 continuation-1 switch receipt, downgrade to delegation-1 or any older window is refused even before any continuation record exists. Historical entry-1 transitions retain their original one-way schema-2 boundary. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
 
 The recorded N4 source completed bounded worker execution, complete 424-ID regression in both modes and exact-artifact checks. A later documentation or source change has a different release identity and requires the evidence assessment and exact-artifact checks above; it does not automatically invalidate every prior regression result. This document does not attest its own current bytes as qualified; use the candidate's separately identified immutable qualification evidence and artifact digest. An equivalently complete, fixed narrative can serve as that original receipt under [Evidence Reuse And Selection](#evidence-reuse-and-selection); a routine summary cannot. Previous human-1 evidence does not qualify worker-1.
 
@@ -94,7 +95,7 @@ The recorded N4 source completed bounded worker execution, complete 424-ID regre
 
 The umbrella-1 development result has recorded review, Driver disposition and Owner acceptance with limitations. The earlier fixed source passed complete normal/parent-optimized regression; the later test-source follow-up has focused evidence. Keep those identities separate. The exact release candidate still requires the complete regression anchor and cumulative change coverage described above, plus exact-artifact transition and recovery qualification; do not describe development acceptance as release qualification. Do not promote earlier worker-1 receipts or a focused pass to qualification of this checkout. Include schema2 intent/Work round trips, ordinary schema1 behavior, mixed old/new inventory history, old-artifact refusal, Q-created records on P, and detach/plain reading.
 
-The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Current installed writes require delegation-1; the internal schema2 seam retains umbrella-1, planning-1, checkout-1 and entry-1 fixture support alongside delegation-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
+The internal runtime seam returns `binding_ref`, `launcher_sha256`, and `inventory_id`. Current installed writes require continuation-1; the internal schema2 seam retains umbrella-1, planning-1, checkout-1 and entry-1 fixture support alongside delegation-1 and continuation-1; older two-field fixture doubles remain usable only for ordinary schema1 tests. Parent record schema2 does not change identity, selection, current, ticket, decision or manifest versions.
 
 ## Adopter Impact At Development Closeout
 
@@ -108,9 +109,9 @@ Do not add automatic monitoring, bulk updates, Core management state or an addit
 
 ## Checkout Proof And Detach Versions
 
-Only a verified active checkout-1, entry-1 or delegation-1 inventory enables the unchanged CRLF exception. Publication, same-intent rebind, acceptance/resume and view inspection use that verified value; absent, older or unknown windows keep exact-blob proof. Raw manifests and changed-path recovery are unchanged. Git must support `check-attr --source`; no minimum Git version is inferred. Live attributes/capability changes can refuse pending recovery until the original conditions are restored. Existing cancellation rules remain applicable; completed decision replay preserves recorded meaning while view reports fresh observations separately.
+Only a verified active checkout-1, entry-1, delegation-1 or continuation-1 inventory enables the unchanged CRLF exception. Publication, same-intent rebind, acceptance/resume and view inspection use that verified value; absent, older or unknown windows keep exact-blob proof. Raw manifests and changed-path recovery are unchanged. Git must support `check-attr --source`; no minimum Git version is inferred. Live attributes/capability changes can refuse pending recovery until the original conditions are restored. Existing cancellation rules remain applicable; completed decision replay preserves recorded meaning while view reports fresh observations separately.
 
-New delegation-1 detach plans and their enclosing receipts both use schema 4. Keys and null candidate release remain; removal validates `colvia`, each retained release's exact inventory, and retired-entry collision preservation. Readers retain paired schema 1/2/3 and reject mixed/unknown/non-integer versions; current writers and recovery require schema 4. Historical entry-1 schema-3 detach prefixes and all earlier pending operations need their matching retained source. Preserve old bytes; legacy detach recovery requires the exact retained old source. The independent stdlib auditor checks paired versions and preserved inventory/bytes, not full Work/candidate semantics.
+New continuation-1 detach plans and their enclosing receipts both use schema 5. Keys and null candidate release remain; removal validates `colvia`, each retained release's exact inventory, and retired-entry collision preservation. Readers retain paired schema 1/2/3/4 and reject mixed/unknown/non-integer versions; current writers and recovery require schema 5. Historical entry-1 schema-3 detach prefixes and all earlier pending operations need their matching retained source. Preserve old bytes; legacy detach recovery requires the exact retained old source. The independent stdlib auditor checks paired versions and preserved inventory/bytes, not full Work/candidate semantics.
 
 ## Entry-1 Candidate Validation Boundary
 
@@ -120,10 +121,16 @@ The historical P3 alignment did not issue an exact-artifact qualification receip
 
 ## Delegation-1 Implementation Candidate
 
-This section describes verification of the `delegation-1` profile; its heading is retained for existing links. Check the identified source or installed release and keep historical evidence within its recorded scope. Document presence and verification results do not prove human authentication, activate the source contract or authorize an adopter update.
+This section retains verification requirements for the delegation behavior inherited by continuation-1; its heading is retained for existing links. Check the identified source or installed release and keep historical evidence within its recorded scope. Document presence and verification results do not prove human authentication, activate the source contract or authorize an adopter update.
 
 Qualify the Core policy and every reader/installed path together. The source-only implementation plan requires current-candidate ordinary tests plus its explicit C01-C16 factory, and a separate retained exact-predecessor lane with the risk-selected compatibility cases under the changed controls. The retained whole suite is not required by the approved continuation; omitted cases remain unverified. Retained factory/observer bytes remain unchanged and that lane does not qualify new product behavior. Reject missing/duplicate discovery, skipped/unstarted tests, source/import drift and incomplete process cleanup. Keep structured subtest identity and actual timings.
 
 The M1/M2 campaign's initial 10,800-second pair, 5,400-second retained and 28,800-second cumulative limits are historical preparation values. Its later explicit Owner continuation authorization removed automatic elapsed-time/correction-count stop caps for that campaign while retaining input identity, isolation, resource thresholds, process cleanup, failure accounting and scope boundaries. That exception is not a default for later tasks. Each later task states its own authorized commands, limits including cleanup, reuse assessment and failure disposition. An unmeasured kind remains unknown, never zero.
 
 The identified M1/M2 candidate completed 656 tests in each normal/parent-O mode and 16 exact-artifact cases, with selected retained 17 in each mode inherited from their exact earlier inputs. Its development result was accepted on 2026-10-18. Those observations retain their original source/runtime/control identities. A later prose candidate reuses only justified unaffected assertions and supplies its own consumer and exact-artifact evidence under [Evidence Reuse And Selection](#evidence-reuse-and-selection). Contract activation, Git publication, real adoption, host enforcement and general usability remain separate.
+
+## Continuation Qualification
+
+The cumulative change affects record readers/writers, shared pending guards, installed admission, lifecycle schema and recovery. Use focused core/interface/process checks while iterating, then one complete normal and parent-optimized regression for the consolidated candidate; preserve required existing coverage. Record actual discovery IDs, subcases, runtime, input identities, duration and cleanup in the single owning development record. Prior passes remain inherited only where their behavior and controls are unaffected.
+
+Fix the exact admitted delegation-1 artifact and the two continuation-1 artifacts P/Q before compatibility execution. Verify old readers/writers refuse after the first schema5 receipt, including a waiting old writer, before continuation exists. Check P→Q→P with Q-created continuation and preserved full truth. Process interruption and competing exact/stale tickets must use real processes and the actual guard/publication helpers; exception injection alone is not process-death evidence. Clone and independent auditor checks establish only their named read scope. Do not rerun complete suites solely because a document digest changes; assess the changed consumer and uncovered risk first. Passing synthetic checks do not satisfy real non-sensitive use, fresh-reader comprehension or Owner result acceptance.

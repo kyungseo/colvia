@@ -17,7 +17,7 @@ import unittest
 from hv2ref.errors import ContractError
 from hv2ref.jsonio import canonical_json_bytes
 from hv2ref.intent import workspace_intents
-from hv2ref.product import (ENTRY_MANAGED_PATHS, SERIAL_MANAGED_PATHS, UMBRELLA_MANAGED_PATHS, LEGACY_MANAGED_PATHS, _serial_inventory,
+from hv2ref.product import (CONTINUATION_MANAGED_PATHS, DELEGATION_MANAGED_PATHS, ENTRY_MANAGED_PATHS, SERIAL_MANAGED_PATHS, UMBRELLA_MANAGED_PATHS, LEGACY_MANAGED_PATHS, _serial_inventory,
                            _launcher_inventory_window, verify_workspace_product, _switch_binding_receipt)
 from hv2ref.work import WorkStore, read_work, record_ref, snapshot, make_manifest
 from hv2ref.umbrella import capture
@@ -30,19 +30,19 @@ def digest(value):return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
 
 class UmbrellaInventoryTests(unittest.TestCase):
     def test_windows_require_their_own_exact_membership(self):
-        for window,paths in [('human-1',LEGACY_MANAGED_PATHS),('worker-1',LEGACY_MANAGED_PATHS),('umbrella-1',UMBRELLA_MANAGED_PATHS),('planning-1',SERIAL_MANAGED_PATHS),('checkout-1',SERIAL_MANAGED_PATHS),('entry-1',ENTRY_MANAGED_PATHS),('delegation-1',ENTRY_MANAGED_PATHS)]:
+        for window,paths in [('human-1',LEGACY_MANAGED_PATHS),('worker-1',LEGACY_MANAGED_PATHS),('umbrella-1',UMBRELLA_MANAGED_PATHS),('planning-1',SERIAL_MANAGED_PATHS),('checkout-1',SERIAL_MANAGED_PATHS),('entry-1',ENTRY_MANAGED_PATHS),('delegation-1',DELEGATION_MANAGED_PATHS),('continuation-1',CONTINUATION_MANAGED_PATHS)]:
             value={'record_type':'release-inventory','schema_version':1,'inventory_id':window,
                    'entries':[{'path':p,'sha256':'a'*64,'size_bytes':1} for p in paths]}
             self.assertEqual(value,_serial_inventory(value))
             wrong=copy.deepcopy(value)
-            wrong['inventory_id']='worker-1' if window in ('umbrella-1','planning-1','checkout-1','entry-1','delegation-1') else 'planning-1'
+            wrong['inventory_id']='worker-1' if window in ('umbrella-1','planning-1','checkout-1','entry-1','delegation-1','continuation-1') else 'planning-1'
             with self.assertRaises(ContractError):_serial_inventory(wrong)
         self.assertEqual(27,len(LEGACY_MANAGED_PATHS));self.assertEqual(28,len(UMBRELLA_MANAGED_PATHS));self.assertEqual(29,len(SERIAL_MANAGED_PATHS))
 
     def test_old_window_is_read_only_and_all_downgrades_refuse(self):
         self.assertEqual('worker-1',_launcher_inventory_window(b'WORKSPACE_INVENTORY_ID = "worker-1"',allow_legacy=True))
         with self.assertRaises(ContractError):_launcher_inventory_window(b'WORKSPACE_INVENTORY_ID = "worker-1"')
-        for old,new in [('delegation-1','entry-1'),('entry-1','checkout-1'),('delegation-1','checkout-1'),('checkout-1','planning-1'),('planning-1','umbrella-1'),('planning-1','worker-1'),('worker-1','human-1'),('umbrella-1','worker-1'),('umbrella-1','human-1')]:
+        for old,new in [('continuation-1','delegation-1'),('delegation-1','entry-1'),('entry-1','checkout-1'),('delegation-1','checkout-1'),('checkout-1','planning-1'),('planning-1','umbrella-1'),('planning-1','worker-1'),('worker-1','human-1'),('umbrella-1','worker-1'),('umbrella-1','human-1')]:
             prior={'record_type':'product-binding','schema_version':1,'authority_home_id':'home-a','operation_id':'p',
                    'active_release':{'id':'product-release-'+'a'*24,'sha256':'a'*64,'inventory_id':old},'prior_release':None}
             plan={'expected_binding_ref':record_ref(prior,'operation_id'),'candidate_release':{'id':'product-release-'+'b'*24,'sha256':'b'*64,'inventory_id':new},'action':'update','authority_home_id':'home-a','operation_id':'q'}
@@ -118,7 +118,7 @@ class InstalledUmbrellaLifecycleTests(unittest.TestCase):
         (self.target/'report.md').write_text('pending verification\n')
         self.apply_init(self.preview());p_release=verify_workspace_product(self.target)['inventory']
         q=self.base/'candidate'
-        for name in ENTRY_MANAGED_PATHS:
+        for name in CONTINUATION_MANAGED_PATHS:
             dest=q/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(self.source/name,dest)
         with (q/'README.md').open('a') as f:f.write('\nSynthetic Q.\n')
         up=json.loads(self.installed(['update','--source',q,'--operation-id','up-q','--observed-at',self.TIME]).stdout)

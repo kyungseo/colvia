@@ -1,6 +1,6 @@
 # Your First Project With Colvia
 
-This page describes the unactivated `entry-1` candidate. Use requires separate exact-artifact qualification and installation approval; the historical checkout-1 exercise below does not qualify these commands.
+This entry describes continuation-1. Use the exact qualified release and obtain installation authorization. The linked step-by-step tutorial retains entry-1 examples; use the current operating documents for commands. The historical checkout-1 exercise below does not qualify this release.
 
 [Start the tutorial](getting-started.md) · [Key concepts](concepts.md)
 
@@ -14,7 +14,7 @@ This guide takes one small project from preparation to its first completed Work,
 
 Use a fresh, disposable practice project in a durable directory, a working Git installation, and final, GIL-enabled CPython **3.14.6 or 3.14.7**. The `python3` command used by the launcher must resolve to that supported runtime. Later patches, prereleases and free-threaded builds are rejected.
 
-You also need an independently supplied, trusted and qualified Colvia source checkout for the `entry-1` profile, plus an agent that can read local files and run approved commands. This private development edition does not provide a public installer or download location. Ask the maintainer for a source checkout and a separate qualification receipt identifying that exact entry-1 artifact. Its preview must match that receipt, not the historical checkout-1 digest below. This documentation candidate does not supply the new qualification receipt. Confirm that the receipt covers the environment you will use; this guide's synthetic exercise is not that qualification.
+You also need an independently supplied, trusted and qualified Colvia source checkout for the `continuation-1` profile, plus an agent that can read local files and run approved commands. This private development edition does not provide a public installer or download location. Ask the maintainer for a source checkout and a separate qualification receipt identifying that exact continuation-1 artifact. Its preview must match that receipt, not the historical checkout-1 digest below. This documentation candidate does not supply the new qualification receipt. Confirm that the receipt covers the environment you will use; this guide's synthetic exercise is not that qualification.
 
 The examples address Codex in an existing project conversation. They are suggested requests, not recorded transcripts or evidence that a particular prompt reliably produces the same agent behavior. Your project instructions and permissions still apply.
 
@@ -27,7 +27,19 @@ The examples address Codex in an existing project conversation. They are suggest
 | [Resume in a new session](resume.md) | Read the project and Colvia records without the old conversation | Explain what is complete, what is unverified and what needs a new decision |
 | [Key concepts](concepts.md) | Look up ownership, terms and common stops | Distinguish a proposal, an accepted request and a completed Work |
 
-Follow the first three pages in order. Open the concepts page when a term is unfamiliar. The tutorial uses one local editing Work; it does not introduce worker worktrees or parallel execution.
+The first three linked pages retain the earlier entry-1 tutorial; do not run its profile commands against current source. For current setup, use [Getting Started](../../docs/GETTING-STARTED.md), then the installed view and adapter. Open the concepts page when a term is unfamiliar. The tutorial uses one local editing Work; it does not introduce worker worktrees or parallel execution.
+
+## Resume With A Selected Follow-Up
+
+Start a new session with: “Read the project entry, current Colvia view and the plan referenced by this Work. Explain the accepted result, remaining plan items and the next action I selected.” This is a proposed request, not a completed usability observation.
+
+The agent reads `./colvia view continuation WORK_ID`, including for a completed Work. A proposal still needs an accepted intent; an existing Work follows its own current state; explicit none records no follow-up; undecided means no choice has been made. Selection never starts or accepts the target. If a valid project candidate choice conflicts with this follow-up, the agent shows both and asks which action you intend instead of overwriting either.
+
+Before work, identify the plan item and existing narrative. At result review, distinguish proposed completion wording from actual acceptance. After acceptance, explain achieved/remaining items and any plan edit still requiring its usual scope/reference/content checks. No second progress tracker is needed. A missing plan or stale reference is a gap to resolve, not evidence of alignment.
+
+The view shows used and remaining normal operations out of 256 per Work. Durable select/withdraw operations count even if cancelled; reads, exact retry and cancellation do not add normal use. At the limit, exact recovery/cancellation remains possible but new choices are refused. Unknown usage is displayed as unavailable. Do not delete history or split Work merely to reset a counter.
+
+For “keep improving this until the checks pass,” the agent should first consider the existing Work's scope, verifier, budget and stop condition. A new Work needs a distinct result/acceptance boundary; a parent is useful only for independent child acceptance plus an integrated result. The agent explains the recommendation and start conditions without treating the wording as an unlimited execution grant. See the [current adapter](../../adapters/colvia-work/SKILL.md#follow-up-and-plan-alignment).
 
 ## What Was Checked
 
@@ -54,7 +66,7 @@ Historical exercise — Edition: private development, `checkout-1`; checked 2026
 | Source revision | `2536c3106494d2b409e522ff4decb39f88d4aaf5` |
 | Release SHA-256 | `a5a9c5b408e40cd0bfdd6bf3c5d8d23676c138504e278417ecb656729c1b8456` |
 
-The source revision and digest identify the historical Harness v2 checkout-1 exercise, not the current entry-1 source or these manual pages. The pages are outside that commit and managed release. Preserve those old identities as historical evidence; do not use them to approve an entry-1 installation. Compare the new preview only with its separately supplied exact entry-1 qualification receipt. A different HEAD is not itself release qualification.
+The source revision and digest identify the historical Harness v2 checkout-1 exercise, not the current continuation-1 source or these manual pages. The pages are outside that commit and managed release. Preserve those old identities as historical evidence; do not use them to approve a continuation-1 installation. Compare the new preview only with its separately supplied exact continuation-1 qualification receipt. A different HEAD is not itself release qualification.
 
 ---
 

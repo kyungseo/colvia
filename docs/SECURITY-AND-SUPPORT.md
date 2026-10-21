@@ -1,6 +1,6 @@
 # Security And Support
 
-Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
+Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
 This development candidate assumes one trusted local OS account and cooperating agents. Logical actor and acceptance-authority strings are declarations, not authentication. Confirmation tokens bind request bytes; they do not prove a human approved them. File checks and locks do not defend against an adversarial process with the same account bypassing the protocol.
 
@@ -27,7 +27,7 @@ For the macOS 3.14.6 failure, targeted reruns did not reproduce it, but the orig
 
 These historical results belong to their recorded source, not automatically to the current checkout or a later release with changed managed documentation. Verify a candidate against its exact artifact receipt. That synthetic qualification does not establish ordinary-user latency, actual worker-1 adoption, anonymous onboarding, production scale, or public distribution. The separate bounded private-use observation below does not expand those support claims.
 
-Control authority can reside in a primary Git checkout or supported standalone non-Git target. Linked workers cannot publish control truth. Submodules, nested repositories/authorities, separate Git directories, partial clones, alternates, unsafe links, and ambiguous topology are refused within the documented checks. Supported work content excludes ignored untracked files but includes tracked ignored files. See [General Work](GENERAL-WORK.md). Unchanged raw CRLF checkout entries can be verified only against unchanged pure-LF blobs with explicit retained text/eol=crlf attributes and exact deterministic byte reconstruction. Only verified active checkout-1, entry-1 or delegation-1 enables this unchanged-CRLF exception. Snapshot hashes and changed-path application remain byte-exact. Changed converted files, attribute changes, external transforms and arbitrary filters are outside this exception; see the unchanged-CRLF contract in General Work. This adds no Windows or general filter qualification, and an exact old/new-artifact compatibility check is still required before an adopter update.
+Control authority can reside in a primary Git checkout or supported standalone non-Git target. Linked workers cannot publish control truth. Submodules, nested repositories/authorities, separate Git directories, partial clones, alternates, unsafe links, and ambiguous topology are refused within the documented checks. Supported work content excludes ignored untracked files but includes tracked ignored files. See [General Work](GENERAL-WORK.md). Unchanged raw CRLF checkout entries can be verified only against unchanged pure-LF blobs with explicit retained text/eol=crlf attributes and exact deterministic byte reconstruction. Only verified active checkout-1, entry-1, delegation-1 or continuation-1 enables this unchanged-CRLF exception. Snapshot hashes and changed-path application remain byte-exact. Changed converted files, attribute changes, external transforms and arbitrary filters are outside this exception; see the unchanged-CRLF contract in General Work. This adds no Windows or general filter qualification, and an exact old/new-artifact compatibility check is still required before an adopter update.
 
 ## Data And Recovery
 
@@ -43,8 +43,12 @@ Stop cooperating writers and retain exact sources/request/token and restoration-
 
 ## Delegation-1 Implementation Candidate
 
-This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
 
 The new grant is a local contract check, not an authenticated security principal. Owner and delegate share the existing trusted OS-account boundary. Core checks actor spelling, exact accepted intent, scope, mode, selected ancestry, one-use historical decisions and revocation; it cannot prove which human, model or process supplied a label or whether an external worker changed its payload. Host caller/payload enforcement and actual provider use require separate evidence.
 
 The candidate inherits prior content, evidence, lock, durability and unsupported-state limits. No grant authorizes parent/intent/continuation decisions, broader scope, Git or lifecycle operations. Static review, synthetic API tests, sandboxed installed execution, normal/parent-O regression, physical fault observation and real adopter experience are different evidence classes. They must be reported separately. Historical entry qualification does not qualify delegation-1 or a newly packaged release.
+
+## Continuation Boundary
+
+Continuation shares the trusted local account and serialized writer guard. Actor labels are declarations, not authenticated identities. Project-wide pending/unknown-integrity refusal is intentional; an unrelated malformed continuation can block all official writers, including repair/detach. Exact active repair is only an exception for valid classifiable pending state. Moving a pending home does not rebind recovery. Bounded records, nonrecursive target reading and usage displays do not provide a scheduler, adversarial filesystem isolation or unlimited retention. Exact process/synthetic checks and real fresh-session use require their separately identified evidence.

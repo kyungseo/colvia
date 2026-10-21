@@ -15,14 +15,14 @@
       "status": "development-typed-artifacts"
     },
     {
-      "boundary": "delegation-1 profile; source-contract activation and exact installation require separate Owner authorization; exact audited entry-1 transition and same-window lifecycle; paired schema4 new lifecycle records; historical versions retained; first new receipt is one-way; old-window downgrade and attach unsupported",
+      "boundary": "continuation-1 profile; exact admitted delegation-1 predecessor or compatible same-window lifecycle; paired schema5 new records and retained historical pairs; first new receipt is one-way; exact installation requires Owner authorization; downgrade and attach unsupported",
       "evidence": "source contains lifecycle and inventory-window fixtures; historical results do not qualify this artifact",
       "fallback": "independent trusted exact source and retained project truth",
       "id": "project-local-product-lifecycle",
       "status": "development-bounded-synthetic"
     },
     {
-      "boundary": "cooperating linked workers; one serialized cooperating control writer; Owner default with exact granted ordinary accept exception; general usability and real-project multi-worker efficiency unverified; verified checkout-1, entry-1 or delegation-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
+      "boundary": "cooperating linked workers; one serialized cooperating control writer; Owner default with exact granted ordinary accept exception; general usability and real-project multi-worker efficiency unverified; verified checkout-1, entry-1, delegation-1 or continuation-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
       "evidence": "source contains worker integration, process interruption/contention and checkout-byte fixtures; exact-candidate qualification and actual multi-worker use require separately identified evidence",
       "fallback": "one editing Work in control checkout",
       "id": "same-repository-parallel-integration",
@@ -43,7 +43,7 @@
       "status": "development-in-progress"
     },
     {
-      "boundary": "branch-local tracked candidates on delegation-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
+      "boundary": "branch-local tracked candidates on continuation-1; no execution authority, automatic priority, authenticated Owner identity or implicit update",
       "evidence": "source contains candidate contract and installed synthetic fixtures; exact-candidate execution and real fresh-session use require separately identified evidence",
       "fallback": "preserve planning bytes and inspect from trusted independent source; no silent history compaction",
       "id": "candidate-planning",
@@ -56,6 +56,13 @@
       "fallback": "Owner-only ordinary acceptance under existing checks",
       "id": "delegated-ordinary-acceptance",
       "status": "development-synthetic-result-accepted"
+    },
+    {
+      "boundary": "Owner-only Work-local proposal, existing Work or explicit none; undecided/withdrawal distinct; 256 durable normal operations including cancelled; shared project-wide pending/integrity refusal; no execution, acceptance or scheduling authority",
+      "evidence": "source contains core, installed-view, process and recovery checks; current exact-artifact/full regression, fresh-reader and actual-use results require separately identified evidence",
+      "fallback": "preserve exact records and original tickets; trusted independent read-only view; no guessed current or history reset",
+      "id": "work-continuation",
+      "status": "development-in-progress"
     }
   ],
   "evidence_as_of": "2026-10-07",

@@ -155,6 +155,40 @@ class ViewObservationSharingTests(unittest.TestCase):
         bound=parent.accept(draft); parent.publish('parent',bound,'start',parent=True)
         self.consumers(parent.target,'parent'); parent.success=True
 
+    def test_continuation_reuses_observation_readers_and_target_race_remains_unavailable(self):
+        from hv2ref import intent
+        self.f.complete_work("work-b",intent_ref=self.intent)
+        subprocess.run(["git","init","-q",str(self.target)],check=True,timeout=30,capture_output=True)
+        def measure():
+            with patch.object(workspace,"_topology_probe",wraps=workspace._topology_probe) as topology, \
+                 patch.object(intent,"read_workspace_intent_graph",wraps=intent.read_workspace_intent_graph) as intents:
+                status,bundle=product._workspace_status_observation(self.target)
+            self.assertEqual("pass",status["classification"]);self.assertIsNotNone(bundle)
+            return topology.call_count,intents.call_count
+        baseline=measure()
+        packet=json.loads(self.f.installed(["continuation","prepare"],dict(
+            work_id="work-a",action="select",actor="owner",owner_statement="Synthetic Owner",
+            reason="Inspect target",request_id="observation-link",observed_at=self.f.TIME,
+            choice={"kind":"work","target_work_id":"work-b"})).stdout)
+        self.f.installed(["continuation","apply","--confirm",packet["confirm_token"]],packet["ticket"])
+        self.assertEqual(baseline,measure())
+        # Adding a selected continuation must not hide a changed target base Work.
+        self.corrupt(self.target/".hrn/work/work-b/current.json")
+        from hv2ref import continuation
+        from hv2ref.errors import ContractError
+        current=self.target/".hrn/work/work-a/current.json";saved=current.read_bytes()
+        def change_base_and_refuse(*args,**kwargs):
+            current.write_bytes(self.pre_apply_current)
+            raise ContractError("HV2-CONTINUATION","synthetic continuation observation refusal")
+        errors={}
+        try:
+            with patch.object(continuation,"read_continuation",side_effect=change_base_and_refuse):
+                with self.assertRaisesRegex(ContractError,"base Work changed"):
+                    read_work(self.target,"work-a",_continuation_errors=errors)
+            self.assertEqual({},errors)
+        finally:
+            current.write_bytes(saved)
+
     def test_pass_reuses_only_observation_local_graphs(self):
         original = WorkStore._all; calls=[]
         def spy(store, **kwargs): calls.append(store); return original(store, **kwargs)

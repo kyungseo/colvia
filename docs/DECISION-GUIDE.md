@@ -8,7 +8,7 @@ Reorganization and effective-state record: [DR-0006](decisions/DR-0006-source-co
 
 | Document | Effective State And Scope |
 | --- | --- |
-| [DR-0001: Work Continuation Selection And Recovery](decisions/DR-0001-work-continuation-selection-and-recovery.md) | Draft; continuation support and implementation remain unapproved |
+| [DR-0001: Work Continuation Selection And Recovery](decisions/DR-0001-work-continuation-selection-and-recovery.md) | Accepted on 2026-10-21 for the named continuation-1 source successor and bounded U1 implementation; runtime qualification and exact adopter application remain pending |
 | [DR-0002: Checkout-1 Contract Baseline](decisions/DR-0002-checkout-1-contract-baseline.md) | Accepted (Amended); retained M2/M3 history and the named entry-1 successor amendment |
 | [DR-0003: Source Development Procedure And Bounded Intake](decisions/DR-0003-source-development-procedure-and-bounded-intake.md) | Accepted (Amended); effective 2026-10-08, with the unchanged-M3 current-set reference and Public Preview managed-launcher preservation clause amended by DR-0004 on 2026-10-14; the named procedure-location amendment is accepted and effective through DR-0006 on 2026-10-16 |
 | [DR-0004: Colvia Managed Entry And One-Way Transition](decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md) | Accepted (Amended); exact entry-1 activation on 2026-10-14 and the named First B1 supplement on 2026-10-15 |
@@ -21,7 +21,7 @@ A Draft is a proposal. It does not describe supported commands or authorize impl
 
 The effective contract document set is normative; decisions record accepted changes and their reasons. Start with the [Documentation Index](README.md) and follow its detailed contracts. If evidence or contracts conflict, preserve state and report the difference. File order, timestamps and agent statements cannot resolve it. Historical material retains its original meaning without becoming current support.
 
-For the current technical set, follow the exact [delegation-1 activation](decisions/DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation) and its named successor clauses. Retain the [entry-1 activation](decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14) and [First B1 supplement](decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#first-b1-permission-observation-activation--2026-10-15) guarantees except where the delegation-1 activation explicitly replaces them. Historical preparation labels do not independently determine current activation or support.
+For the current source implementation, follow the accepted [continuation-1 successor](decisions/DR-0001-work-continuation-selection-and-recovery.md) and its named clauses. Existing installed delegation-1 history follows the exact [delegation-1 activation](decisions/DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation) and its named successor clauses. Retain the [entry-1 activation](decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14) and [First B1 supplement](decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#first-b1-permission-observation-activation--2026-10-15) guarantees except where the delegation-1 activation explicitly replaces them. Historical preparation labels do not independently determine current activation or support.
 
 ## Acceptance Records
 

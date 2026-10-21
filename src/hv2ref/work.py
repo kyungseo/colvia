@@ -206,7 +206,7 @@ def _verified_launcher_path(sha: str | None, window: str | None) -> str | None:
     if sha is None:
         return None
     paths = {"human-1": "hv2", "worker-1": "hv2", "umbrella-1": "hv2",
-             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia", "delegation-1": "colvia"}
+             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia", "delegation-1": "colvia", "continuation-1": "colvia"}
     if not _sha(sha) or not isinstance(window, str) or window not in paths:
         raise _fail("managed launcher proof requires a supported verified inventory window")
     return paths[window]
@@ -416,7 +416,7 @@ immediately before each write and before publication; outside actors are trusted
 
 def _allows_unchanged_crlf(verified_inventory_id: str | None) -> bool:
     """A verified active window, never a caller-facing conversion option."""
-    return verified_inventory_id in ("checkout-1", "entry-1", "delegation-1")
+    return verified_inventory_id in ("checkout-1", "entry-1", "delegation-1", "continuation-1")
 
 
 def _unchanged_crlf_matches(target: Path, manifest: dict[str, Any],
@@ -964,11 +964,14 @@ def _authority_directory(target: Path, category: str, object_id: str) -> tuple[P
     return directory / object_id, authority
 
 
-def _record_tree(home: Path, folders: set[str]) -> dict[str, Any]:
+def _record_tree(home: Path, folders: set[str], *, allow_continuation: bool = False) -> dict[str, Any]:
     from .workspace import _require_kind
     from .jsonio import load_json
     data: dict[str, Any] = {}
     for member in home.iterdir():
+        if allow_continuation and member.name == "continuation":
+            _require_kind(member, True)
+            continue  # The separate bounded reader validates this entire subtree.
         if member.name in folders:
             _require_kind(member, True)
             names = [p.name for p in member.iterdir()]
@@ -1131,13 +1134,14 @@ def _visible_truth(target: Path, paths: list[str], *, _topology_observation=None
         _require(result.returncode == 1 and not result.stdout, "truth hidden by effective Git ignore policy")
 
 
-def read_work(target: Path, work_id: str, *, _intent_graph_reader=None, _topology_observation=None) -> dict[str, Any]:
+def read_work(target: Path, work_id: str, *, _intent_graph_reader=None, _topology_observation=None,
+              _with_continuation: bool = True, _continuation_errors=None) -> dict[str, Any]:
     """Double-read Work records; status may supply observation-local intent graphs."""
     try:
         home, authority = _authority_directory(target, "work", work_id)
         folders = {"revisions", "decisions", "selections", "results"}
-        data = _record_tree(home, folders)
-        _require(data == _record_tree(home, folders), "unstable Work observation")
+        data = _record_tree(home, folders, allow_continuation=True)
+        _require(data == _record_tree(home, folders, allow_continuation=True), "unstable Work observation")
         truth_paths = [str(home.relative_to(safe_target(target)) / key) for key in data]
         if _topology_observation is None:
             _visible_truth(target, truth_paths)
@@ -1164,6 +1168,26 @@ def read_work(target: Path, work_id: str, *, _intent_graph_reader=None, _topolog
             _require((revision["schema_version"] == 2) == (bound["composition"] is not None), "Work schema and bound intent composition differ")
             if bound["composition"] is not None:
                 _require(bound["composition"]["parent"]["id"] == identity["work_id"], "composition names another parent Work")
+        if _with_continuation:
+            from .continuation import graph as continuation_graph, read_continuation
+            continuation_home = home / "continuation"
+            try:
+                graph["continuation"] = (read_continuation(target, work_id, _source_graph=graph,
+                                          _topology_observation=_topology_observation,
+                                          _intent_graph_reader=_intent_graph_reader)
+                                         if continuation_home.exists() or continuation_home.is_symlink()
+                                         else continuation_graph(identity, {}))
+            except ContractError as exc:
+                if _continuation_errors is None:
+                    raise
+                # Status-only projection. Recheck the base independently before
+                # localizing the failure; a changed base Work is not CONT damage.
+                after = read_work(target, work_id, _with_continuation=False,
+                                  _intent_graph_reader=_intent_graph_reader,
+                                  _topology_observation=_topology_observation)
+                _require(graph == after, "base Work changed while reading unavailable continuation")
+                _continuation_errors[work_id] = {"error_code": exc.code, "message": exc.message}
+                graph["continuation"] = None
         return graph
     except PermissionError as exc:
         raise ContractError("HV2-WORK-UNAVAILABLE", "Work read permission denied: " + str(target / ".hrn/work" / work_id)) from exc
@@ -1367,7 +1391,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         result = self.runtime_check(self.target)
         _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
         if "inventory_id" in result:
-            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1"), "unsupported writer inventory window")
+            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
         _verified_launcher_path(result["launcher_sha256"], result.get("inventory_id"))
@@ -1378,7 +1402,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     @staticmethod
     def _delegation_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") == "delegation-1", "delegation history requires delegation-1 writer")
+        _require(runtime.get("inventory_id") in ("delegation-1", "continuation-1"), "delegation history requires a delegation-capable writer")
 
     def _graph(self, identity, revisions, decisions, selections, manifests, current):
         from .intent import workspace_intents
@@ -1387,13 +1411,16 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     @staticmethod
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1"), "umbrella writer requires an installed umbrella-capable runtime")
+        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1"), "umbrella writer requires an installed umbrella-capable runtime")
 
-    def _all(self, *, _intent_graph_reader=None, _topology_observation=None) -> dict[str, Any]:
+    def _all(self, *, _intent_graph_reader=None, _topology_observation=None,
+             _continuation_errors=None) -> dict[str, Any]:
         root = self.target / ".hrn/work"
         if not root.exists(): return {}
         _require(root.is_dir() and not root.is_symlink(), "invalid Work collection")
         readers = {}
+        if _continuation_errors is not None:
+            readers["_continuation_errors"] = _continuation_errors
         if _intent_graph_reader is not None:
             readers["_intent_graph_reader"] = _intent_graph_reader
         if _topology_observation is not None:
@@ -1423,6 +1450,8 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     def _pending_guard(self, graphs: dict[str, Any], work_id: str, *, content_write: bool = False) -> None:
         from .intent import require_no_pending_intents
+        from .continuation import require_no_pending
+        require_no_pending(self.target, works=graphs)
         require_no_pending_intents(self.target)
         for key, graph in graphs.items():
             if key == work_id: continue

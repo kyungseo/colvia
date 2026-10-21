@@ -1,6 +1,6 @@
 # Getting Started
 
-Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
+Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
 Use a fresh project and final, GIL-enabled CPython 3.14.6 or 3.14.7. Installation is an explicit operator action; do not infer permission to install into another repository from a successful local test.
 
@@ -56,7 +56,7 @@ Use [Repository-Owned Rules](REFERENCE.md#repository-owned-rules) to connect app
 From a trusted source checkout:
 
 ```sh
-./colvia --source-checkout init --profile delegation-1 --target /path/to/project \
+./colvia --source-checkout init --profile continuation-1 --target /path/to/project \
   --source /path/to/source --authority-home-id project-home \
   --operation-id init-1 --observed-at 2026-01-01T00:00:00Z
 ```
@@ -64,7 +64,7 @@ From a trusted source checkout:
 This previews the candidate and returns a `request` and `confirm_token`. Review the target and source; save only the `request` object as canonical JSON outside the target. Then apply that exact request:
 
 ```sh
-./colvia --source-checkout init --profile delegation-1 --target /path/to/project \
+./colvia --source-checkout init --profile continuation-1 --target /path/to/project \
   --source /path/to/source --apply --input /path/to/init-request.json --confirm TOKEN
 ```
 
@@ -85,16 +85,11 @@ Accepting a worker result applies its exact changes on control but leaves Git HE
 
 ## Review Without Editing JSON
 
-The manual path shown by `view` belongs to Harness itself. Use it for tool operation; use the project root README and project-owned context, plan, DR, brief and Work documents for project purpose and progress. Do not interpret links inside the managed manual as links to the project root.
+Start with `./colvia view` and its verified adapter. The managed manual explains Harness operation; project README/context/plan/DR/brief/Work documents explain project purpose and progress. Keep the stable view command in project entry, not a release-specific adapter path.
 
-Start with `./colvia view`. Ask your agent to read the current adapter and help plan or resume a task. The agent prepares validated machine input; you review project Markdown, `view intent ID`, `view work ID` and the exact confirmation screen. Decide the action before the agent applies it. A project entry may point to `./colvia view`; do not save a release-specific adapter path there. Update/rollback changes the path shown by the verified current binding.
+The agent prepares machine input and explains the existing Work narrative in your language: scope, progress, results, checks, limits and the actual decision needed. Review the relevant intent/Work and confirmation views; full revision identities and tokens remain supporting detail. Decide the exact action before apply. Disclose changed/missing references or disagreement between narrative and selected records. English diagnostic labels do not require an English conversation. The view is supporting evidence; no automatic report, second status registry or additional record is needed.
 
-
-The default human review is your existing Work narrative and a conversation in your language. Ask the agent to explain purpose and scope, plan and progress, results and verification, then the decision needed and next action. It reads your Work, DR and brief and compares their claims with the view's selected state and reference observations. A changed or missing document and any disagreement between prose and records must be disclosed.
-
-`colvia view` currently prints English diagnostic Markdown. It is supporting evidence, not a replacement for the narrative or a standalone localized report. You do not need to decode its internal fields: the manual adapter guides the agent to explain them and link the original documents. Full revision identities and tokens remain available when reviewing an exact action. No automatic report file, second status registry or new record schema is introduced.
-
-Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds matching the accepted version conditions may execute; that is not a claim that they have been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
+A runtime admitted by version is not necessarily a qualified OS/distributor build. See [Security and Support](SECURITY-AND-SUPPORT.md).
 
 For a requested brief, decision record or unresolved question, ask the agent to use [Project Document Assistance](REFERENCE.md#project-document-assistance) with your existing project documents.
 
@@ -105,14 +100,16 @@ Historical procedure for a retained qualified checkout-1 source only. The curren
 
 ## Transition To Entry-1
 
-Historical procedure for a retained qualified entry-1 source only. Read [Entry-1 transition](OPERATIONS.md#entry-1-transition) for its exact checkout-1 predecessor, one-way schema-2 boundary, original-request recovery, unsupported prefixes and separate worker rebind. These instructions do not authorize applying the current delegation-1 candidate with an old profile.
+Historical procedure for a retained qualified entry-1 source only. Read [Entry-1 transition](OPERATIONS.md#entry-1-transition) for its exact checkout-1 predecessor, one-way schema-2 boundary, original-request recovery, unsupported prefixes and separate worker rebind. These instructions do not authorize applying the current continuation-1 candidate with an old profile.
 
 ## Delegation-1 Implementation Candidate
 
-This section describes the `delegation-1` profile; its heading is retained for existing links. Before actual installation or update, obtain the responsible Owner's authorization for source-contract activation and the exact qualified release. Development acceptance, exact-artifact checks and real adoption remain distinct. Installed readers use their verified release and project authorization; source-only decision files are not installed prerequisites.
+Continuation-1 inherits the [optional schema-3 ordinary-worker grant](GUIDED-INTENT-FORMATION.md#delegation-1-implementation-candidate). Only an explicit Owner decision grants that exact scope; an agent role or broad instruction to continue does not. No-grant use keeps human acceptance. Intent and parent acceptance, Git integration and source-development acceptance remain separate. Host caller enforcement and general first-session usability are unverified.
 
-Fresh installation uses `--profile delegation-1`; the exact release requires qualification, source-contract activation and Owner installation authorization before actual adoption. Synthetic verification does not establish those approvals. Continue to use `./colvia view` and its verified manual/adapter paths. Begin ordinary work with an Owner-accepted intent and keep acceptance separate from Git integration.
+Historical locator: entry-1→delegation-1 used the exact entry-1 inventory `2216a2634eb3fa5d6a8bfa7c7d4847b29fb2443ba7b367156c15b15ddb5a17e0`, matching retained source and original input. Old pending operations still need their own source/request. This is not the current transition path.
 
-Before an authorized transition, verify the active entry-1 inventory SHA-256 is `2216a2634eb3fa5d6a8bfa7c7d4847b29fb2443ba7b367156c15b15ddb5a17e0`. Other older releases require their own supported sequence, not a forced direct transition. Resolve old pending operations with their exact old source and original requests first. Preserve the exact candidate source and transition request for forward recovery.
+## Continuation-1 Setup And Resume
 
-An Owner may explicitly include the schema-3 grant described in [Guided Intent](GUIDED-INTENT-FORMATION.md#delegation-1-implementation-candidate). The adapter must explain its exact scope and cannot infer it from an agent's role or a broad instruction to continue. Ordinary no-grant use remains supported. First-session usability and host caller enforcement are unverified.
+Fresh setup uses the continuation-1 command above. The exact release needs qualification, accepted source-contract scope and separate Owner installation authorization; source-only decision files are not installed prerequisites. For an existing installation, [Operations](OPERATIONS.md#continuation-1) admits only the exact delegation-1 predecessor or a compatible continuation-1 release. Do not apply the historical entry-1 transition instructions with current source.
+
+Before starting work, name the existing project plan and the item it covers. After a result is actually accepted, report what that item achieved, what remains and whether the human selected a follow-up. Read `./colvia view continuation WORK_ID` in a new session. A proposal still needs intent approval; an existing Work follows its own current state; explicit none ends this follow-up path; undecided requires a choice only when the next action depends on it. The adapter explains plan updates and reference/content checks without adding another tracker.
