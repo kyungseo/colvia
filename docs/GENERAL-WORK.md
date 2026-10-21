@@ -1,6 +1,6 @@
 # General Work Development Slice
 
-Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
+Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
 Status: development machine CLI with local record writing, worker publication, human baseline refresh and exact worker result application. Human acceptance is the default; [Delegation-1](#delegation-1-implementation-candidate) defines the sole exact ordinary-worker accept exception. Exact-candidate qualification and actual adoption require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md).
 The default writer verifies an isolated installed applied binding. Tests may explicitly supply a verifier double. Actual source init and
@@ -55,7 +55,7 @@ this exception. A source change is not same-window rollback qualification;
 validate exact old/new artifacts and resulting records before an adopter switch.
 This bounded path is not Windows qualification or general Git filter support.
 
-The unchanged CRLF exception requires verified active checkout-1, entry-1 or delegation-1 inventory. Older/unknown or omitted inventory values keep strict blob matching, including in read-only worker inspection. An older-window worker's retained launcher is not silently accepted after transition: preserve its result/refs and follow the explicit baseline rebind/resubmission procedure in [Getting Started](GETTING-STARTED.md#transition-to-entry-1). Attribute/capability drift after a decision can refuse resume; restore the original environment for exact recovery or use cancellation only where its existing conditions permit. Completed replay remains historical, while view observations can become unavailable.
+The unchanged CRLF exception requires verified active checkout-1, entry-1, delegation-1 or continuation-1 inventory. Older/unknown or omitted inventory values keep strict blob matching, including in read-only worker inspection. An older-window worker's retained launcher is not silently accepted after transition: preserve its result/refs and follow the explicit baseline rebind/resubmission procedure in [Getting Started](GETTING-STARTED.md#transition-to-entry-1). Attribute/capability drift after a decision can refuse resume; restore the original environment for exact recovery or use cancellation only where its existing conditions permit. Completed replay remains historical, while view observations can become unavailable.
 
 Recovery observation distinguishes full result, mixed pre/post, unknown changed content and outside drift. The content-only
 `all_changed_paths_pre` observation cannot authorize cancellation: actual ignored occupants and safe ancestors must also pass
@@ -167,7 +167,7 @@ inspection; the installed entry cannot repair its own missing binding.
 
 Installed startup never guesses source-checkout mode when `.hrn` is missing. Invoke an independent
 trusted source launcher with `--source-checkout` for init or diagnostic commands. Source init/update/rollback/detach
-commands require the explicit `delegation-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
+commands require the explicit `continuation-1` profile; repair has no profile option and requires the exact active release, refusing older windows. Removed generation commands are parser errors;
 there is no legacy fallback mode.
 Confirmation tokens bind request bytes; they are not independent evidence of human authorization.
 
@@ -209,7 +209,7 @@ backup bytes are refused. The installed launcher cannot invoke this operation.
 Use the installed `colvia detach --operation-id detach-1 --observed-at TIME` to
 preview. Save its `request` object, then run `colvia detach --apply --input request.json
 --confirm TOKEN`. An independent source can use the same command with explicit
-`--source-checkout`, `--profile delegation-1`, and `--target /path/to/project`.
+`--source-checkout`, `--profile continuation-1`, and `--target /path/to/project`.
 
 Detach writes `.hrn/detached.json` before removing anything. It removes the verified
 launcher and managed product files, then their empty directories. Format, ignore
@@ -312,13 +312,15 @@ Writer validation is fail-closed for the authority home: existing Work relation 
 
 ## Entry-1 Transition And Existing Work
 
+The following paragraph pair retains the historical entry-1 contract for matching old source. Current operations follow [Continuation-1](#continuation-1-successor-contract).
+
 Entry-1 adds no Work, parent or candidate operation. Transition admission preserves selected/orphan worker records but blocks pending durable operations. Non-completed selected local Work and local parents require the exact stored-manifest equality and renamed-path dependency checks in [Entry-1 admission](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication). A parent's required references include its sealed direct captured child revisions/intent confirmations, not the child's current state, scope, optional references or deeper descendants. Completed or worker-mode captured children can therefore intentionally block a local parent. Ordinary parent acceptance rules are unchanged.
 
 After cutover, old worker result bytes/refs remain historical evidence; direct acceptance under old launcher proof is refused. A new runtime control commit needs separate Git authorization, followed by explicit same-intent worker baseline rebind and resubmission. No automatic acceptance, cancellation, baseline refresh or Git action occurs. Current source repair is exact active entry-1 only; old pending operations require matching OLD source. Current detach uses schema 3; historical schema 1/2 writes use retained old sources. Historical transition-content unavailability is distinct from current Work content/ref checks; see [diagnostic context](REFERENCE.md#entry-1-diagnostic-context).
 
 ## Delegation-1 Implementation Candidate
 
-This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
 
 For an ordinary isolated-worker Work, a non-Owner accept actor must exactly match the non-null grant in the accepted schema-3 intent draft bound to that Work revision. The qualified Work, execution mode and scope-path set must match. The accepted revision is schema 1, contains no composition and has no `supersedes`; no schema-2 revision may occur in its selected ancestry. These restrictions also apply when the ordinary Work is a child of a parent.
 
@@ -327,3 +329,35 @@ One use is keyed by `(authority home, Work ID, intent ID, draft ID, draft digest
 Owner accept remains available under the existing gates. All non-accept actions remain Owner-only. The decision records the actual actor, and exact pending recovery must retain that actor and ticket. Required intent/Work references, baseline and candidate content, retained sources, CAS, ignore policy and guarded currentness all remain mandatory. Grant permission never excuses unavailable evidence or unsafe content.
 
 A delegated ordinary child can satisfy existing parent readiness if its accepted result and capture are valid. It cannot delegate the parent's acceptance or create a transitive grant. A mixed chain containing a composition revision is ineligible. Parallel decision actors still serialize through the existing writer lock; no same-Work concurrent content-editing authority is added.
+
+## Continuation-1 Successor Contract
+
+Source decision DR-0001 accepted this successor for implementation; that source-only record is not an installed prerequisite. A Work-local follow-up is separate from the source result/lifecycle and target execution/acceptance. Only the source Work's human acceptance authority may select, withdraw or cancel. Ordinary delegated-accept grants do not authorize continuation.
+
+A choice is a proposal (`goal`, `scope`, `next_step`, `decision_needed`), an existing same-home Work captured by exact snapshot, or explicit none. Absence/withdrawal means undecided. A→B→A is readable without recursive traversal, not executable scheduling. Source Work completion is neither required nor changed. Selecting a target never accepts its intent, reopens/completes it, grants a budget or starts a worker. Use [Reference](REFERENCE.md#work-follow-up) for the installed entry.
+
+### Continuation Records And References
+
+The optional `.hrn/work/WORK_ID/continuation/` subtree contains only `choices/ID.json`, `selections/ID.json` and `current.json`. Choices and selections are immutable canonical JSON; current is the sole mutable selector and is atomically replaced after the selection is durable. No directory or an empty directory has no choice. A valid null current with no records means undecided. Durable choices/selections without current are invalid; never reconstruct it by filename or timestamp.
+
+Every record has integer `schema_version: 1`, `authority_home_id`, `work_id` and its exact `record_type`. A `continuation-choice` adds `record_id` and `confirmation` (the full ticket). A `continuation-selection` adds `record_id`, nullable `parent_selection_ref` and `choice_ref`. A `continuation-current` adds nullable `selection_ref`. References are exactly `{id,sha256}`. Choice/selection IDs are `choice-`/`selection-` plus the full canonical ticket SHA-256. Reference digests cover the complete canonical record, not merely the ticket. Unknown fields, aliases, links, wrong kinds, missing/dangling references, cycles, unclassifiable branches and noncanonical bytes are refused.
+
+The `continuation-confirmation-ticket` has integer schema 1 and exactly `source`, `expected_continuation_selection_ref`, `action`, `choice`, `supersedes_choice_ref`, `actor`, `owner_statement`, `reason`, `request_id`, `observed_at`, `product_binding_ref`, `target_fingerprint`, `document_refs` in addition to type/schema. Source and Work target snapshots contain `object: {authority_home_id,kind:"work",id}`, `revision_ref`, `selection_ref`, `intent_ref`. They must resolve to selected historical Work/intent ancestry. The reader validates source/base Work first, then referenced target base Work without loading target continuation, and repeats observations to detect changes.
+
+### Continuation Publication And Recovery
+
+Prepare is read-only. Apply rechecks current/binding/location, actual Owner, source/target snapshots and required documents under the same writer guard used by Work, intent, candidates and lifecycle. It prevalidates the complete prospective graph and limits before publishing directories, initial null current, choice, selection and replacement current. A new operation needs the exact current source/target; a valid later target progress change is displayed separately from purpose change. Purpose compares exact intent reference, the literal validated scope-path set and execution mode. An invalid Work graph stays unavailable.
+
+A choice-only or choice-plus-selection prefix is pending. Exact retry completes it using the original ticket/token and unchanged original prerequisites. Historical exact replay validates retained history but never replaces a later selection or spends quota again. A competing stale ticket makes no new authority record. No new request ID can bypass a pending operation.
+
+`cancel-pending` names one existing pending normal choice, preserves its bytes/optional selection, and creates a cancellation choice/selection whose parent is the original prior selection. It keeps the effective earlier choice (or undecided) rather than selecting explicit none. A pending cancellation can only be completed by its exact retry; cancellation of cancellation and duplicate alternatives are refused. Once cancellation is durable the original operation is permanently cancelled; its late exact replay cannot resume it. Cancellation ignores later live source/target/document drift but still requires valid retained snapshots, the source Owner and original binding/location/prior-selection checks. A cancelled selection cannot become current or a later parent.
+
+Valid continuation pending blocks every other official project writer, including another Work's normal operation, intent, candidate, update/rollback/detach. The only exceptions are exact continuation completion/cancellation and valid exact active-release repair preserving binding/truth. Invalid or unclassifiable continuation blocks all official writers including repair/detach. Reads preserve and report evidence. Moved/cloned pending authority is not writable until separately authorized restoration passes the original conditions; no general damaged-current repair is provided.
+
+### Continuation Limits And Usage
+
+Each Work permits 256 durable normal select/withdraw choices, including choices later cancelled. Each may have at most one cancellation; at most 512 choices and 512 selections are retained. Reads/prepare/exact retry do not spend use. Withdrawal from already-undecided is refused. At the limit new normal operations fail before authority writes while exact completion/cancellation remains possible. There is no compaction, automatic reset or forced Work split.
+
+Bounds: canonical ticket 24 KiB, choice 32 KiB, selection/current 4 KiB each, subtree 20 MiB and JSON depth 16. IDs use `[A-Za-z0-9][A-Za-z0-9_-]{0,95}`. Text is nonempty UTF-8 without NUL, at most 2,048 bytes; Owner statement/reason and each proposal field allow 4,096 bytes. Timestamp is a valid UTC calendar value `YYYY-MM-DDTHH:MM:SSZ`. At most 16 distinct nonoverlapping project document paths, each at most 1,024 UTF-8 bytes, carry exact path/digest/role/required fields. Authority/managed launcher paths are not evidence. Required references must match before normal publication; optional drift is reported without rewriting the historical digest.
+
+Work/continuation views and prepare show used, limit and remaining (`normal_used`, `normal_limit`, `normal_remaining`); prepare also shows prospective usage. Damaged/unreadable usage is unavailable, never zero. Historical result and selection remain distinct from current source/target/document observations. These instructions do not claim qualification or actual application of the containing artifact.

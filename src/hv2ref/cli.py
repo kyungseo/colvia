@@ -23,7 +23,7 @@ def parser() -> argparse.ArgumentParser:
     product_init.add_argument("--target", type=Path, required=True)
     product_init.add_argument("--source", type=Path, default=product_source_root())
     product_init.add_argument("--apply", action="store_true")
-    product_init.add_argument("--profile", choices=("delegation-1",))
+    product_init.add_argument("--profile", choices=("continuation-1",))
     product_init.add_argument("--authority-home-id")
     product_init.add_argument("--operation-id")
     product_init.add_argument("--observed-at")
@@ -59,7 +59,7 @@ def parser() -> argparse.ArgumentParser:
     )
 
     for p in (product_update, product_rollback):
-        p.add_argument("--profile", choices=("delegation-1",))
+        p.add_argument("--profile", choices=("continuation-1",))
         p.add_argument("--operation-id")
         p.add_argument("--observed-at")
         p.add_argument("--input")
@@ -85,7 +85,7 @@ def parser() -> argparse.ArgumentParser:
         "--inject-at", choices=("after-receipt", "after-launcher", "after-file", "after-files", "after-directory", "after-product"), help=argparse.SUPPRESS
     )
 
-    product_detach.add_argument("--profile",choices=("delegation-1",))
+    product_detach.add_argument("--profile",choices=("continuation-1",))
     product_detach.add_argument("--operation-id")
     product_detach.add_argument("--observed-at")
     product_detach.add_argument("--input")
@@ -109,8 +109,8 @@ def run(args: argparse.Namespace) -> object:
     if args.command == "repair":
         return _workspace_repair(args)
     if args.command in ("init", "update", "rollback", "detach"):
-        if args.profile != "delegation-1":
-            raise ContractError("HV2-WORKSPACE-COMMAND", "source lifecycle requires explicit delegation-1 profile; use retained old source for older windows")
+        if args.profile != "continuation-1":
+            raise ContractError("HV2-WORKSPACE-COMMAND", "source lifecycle requires explicit continuation-1 profile; use retained old source for older windows")
         if args.command == "init":
             return _source_workspace_init(args)
         if args.command == "detach":
@@ -177,7 +177,7 @@ def _workspace_input(value: str) -> object:
 
 def _view_parser(sub, target):
     p = sub.add_parser("view", help="read-only human review; never applies a decision")
-    p.add_argument("kind", nargs="?", choices=("intent", "work", "confirmation", "candidates"))
+    p.add_argument("kind", nargs="?", choices=("intent", "work", "continuation", "confirmation", "candidates"))
     p.add_argument("object_id", nargs="?")
     p.add_argument("--target", type=Path, default=target)
     p.add_argument("--revision")
@@ -204,6 +204,14 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
             p.add_argument("--input", default="-", help="canonical JSON input file or stdin")
             if operation == "apply": p.add_argument("--confirm", required=True)
             if kind == "work" and operation == "publish": p.add_argument("--worker", type=Path, help="registered linked worktree for a worker result")
+    continuation = sub.add_parser("continuation", help="choose a Work follow-up; no target execution authority")
+    commands = continuation.add_subparsers(dest="action", required=True)
+    for operation in ("prepare", "apply"):
+        p = commands.add_parser(operation)
+        p.add_argument("--target", type=Path, default=target)
+        p.add_argument("--input", default="-", help="canonical JSON input file or stdin")
+        if operation == "apply":
+            p.add_argument("--confirm", required=True)
     candidate = sub.add_parser("candidate", help="record project-local plans; never grants execution approval")
     from .candidates import ACTIONS
     candidate.add_argument("action", choices=ACTIONS)
@@ -232,6 +240,14 @@ def workspace_run(args: argparse.Namespace) -> object:
         if not isinstance(value, dict) or value.get("action") != args.action:
             raise ContractError("HV2-CANDIDATE-REQUEST", "command/action mismatch; not saved")
         return CandidateStore(args.target).mutate(value, inject_at=args.inject_at)
+    if args.command == "continuation":
+        from .continuation import ContinuationStore
+        store = ContinuationStore(args.target)
+        if args.action == "prepare":
+            exact(("work_id", "action", "actor", "owner_statement", "reason", "request_id", "observed_at"),
+                  ("choice", "document_refs", "supersedes_choice_ref"))
+            return store.prepare(value["work_id"], **{k: v for k, v in value.items() if k != "work_id"})
+        return store.apply(value, confirm_token=args.confirm)
     if args.command == "intent":
         store = WorkspaceIntentStore(args.target)
         if args.action == "draft": return store.publish_draft(value)

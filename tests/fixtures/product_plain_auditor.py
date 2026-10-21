@@ -10,6 +10,7 @@ from pathlib import Path
 SERIAL_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/harness-v2-work/SKILL.md', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'hv2', 'src/hv2ref/__init__.py', 'src/hv2ref/cli.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
 ENTRY_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/colvia-work/SKILL.md', 'colvia', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'src/hv2ref/__init__.py', 'src/hv2ref/candidates.py', 'src/hv2ref/cli.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/umbrella.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
 DELEGATION_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/colvia-work/SKILL.md', 'colvia', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'src/hv2ref/__init__.py', 'src/hv2ref/candidates.py', 'src/hv2ref/cli.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/umbrella.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
+CONTINUATION_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/colvia-work/SKILL.md', 'colvia', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'src/hv2ref/__init__.py', 'src/hv2ref/candidates.py', 'src/hv2ref/cli.py', 'src/hv2ref/continuation.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/umbrella.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
 
 
 # Independent stdlib receipt/byte auditor. This intentionally does not import or
@@ -96,6 +97,43 @@ def scan(root,allowed_files,allowed_dirs):
     return found,dirs
 
 
+
+def continuation_refs(saved,base,current):
+    """Only selected references and effective choice; not full CONT semantics."""
+    def resolve(directory,value):
+        ref(value);name=directory+"/"+value["id"]+".json"
+        require(name in saved and sha(saved[name])==value["sha256"],"continuation-selected-ref")
+        return strict_json(saved[name])
+    def work_snapshot(value):
+        obj=keys(value["object"],{"authority_home_id","kind","id"})
+        require(obj["kind"]=="work" and obj["authority_home_id"]==current["authority_home_id"],"continuation-snapshot-home")
+        home=".hrn/work/"+obj["id"]
+        selected=resolve(home+"/selections",value["selection_ref"])
+        revision=resolve(home+"/revisions",value["revision_ref"])
+        require(selected["revision_ref"]==value["revision_ref"] and revision["intent_ref"]==value["intent_ref"],"continuation-snapshot-ref")
+    seen=set();ref_value=current["selection_ref"];effective=None;resolved=False
+    while ref_value is not None:
+        require(ref_value["id"] not in seen and len(seen)<512,"continuation-cycle-or-limit");seen.add(ref_value["id"])
+        selection=resolve(base+"/selections",ref_value)
+        keys(selection,{"record_type","schema_version","authority_home_id","work_id","record_id","parent_selection_ref","choice_ref"})
+        choice=resolve(base+"/choices",selection["choice_ref"])
+        keys(choice,{"record_type","schema_version","authority_home_id","work_id","record_id","confirmation"})
+        for value,kind in ((selection,"continuation-selection"),(choice,"continuation-choice")):
+            require(value["record_type"]==kind and type(value["schema_version"]) is int and value["schema_version"]==1
+                    and value["authority_home_id"]==current["authority_home_id"] and value["work_id"]==current["work_id"],"continuation-record-identity")
+        ticket=choice["confirmation"]
+        require(selection["parent_selection_ref"]==ticket["expected_continuation_selection_ref"],"continuation-prior")
+        work_snapshot(ticket["source"])
+        action=ticket["action"];require(action in ("select","withdraw","cancel-pending"),"continuation-action")
+        if action=="select" and ticket["choice"]["kind"]=="work":work_snapshot(ticket["choice"]["target"])
+        if not resolved and action!="cancel-pending":
+            effective=ticket["choice"] if action=="select" else None;resolved=True
+        ref_value=selection["parent_selection_ref"]
+    if current["selection_ref"] is None:
+        require(not any(name.startswith((base+"/choices/",base+"/selections/")) for name in saved),"unselected-continuation-records")
+    return {"selection_ref":current["selection_ref"],"effective_choice":effective,"verification":"selected-refs-only"}
+
+
 def audit_once(target):
     home=target/".hrn";require(stat.S_ISDIR(home.lstat().st_mode),"unsafe-home")
     require(not any(p.name.casefold()==".hrn" and p.name!=".hrn" for p in target.iterdir()),"home-alias")
@@ -112,13 +150,13 @@ def audit_once(target):
     receipt_raw=raw_file(home/"detached.json");receipt=strict_json(receipt_raw)
     keys(receipt,{"record_type","schema_version","operation_id","plan","prior_binding_ref","result_binding_ref"})
     plan=keys(receipt["plan"],{"record_type","schema_version","operation_id","action","target_fingerprint","authority_home_id","expected_binding_ref","candidate_release","format_sha256","truth_refs","remove","preserve","created_at"})
-    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4)
+    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4, 5)
             and plan["record_type"]=="lifecycle-plan" and type(plan["schema_version"]) is int and plan["schema_version"]==receipt["schema_version"] and plan["action"]=="detach","detach-record-type")
     require(valid_id(plan["operation_id"]) and receipt["operation_id"]==plan["operation_id"] and isinstance(plan["created_at"],str) and plan["created_at"].strip(),"detach-operation")
     require(plan["authority_home_id"]==fmt["authority_home_id"] and plan["format_sha256"]==sha(fmt_raw) and valid_sha(plan["target_fingerprint"]),"detach-identity")
     require(receipt["prior_binding_ref"]==ref(plan["expected_binding_ref"]) and receipt["result_binding_ref"] is None and plan["candidate_release"] is None,"detach-binding")
     remove=entries(plan["remove"]);preserve=entries(plan["preserve"])
-    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia"}[plan["schema_version"]]
+    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia",5:"colvia"}[plan["schema_version"]]
     expected={launcher,".hrn/product/init-plan.json",".hrn/product/binding.json"};releases=set();receipt_ids=set()
     for name in set(remove)-expected:
         parts=name.split("/")
@@ -133,8 +171,11 @@ def audit_once(target):
         paths = set(SERIAL_PATHS) | {"src/hv2ref/umbrella.py"} if prefix+"payload/src/hv2ref/umbrella.py" in remove else SERIAL_PATHS
         if prefix+"payload/src/hv2ref/candidates.py" in remove:paths=set(paths)|{"src/hv2ref/candidates.py"}
         if prefix+"payload/colvia" in remove:
-            require(plan["schema_version"] in (3,4),"old-schema-entry-membership")
-            paths={3:ENTRY_PATHS,4:DELEGATION_PATHS}[plan["schema_version"]]
+            require(plan["schema_version"] in (3,4,5),"old-schema-entry-membership")
+            paths=ENTRY_PATHS if plan["schema_version"]==3 else DELEGATION_PATHS
+            if prefix+"payload/src/hv2ref/continuation.py" in remove:
+                require(plan["schema_version"]==5,"old-schema-continuation-membership")
+                paths=CONTINUATION_PATHS
         expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in paths}
         require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24],"release-inventory")
     require(set(remove)==expected and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"],"remove-completeness")
@@ -167,13 +208,23 @@ def audit_once(target):
     require(remaining_names==files_order[len(files_order)-len(remaining_names):],"invalid-file-prefix")
     if remaining_names:require(present_dirs==dirs,"early-directory-removal")
     else:require([n for n in dir_order if n in present_dirs]==dir_order[len(dir_order)-len(present_dirs):],"invalid-directory-prefix")
-    if plan["schema_version"] in (3,4):
+    if plan["schema_version"] in (3,4,5):
         import unicodedata
         require(not any(unicodedata.normalize("NFC",p.name).casefold()=="hv2" for p in target.iterdir()),"retired-entry-collision-preserved")
     selected={}
     for name,data in saved.items():
         if not name.endswith("/current.json"):continue
-        current=strict_json(data);selection_ref=ref(current["selection_ref"]);base=name.rsplit("/",1)[0]
+        current=strict_json(data);base=name.rsplit("/",1)[0]
+        if base.endswith("/continuation"):
+            require(plan["schema_version"]==5,"continuation-truth-in-old-detach")
+            keys(current,{"record_type","schema_version","authority_home_id","work_id","selection_ref"})
+            wid=base.split("/")[-2]
+            require(current["record_type"]=="continuation-current" and type(current["schema_version"]) is int
+                    and current["schema_version"]==1 and current["authority_home_id"]==fmt["authority_home_id"]
+                    and current["work_id"]==wid,"continuation-current-identity")
+            selected[base]=continuation_refs(saved,base,current)
+            continue
+        selection_ref=ref(current["selection_ref"])
         path=base+"/selections/"+selection_ref["id"]+".json"
         require(path in saved and sha(saved[path])==selection_ref["sha256"],"current-selection-ref")
         selection=strict_json(saved[path]);revision_ref=ref(selection["revision_ref"])

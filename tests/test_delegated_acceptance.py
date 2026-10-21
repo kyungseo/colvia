@@ -209,7 +209,15 @@ class DelegatedAcceptanceTests(unittest.TestCase):
     def test_v01_owner_history(self):
         self.submit();self.refusal(self.prepare)
         graph=self.apply(self.prepare(actor='owner'))
-        self.assertEqual('completed',graph['state']);self.assertEqual(graph,self.pure(graph))
+        self.assertEqual('completed',graph['state'])
+        # The pure Work graph has no filesystem continuation input.
+        self.assertEqual({key:value for key,value in graph.items() if key != 'continuation'},
+                         self.pure(graph))
+        self.assertEqual({'choices': {}, 'selections': {}, 'current': None, 'chain': [],
+                          'pending': None, 'cancelled': {}, 'effective_choice': None,
+                          'effective_ticket': None,
+                          'usage': {'normal_limit': 256, 'normal_used': 0, 'normal_remaining': 256},
+                          'data': {}}, graph['continuation'])
 
     def test_v02_exact_grant(self):
         self.grant();self.submit(change_b=False)

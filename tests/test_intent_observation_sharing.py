@@ -186,7 +186,7 @@ class IntentObservationSharingTests(unittest.TestCase):
         original = work.WorkStore._all
         calls = []
         def all_works(store, **kwargs):
-            calls.append(bool(kwargs)); return original(store, **kwargs)
+            calls.append(any(kwargs.get(key) is not None for key in ('_intent_graph_reader', '_topology_observation'))); return original(store, **kwargs)
         with patch.object(workspace, 'runtime_supported', return_value=False), patch.object(work.WorkStore, '_all', all_works):
             status, graphs = product._workspace_status_observation(self.target)
         self.assertEqual('unsupported', status['classification']); self.assertIsNone(graphs)
@@ -258,7 +258,7 @@ class IntentObservationSharingTests(unittest.TestCase):
             calls = []
             original = work.WorkStore._all
             def all_works(store, **kwargs):
-                calls.append(bool(kwargs)); return original(store, **kwargs)
+                calls.append(any(kwargs.get(key) is not None for key in ('_intent_graph_reader', '_topology_observation'))); return original(store, **kwargs)
             def draft_only():
                 for path in removed: path.unlink()
                 # Valid graph, not a final-read error or missing intent ID.
@@ -287,7 +287,7 @@ class IntentObservationSharingTests(unittest.TestCase):
         calls = []
         original = work.WorkStore._all
         def all_works(store, **kwargs):
-            calls.append(bool(kwargs)); return original(store, **kwargs)
+            calls.append(any(kwargs.get(key) is not None for key in ('_intent_graph_reader', '_topology_observation'))); return original(store, **kwargs)
         with patch.object(work.WorkStore, '_all', all_works), \
              self.injection('first-intent', lambda: self.accept(self.next_draft())):
             observed = product._workspace_status_observation(self.target)

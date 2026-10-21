@@ -1,6 +1,6 @@
 # Colvia로 첫 프로젝트 진행하기
 
-이 문서는 활성화 전 `entry-1` 후보를 설명합니다. 사용하려면 정확한 artifact의 별도 qualification과 설치 승인이 필요하며, 아래의 과거 checkout-1 실습은 현재 명령의 검증 근거가 아닙니다.
+이 진입 안내는 continuation-1을 기준으로 합니다. 정확한 설치본의 검증과 설치 승인이 필요합니다. 연결된 단계별 실습에는 entry-1 예제가 남아 있으므로 명령은 현재 운영 문서를 따르세요. 아래의 과거 checkout-1 실습은 이 설치본의 검증 근거가 아닙니다.
 
 [실습 시작](getting-started.md) · [핵심 개념](concepts.md)
 
@@ -14,7 +14,7 @@ AI와 진행하던 프로젝트를 다시 열면, 지난 대화만으로는 어�
 
 지속적으로 보관할 수 있는 디렉터리에 새 실습 프로젝트를 준비합니다. 실습 내용은 버려도 되지만, 작업 중인 프로젝트를 임시 디렉터리에 두지는 않습니다. Git과 정식 GIL 활성화 빌드의 **CPython 3.14.6 또는 3.14.7이** 필요합니다. launcher가 사용하는 `python3` 명령도 해당 runtime을 가리켜야 합니다. 이후 patch 버전, prerelease, free-threaded 빌드는 거부됩니다.
 
-`entry-1` profile에 맞는, 신뢰할 수 있고 검증된 별도 Colvia source checkout도 필요합니다. 이 private 개발판에는 공개 installer나 다운로드 경로가 없습니다. 시작하기 전에 maintainer에게 source checkout과 정확한 entry-1 artifact를 식별하는 별도 qualification receipt를 받으세요. Preview는 아래의 과거 checkout-1 digest가 아니라 그 receipt와 일치해야 합니다. 이 문서 후보는 새로운 qualification receipt를 제공하지 않습니다. 사용할 환경이 그 기록의 검증 범위에 들어가는지도 확인합니다. 이 안내의 합성 실습은 해당 qualification을 대신하지 않습니다. agent는 로컬 파일을 읽고 승인된 명령을 실행할 수 있어야 합니다.
+`continuation-1` profile에 맞는, 신뢰할 수 있고 검증된 별도 Colvia source checkout도 필요합니다. 이 private 개발판에는 공개 installer나 다운로드 경로가 없습니다. 시작하기 전에 maintainer에게 source checkout과 정확한 continuation-1 artifact를 식별하는 별도 qualification receipt를 받으세요. Preview는 아래의 과거 checkout-1 digest가 아니라 그 receipt와 일치해야 합니다. 이 문서 후보는 새로운 qualification receipt를 제공하지 않습니다. 사용할 환경이 그 기록의 검증 범위에 들어가는지도 확인합니다. 이 안내의 합성 실습은 해당 qualification을 대신하지 않습니다. agent는 로컬 파일을 읽고 승인된 명령을 실행할 수 있어야 합니다.
 
 예시는 프로젝트 대화에서 Codex에게 요청하는 문안입니다. 실제 대화의 인용이나, 해당 문안으로 항상 같은 agent 행동을 얻는다는 검증 결과는 아닙니다. 프로젝트 지침과 실행 권한은 그대로 적용됩니다.
 
@@ -27,7 +27,19 @@ AI와 진행하던 프로젝트를 다시 열면, 지난 대화만으로는 어�
 | [새 세션에서 재개](resume.md) | 이전 대화 없이 프로젝트와 Colvia 기록 읽기 | 완료한 것, 미확인 사항, 새 결정이 필요한 일을 설명할 수 있음 |
 | [핵심 개념](concepts.md) | 책임, 용어, 진행을 멈춰야 할 상황 확인 | 제안·수락된 작업 요청서·완료된 Work를 구별함 |
 
-앞의 세 문서를 순서대로 읽고, 낯선 용어가 나오면 핵심 개념을 참고하세요. 실습에서는 local Work 하나만 편집합니다. worker worktree나 병렬 실행은 다루지 않습니다.
+앞의 세 문서는 이전 entry-1 실습을 보존하고 있습니다. 현재 source에 그 profile 명령을 실행하지 마세요. 현재 설치는 [Getting Started](../../docs/GETTING-STARTED.md)를 따르고, 이후 설치본의 view와 adapter를 읽습니다. 낯선 용어는 핵심 개념을 참고하세요. 실습에서는 local Work 하나만 편집합니다. worker worktree나 병렬 실행은 다루지 않습니다.
+
+## 선택한 후속 작업으로 재개하기
+
+새 세션에는 이렇게 요청할 수 있습니다. “프로젝트 진입 지침, 현재 Colvia view와 이 Work가 참조하는 계획을 읽고, 수락한 결과·남은 계획 항목·내가 선택한 다음 행동을 설명해줘.” 이 문안은 권장 예시이며, 사용성 검증을 완료했다는 뜻은 아닙니다.
+
+agent는 완료된 Work도 `./colvia view continuation WORK_ID`로 확인합니다. 후속 제안에는 작업 요청서 수락이 더 필요하고, 기존 Work는 그 Work의 현재 상태와 권한을 따릅니다. ‘후속 없음’은 후속을 두지 않기로 한 결정이고, ‘미정’은 아직 선택이 없다는 뜻입니다. 후속 선택만으로 대상 작업이 시작되거나 수락되지는 않습니다. 유효한 프로젝트 후보 선택과 후속 선택이 다르면 둘을 보여주고 어떤 행동을 원하는지 확인하며, 어느 쪽도 임의로 덮어쓰지 않습니다.
+
+착수 전에는 기존 계획의 어느 항목을 수행하는지 밝힙니다. 결과 검토 때는 완료 처리 제안과 실제 수락을 구분하고, 수락 후에는 달성한 내용·잔여·아직 필요한 계획 문서 수정을 설명합니다. 문서 수정에는 기존 범위·참조·내용 검증 규칙이 그대로 적용되며 별도 진행 장부는 필요하지 않습니다. 계획 누락이나 오래된 참조는 해결할 공백이며, 계획 정렬이 끝났다는 근거가 아닙니다.
+
+view에는 Work별 일반 연산 256회 중 사용량과 잔여 횟수가 나옵니다. 저장된 선택·철회는 나중에 취소해도 사용량에 포함되며, 조회·동일 요청 재시도·중단 연산 취소는 일반 연산을 추가로 쓰지 않습니다. 상한에서는 정확한 복구·취소는 가능하지만 새 선택은 거부됩니다. 확인할 수 없는 사용량은 ‘확인 불가’로 표시합니다. 횟수를 되돌리려고 이력을 지우거나 Work를 억지로 나누지 않습니다.
+
+“검사가 통과할 때까지 계속 개선해줘”라는 요청에서는 기존 Work의 범위·검증 방법·예산·정지 조건을 먼저 확인합니다. 별도 결과와 수락 경계가 있을 때 새 Work를, 자식 결과의 개별 수락과 통합 결과 검증이 모두 필요할 때 parent를 제안합니다. agent는 선택 이유와 착수 조건을 설명하며, 이 문구를 무제한 실행 권한으로 해석하지 않습니다. [현재 adapter](../../adapters/colvia-work/SKILL.md#follow-up-and-plan-alignment)를 참고하세요.
 
 ## 확인한 범위
 
@@ -54,10 +66,10 @@ AI와 진행하던 프로젝트를 다시 열면, 지난 대화만으로는 어�
 | Source revision | `2536c3106494d2b409e522ff4decb39f88d4aaf5` |
 | Release SHA-256 | `a5a9c5b408e40cd0bfdd6bf3c5d8d23676c138504e278417ecb656729c1b8456` |
 
-위 source revision과 digest는 과거 Harness v2 checkout-1 실습을 식별하며, 현재 entry-1 source나 매뉴얼 페이지의 식별값이 아닙니다. 이 페이지들은 해당 commit과 managed release 밖에 있습니다. 과거 식별값은 당시 근거로 보존하고 entry-1 설치 승인에 사용하지 마세요. 새 preview는 별도로 받은 정확한 entry-1 qualification receipt와 대조합니다. HEAD가 다르다는 사실만으로 release qualification이 성립하지는 않습니다.
+위 source revision과 digest는 과거 Harness v2 checkout-1 실습을 식별하며, 현재 continuation-1 source나 매뉴얼 페이지의 식별값이 아닙니다. 이 페이지들은 해당 commit과 managed release 밖에 있습니다. 과거 식별값은 당시 근거로 보존하고 continuation-1 설치 승인에 사용하지 마세요. 새 preview는 별도로 받은 정확한 continuation-1 qualification receipt와 대조합니다. HEAD가 다르다는 사실만으로 release qualification이 성립하지는 않습니다.
 
 ---
 
 [실습 시작](getting-started.md) · [핵심 개념](concepts.md)
 
-<!-- en_content_sha256: 9591e1db33a1655310fbfee65ee42855041ed9e874bc3a7cc952bed28e262bd4 -->
+<!-- en_content_sha256: f44639152212ea1c33541d7f33f8ea0983420025aac518cccdabc14ed48d164a -->

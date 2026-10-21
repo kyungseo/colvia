@@ -213,11 +213,11 @@ def references(target, obj, candidate=None):
 
 def _observe(target):
     status, graphs = _workspace_status_observation(target)
+    if graphs is not None: return status, *graphs
     if status["classification"] in ("degraded", "uninitialized", "incompatible", "unstable"):
         return status, {}, {}
     # Partial bootstrap has no readable authority yet; pending records and detach do.
     if not (target / ".hrn/format.json").is_file(): return status, {}, {}
-    if graphs is not None: return status, *graphs
     return status, WorkStore(target)._all(), workspace_intents(target)
 
 
@@ -370,6 +370,7 @@ def _work(target, graph, rid, product, intents, works):
                      "pending_decisions": graph["pending_decisions"], "pending_selections": graph["pending_selections"]})
     for orphan in graph["orphan_revisions"]:
         lines += fields({"unselected_proposal": orphan, "operation": graph["revisions"][orphan]["operation"]})
+    lines += _continuation(target, graph, works)
     if rid is None: return lines
     _require(rid in graph["revisions"], "view revision not found")
     r = graph["revisions"][rid]; manifest = _resolve(graph["manifests"], r["result_refs"]["manifest"])
@@ -454,7 +455,101 @@ def _intent(target, graph, rid):
     return lines
 
 
+
+def _continuation(target, base, works):
+    from .continuation import current_snapshot, resolve_snapshot
+    state = base["continuation"]
+    wid = base["identity"]["work_id"]
+    lifecycle = fields({"source_work": wid, "source_work_state": base["state"],
+                        "source_work_current_selection": base["current"]})
+    if state is None:
+        return ["", "## 후속 선택과 사용량 — 확인 불가", ""] + lifecycle + [
+            "- 검증된 Work 상태와 손상된 후속 기록은 별개입니다. 손상된 기록은 보존하세요.",
+            "- 미정, 후속 없음, 사용량 0 또는 잔여 횟수로 추정하지 않습니다. 모든 공식 작성은 차단됩니다."]
+    choice = state["effective_choice"]; ticket = state["effective_ticket"]
+    labels = {"proposal": "후속 제안 — 아직 Work 아님", "work": "기존 Work 선택", "none": "후속 작업 없음"}
+    lines = ["", "## 후속 선택 — " + text(wid), "",
+             "- 상태: " + (labels[choice["kind"]] if choice else "미정"),
+             "- 이 선택은 대상 실행이나 결과 수락을 승인하지 않습니다.",
+             "- 명령: " + code("view continuation " + wid) + "; " + code("continuation --help")]
+    lines += lifecycle + fields({"current": state["current"], "usage": state["usage"]})
+    if state["usage"]["normal_remaining"] == 0:
+        lines += ["- 일반 선택·철회 256회 한도에 도달했습니다. 새 일반 연산은 거부하며 기존 정확한 발행 재개·취소는 허용합니다. 이력을 삭제하거나 사용량을 초기화하지 마세요."]
+    if ticket:
+        lines += fields({"recorded_choice": choice, "owner_statement": ticket["owner_statement"],
+                         "reason": ticket["reason"], "source_snapshot": ticket["source"],
+                         "source_selection": "current" if current_snapshot(base) == ticket["source"] else "historical/stale"})
+        bound = read_workspace_intent(target, ticket["source"]["intent_ref"]["id"],
+                                      ticket["source"]["intent_ref"], require_current=False)
+        lines += fields({"source_bound_intent_current": bound["is_current"]})
+        if choice["kind"] == "work":
+            selected = choice["target"]; other = works[selected["object"]["id"]]
+            recorded = resolve_snapshot(selected, other)
+            live_snapshot = current_snapshot(other)
+            live = resolve_snapshot(live_snapshot, other)
+            purpose = lambda rev: (rev["intent_ref"], set(rev["scope"]), rev["execution_context"]["mode"])
+            comparison = ("selection-current" if selected == live_snapshot else
+                          "target-progressed" if purpose(recorded) == purpose(live) else "target-purpose-changed")
+            bound = read_workspace_intent(target, live["intent_ref"]["id"], live["intent_ref"], require_current=False)
+            lines += fields({"target_observation": comparison, "target_current": live_snapshot,
+                             "target_state": other["state"], "target_bound_intent_current": bound["is_current"],
+                             "target_pending": other["pending_decisions"] + other["pending_selections"],
+                             "target_continuation_pending": (other["continuation"]["pending"]
+                                                             if other["continuation"] is not None else "unavailable")})
+            lines += ["- 현재 요청과 대상 Work·intent의 기존 권한을 확인하세요. 진행·거절·철회·목적 변경으로 자동 재선택하지 않습니다."]
+        lines += ["", "### 선택 근거의 현재 관찰", ""] + references(target, ticket)
+        changed = [ref["path"] for ref in ticket["document_refs"]
+                   if ref["required"] and reference_observation(target, ref) != "matches"]
+        if changed:
+            lines += ["- 필수 선택 근거가 변경되었거나 확인 불가합니다. 이 근거로 실행을 정당화하지 마세요."] + fields({"changed_required_refs": changed})
+    if state["pending"]:
+        pending = state["choices"][state["pending"]]
+        lines += ["", "### 발행 중 — 선택 완료 아님", ""] + fields({"pending_choice_ref": record_ref(pending),
+                  "action": pending["confirmation"]["action"], "request_id": pending["confirmation"]["request_id"]})
+        lines += ["- 원래 ticket의 정확한 발행을 재개하거나 미해결 일반 선택을 명시적으로 취소하세요. 취소 발행 중에는 그 취소만 재개합니다."]
+    lines += ["", "### 보존된 선택 이력 — 시간순 아님", ""]
+    for cid, item in sorted(state["choices"].items()):
+        t = item["confirmation"]
+        lines += fields({"choice": record_ref(item), "action": t["action"], "request_id": t["request_id"],
+                         "cancelled_by": state["cancelled"].get(cid),
+                         "selected_history": "selection-" + _digest(t) in state["chain"]})
+    return lines
+
+
+def _continuation_confirmation(target, ticket, works, product):
+    from .continuation import ContinuationStore, validate_ticket as validate_continuation_ticket, records
+    validate_continuation_ticket(ticket)
+    wid = ticket["source"]["object"]["id"]
+    _require(wid in works, "continuation source Work unavailable")
+    base = works[wid]; state = base["continuation"]; choice, selection = records(ticket)
+    lines = ["## 후속 선택 확인 — Owner 판단 필요", "",
+             "- 조회는 승인·적용·완료가 아닙니다. 대상 Work의 실행 권한도 부여하지 않습니다.", ""]
+    lines += fields(ticket) + fields({"confirm_token": _digest(ticket)[:16], "usage": state["usage"]})
+    lines += references(target, ticket)
+    applied = selection["record_id"] in state["chain"]
+    cancelled = choice["record_id"] in state["cancelled"]
+    lines += fields({"already_applied": applied, "cancelled": cancelled})
+    if applied or cancelled:
+        lines += ["- 이미 해결된 정확한 ticket입니다. 재시도는 과거 선택을 current로 올리지 않으며 일반 사용량을 더 쓰지 않습니다."]
+    else:
+        try:
+            _require(product is not None, "verified active product unavailable")
+            _require(product["inventory"]["inventory_id"] == "continuation-1", "continuation-1 runtime required")
+            runtime = {key: product[key] for key in ("binding_ref", "launcher_sha256")}
+            runtime["inventory_id"] = "continuation-1"
+            store = ContinuationStore(target)
+            store._check(ticket, works, runtime, existing=choice["record_id"] in state["choices"])
+            _, _, usage = store._prospective(base, state, ticket)
+            lines += fields({"advisory_observation": "matches", "prospective_usage": usage})
+        except (ContractError, KeyError, OSError, ValueError) as exc:
+            lines += fields({"advisory_observation": "unavailable or refused", "reason": getattr(exc, "message", str(exc))})
+    lines += ["", "- apply는 공유 writer guard 안에서 조건을 다시 확인합니다. 이 화면은 실행 준비 완료나 승인을 판정하지 않습니다."]
+    return lines
+
+
 def _confirmation(target, ticket, works, intents, product):
+    if isinstance(ticket, dict) and ticket.get("record_type") == "continuation-confirmation-ticket":
+        return _continuation_confirmation(target, ticket, works, product)
     validate_ticket(ticket)
     lines = ["## Confirmation — human decision required", "", "Display is not acceptance, application or completion.", ""]
     candidate = None
@@ -634,27 +729,31 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
     """Return GFM and exit status; make no filesystem changes even on degraded input."""
     try:
         target = safe_target(target)
-        _require(kind in (None, "intent", "work", "confirmation", "candidates"), "unknown view kind")
-        _require((kind in ("intent", "work")) == (object_id is not None), "view object ID required only for intent/work")
+        _require(kind in (None, "intent", "work", "continuation", "confirmation", "candidates"), "unknown view kind")
+        _require((kind in ("intent", "work", "continuation")) == (object_id is not None), "view object ID required only for intent/work/continuation")
         _require(revision is None or kind in ("intent", "work"), "revision requires intent/work")
         _require((kind == "confirmation") == (ticket is not None), "confirmation requires ticket input")
         for attempt in range(2):
             status, works, intents = before = _observe(target)
             classification = status["classification"]
             lines = ["# Colvia — project review", "", "Read-only observation; human acceptance and exact application remain separate.", ""]
-            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "next_action", "error_code", "reason", "lifecycle_ready", "retired_entry_collision"}}})
+            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "pending_continuation", "next_action", "error_code", "reason", "message", "lifecycle_ready", "retired_entry_collision", "continuation_unavailable"}}})
             if "runtime" in status: lines += fields({"runtime_supported": status["runtime"].get("supported", "unavailable")})
             product = _product(target)
             if product:
                 from .product import WINDOW_ADAPTERS
                 root = str(Path(product["release_path"]).relative_to(target) / "payload")
                 lines += ["", "## Next entry", ""] + fields({"manual": root + "/docs/README.md", "natural_language_adapter": root + "/" + WINDOW_ADAPTERS[product["inventory"]["inventory_id"]]})
-            if classification not in ("degraded", "uninitialized", "incompatible", "unstable"):
+            readable_continuation_damage = bool(status.get("continuation_unavailable")) and kind in (None, "work", "continuation", "intent")
+            if classification not in ("degraded", "uninitialized", "incompatible", "unstable") or readable_continuation_damage:
                 if status.get("planning", {}).get("available") is False and kind not in (None, "candidates"):
                     candidate_lines, _ = render_candidates(target, works=works, intents=intents)
                     lines += candidate_lines
                 if kind == "work":
                     _require(object_id in works, "Work not found"); lines += _work(target, works[object_id], revision, product, intents, works)
+                elif kind == "continuation":
+                    _require(object_id in works, "Work not found")
+                    lines += _continuation(target, works[object_id], works)
                 elif kind == "intent":
                     _require(object_id in intents, "intent not found"); lines += _intent(target, intents[object_id], revision)
                 elif kind == "confirmation": lines += _confirmation(target, ticket, works, intents, product)
@@ -668,8 +767,19 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                     for key, g in sorted(intents.items()): lines += fields({"intent": key, "current_accepted_revision": _current_revision(g), "drafts": list(g["drafts"]), "pending": g["pending_acceptances"] + g["pending_selections"]})
                     if not intents: lines += ["- No accepted intent or draft. Ask your agent to clarify the goal and propose an intent."]
                     lines += ["", "## Works", ""]
-                    for key, g in sorted(works.items()): lines += fields({"work": key, "stored_state": g["state"], "current_revision": _current_revision(g), "pending": g["pending_decisions"] + g["pending_selections"]})
+                    for key, g in sorted(works.items()):
+                        state = g["continuation"]
+                        choice = state["effective_choice"] if state is not None else None
+                        lines += fields({"work": key, "stored_state": g["state"], "current_revision": _current_revision(g),
+                                         "pending": g["pending_decisions"] + g["pending_selections"],
+                                         "continuation": ("unavailable" if state is None else choice["kind"] if choice else "undecided"),
+                                         "pending_continuation": state["pending"] if state is not None else "unavailable",
+                                         "continuation_usage": state["usage"] if state is not None else "unavailable"})
+                        lines += ["- 후속 선택 상세: " + code("view continuation " + key)]
                     if not works: lines += ["- No Work. Start only after the human has accepted an intent."]
+            elif kind in ("work", "continuation"):
+                lines += ["", "## 후속 선택과 사용량 — 확인 불가", "",
+                          "- 손상·미확인 기록을 보존하세요. 미정, 사용량 0 또는 잔여 횟수로 추정하지 않습니다."]
             if before == _observe(target): return "\n".join(lines) + "\n", EXITS.get(classification, 0)
         return "# Observation unstable\n\nPreserve records and retry; no current-state claim is available.\n", 10
     except (ContractError, OSError, ValueError, KeyError, RecursionError) as exc:

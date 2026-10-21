@@ -1,9 +1,9 @@
 # Agent Entry
 
-This is the canonical agent entry for Colvia’s single-home `delegation-1` profile.
+This is the canonical agent entry for Colvia’s single-home `continuation-1` profile.
 Read [docs/README.md](docs/README.md) for document authority and currentness.
 
-These instructions describe the `delegation-1` profile; in an installed project, use the verified installed release; see [Profile and authorization](docs/README.md#delegation-1-implementation-candidate). Document presence and a verified binding do not prove Owner authorization or source-contract activation. Editing these files does not activate the contract.
+These instructions describe the `continuation-1` profile; in an installed project, use the verified installed release; see [Profile and authorization](docs/README.md#continuation-1). Document presence and a verified binding do not prove Owner authorization or source-contract activation. Editing these files does not activate the contract.
 
 ## Authority Floor
 
@@ -26,6 +26,10 @@ Lifecycle commands preview by default. Intent/Work publication writes machine re
 ## Candidate Entry
 
 Read `./colvia view candidates` before recording an idea or answering what to do next. Planning is project-owned but grants no execution authority. Follow the installed adapter's Candidate Conversation section. Recommendations and ambiguous resume requests are read-only; an explicit planning request authorizes only that named planning change. Never upgrade the runtime merely to save an idea.
+
+## Follow-Up And Plan Alignment
+
+On resume, read the selected Work, its referenced plan and `./colvia view continuation WORK_ID`, including completed Work. Explain accepted result, remaining plan items and the recorded follow-up separately. Proposal, existing Work, explicit none and undecided have different meanings. Selection grants no execution or acceptance authority. Reconcile conflicting valid choices with the human; never choose by timestamp. Preserve pending/unknown state and explain usage out of 256, remaining count or unavailable usage. Follow the installed adapter’s Follow-Up And Plan Alignment section.
 
 ## Typed Pointers
 

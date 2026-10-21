@@ -124,7 +124,7 @@ class TopologyObservationSharingTests(unittest.TestCase):
                     else: identity.write_bytes(b'{}\n')
                 calls = []; all_works = work.WorkStore._all
                 def record_all(store, **kwargs):
-                    calls.append(bool(kwargs)); return all_works(store, **kwargs)
+                    calls.append(any(kwargs.get(key) is not None for key in ('_intent_graph_reader', '_topology_observation'))); return all_works(store, **kwargs)
                 with self.subTest(point=point, damage=damage):
                     try:
                         with patch.object(work.WorkStore, '_all', record_all), self.h.injection(point, mutate):

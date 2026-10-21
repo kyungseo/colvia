@@ -325,7 +325,10 @@ class WorkspaceIntentStore:
 
     def _guard_pending(self, intent_id: str | None = None) -> dict[str, Any]:
         from .work import _require
-        for graph in self.work_store._all().values():
+        from .continuation import require_no_pending
+        works = self.work_store._all()
+        require_no_pending(self.target, works=works)
+        for graph in works.values():
             _require(not graph["pending_decisions"] and not graph["pending_selections"], "pending Work blocks intent mutation")
         return require_no_pending_intents(self.target, except_id=intent_id)
 

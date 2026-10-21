@@ -237,10 +237,12 @@ class CandidateStore:
         classify_target(self.target, mutation=True)
         with writer_guard(self.target):
             runtime = self.runtime(self.target)
-            require(runtime.get('inventory_id') == 'delegation-1', 'candidate writing requires an explicitly installed delegation-1 release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
+            require(runtime.get('inventory_id') in ('delegation-1', 'continuation-1'), 'candidate writing requires an explicitly installed delegation-1 or continuation-1 release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
             observed = read_candidates(self.target); store = observed['store']
             require(store['authority_home_id'] == request['authority_home_id'], 'request authority differs')
             works, intents = _graphs(self.target)
+            from .continuation import require_no_pending
+            require_no_pending(self.target, works=works)
             require(not any(g['pending_decisions'] or g['pending_selections'] for g in works.values()) and not any(g['pending_acceptances'] or g['pending_selections'] for g in intents.values()), 'pending transaction; this call made no new write; read planning to check any prior publication, then recover the original exact Work/intent operation', 'HV2-CANDIDATE-PENDING')
             for event in store['decisions']:
                 if event['request']['request_id'].casefold() == request['request_id'].casefold():

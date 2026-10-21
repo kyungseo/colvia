@@ -7,7 +7,7 @@ from unittest.mock import patch
 from hv2ref import product, work
 from hv2ref.errors import ContractError
 
-ENTRY = b'WORKSPACE_INVENTORY_ID = "delegation-1"\n'
+ENTRY = b'WORKSPACE_INVENTORY_ID = "continuation-1"\n'
 OLD = b'WORKSPACE_INVENTORY_ID = "checkout-1"\n'
 
 
@@ -23,9 +23,9 @@ class DeclarationCacheTests(unittest.TestCase):
 
     def test_same_bytes_reuse_parse_but_modes_are_separate(self):
         with patch.object(product.ast, 'parse', wraps=product.ast.parse) as parse:
-            for data, mode, expected in ((ENTRY, False, 'delegation-1'),
-                                         (bytes(bytearray(ENTRY)), False, 'delegation-1'),
-                                         (ENTRY, True, 'delegation-1'), (OLD, True, 'checkout-1')):
+            for data, mode, expected in ((ENTRY, False, 'continuation-1'),
+                                         (bytes(bytearray(ENTRY)), False, 'continuation-1'),
+                                         (ENTRY, True, 'continuation-1'), (OLD, True, 'checkout-1')):
                 self.assertEqual(expected, product._launcher_inventory_window(data, allow_legacy=mode))
             self.assertEqual(3, parse.call_count)
             with self.assertRaises(ContractError):
@@ -33,7 +33,7 @@ class DeclarationCacheTests(unittest.TestCase):
             self.assertEqual(4, parse.call_count)
 
     def test_changed_bytes_and_rebinding_cannot_hit(self):
-        self.assertEqual('delegation-1', product._launcher_inventory_window(ENTRY, allow_legacy=True))
+        self.assertEqual('continuation-1', product._launcher_inventory_window(ENTRY, allow_legacy=True))
         self.assertEqual('checkout-1', product._launcher_inventory_window(OLD, allow_legacy=True))
         with self.assertRaises(ContractError):
             product._launcher_inventory_window(ENTRY + b'del WORKSPACE_INVENTORY_ID\n')
@@ -52,7 +52,7 @@ class DeclarationCacheTests(unittest.TestCase):
         self.assertEqual(4, info.currsize)
         self.assertEqual(4, info.maxsize)
         large = ENTRY + b'#' + b'x' * (1024 * 1024 - len(ENTRY) - 2) + b'\n'
-        self.assertEqual('delegation-1', product._launcher_inventory_window(large))
+        self.assertEqual('continuation-1', product._launcher_inventory_window(large))
         with self.assertRaises(ContractError): product._launcher_inventory_window(large + b' ')
         self.assertEqual(4, product._cached_launcher_inventory_window.cache_info().currsize)
 
@@ -64,7 +64,7 @@ class DeclarationCacheTests(unittest.TestCase):
             def __bool__(self): return True
         with patch.object(product.ast, 'parse', wraps=product.ast.parse) as parse:
             for _ in range(2):
-                self.assertEqual('delegation-1', product._launcher_inventory_window(UnhashableBytes(ENTRY)))
+                self.assertEqual('continuation-1', product._launcher_inventory_window(UnhashableBytes(ENTRY)))
                 self.assertEqual('checkout-1', product._launcher_inventory_window(OLD, allow_legacy=UnhashableMode()))
             self.assertEqual(4, parse.call_count)
         for value in (None, [], bytearray(ENTRY), memoryview(ENTRY), ENTRY.decode()):
@@ -79,13 +79,13 @@ class DeclarationCacheTests(unittest.TestCase):
                     with self.assertRaises(ContractError): product._launcher_inventory_window(ENTRY)
                 self.assertEqual(2, parse.call_count)
         self.assertEqual(0, product._cached_launcher_inventory_window.cache_info().currsize)
-        self.assertEqual('delegation-1', product._launcher_inventory_window(ENTRY))
+        self.assertEqual('continuation-1', product._launcher_inventory_window(ENTRY))
 
     def test_current_file_read_and_race_refusal_survive_warm_cache(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'launcher'
             path.write_bytes(ENTRY)
-            self.assertEqual('delegation-1', product._launcher_inventory_window(product._serial_file(path), allow_legacy=True))
+            self.assertEqual('continuation-1', product._launcher_inventory_window(product._serial_file(path), allow_legacy=True))
             path.write_bytes(OLD)
             self.assertEqual('checkout-1', product._launcher_inventory_window(product._serial_file(path), allow_legacy=True))
             path.write_bytes(ENTRY)
@@ -106,15 +106,15 @@ class DeclarationCacheTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source = root / 'source'
-            for name in product.ENTRY_MANAGED_PATHS:
+            for name in product.CONTINUATION_MANAGED_PATHS:
                 dest = source / name
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(product.source_root() / name, dest)
             first = product.workspace_candidate(source)
-            self.assertEqual('delegation-1', first['inventory']['inventory_id'])
+            self.assertEqual('continuation-1', first['inventory']['inventory_id'])
             launcher = source / 'colvia'
             raw = launcher.read_bytes()
-            launcher.write_bytes(raw.replace(b'WORKSPACE_INVENTORY_ID = "delegation-1"', b'WORKSPACE_INVENTORY_ID = "checkout-1"'))
+            launcher.write_bytes(raw.replace(b'WORKSPACE_INVENTORY_ID = "continuation-1"', b'WORKSPACE_INVENTORY_ID = "checkout-1"'))
             with self.assertRaises(ContractError): product.workspace_candidate(source)
             launcher.write_bytes(raw)
             for kind in ('hardlink', 'symlink'):

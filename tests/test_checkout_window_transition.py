@@ -17,7 +17,7 @@ import unittest
 
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.jsonio import canonical_json_bytes
-from hv2ref.product import (ENTRY_MANAGED_PATHS, SERIAL_MANAGED_PATHS, source_root, workspace_candidate,
+from hv2ref.product import (CONTINUATION_MANAGED_PATHS, ENTRY_MANAGED_PATHS, SERIAL_MANAGED_PATHS, source_root, workspace_candidate,
                            workspace_switch_preview, workspace_switch_apply,
                            verify_workspace_product, workspace_detach_preview,
                            workspace_detach_apply)
@@ -33,13 +33,13 @@ PREFIXES = ('after-receipt', 'after-staged-inventory', 'after-staged-payload',
 class CheckoutWindowTests(unittest.TestCase):
     def test_current_source_declares_entry_window_with_mapped_membership(self):
         candidate = workspace_candidate(source_root())
-        self.assertEqual('delegation-1', candidate['inventory']['inventory_id'])
-        self.assertEqual(29, len(candidate['inventory']['entries']))
-        self.assertEqual(list(ENTRY_MANAGED_PATHS), [e['path'] for e in candidate['inventory']['entries']])
+        self.assertEqual('continuation-1', candidate['inventory']['inventory_id'])
+        self.assertEqual(30, len(candidate['inventory']['entries']))
+        self.assertEqual(list(CONTINUATION_MANAGED_PATHS), [e['path'] for e in candidate['inventory']['entries']])
 
     def test_old_and_unknown_source_declarations_are_not_current_candidates(self):
         from hv2ref.product import _launcher_inventory_window
-        for window in ('human-1', 'worker-1', 'umbrella-1', 'planning-1', 'checkout-1', 'entry-1', 'unknown'):
+        for window in ('human-1', 'worker-1', 'umbrella-1', 'planning-1', 'checkout-1', 'entry-1', 'delegation-1', 'unknown'):
             with self.subTest(window=window), self.assertRaises(ContractError):
                 _launcher_inventory_window(('WORKSPACE_INVENTORY_ID = '+repr(window)+'\n').encode())
 
@@ -59,8 +59,8 @@ class DetachVersionTests(unittest.TestCase):
     def test_paired_version_reader_and_independent_auditor_reject_invalid_versions(self):
         from hv2ref.product import workspace_detached_status
         preview=self.seed();path=self.target/'.hrn/detached.json';raw=path.read_bytes();receipt=json.loads(raw)
-        self.assertEqual(4,receipt['schema_version']);self.assertEqual(4,receipt['plan']['schema_version'])
-        for outer,inner in ((1,4),(4,1),(2,4),(4,2),(5,5),(True,True),(None,None),(4,True)):
+        self.assertEqual(5,receipt['schema_version']);self.assertEqual(5,receipt['plan']['schema_version'])
+        for outer,inner in ((1,5),(5,1),(2,5),(5,2),(4,4),(4,5),(5,4),(6,6),(True,True),(None,None),(5,True)):
             bad=copy.deepcopy(receipt);bad['schema_version']=outer;bad['plan']['schema_version']=inner
             path.write_bytes(canonical_json_bytes(bad));before=fixtures.exact_snapshot(self.target)
             with self.subTest(outer=outer,inner=inner):
@@ -81,7 +81,7 @@ class DetachVersionTests(unittest.TestCase):
         product.workspace_init_apply(self.source,self.target,preview['request'],confirm_token=preview['confirm_token'])
         state=product._workspace_observe(self.target)
         counterpart=self.base/'counterpart'
-        for name in ENTRY_MANAGED_PATHS:
+        for name in CONTINUATION_MANAGED_PATHS:
             dest=counterpart/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(self.source/name,dest)
         with (counterpart/'README.md').open('a') as handle:handle.write('\nSynthetic counterpart.\n')
         plan=workspace_switch_preview(self.target,action='update',source=counterpart,operation_id='next-a',created_at=self.TIME)

@@ -1,6 +1,6 @@
 # Guided Intent Formation
 
-Delegation-1 profile; see [authorization and qualification](README.md#delegation-1-implementation-candidate).
+Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
 Current surface: typed single-home intent records, machine commands and a read-only human view. The manual natural-language adapter guides the human through existing commands; it does not decide acceptance.
 
@@ -32,7 +32,7 @@ Once a composition draft is accepted, later acceptance for that intent must pres
 
 ## Delegation-1 Implementation Candidate
 
-This section describes the `delegation-1` profile in the verified installed release. Its heading is retained for existing links and does not indicate activation status. Where this document elsewhere describes `entry-1` as current, this section governs new operations. Preserve the stated limits for historical records. Installing or reading these files does not prove Owner authorization, human authentication, source-contract activation, runtime qualification or adopter readiness.
+This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
 
 An ordinary draft may use schema 3 with exactly the schema-1 ordinary fields plus a non-null `acceptance_delegation`. Schema 1 remains the no-grant ordinary format; schema 2 remains composition. A schema-3 draft cannot also contain composition, and null does not mean no grant.
 
@@ -48,6 +48,8 @@ The grant has exactly these fields:
 }
 ```
 
-The delegate uses the ASCII record-ID grammar and must differ from the Owner exactly and after ASCII case-folding. The Work is in the same authority home. Scope is a nonempty duplicate-free set of valid paths; order does not grant a different scope. The Owner accepts the exact draft bytes through the existing intent acceptance operation. Draft publication alone grants nothing, but its presence requires a delegation-1 writer for later mutations of that history.
+The delegate uses the ASCII record-ID grammar and must differ from the Owner exactly and after ASCII case-folding. The Work is in the same authority home. Scope is a nonempty duplicate-free set of valid paths; order does not grant a different scope. The Owner accepts the exact draft bytes through the existing intent acceptance operation. Draft publication alone grants nothing, but its presence requires a verified current continuation-1 writer for later mutations; the historical delegation-1 gate remains part of retained-source behavior.
 
 Before acceptance, explain the exact delegate, Work, scope and one-use boundary. The grant does not accept an intent, authorize execution beyond scope, authenticate a caller, or grant reject/revoke/rebind, lifecycle, Git, parent or continuation authority. Preserve required document and currentness rules. Every writer and recovery still validates the full history under the existing control guard.
+
+A continuation proposal is input to the next intent discussion, not an accepted intent. A reference to an existing Work preserves its selected intent snapshot; that Work's current authorization and prerequisites still govern execution. No ordinary-accept grant authorizes selecting, withdrawing or cancelling a continuation.
