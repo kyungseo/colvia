@@ -4,7 +4,7 @@ Continuation-1 profile; see [authorization and qualification](README.md#continua
 
 Status: development machine CLI with local record writing, worker publication, human baseline refresh and exact worker result application. Human acceptance is the default; [Delegation-1](#delegation-1-implementation-candidate) defines the sole exact ordinary-worker accept exception. Exact-candidate qualification and actual adoption require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md).
 The default writer verifies an isolated installed applied binding. Tests may explicitly supply a verifier double. Actual source init and
-installed launcher tests exercise intent and Work commands plus update/rollback round trips; exact active repair is available from independent source. Receipt-bound detach and a bounded independent auditor are implemented; their presence does not establish general adoption or qualification of these exact bytes.
+installed launcher tests exercise intent and Work commands plus update/rollback round trips; exact active repair is available from independent source. Receipt-bound detach and a bounded independent auditor are implemented. General adoption and qualification of this exact candidate still need their own evidence.
 Only explicit source-checkout and installed single-home entry modes remain. Generation runtime, readers and commands are removed.
 
 `work.py` observes the whole project independently of an individual Work's exact file scope. Git snapshots include tracked files
@@ -16,7 +16,7 @@ including unsupported objects inside ignored directories. Bounded synthetic evid
 The ignore fingerprint hashes project ignore contents, common-directory info/exclude and effective global ignore contents with stable
 labels, never absolute machine paths. Ignore files inside a parent-excluded directory do not change the fingerprint. Noncanonical `.GITIGNORE` spelling is unsupported.
 External global-ignore symlinks resolve to regular contents; project symlinks remain unsupported. A new self-ignoring cache whose
-parent was not excluded can change effective policy and is explicitly non-pass.
+parent was not excluded can change the effective ignore policy; that result is explicitly not a pass.
 
 Policy-changing results, including `.gitignore` edits, are unsupported in this slice. Preserve the change for separate human policy
 review; do not silently establish a baseline and call the change accepted. An accepted project decision outside the Work writer must
@@ -133,7 +133,9 @@ For an open worker accept, cancellation requires every changed path to have its 
 
 ## Supervised Work Iteration
 
-Within an authorized Work, the agent may continue implementation, fixed verification and in-scope corrections without asking the human to repeat the same execution approval. Before starting, record the goal, file scope, expected result, verification commands and expected failures, execution environment, time/attempt limits and stop conditions in the existing Work narrative. Use limits and stop conditions covered by the existing execution authorization or confirmed by the human before supervised iteration; state whether human waiting time counts toward the budget. A host supervising these limits is not evidence of an enforced runtime budget or an isolated execution environment.
+This is the check-and-correct part of [the work cycle](CONCEPTS.md#the-work-cycle). Choosing a follow-up after the result uses the separate continuation path; it does not extend this Work's execution authority.
+
+Within an authorized Work, the agent may continue implementation, fixed verification and in-scope corrections without asking the human to repeat the same execution approval. Before starting, record the goal, file scope, expected result, verification commands and expected failures, execution environment, time/attempt limits and stop conditions in the existing Work narrative. Use limits and stop conditions covered by the existing execution authorization or confirmed by the human before supervised iteration; state whether human waiting time counts toward the budget. A host can supervise these limits without enforcing a runtime budget or isolating execution.
 
 These narrative writes must pass [Check Before Writing](REFERENCE.md#check-before-writing). If writing would disturb scope, a required input, a submitted result or pending recovery, report in conversation that the information is not saved to a project file and name the condition for recording it. On resume, if consumed time or attempts cannot be established, disclose the uncertainty and obtain human direction before further iteration; do not assume a fresh budget.
 
@@ -231,7 +233,7 @@ receipt inventory and selected references; it does not reimplement the whole Wor
 state machine and never authorizes new mutation. It also supports read-only audit
 of a clone; recovery remains bound to the original target fingerprint.
 
-Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds matching the accepted version conditions may execute; that is not a claim that they have been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
+Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds can pass the version check and execute even when they have not been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
 
 
 ## Observation Limits And Human Acceptance
@@ -253,7 +255,7 @@ Start and baseline rebind run on control without --worker. Their manifest base a
 
 Submission records review state and leaves control project bytes, HEAD and index unchanged. Control must still match the selected baseline. Required intent documents/evidence must not overlap the worker diff; use a separate output or obtain a human revision of intent boundaries first. A required Work reference changed by the result is checked against the retained post blob; other required references are checked on control. Result acceptance must later recheck these and validate live references after application.
 
-Worker accept prepare checks the pre-image and retained post blobs without applying bytes. Apply records the human decision durably before replacing only the manifest changes; add/delete/executable-mode changes leave HEAD, index and refs unchanged. Completion is selected only after the whole result and required live references match. An interrupted acceptance resumes only remaining pre-images from retained control Git objects, even if the worker directory is unavailable. Neither images, unsafe occupants, changed ignore policy or outside drift block recovery and preserve bytes. An open accept with no durable selection can instead be explicitly rejected only while every changed path is still pre; outside drift and stale intent do not grant new authority and do not prevent that cancellation. Mixed application cannot be cancelled. A durable result selection is never repaired by reapplying content. Historical completed replay is read-only. Human worker baseline rebind uses the existing D→S→current publication with repeated live/ref checks and exact recovery; it has no new cancellation path. Preserve changed bytes before restoring prerequisites and replaying the same ticket. A passing submission fixture alone is not qualification for real parallel adoption, multi-process races or final result integration. [Security and Support](SECURITY-AND-SUPPORT.md) describes the limits of historical process/integration and private-use observations. General multi-worker efficiency and project-specific usefulness remain unverified.
+Worker accept prepare checks the pre-image and retained post blobs without applying bytes. Apply records the human decision durably before replacing only the manifest changes; add/delete/executable-mode changes leave HEAD, index and refs unchanged. Completion is selected only after the whole result and required live references match. An interrupted acceptance resumes only remaining pre-images from retained control Git objects, even if the worker directory is unavailable. Changed paths that match neither their pre-image nor their post-image, unsafe occupants, changed ignore policy or outside drift block recovery; existing bytes are preserved. An open accept with no durable selection can instead be explicitly rejected only while every changed path is still pre; outside drift and stale intent do not grant new authority and do not prevent that cancellation. Mixed application cannot be cancelled. A durable result selection is never repaired by reapplying content. Historical completed replay is read-only. Human worker baseline rebind uses the existing D→S→current publication with repeated live/ref checks and exact recovery; it has no new cancellation path. Preserve changed bytes before restoring prerequisites and replaying the same ticket. The submission fixture tests only its bounded scenario. Real parallel adoption, multi-process races and final result integration need their own qualification. [Security and Support](SECURITY-AND-SUPPORT.md) describes the limits of historical process/integration and private-use observations. General multi-worker efficiency and project-specific usefulness remain unverified.
 
 
 ## Git Integration And Candidate Reuse
@@ -274,7 +276,7 @@ Preserve authority records and exact retained refs/objects independently of disp
 
 Never delete a branch or tag named as an exact retention ref by any current or historical manifest, or repoint it so that the required commit is no longer reachable, even after acceptance or squash merge. Verified branch advancement retaining the required commits remains subject to the existing Git integration contract; keep dedicated retention tags fixed. A tag pointing to the same commit does not replace that name. Preserve existing manifests and refs; an unknown dependency requires investigation, not a guessed substitution. This guidance changes future Git setup, not historical records.
 
-Retire a worker only when its unique commits, uncommitted changes and required ignored artifacts are recoverable outside that checkout and no remaining task uses it, under [Approval And Closeout](REFERENCE.md#approval-and-closeout). The project decides what to publish for collaboration. A Git copy or archive alone does not establish supported recovery or continued operation at another path. Pending recovery remains subject to the original ticket, binding, target and retained-source prerequisites.
+Retire a worker only when its unique commits, uncommitted changes and required ignored artifacts are recoverable outside that checkout and no remaining task uses it, under [Approval And Closeout](REFERENCE.md#approval-and-closeout). The project decides what to publish for collaboration. A Git copy or archive alone does not establish supported recovery or continued operation at another path; pending recovery still requires the original ticket, binding, target and retained sources.
 
 
 ## Worker Review Observations
@@ -320,7 +322,7 @@ After cutover, old worker result bytes/refs remain historical evidence; direct a
 
 ## Delegation-1 Implementation Candidate
 
-This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
+Continuation-1 inherits the delegation-1 behavior described below. Follow [Continuation-1](README.md#continuation-1) for current lifecycle commands and authorization requirements. Historical versions retain their original meaning. Human authorization comes from the Owner’s actual decision; host authentication and general readiness require their own evidence.
 
 For an ordinary isolated-worker Work, a non-Owner accept actor must exactly match the non-null grant in the accepted schema-3 intent draft bound to that Work revision. The qualified Work, execution mode and scope-path set must match. The accepted revision is schema 1, contains no composition and has no `supersedes`; no schema-2 revision may occur in its selected ancestry. These restrictions also apply when the ordinary Work is a child of a parent.
 
@@ -360,4 +362,4 @@ Each Work permits 256 durable normal select/withdraw choices, including choices 
 
 Bounds: canonical ticket 24 KiB, choice 32 KiB, selection/current 4 KiB each, subtree 20 MiB and JSON depth 16. IDs use `[A-Za-z0-9][A-Za-z0-9_-]{0,95}`. Text is nonempty UTF-8 without NUL, at most 2,048 bytes; Owner statement/reason and each proposal field allow 4,096 bytes. Timestamp is a valid UTC calendar value `YYYY-MM-DDTHH:MM:SSZ`. At most 16 distinct nonoverlapping project document paths, each at most 1,024 UTF-8 bytes, carry exact path/digest/role/required fields. Authority/managed launcher paths are not evidence. Required references must match before normal publication; optional drift is reported without rewriting the historical digest.
 
-Work/continuation views and prepare show used, limit and remaining (`normal_used`, `normal_limit`, `normal_remaining`); prepare also shows prospective usage. Damaged/unreadable usage is unavailable, never zero. Historical result and selection remain distinct from current source/target/document observations. These instructions do not claim qualification or actual application of the containing artifact.
+Work/continuation views and prepare show used, limit and remaining (`normal_used`, `normal_limit`, `normal_remaining`); prepare also shows prospective usage. Damaged/unreadable usage is unavailable, never zero. Historical result and selection remain distinct from current source/target/document observations. Qualification and actual application must be established for the exact artifact being used.

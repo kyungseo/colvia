@@ -316,3 +316,21 @@ Development-task transfer, remaining source-independence review and DR-0001 are 
 Current state: Accepted (Amended), effective 2026-10-14 for the named entry-1 clauses. Owner의 P4 결과 수락과 규범 활성화 승인을 [DR-0004](DR-0004-colvia-managed-entry-and-one-way-transition.md#entry-1-amendment-activation--2026-10-14)에 기록했다. 해당 절의 exact11개 successor hash·조항별 범위와 근거/한계를 적용한다. 기존 본문·frontmatter·M3 표는 원래 수락 revision의 역사 기록으로 그대로 유지한다. 이 문서 전체를 superseded 처리하지 않는다.
 
 Current writer/reader-window·checkout/detach·worker integration 절과 managed adapter member를 entry-1 successor로 대체한다. Current writer는 colvia이며 adapter member는 adapters/colvia-work/SKILL.md다. Literal old-history reader, authority/encoding/pending, unrelated meaning은 유지한다.
+
+
+## Accepted Historical-Explanation Wording Amendment — 2026-10-27
+
+상태: Accepted (Amended), 설명 문구 한정. Owner는 [CHORE-20261027-002의 결과](../development/CHORE-20261027-002-user-flow-and-development-doc-alignment.md#owner-결과-수락과-done--2026-10-27)에 “결과 수락·Done 승인”이라고 답했고, 이어 “이번에 수락한 문서 변경을 커밋하고 통합하자”라고 지시했다. 이 절은 그 수락에 포함된 Maintaining의 역사 설명 두 문단을 명시하여 M3의 잔여 문구 정리 조건과 연결한다. 추가 문구 수정이나 새로운 기술 계약 활성화는 포함하지 않는다.
+
+변경 기준은 source `17dc804a6af4e168d1bb73aa765e9354db4952ba`의 `docs/MAINTAINING.md`이며, 수락된 결과 파일 SHA-256은 `3f5f6ac11e08f0f95b6aab9379c24dd0fa1baf5406df6093d160b0dca522f946`다. 아래 hash는 각 문단의 첫 문자부터 마지막 마침표까지 UTF-8 bytes이며 끝 개행은 제외한다. 전체 이전 문서는 기준 Git revision에, 결과는 같은 작업의 수락된 source와 통합 commit에 보존한다.
+
+| Named paragraph | Before SHA-256 | Accepted SHA-256 |
+| --- | --- | --- |
+| Source Layout | `d7f9050e59ea4bb9c776b7881a15a4ae5a0c34853c3a604a510fad362b2c332a` | `5da76505a7508182ecaa8176f034eab84acb682821e0815b93b58132af756334` |
+| Inventory Window Compatibility | `aa4af4c272532700fd09140bc29174fe16db455b823a9cf620e61a2892479a87` | `a1d0c7fcc4cc3d253c2dd0b5011d210b2aaf6c0147ef2814b67066c0eaf90451` |
+
+Source Layout의 generation 설명은 역사 자료·지원 종료와 bounded N4 근거, legacy test 제거만으로 검증 의무를 해소하지 못한다는 뜻을 유지한다. Inventory Window Compatibility의 N4 설명은 원래 424-ID 관측, 변경 후보별 증거 평가·exact-artifact 검사, 이전 회귀의 조건부 재사용, 별도 immutable 근거와 human-1에서 worker-1로의 qualification 승계 금지를 유지한다. runtime·명령·assertion·권한·지원 범위는 바뀌지 않는다.
+
+이 결과는 최종 `continuation-1` 후보 `product-release-84d267aba0725695e04c827d`, inventory SHA-256 `84d267aba0725695e04c827d2feb63f43e55744ea530fa7287ee5e24b63ac476`의 일부다. 문장 보강 R1의 원판정 REVISE와 Driver 보정, 최종 consumer 7/7 및 보존·링크·GFM 검사를 구분한다. 후속 Reviewer PASS, 전체 회귀 PASS, 실제 사용자/native 동작, 읽기 token 한도나 실제 설치 전환을 주장하지 않는다. 상세 원문·처분·검증·Owner 판단은 위 작업 기록이 소유한다.
+
+M2·M3의 원래 표·수락 이력과 다른 named amendment는 그대로다. Maintaining의 Umbrella Candidate Boundary와 native-runner 잔여 문구, 그 밖의 미선택 editorial 질문은 이번 두 문단의 수락으로 완료 처리하지 않는다. 실제 설치·배포·지원 qualification은 별도 판단이다.

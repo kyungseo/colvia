@@ -1,5 +1,9 @@
 # FEAT-20261021-002 — U2 single-host source A
 
+## Current Navigation — 2026-10-27
+
+이 기록의 후속 범위는 아래의 2026-10-22 handoff를 거쳐 [FEAT-20261022-001](FEAT-20261022-001-prepared-tool-plan-live-qualification.md)이 소유했다. 후속 작업의 현재 판단은 [최종 Owner 수락과 Done](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#final-owner-acceptance-and-work-done--2026-10-27-kst), [수락 범위와 남은 한계](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#accepted-scope-and-remaining-limits)에서 확인한다. 이 연결은 source A의 실패·미완료를 성공으로 바꾸지 않는다. 아래 상태와 진행 기록은 당시 이력으로 그대로 보존한다. 이번 탐색 연결의 변경 소유자는 [CHORE-20261027-002](CHORE-20261027-002-user-flow-and-development-doc-alignment.md)다.
+
 상태: E01 admission에서 중단, source A 미완료·결과 수락 전. Owner는2026-10-21 source A 구현·검증과 R0-002 보완안을 승인했다. F-03의 trusted Driver 중계와 F-04의 계측/순정 검증 구분을 채택했다. 후속 진행은 이 기록 하나가 소유하며 기존 계획은 검토·승인 입력으로 보존한다.
 
 ## Scope And Owner Decisions

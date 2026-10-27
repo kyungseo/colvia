@@ -2,7 +2,7 @@
 
 Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
-Current document authority is indexed in [README.md](README.md). These instructions describe the single-home `continuation-1` profile. For source development, consult the exact decision records for Owner acceptance and activation of the successor under DR-0001. Verified installation alone does not establish source-contract activation.
+Current document authority is indexed in [README.md](README.md). These instructions describe the single-home `continuation-1` profile. For source development, consult the exact decision records for Owner acceptance and activation of the successor under DR-0001. The decision records establish source-contract activation; installation verification checks the installed product.
 
 ## Source Layout
 
@@ -23,7 +23,7 @@ Current document authority is indexed in [README.md](README.md). These instructi
 
 Use [Records And Retention](REFERENCE.md#records-and-retention) for the common recording default. Routine development keeps its plan, selected checks, result and limits in the existing Work narrative; a new receipt, source copy or validation archive is not required for each run. Add exact raw evidence only for an identified failure, qualification, reuse or delivery consumer, with its end condition. This does not remove any existing authority, historical evidence or recovery prerequisite.
 
-Generation modules and old stores/commands are removed. Source-only generation contracts retain historical meaning, not executable support. Parallel-process, interruption and unavailable-evidence checks have bounded N4 evidence; legacy test removal alone never discharged those obligations.
+Generation modules and old stores/commands are removed. Source-only generation contracts remain as historical records; their operations are unsupported. Bounded N4 evidence covers parallel-process, interruption and unavailable-evidence checks; removing the legacy tests did not by itself discharge those obligations.
 
 ## Validation
 
@@ -89,7 +89,7 @@ New candidates declare `WORKSPACE_INVENTORY_ID = "continuation-1"` once as a lit
 
 Releases in the same inventory window must read each other's records and preserve their meaning in both directions. An incompatible semantic change requires a new inventory_id, an explicit transition design and human approval. After the first durable schema-5 continuation-1 switch receipt, downgrade to delegation-1 or any older window is refused even before any continuation record exists. Historical entry-1 transitions retain their original one-way schema-2 boundary. Test Q-created local and worker records after rollback to P; a matching window name alone does not establish compatibility.
 
-The recorded N4 source completed bounded worker execution, complete 424-ID regression in both modes and exact-artifact checks. A later documentation or source change has a different release identity and requires the evidence assessment and exact-artifact checks above; it does not automatically invalidate every prior regression result. This document does not attest its own current bytes as qualified; use the candidate's separately identified immutable qualification evidence and artifact digest. An equivalently complete, fixed narrative can serve as that original receipt under [Evidence Reuse And Selection](#evidence-reuse-and-selection); a routine summary cannot. Previous human-1 evidence does not qualify worker-1.
+The recorded N4 source completed bounded worker execution, complete 424-ID regression in both modes and exact-artifact checks. A later documentation or source change has a different release identity. Assess which earlier regression results remain valid and perform the exact-artifact checks described above. To establish the candidate’s qualification, use its separately identified immutable evidence and artifact digest. An equivalently complete, fixed narrative can serve as the original receipt under [Evidence Reuse And Selection](#evidence-reuse-and-selection); a routine summary is insufficient. Previous human-1 evidence does not qualify worker-1.
 
 ## Umbrella Candidate Boundary
 

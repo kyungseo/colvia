@@ -2,16 +2,16 @@
 
 Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
-Status: single-home development contract with bounded worker integration. General adoption and public release remain unqualified. Historical observations in [Security and Support](SECURITY-AND-SUPPORT.md) do not qualify these exact bytes.
+Status: single-home development contract with bounded worker integration. General adoption and public release remain unqualified. [Security and Support](SECURITY-AND-SUPPORT.md) lists the historical observations and their source versions; this exact candidate still needs its own qualification.
 
 The format uses one `.hrn/` authority. Installed machine commands and the lifecycle layer build on the root primitives below.
-Root-layer success alone does not verify records or product binding.
+Record and product-binding verification take place in the layers above the root primitives.
 
 ## Root Primitives
 
 `workspace.py` provides explicit target classification, immutable root-format validation, read-only root inspection, bounded
 bootstrap prefixes and an outer cooperating writer guard. It does not verify intent/Work records, install releases, or accept results.
-`root-ready`, `partial-candidate` and `detach-candidate` are internal root-layer observations. They are never full workspace success.
+`root-ready`, `partial-candidate` and `detach-candidate` report only the root-layer checks. Full workspace verification still requires the checks below.
 The caller must verify the complete records, pending operations, product binding and executing release before any product mutation.
 
 Primary Git checkout and standalone non-Git targets can host a control workspace. Linked worktrees, repository subdirectories,
@@ -97,9 +97,9 @@ doubles remain available only as a Python testing seam; they are not CLI options
 
 The original runtime tests use installation-shaped fixtures. A subsequent actual
 init test suite uses the unmodified managed launcher and CLI. Update/rollback now has a separate actual lifecycle checkpoint;
-exact active repair now has an independent-source path; receipt-bound detach is implemented. General adoption qualification requires separate evidence. Path/digest
-checks operate within the trusted local process boundary, not against malicious
-Python object mutation or undetectable outside edits between observations.
+exact active repair now has an independent-source path; receipt-bound detach is implemented. General adoption still needs its own qualification evidence. Path/digest
+checks assume a trusted local process; malicious Python object mutation and
+outside edits that escape the observation points are outside their protection.
 
 
 ## Actual Init And Recovery (Development)
@@ -183,10 +183,10 @@ A launcher/binding mismatch can temporarily prevent installed startup: use indep
 source diagnostics and the original exact plan/candidate. Rollback needs the retained
 previous release. Same-filesystem staging is ignored and may retain interrupted debris.
 
-History inspection checks the full retained release chain; cost grows with retained
-releases and is not yet measured as a production-scale claim. Tests cover cooperative
+History inspection checks the full retained release chain. Its cost grows with retained
+releases; production-scale cost has not yet been measured. Tests cover cooperative
 serial process interruptions, not power-loss atomicity or a malicious outside writer.
-Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed. Historical observations summarized in [Security and Support](SECURITY-AND-SUPPORT.md) do not qualify general adoption or later modified release bytes.
+Exact repair/detach and a bounded independent auditor are implemented below. Old-generation runtime/readers are removed. [Security and Support](SECURITY-AND-SUPPORT.md) summarizes historical observations for their recorded source versions. General adoption and later modified releases need their own qualification.
 
 Rollback selects the current binding's previous release when permitted by the inventory window (delegation-1 and earlier windows are refused after a durable continuation-1 receipt; historical entry-1 receipts retain their checkout-1 barrier): a second rollback
 can therefore reselect the release just left. Each switch still requires a new exact
@@ -340,7 +340,7 @@ Scoped retired-entry collision applies to independently verified live entry-1 (i
 
 ## Delegation-1 Implementation Candidate
 
-This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
+Continuation-1 inherits the delegation-1 behavior described below. Follow [Continuation-1](README.md#continuation-1) for current lifecycle commands and authorization requirements. Historical versions retain their original meaning. Human authorization comes from the Owner’s actual decision; host authentication and general readiness require their own evidence.
 
 `delegation-1` is rank 6 after `entry-1`, with the same literal 29 managed paths, root/format/binding/inventory schema 1 and `colvia` launcher. In that retained window, init plan/receipt, switch plan/receipt, repair request/receipt and detach plan/receipt use schema 4 with each action's existing fields. Switch removal is the empty list. Booleans, mixed pairs, unknown versions/windows and cross-window mismatches are invalid; schema 4 is not a wildcard for future windows.
 

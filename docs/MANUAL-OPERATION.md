@@ -2,7 +2,7 @@
 
 Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
-Project truth remains readable without a running product or agent provider. Reading bytes is not permission to rewrite authority.
+You can read the retained project records without a running product or agent provider. Preserve authority records while inspecting them; read access does not authorize rewriting them.
 
 ## Retained Evidence
 
@@ -26,11 +26,11 @@ After detach, keep `.hrn/planning/candidates.json` with the format, intent and W
 
 ## Delegation-1 Implementation Candidate
 
-This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
+Continuation-1 inherits the delegation-1 behavior described below. Follow [Continuation-1](README.md#continuation-1) for current lifecycle commands and authorization requirements. Historical versions retain their original meaning. Human authorization comes from the Owner’s actual decision; host authentication and general readiness require their own evidence.
 
 A schema-3 ordinary intent draft contains a non-null exact acceptance grant. Retained records alone do not authenticate its Owner or delegate. A plain audit may check hashes and selected references and display the grant, but it must explicitly report delegation authorization as unverified unless it implements the full Work/intent historical constraints, one-use key and selected-revoke rule. Do not downgrade unknown schema-3 content to an ordinary no-grant record.
 
-Core readers perform the full checks with the verified accepted-intent context. The supplied plain intent auditor is deliberately narrower and reports `delegation_authorization: not-verified`; the product auditor reports `full_record_semantics: not-reimplemented`. Exact lifecycle pairing does not establish host enforcement or prior-window provenance after detach. Preserve unknown or damaged records and original recovery inputs. Manual editing, deletion or token substitution is not a supported recovery path.
+Core readers perform the full checks with the verified accepted-intent context. The supplied plain intent auditor reports `delegation_authorization: not-verified`; the product auditor reports `full_record_semantics: not-reimplemented`. These tools check their declared subsets. Lifecycle pairing alone leaves host enforcement and the pre-detach inventory window unverified. Preserve unknown or damaged records and original recovery inputs. Manual editing, deletion or token substitution is not a supported recovery path.
 
 ## Retained Continuation
 

@@ -1,5 +1,9 @@
 # U2 Tool-Neutral Execution Plan
 
+## Current Navigation — 2026-10-27
+
+아래 계획과 R0·승인 대기 문구는 당시의 준비 이력이다. 이후 승인·실행·수락 판단은 [FEAT-20261022-001의 최종 closeout](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#final-owner-acceptance-and-work-done--2026-10-27-kst), [수락 범위와 남은 한계](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#accepted-scope-and-remaining-limits)에서 확인한다. 이 연결은 과거 계획 bytes나 미검증 상태를 소급 수정하지 않는다. 현재 탐색 연결의 변경은 [CHORE-20261027-002](CHORE-20261027-002-user-flow-and-development-doc-alignment.md)가 소유한다.
+
 Status: Driver-revised after one Claude R0 (REVISE, four blocking findings), 2026-10-26; awaiting Owner execution decision. The revised bytes were not re-reviewed. Progress owner: [FEAT-20261022-001](FEAT-20261022-001-prepared-tool-plan-live-qualification.md). This proposal does not activate implementation or runtime qualification.
 
 Current direction: [2026-10-26 platform scope](#platform-direction-and-minimum-u2-boundary--2026-10-26) and the owning Work identify the current minimum scope; earlier approval wording below is historical.
