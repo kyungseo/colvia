@@ -1,0 +1,89 @@
+[
+  {
+    "type": "function",
+    "name": "u2_read_file",
+    "description": "승인된 파일 ID의 원문을 읽습니다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "file_ids"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "u2_write_file",
+    "description": "승인된 한 파일을 이전 SHA256 대조 후 UTF-8 원문으로 교체합니다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        },
+        "expected_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id",
+        "expected_sha256",
+        "content"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "u2_verify",
+    "description": "고정 문서 검증기 한 개를 실행합니다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "verifier_id": {
+          "enum": [
+            "DOC-LINKS",
+            "DOC-GFM",
+            "DOC-CLAIMS"
+          ]
+        }
+      },
+      "required": [
+        "verifier_id"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "type": "function",
+    "name": "u2_accept",
+    "description": "봉인된 결과의 사전 승인된 수락 handle 한 개를 요청합니다.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "handle": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "handle"
+      ],
+      "additionalProperties": false
+    }
+  }
+]
