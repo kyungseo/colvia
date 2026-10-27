@@ -2,7 +2,7 @@
 
 Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
-Current surface: typed single-home intent records, machine commands and a read-only human view. The manual natural-language adapter guides the human through existing commands; it does not decide acceptance.
+An intent is stored as a typed record in the single project home. Machine commands create these records and record acceptance; a read-only view presents them for human review. The natural-language adapter guides the human through those commands, while acceptance remains the human’s decision.
 
 ## Draft And Acceptance
 
@@ -18,7 +18,7 @@ A Work references an accepted intent revision and shares its acceptance authorit
 
 Pending Work decision/selection blocks new intent mutation; pending intent acceptance/selection blocks other intent and Work mutation. Restore exact prerequisites and replay the original request after a supported interruption. Preserve torn records for investigation rather than deleting or rewriting them.
 
-The independent source utility `classify-intent-entry --consequence consequential|non-consequential [--input FILE]` classifies supplied gaps without publishing authority. It is not a natural-language entry adapter or a measure of question quality.
+The independent source utility `classify-intent-entry --consequence consequential|non-consequential [--input FILE]` classifies gaps supplied as input and publishes no authority records. It accepts structured input rather than a natural-language request, and does not evaluate question quality.
 
 ## Human Review And Documents
 
@@ -32,7 +32,7 @@ Once a composition draft is accepted, later acceptance for that intent must pres
 
 ## Delegation-1 Implementation Candidate
 
-This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
+Continuation-1 inherits the delegation-1 behavior described below. Follow [Continuation-1](README.md#continuation-1) for current lifecycle commands and authorization requirements. Historical versions retain their original meaning. Human authorization comes from the Owner’s actual decision; host authentication and general readiness require their own evidence.
 
 An ordinary draft may use schema 3 with exactly the schema-1 ordinary fields plus a non-null `acceptance_delegation`. Schema 1 remains the no-grant ordinary format; schema 2 remains composition. A schema-3 draft cannot also contain composition, and null does not mean no grant.
 

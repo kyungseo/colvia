@@ -7,7 +7,7 @@ Document authority and currentness: [Documentation Index](README.md).
 ## Single-Home Development Commands
 
 The current development candidate profile is `continuation-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./colvia`. An independent contribution source uses `./colvia --source-checkout` explicitly.
-A source path or a successful test suite is not permission to modify an adopter.
+Modifying an adopter requires its own authorization, even when trusted source is available and its tests pass.
 
 | Entry | Command | Input and effect |
 | --- | --- | --- |
@@ -27,8 +27,8 @@ Preview/prepare does not grant permission; the human decides acceptance. Confirm
 
 `documentation_root` is project-relative and derived, not another stored authority or document registry. It appears only after product and
 record verification succeeds (possibly with pending record publication or unsupported local runtime clearly classified). Pending product,
-detached, degraded, or unrecognized state does not invent an active document root. Documentation availability is not a claim that a user read
-it or that project-authored documents were accepted. Before detach, retain a trusted independent source/manual if needed.
+detached, degraded, or unrecognized state does not invent an active document root. The field locates the manual; whether a user read
+it or accepted project-authored documents must be established separately. Before detach, retain a trusted independent source/manual if needed.
 For a pending Work publication without a decision, preserve and retry the exact original publish request after restoring its prerequisites.
 For a pending Work decision or intent acceptance, preserve the original ticket and confirmation token, restore the required runtime/content/document
 preconditions, then retry the same apply. Do not invent a replacement decision to bypass pending records. The narrowly supported local or all-pre worker cancellation of a pending Work acceptance follows [General Work](GENERAL-WORK.md); this advice does not remove that contract. An unsupported runtime must be
@@ -102,8 +102,6 @@ All new lifecycle plans/receipts use paired schema5. Historical action/version p
 
 ## Human Review
 
-A healthy observation shares its verified graphs between status and rendering. Within its Work sweep, repeated intent references share a verified intent graph while every exact historical binding is still checked. A final independent intent collection read must match every shared graph; changes or failures discard the shared result and use the existing fresh, unshared status path. Partial, pending and unsupported graph results also use the unshared path. Work records and independently loaded intent graphs retain double reads. Before and after view observations, retries and separate commands never share this temporary state. All Works, relations and umbrella histories remain checked; writers and current/live-reference checks keep fresh reads. Changes restored between checks are not guaranteed to be detected. Stable inputs retain the same output and exit status. Concurrent changes may cause a retry and a degraded or unstable result instead of an immediate unavailable result; this is not an atomic snapshot or permission to apply.
-
 `./colvia view` lists verified intent/Work state and current release entry paths. Use `view intent ID [--revision ID]`, `view work ID [--revision ID]`, or `view confirmation --input FILE|-`. Independent source: `colvia --source-checkout view --target PATH ...`. These commands write GFM to stdout without publishing files, locks, on-disk caches or decisions. Imported view errors are GFM with a nonzero exit; bootstrap failures remain JSON/65. Status/doctor and machine commands retain their JSON contracts.
 
 Confirmation consumes canonical ticket bytes, not the prepare response envelope. Observations are advisory and may be unavailable or stale; there is no aggregate permission-to-apply result. Apply checks prerequisites again. A completed record does not prove current project files match. Work comparisons list path/mode/size/digest changes, not historical text bytes; rebind discontinuities are not attributed to the Work.
@@ -121,11 +119,11 @@ Confirmation advisory checks include required ticket references and, for Work ac
 
 The bounded reader requires searchable and listable physical ancestors from `/`, exact spelling, no symlink ancestor, and a regular single-link file. A macOS `/tmp` or `/var` alias can therefore be refused: use the real physical path to an authorized ticket or canonical stdin. Do not weaken the Core or remove files to bypass an unavailable observation.
 
-Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds matching the accepted version conditions may execute; that is not a claim that they have been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
+Later patches, prereleases and free-threaded builds are rejected. Other OS or distributor builds can pass the version check and execute even when they have not been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
 
 In status, `supported_baseline` retains the historical first qualified version; it is not a minimum version. `supported_versions` is the exhaustive patch allowlist.
 
-In status, `runtime.supported` reports the version gate, not OS/build qualification. A `classification: pass` result does not establish that this OS/build or an actual adopter has been qualified.
+In status, `runtime.supported` reports the version check. Even with `classification: pass`, qualification of the OS/build and actual adopter use must be established separately.
 
 
 For result acceptance, pair `./colvia view work ID --revision REVISION_ID` with `./colvia view confirmation --input FILE` (or `-`) for the same selected revision. Work details contain `observed_scope` and `unavailable_scope`; the confirmation view does not directly repeat these arrays. Explain all unavailable items against the human's declared acceptance criteria before applying the exact ticket. Nonempty observation text alone does not make a graph degraded, and an empty list does not prove verification. Required-reference and live-content refusals remain mandatory. See [General Work](GENERAL-WORK.md#observation-limits-and-human-acceptance) and the current managed adapter.
@@ -134,6 +132,8 @@ The author-declared `unavailable_scope`, an advisory reference observation label
 
 
 Worker Work/confirmation views distinguish control baseline from retained candidate and partial application. Changed Work references display candidate and live-control observations separately. Human baseline refresh compares old baseline/candidate with the proposed baseline and labels content matches without attributing their cause. These read-only observations do not authorize an action or replace guarded validation. See [Worker Review Observations](GENERAL-WORK.md#worker-review-observations).
+
+A healthy observation shares its verified graphs between status and rendering. Within its Work sweep, repeated intent references share a verified intent graph while every exact historical binding is still checked. A final independent intent collection read must match every shared graph; changes or failures discard the shared result and use the existing fresh, unshared status path. Partial, pending and unsupported graph results also use the unshared path. Work records and independently loaded intent graphs retain double reads. Before and after view observations, retries and separate commands never share this temporary state. All Works, relations and umbrella histories remain checked; writers and current/live-reference checks keep fresh reads. Changes restored between checks are not guaranteed to be detected. Stable inputs retain the same output and exit status. Concurrent changes may cause a retry and a degraded or unstable result instead of an immediate unavailable result; this is not an atomic snapshot or permission to apply.
 
 ### Observation-Local Topology Reads
 
@@ -254,7 +254,7 @@ If a rule is no longer needed, identify the exact section and pointers it owns, 
 
 A local adapter may be a short section in an existing project rule or, when useful, a project-owned document. It tells an agent which applicable rule to read and what to explain. Connect it from the relevant project entry; do not edit or duplicate the installed adapter. For example, a CLI project can ask the agent to read its documentation rule before an authorized option change and explain affected usage examples, executed checks and remaining limits in the existing Work narrative. The project selects the actual paths and checks.
 
-Record the same purpose, owner, source basis and update/removal information as for other repository rules. Follow the current managed adapter and preserve Core authority boundaries. Show conflicts before acting; a local instruction cannot waive acceptance or integrity checks. Verify the entry pointer and report whether a fresh agent session actually read the rule. This is an instruction pattern, not a native extension API or automatic discovery/installation guarantee; tool-specific packaging needs its own setup and verification.
+Record the same purpose, owner, source basis and update/removal information as for other repository rules. Follow the current managed adapter and preserve Core authority boundaries. Show conflicts before acting; a local instruction cannot waive acceptance or integrity checks. Verify the entry pointer and report whether a fresh agent session actually read the rule. This pattern describes instructions in project-owned files. Native extension APIs and automatic discovery/installation are outside this pattern; tool-specific packaging needs its own setup and verification.
 
 When retiring Harness, separate installed guidance from these project-owned additions. Exact detach removes the managed manual/adapter with the product, while project entries, rules and user/global tool configuration remain outside its removal surface. Plan the relevant pointer replacements, retain valid local requirements and required reference bytes, and use [Detach](OPERATIONS.md#detach) for the runtime operation and post-detach entry check. An unexpected missing launcher remains an installation problem until the documented checks establish detached state.
 
@@ -264,9 +264,9 @@ A project may adopt this rule in its existing instructions:
 
 > When changing an API, configuration, architecture or operating procedure, identify its canonical documentation and affected pages during planning. Update the necessary pages within the authorized scope and run the checks warranted by that change. If no update is needed, state the reason. If an update must wait, name the responsible follow-up and its resume condition. Record it in the existing Work or project tracker only when authorized and [Check Before Writing](#check-before-writing) permits; otherwise report it in conversation as unsaved and state when it can be recorded. Candidate records still require an explicit planning request. Do not report the documentation as current while that gap remains.
 
-Map actual change types to actual project documents; do not copy a technology-specific mapping into an unrelated project. At result review, report the affected pages, checks and remaining gaps alongside the code/configuration result. Reuse applicable execution evidence and run only the missing checks. Rendering and link success establish structural properties, not semantic correctness or reader understanding. Paired language versions must preserve behavior, conditions and limits; record any unresolved mismatch rather than treating the older translation as current.
+Map actual change types to actual project documents; do not copy a technology-specific mapping into an unrelated project. For a project adopting this rule, use its canonical page and index pointers at result review, handoff and closeout to explain the affected pages, checks and remaining gaps alongside the code/configuration result. Record the accepted result and deferred document updates in the existing narrative only as the rule above permits; otherwise report them in conversation as unsaved. The common [plan and follow-up flow](CONCEPTS.md#following-a-result) still applies independently of this optional rule. Reuse applicable execution evidence and run only the missing checks. Rendering and link checks cover document structure. Meaning and reader understanding require separate assessment. Paired language versions must preserve behavior, conditions and limits; record any unresolved mismatch rather than treating the older translation as current.
 
-This example is the first application of the rule guidance, not a universal extension API. If a proposed rule needs a common invariant enforced by runtime, identify that requirement for a separate Core change instead of pretending prose enforces it.
+This first example applies the guidance through a project rule. It provides no universal extension API. If a proposed rule needs the runtime to enforce a common invariant, identify that requirement for a separate Core change; written instructions alone cannot enforce it.
 
 ## Records And Retention
 
@@ -314,7 +314,7 @@ Load this section for a pause, session summary or fresh resume. Start with `./co
 
 Read the source Work's selected continuation as well as active/completed Work, candidate choices and referenced plan. [Work Follow-Up](#work-follow-up) distinguishes proposal, existing Work, explicit none and undecided. If valid candidate and continuation choices conflict, report both and ask which action the human intends; never silently replace either or choose by timestamp. An unchanged authorized action need not be approved again. A recommendation or historical `next_action` is not a stored continuation choice.
 
-A conversational summary and a fresh agent reading it are not proof of human understanding. Record actual user feedback separately when evaluating the experience; do not require a session registry or extra acceptance step for an ordinary pause.
+When evaluating the handoff experience, use actual user feedback to assess understanding. A summary and a fresh agent’s reading of it do not show that the human understood. Record the feedback separately; an ordinary pause needs no session registry or extra acceptance step.
 
 ## Project Context And Targeted Document Checks
 
@@ -338,7 +338,7 @@ Interpret the classification together with verified target state, error code/mes
 
 ## Delegation-1 Implementation Candidate
 
-This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
+Continuation-1 inherits the delegation-1 behavior described below. Follow [Continuation-1](README.md#continuation-1) for current lifecycle commands and authorization requirements. Historical versions retain their original meaning. Human authorization comes from the Owner’s actual decision; host authentication and general readiness require their own evidence.
 
 The current profile is `continuation-1`. Existing Work command names and ticket fields remain unchanged. New lifecycle requests and their receipts are paired schema 5; ordinary delegated intent drafts use schema 3 as defined in Guided Intent. These two version numbers belong to different record families. `work prepare` with the exact `actor` in its canonical input may prepare an eligible ordinary accept; applying the exact returned ticket performs the existing guarded content operation and records that actor. It creates no additional command or permission.
 

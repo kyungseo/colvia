@@ -6,7 +6,7 @@ Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKS
 
 ## Observe Before Acting
 
-`colvia view`, `colvia status` and `colvia doctor` are read-only. They validate product and typed record graphs, classify pending or unsupported state, and expose verified documentation when available. They do not attest a later unsubmitted edit or grant write authority. If the launcher fails, use an independent trusted source's view/status/doctor with `--target PATH`.
+`colvia view`, `colvia status` and `colvia doctor` are read-only. They validate product and typed record graphs, classify pending or unsupported state, and expose verified documentation when available. Their results cover the verified records and product, not later unsubmitted edits, and they grant no write authority. If the launcher fails, use an independent trusted source's view/status/doctor with `--target PATH`.
 
 ## Update And Rollback
 
@@ -14,7 +14,7 @@ Use [Reference](REFERENCE.md) for command options and [Workspace Contract](WORKS
 
 For the exact admitted delegation-1 predecessor, use a qualified independent continuation-1 source and explicit profile. See [Continuation-1 transition](#continuation-1). Its first durable schema-5 receipt permits exact forward recovery and later compatible same-window rollback; the prior delegation-1 release is not a rollback target. Use matching retained source for old pending operations and old-window repair; never package new code with an old launcher.
 
-A switch preserves project truth and results but changes the product binding and may replace the launcher. Existing confirmation tickets become stale. Re-prepare them against the new binding. Release digest verification does not establish arbitrary candidate compatibility; qualify the new release before use.
+A switch preserves project truth and results but changes the product binding and may replace the launcher. Existing confirmation tickets become stale. Re-prepare them against the new binding. Qualify the new release before use: digest verification checks its bytes, while compatibility depends on the release’s qualification evidence.
 
 ## Interrupted Operations
 
@@ -58,7 +58,7 @@ A scoped retired `hv2` occupant is never automatically removed or renamed. Other
 
 ## Delegation-1 Implementation Candidate
 
-This retained heading explains the delegation-1 behavior inherited by continuation-1. For current lifecycle commands and authorization boundaries, follow [Continuation-1](README.md#continuation-1). Historical versions keep their original meaning. A verified installation, document or passing check does not prove human authorization, host authentication or general readiness.
+Continuation-1 inherits the delegation-1 behavior described below. Follow [Continuation-1](README.md#continuation-1) for current lifecycle commands and authorization requirements. Historical versions retain their original meaning. Human authorization comes from the Owner’s actual decision; host authentication and general readiness require their own evidence.
 
 Retained delegation-1 lifecycle writers require that exact historical source and pair plan/receipt schema 4. The initial update admits only the exact audited entry-1 predecessor in Getting Started. The first durable schema-4 switch receipt is the one-way boundary: every older writer must refuse, even before any schema-3 intent exists. Do not roll back to an old window at any later prefix. Recover forward with the exact new source and original request. The launcher path remains `colvia`; no retired `hv2` path is removed by this switch.
 

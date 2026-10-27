@@ -1,5 +1,9 @@
 # U2 Host — Qualification Candidate
 
+## Current Navigation — 2026-10-27
+
+승인된 source/adapter qualification과 첫 운영 가이드의 완료 판단은 [최종 Owner 수락과 Done](../../FEAT-20261022-001-prepared-tool-plan-live-qualification.md#final-owner-acceptance-and-work-done--2026-10-27-kst)에 있다. 아래 후보 설명과 과거 미검증 표기는 작성 당시의 근거·한계와 함께 보존한다. 실제 다음 실행은 [수락 범위와 남은 한계](../../FEAT-20261022-001-prepared-tool-plan-live-qualification.md#accepted-scope-and-remaining-limits), 이 문서의 [공개 이력 allocation 경계](#public-history-allocation-boundary), 해당 새 대상·입력의 승인을 함께 확인해야 한다. 일반 설치 payload에는 이 검증용 Host가 포함되지 않는다. 이번 안내 연결은 [CHORE-20261027-002](../../CHORE-20261027-002-user-flow-and-development-doc-alignment.md)가 소유한다.
+
 이 디렉터리는 prepared-tool runtime과 문서 worker를 연결하는 검증용 host 후보다. 구현과 집중 검사는 진행 중이며 실제 OS·native 인증·installed Core·H01–H10 적격성을 아직 얻지 않았다. 진행, 시간/시도 장부와 Owner 결정은 [FEAT-20261022-001](../../FEAT-20261022-001-prepared-tool-plan-live-qualification.md)이 소유한다. 과거 preflight 결과는 [이전 기록](../../FEAT-20261021-002-u2-single-host-source.md)에 남는다.
 
 ## Invocation And Trust Boundary

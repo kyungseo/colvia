@@ -1,8 +1,8 @@
 # Getting Started
 
-Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
+Continuation-1 profile; see [authorization and qualification](README.md#continuation-1). Start with [the work cycle and example requests](CONCEPTS.md#the-work-cycle), then use the setup and first-Work steps below.
 
-Use a fresh project and final, GIL-enabled CPython 3.14.6 or 3.14.7. Installation is an explicit operator action; do not infer permission to install into another repository from a successful local test.
+Use a fresh project and final, GIL-enabled CPython 3.14.6 or 3.14.7. Obtain authorization for the target repository before installing; a successful local test does not grant it.
 
 ## Prepare Project Ignore Rules
 
@@ -37,13 +37,13 @@ Create the root `temp/` directory for local scratch when preparing the project o
 
 Never ignore the entire `.hrn/` tree: its records and managed runtime remain eligible for version control. Harness manages its own `.hrn/.gitignore` for `staging/` and `locks/`. Check representative IDE/temp paths with `git check-ignore`, and check that `.hrn/format.json`, `.hrn/intents/`, `.hrn/work/`, `.hrn/planning/`, `.hrn/product/`, `colvia` and project Markdown are not hidden by the effective rules. Git ignore rules do not untrack files already committed; do not remove tracked files as part of this setup without authorization.
 
-This is an adoption procedure performed by the agent/operator, not an extra write in the Core `init` transaction. Root `.gitignore` and `temp/` remain project-owned and are not replaced by update, rollback or detach. After a Work has started, changes to project ignore rules must follow that Work's scope and content-validation rules.
+The agent/operator prepares these project files as part of adoption, outside the Core `init` transaction. The project owns root `.gitignore` and `temp/`; update, rollback and detach leave them unchanged. After a Work has started, changes to project ignore rules must follow that Work's scope and content-validation rules.
 
 ## Prepare Project Agent Entry
 
 For a new project, keep shared project instructions in the project-owned root `AGENTS.md`. When Claude Code is used, create a thin root `CLAUDE.md` that instructs it to read and follow `AGENTS.md`; do not duplicate the full instructions. Include project purpose/context/plan pointers and the stable `./colvia view` entry in `AGENTS.md`, not a pinned managed release path.
 
-For an existing project, preserve its entry files and tool-specific instructions. Compare and reconcile shared instructions before replacing a duplicate body with a pointer; do not overwrite unique Claude rules or copy this source repository's development entry into the project. Keep genuinely tool-specific additions in the corresponding entry. A pointer-only file means “read and follow AGENTS.md”; it is not evidence that a particular agent session actually did so.
+For an existing project, preserve its entry files and tool-specific instructions. Compare and reconcile shared instructions before replacing a duplicate body with a pointer; do not overwrite unique Claude rules or copy this source repository's development entry into the project. Keep genuinely tool-specific additions in the corresponding entry. A pointer-only file tells the agent to “read and follow AGENTS.md”; it does not show whether a particular session followed it.
 
 For project-specific adapter additions and their maintenance boundaries, use [Project-Owned Adapter Additions](REFERENCE.md#project-owned-adapter-additions). Runtime updates leave these additions unchanged; a later detach needs a separate review of obsolete project-entry instructions.
 
@@ -77,7 +77,7 @@ Run `/path/to/project/colvia status` after installation. A verified active produ
 3. The agent publishes a Work baseline referencing the accepted intent, edits within the declared scope, and submits the full result manifest for review using `colvia work publish`.
 4. `colvia work prepare` binds the exact result and current prerequisites. The human decides acceptance; `colvia work apply --confirm TOKEN` records that decision and selection. A selected accepted result derives completed state. The optional exact ordinary-worker grant is described in [Delegation-1](#delegation-1-implementation-candidate); it does not authorize intent or parent acceptance.
 
-See [General Work](GENERAL-WORK.md) for exact input fields and [Guided Intent](GUIDED-INTENT-FORMATION.md) for acceptance semantics. Machine inputs are canonical JSON from `--input FILE` or stdin. The agent prepares these machine inputs; use the review flow below to review without editing JSON. General onboarding and actual use of the installed candidate require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md). For serial use, keep one editing Work at a time; the tool cannot stop arbitrary processes editing ordinary files.
+See [General Work](GENERAL-WORK.md) for exact input fields and [Guided Intent](GUIDED-INTENT-FORMATION.md) for acceptance semantics. Machine inputs are canonical JSON from `--input FILE` or stdin. The agent prepares these machine inputs; use the review flow below to review without editing JSON. These steps describe the procedure; general onboarding and actual use of the installed candidate still need validation in practice. See [Security and Support](SECURITY-AND-SUPPORT.md). For serial use, keep one editing Work at a time; the tool cannot stop arbitrary processes editing ordinary files.
 
 Do not use a pending proposal, a successful command, a review verdict, or an agent's statement as human acceptance. Use [Operations](OPERATIONS.md) when an exact operation is interrupted.
 
@@ -87,9 +87,9 @@ Accepting a worker result applies its exact changes on control but leaves Git HE
 
 Start with `./colvia view` and its verified adapter. The managed manual explains Harness operation; project README/context/plan/DR/brief/Work documents explain project purpose and progress. Keep the stable view command in project entry, not a release-specific adapter path.
 
-The agent prepares machine input and explains the existing Work narrative in your language: scope, progress, results, checks, limits and the actual decision needed. Review the relevant intent/Work and confirmation views; full revision identities and tokens remain supporting detail. Decide the exact action before apply. Disclose changed/missing references or disagreement between narrative and selected records. English diagnostic labels do not require an English conversation. The view is supporting evidence; no automatic report, second status registry or additional record is needed.
+The agent prepares machine input and explains the existing Work narrative in your language: scope, progress, results, checks, limits and the actual decision needed. Review the relevant intent/Work and confirmation views; full revision identities and tokens remain supporting detail. Decide the exact action before apply. Disclose changed/missing references or disagreement between narrative and selected records. English diagnostic labels do not require an English conversation. Use the view to support the existing explanation; you do not need an automatic report, second status registry or additional record.
 
-A runtime admitted by version is not necessarily a qualified OS/distributor build. See [Security and Support](SECURITY-AND-SUPPORT.md).
+Passing the version check does not mean the OS or distributor build has been qualified. See [Security and Support](SECURITY-AND-SUPPORT.md).
 
 For a requested brief, decision record or unresolved question, ask the agent to use [Project Document Assistance](REFERENCE.md#project-document-assistance) with your existing project documents.
 

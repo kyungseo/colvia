@@ -7,7 +7,7 @@ description: Guide candidate planning, requested project briefs and decisions, i
 
 Use this adapter with the verified `continuation-1` installed profile; read [Profile and authorization](../../docs/README.md#continuation-1). A verified binding or this adapter's presence does not prove human authorization.
 
-Use when the human asks to record an idea, author a brief or decision, choose what to do next, defer a candidate, or start, continue or review a project task. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
+Use when the human asks to record an idea, author a brief or decision, choose what to do next, defer a candidate, or start, continue or review a project task. [The work cycle and request examples](../../docs/CONCEPTS.md#the-work-cycle) explain that experience to the human; use the procedures below for the actual action. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
 
 1. Run `./colvia view` at the control checkout. Follow its current verified manual/adapter path, not an old release path saved elsewhere. If the launcher fails, preserve the output and use an independent trusted source for `--source-checkout view --target PATH` or doctor. A worker copy is non-authoritative.
 2. Explain the current intent, Work state, pending operations and unavailable evidence in ordinary language. Ask only for missing material goals, scope, forbidden actions, outcome and acceptance criteria. Propose the six intent facets; do not invent the human's decisions.
@@ -38,7 +38,7 @@ A path/digest observation proves neither the truth of a document nor its complet
 
 During first work, use one suitable existing narrative section for the purpose, plan, progress and result within authorized scope; create one narrative only when none fits. Reuse it on resume and for requested review responses; do not require a new record type, fixed headings or a duplicate status file. Proposed reference roles and required flags remain explicit decisions with their existing costs. Do not continually rewrite an accepted required intent document as a progress log. Document edits after Work start belong in scope and must respect the existing digest, rebind and resubmission rules.
 
-This response contract is instruction, not evidence that an agent followed it or a human understood it. A real first-entry and fresh-resume exercise remains necessary before claiming that experience works.
+These instructions alone do not show that an agent followed them or that the human understood the explanation. Before reporting that first entry and fresh resume work in practice, retain evidence from a real exercise.
 
 
 For first work, explicitly propose a document_ref to the project's Work narrative so a new session can find it from the selected revision. Explain a non-required plan/narrative reference as an option for a progress document, with the human choosing its role and required flag; do not silently change reference policy. On resume, follow that reference. If it is absent or ambiguous, report the gap and locate the document with the human instead of inventing a narrative or declaring resume complete.
@@ -58,7 +58,7 @@ Before requesting result acceptance:
 4. Use existing required document/evidence reference controls where byte-level verification fits the criterion; they do not replace semantic judgment. Missing/stale required references, unreadable authority and live-content mismatch must still be resolved through the documented refusal/recovery flow.
 5. If the selected revision changes, prepare the paired views and ticket again. Apply only the exact action explicitly authorized by the human, then re-read and distinguish stored completion from live agreement.
 
-Nonempty unavailable observations are provenance, not an automatic acceptance refusal. An empty list is not proof of verification. This procedure is not evidence that a human followed it; retain a real review trace before claiming that boundary is satisfied.
+Use unavailable observations to explain what could not be observed; their presence alone does not refuse acceptance, and an empty list does not prove verification. Retain a real review trace before reporting that the human review procedure was followed.
 
 
 ## Worker Review And Baseline Refresh
@@ -75,7 +75,7 @@ Keep project purpose, plan, progress and results in the existing project narrati
 
 At completion or abandonment, follow [Approval And Closeout](../../docs/REFERENCE.md#approval-and-closeout): check required preservation and host cleanup authority, retire eligible unused checkouts, or report their concrete remaining use and release condition in the existing record. Do not change submitted content or delete a recorded retention ref to make closeout look tidy.
 
-This describes the development workflow. Multi-process behavior and actual adopter use require their own evidence; the view does not qualify either.
+For this development workflow, multi-process behavior and actual adopter use need their own evidence; do not use a read-only view as qualification of either.
 
 ## Optional Umbrella Review
 
@@ -92,7 +92,7 @@ Before any document or index write, follow that section's scope and reference-im
 
 ## Project Rules And Supervised Iteration
 
-When planning an authorized change, read the project's applicable rules and identify documentation/verification impact. For requested rule adoption or maintenance, use [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules): preserve local choices, show conflicts and source/version uncertainty, and apply only the authorized project diff after the document checks. Where the applicable project rules require documentation-impact reporting, report affected documents and checks, a reason for no update, or an explicit follow-up owner/condition at result review. Follow [Check Before Writing](../../docs/REFERENCE.md#check-before-writing) for rule, pointer and follow-up edits; a candidate write still requires an explicit request. Do not turn this into a full-repository audit, a second tracker, or an automatic rule upgrade.
+When planning an authorized change, read the project's applicable rules and identify documentation/verification impact. For requested rule adoption or maintenance, use [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules): preserve local choices, show conflicts and source/version uncertainty, and apply only the authorized project diff after the document checks. Where the applicable project rules require documentation-impact reporting, report affected documents and checks, a reason for no update, or an explicit follow-up owner/condition at result review. Carry that rule's unresolved documentation items into the existing handoff or closeout explanation, using the project's canonical document pointers. This project-specific report is distinct from the common plan/result/follow-up alignment below. Follow [Check Before Writing](../../docs/REFERENCE.md#check-before-writing) for rule, pointer and follow-up edits; a candidate write still requires an explicit request. Do not turn this into a full-repository audit, a second tracker, or an automatic rule upgrade.
 
 For supervised iteration within a Work, use [Supervised Work Iteration](../../docs/GENERAL-WORK.md#supervised-work-iteration). Keep the authorized scope, verifier, budget and stop boundaries; readiness is not submission, acceptance or publication.
 
@@ -141,9 +141,9 @@ Human authorization remains necessary for intent acceptance, baseline refresh/re
 
 ## Follow-Up And Plan Alignment
 
-Begin with the current view, project entry and existing plan/narrative. Name the plan item and authoritative document set before work; if missing or ambiguous, expose the gap before claiming alignment. On review/resume, compare plan item → Work → result → remaining work → selected follow-up. Read `./colvia view continuation WORK_ID` even for completed Work, with current candidate choice and the source/target views. Do not create a second status registry or infer a decision from the newest file.
+Begin with the current view, project entry and existing plan/narrative. Name the plan item and authoritative document set before work. If either is missing or ambiguous, report the gap and do not claim plan alignment until it is resolved. On review/resume, compare plan item → Work → result → remaining work → selected follow-up. Read `./colvia view continuation WORK_ID` even for completed Work, with current candidate choice and the source/target views. Do not create a second status registry or infer a decision from the newest file.
 
-Before requesting result acceptance, prepare the existing plan's proposed completion/residual wording within authorized scope and ordinary document/content/ref rules; mark proposed acceptance accurately. After actual acceptance, report the resulting alignment and any document edit still needed. Do not silently edit an accepted required input, alter a submitted result behind its ticket, or claim a proposed plan update is accepted. If an after-acceptance edit needs rebind/new Work or separate authorization, explain the smallest next action under Check Before Writing. Reuse valid approvals and the existing narrative.
+Before requesting result acceptance, draft the existing plan update within authorized scope and ordinary document/content/ref rules, stating what would be complete and what would remain; mark proposed acceptance accurately. After actual acceptance, explain how the accepted result changes the plan and which document edits are still needed. Do not silently edit an accepted required input, alter a submitted result behind its ticket, or claim a proposed plan update is accepted. If an after-acceptance edit needs rebind/new Work or separate authorization, explain the smallest next action under Check Before Writing. Reuse valid approvals and the existing narrative.
 
 Explain the four states in the human's language: proposal needs a later accepted intent; existing Work uses that Work's current authority/state; explicit none records no follow-up; undecided records no choice. Show both valid candidate/continuation selections if they conflict; return that actual conflict to the human without overwriting either. Source/target progress, changed purpose, stale references, pending recovery and unavailable usage must remain visible. Read only for an ambiguous “continue” request; do not save a new choice as a side effect.
 

@@ -3,7 +3,7 @@
 This is the canonical agent entry for Colvia’s single-home `continuation-1` profile.
 Read [docs/README.md](docs/README.md) for document authority and currentness.
 
-These instructions describe the `continuation-1` profile; in an installed project, use the verified installed release; see [Profile and authorization](docs/README.md#continuation-1). Document presence and a verified binding do not prove Owner authorization or source-contract activation. Editing these files does not activate the contract.
+These instructions describe the `continuation-1` profile; in an installed project, use the verified installed release; see [Profile and authorization](docs/README.md#continuation-1). Owner authorization and source-contract activation come from their actual decisions. Do not infer either from document presence or a verified binding. Editing these files does not activate the contract.
 
 ## Authority Floor
 
@@ -41,7 +41,7 @@ On resume, read the selected Work, its referenced plan and `./colvia view contin
 - Recovery and exit: [Operations](docs/OPERATIONS.md), [Manual Operation](docs/MANUAL-OPERATION.md)
 - Trust and support: [Security and Support](docs/SECURITY-AND-SUPPORT.md)
 
-General usability, real-project multi-worker efficiency and production readiness require their own evidence. Historical observations in [Security and Support](docs/SECURITY-AND-SUPPORT.md) do not qualify the current source or installed release.
+Use evidence for the exact current source or installed release when assessing general usability, real-project multi-worker efficiency or production readiness. Keep the historical observations in [Security and Support](docs/SECURITY-AND-SUPPORT.md) within their recorded scope; do not use them as qualification of the current source or installed release.
 
 The optional direct-child parent gate requires human acceptance of the integrated result. Follow the current index and the exact installed release; development acceptance does not qualify a release candidate.
 
