@@ -4,6 +4,8 @@ Current source technical contract: the accepted [continuation-1 successor](../de
 
 Preparation revision: this label and the Proposed headings identify the prepared bytes. This index has no effect as an intake/navigation surface unless [DR-0003](../decisions/DR-0003-source-development-procedure-and-bounded-intake.md) records Owner acceptance and verified activation of the identified intake/criteria revision and named scope. Consult that record for the current acceptance and activation state. Its initial full-file identity does not freeze later authorized navigation or New Source Candidates additions/edits; neither may alter accepted legacy criteria or scope. Record the resulting revision and bounded diff in the authorizing record. The destination procedure location is [Source Project Rules And Development Workflow](WORKFLOW.md), with exact relocation/cutover controlled by [DR-0006](../decisions/DR-0006-source-contributor-document-structure.md). Until that amendment is accepted and activated, the [retained accepted procedure](../DECISION-GUIDE.md#retained-source-procedures) remains effective. Use [DR-0001](../decisions/DR-0001-work-continuation-selection-and-recovery.md) for the current source successor, [DR-0005 activation](../decisions/DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation) for the retained installed predecessor, and retain the [DR-0002 amendment](../decisions/DR-0002-checkout-1-contract-baseline.md#entry-1-amendment-activation--2026-10-14) history and unaffected guarantees. The [Checkout-1 Structural Contract](CHECKOUT-1-STRUCTURE.md) remains part of that accepted technical set.
 
+Owner design direction (2026-10-26): [U2 minimum platform boundary and deferred integration refactor](u2-tool-neutral-execution-plan.md#platform-direction-and-minimum-u2-boundary--2026-10-26), recorded in [the U2 Work](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#platform-direction-applied-with-central-plan--2026-10-26). This navigation does not change the accepted intake, Windows admission or technical activation.
+
 ## Proposed Intake
 
 The following proposal paragraph preserves the original intake wording. Current source adoption and the separately authorized U1 implementation are identified above and in the navigation table; historical Draft labels do not override that current status. The accepted purpose, criteria and execution boundaries below are unchanged.
@@ -66,9 +68,9 @@ Product planning and product maintenance now belong here. Actual adopter work, p
 
 | Candidate | Purpose and next decision | Reconsideration condition / execution boundary | Current navigation |
 | --- | --- | --- | --- |
-| [Product documentation and comprehension](#product-documentation-and-comprehension) | Keep current product explanations, evidence boundaries and selected language surfaces aligned | Observed drift, a bounded reader problem or a selected release scope; private guide authorship is separate | Unselected |
+| [Product documentation and comprehension](#product-documentation-and-comprehension) | Keep current product explanations, evidence boundaries and selected language surfaces aligned | Observed drift, a bounded reader problem or a selected release scope; private guide authorship is separate | Unselected; [document alignment and tutorial follow-up](u2-single-host-continuous-work-plan.md#documentation-alignment-and-tutorial-follow-up) |
 | [Review relay minimum](#review-relay-minimum) | Consider a manual-first review evidence contract | A selected contract decision; non-blocking for initial Preview, no external tool requirement | Unselected |
-| [Onboarding and first work](#onboarding-and-first-work) | Distinguish bounded private admission from anonymous public completion | A separately selected use or public-readiness task; no new supported behavior by prose | Unselected |
+| [Onboarding and first work](#onboarding-and-first-work) | Distinguish bounded private admission from anonymous public completion | A separately selected use or public-readiness task; no new supported behavior by prose | Unselected; [remaining first-path tutorial](u2-single-host-continuous-work-plan.md#remaining-first-path-tutorial) |
 | [Human-readable projection](#human-readable-projection) | Expose canonical state, evidence and next action without new authority | Observed navigation/reading gap or selected public-readiness scope | Unselected |
 | [Verifiable slicing](#verifiable-slicing) | Preserve independent criteria, relationships and incomplete parent results | A demonstrated decomposition need or selected public onboarding minimum; existing direct-child contract stays in force | Unselected |
 | [Identity-preserving attach](#identity-preserving-attach) | Design safe re-entry for the current format | After live macOS Preview, before GA; current attach refusal remains | Deferred |
@@ -202,6 +204,14 @@ The original preparation recorded no candidates; the dated entry above is a late
 None created by this proposal. Allocate a plain development record ID only when a bounded task is selected and its plan approved. Before that, use [Preliminary Review Location](WORKFLOW.md#preliminary-review-location), subject to the relocation boundary above, without allocating a task ID. The selected record references the exact intake/criteria revision and owns detailed progress, reviews, result and remaining work; this index adds only navigation under the applicable Owner authorization. DR-0001 owns its contract choices. Neither editing this sentence nor accepting a contract Draft starts a development task or creates a runtime Work/intent.
 
 ## Authorized Development Records
+
+- [CHORE-20261027-001 — Public History Preparation](CHORE-20261027-001-public-history-preparation.md#owner-acceptance-and-work-done--2026-10-27): Done after Owner acceptance of R1 and its remaining review limits on 2026-10-27; Git actions remain separate.
+
+- [FEAT-20261022-001 — Prepared Tool Plan Live Qualification](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#final-owner-acceptance-and-work-done--2026-10-27-kst): Done after Owner acceptance on 2026-10-27; Git publication remains separate.
+
+- [FEAT-20261021-003 — Prepared tool plan initial proof](FEAT-20261021-003-prepared-tool-plan-proof.md): Owner-authorized isolated runtime proof; live provider/adopter qualification remains separate.
+
+- [FEAT-20261021-002 — U2 single-host source A](FEAT-20261021-002-u2-single-host-source.md): Owner-selected source implementation and synthetic qualification; actual target execution remains separate.
 
 - [PATCH-20261020-001: Lifecycle Checkpoint Observation Source Integration](PATCH-20261020-001-lifecycle-checkpoint-observation.md#owner-result-acceptance-and-source-closeout--2026-10-20) — bounded source result accepted and Done on 2026-10-20; qualification and publication remain separate.
 
