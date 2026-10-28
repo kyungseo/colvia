@@ -19,6 +19,18 @@ import re
 from ..contracts import *
 from ..execution_os import execution_os
 from . import fresh_codex_contract as fresh_u2
+from . import edit_codex_contract as edit_u2
+
+
+def execution_policy(anchor):
+    """Closed descriptor selection; unknown kind/version never selects a new execution path."""
+    if anchor.get("version") == 59:
+        edit_u2.anchor_fields(anchor)
+        return edit_u2
+    if anchor.get("version") == 58:
+        fresh_u2.anchor_fields(anchor)
+        return fresh_u2
+    return None
 
 DISABLED_FEATURES = ("apps", "hooks", "multi_agent", "multi_agent_v2", "code_mode", "code_mode_host")
 
@@ -643,7 +655,7 @@ class Budget:
         self.anchor = json.loads(raw, object_pairs_hook=reject_duplicate_keys)
         require(canonical(self.anchor) == raw, "noncanonical budget anchor")
         self._anchor_fields(self.anchor)
-        if self.anchor["version"] == 58:
+        if self.anchor["version"] in (58, 59):
             self.os = execution_os(require, purpose="codex-v58")
             require(str(self.directory) == self.anchor["run_directory"], "v58-directory-binding")
         self.anchor_sha256 = anchor_sha256
@@ -651,6 +663,7 @@ class Budget:
 
     @staticmethod
     def _anchor_fields(anchor):
+        if isinstance(anchor, dict) and anchor.get("version") == 59: return edit_u2.anchor_fields(anchor)
         if isinstance(anchor, dict) and anchor.get("version") == 58: return fresh_u2.anchor_fields(anchor)
         if isinstance(anchor,dict) and anchor.get("version") in (31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57):return u2_anchor_fields(anchor)
         if isinstance(anchor,dict) and anchor.get("version") in (24,25,26,27,28,29,30):return clock_anchor_fields(anchor)
@@ -680,8 +693,8 @@ class Budget:
         return rows
 
     def _lineage(self, rows):
-        if self.anchor["version"] == 58:
-            fresh_u2.contract(self.anchor, self.fresh_bound)
+        if self.anchor["version"] in (58, 59):
+            execution_policy(self.anchor).contract(self.anchor, self.fresh_bound)
             return [(self.anchor, self.anchor_sha256, rows)]
         """Read immutable predecessors; only the selected epoch supplies the live clock."""
         segments, seen = [], set()
@@ -954,9 +967,9 @@ class Budget:
     @classmethod
     def create(cls, directory, anchor):
         directory = Path(directory)
-        if anchor.get("version") == 58:
+        if anchor.get("version") in (58, 59):
             execution_os(require, purpose="codex-v58")
-            fresh_u2.contract(anchor, cls.fresh_bound)
+            execution_policy(anchor).contract(anchor, cls.fresh_bound)
             require(str(directory) == anchor["run_directory"], "v58-directory-binding")
         directory.mkdir(mode=0o700, exist_ok=False)
         durable_private(directory / "anchor.json", anchor)
@@ -980,7 +993,7 @@ class Budget:
 
     def _clock(self):
         now = time.time_ns() // 1_000_000
-        if self.anchor['version'] == 58:
+        if self.anchor['version'] in (58, 59):
             elapsed = (self.os.continuous_ns() - self.anchor['origin_monotonic_ns']) // 1_000_000
             require(elapsed >= 0 and abs(now - self.anchor['origin_wall_ms'] - elapsed) <= 2000, 'v58-clock-drift')
             return now
@@ -990,7 +1003,7 @@ class Budget:
 
     def _validate(self, rows, recovery_inspection_ms=None):
         now = self._clock() if recovery_inspection_ms is None else recovery_inspection_ms
-        if self.anchor["version"] == 58: return fresh_u2.budget_state(self, rows, now)
+        if self.anchor["version"] in (58, 59): return execution_policy(self.anchor).budget_state(self, rows, now)
         if self.anchor["version"] in (31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57):return u2_budget_state(self,rows,now)
         if self.anchor["version"] in (24,25,26,27,28,29,30):return clock_budget_state(self,rows,now)
         if self.anchor["version"] in (21,22,23):return diagnostic_budget_state(self,rows,now)
@@ -1160,7 +1173,7 @@ class Budget:
     def read(self):
         fd = checked_open(self.lock_path, os.O_RDWR)
         try:
-            if self.anchor["version"] == 58:
+            if self.anchor["version"] in (58, 59):
                 self.os.budget_lock(fd, exclusive=False, deadline_ms=min(self.anchor["total_deadline_ms"], self.anchor["run_deadline_ms"]))
             else:
                 bounded_flock(fd, fcntl.LOCK_SH, self.anchor["total_deadline_ms"])
@@ -1183,7 +1196,7 @@ class Budget:
         """Read-only admission, not a reservation; the result still needs reserve()."""
         fd = checked_open(self.lock_path, os.O_RDWR)
         try:
-            if self.anchor["version"] == 58:
+            if self.anchor["version"] in (58, 59):
                 self.os.budget_lock(fd, exclusive=False, deadline_ms=min(self.anchor["total_deadline_ms"], self.anchor["run_deadline_ms"]))
             else:
                 bounded_flock(fd, fcntl.LOCK_SH, self.anchor["total_deadline_ms"])
@@ -1198,10 +1211,10 @@ class Budget:
             os.close(fd)
 
     def reserve(self, kind, subject, phase="controller", start="controller", allow_closeout=False):
-        require(self.anchor["version"] != 58 or not getattr(self, "fresh_failed", False) or (allow_closeout and kind == "execution-stop"), "v58-journal-poisoned")
+        require(self.anchor["version"] not in (58, 59) or not getattr(self, "fresh_failed", False) or (allow_closeout and kind == "execution-stop"), "v58-journal-poisoned")
         fd = checked_open(self.lock_path, os.O_RDWR)
         try:
-            if self.anchor["version"] == 58:
+            if self.anchor["version"] in (58, 59):
                 self.os.budget_lock(fd, exclusive=True, deadline_ms=min(self.anchor["total_deadline_ms"], self.anchor["run_deadline_ms"]))
             else:
                 bounded_flock(fd, fcntl.LOCK_EX, self.anchor["total_deadline_ms"])
@@ -1214,19 +1227,21 @@ class Budget:
                 os.fsync(stream.fileno())
             return event
         except BlockingIOError:
-            if self.anchor["version"] == 58: self.fresh_failed = True
+            if self.anchor["version"] in (58, 59): self.fresh_failed = True
             raise HostRefusal("concurrent journal writer")
         except BaseException:
-            if self.anchor["version"] == 58: self.fresh_failed = True
+            if self.anchor["version"] in (58, 59): self.fresh_failed = True
             raise
         finally:
             os.close(fd)
 
     def execution_reserve_ms(self):
+        if self.anchor["version"] == 59: return edit_u2.RESERVE_MS
         if self.anchor["version"] == 58: return 1_800_000
         return 1_200_000 + (858_141 if self.anchor["version"] >= 2 else 0)
 
     def resume_check(self, checkpoint, input_identity):
+        require(self.anchor["version"] != 59, "edit-resume-forbidden")
         state = self.read()
         require(checkpoint["approval"] == self.anchor["approval"] and checkpoint["work"] == self.anchor["work"] and
                 input_identity == self.anchor["input_identity"] == checkpoint["input_identity"], "resume approval/input drift")
@@ -1438,7 +1453,7 @@ class NativeNotificationFlow(FixtureNotificationFlow):
 
 
 def bind_native_notifications(client, runtime, runtime_spec, anchor):
-    require(anchor["version"] in (13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58) and runtime["binary_sha256"] == anchor["candidate"]
+    require(anchor["version"] in (13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59) and runtime["binary_sha256"] == anchor["candidate"]
             and runtime_spec["candidate"] == anchor["candidate"]
             and runtime_spec["launch_contract_sha256"] == anchor["launch_contract_sha256"], "native notice candidate binding")
     root = Path(runtime_spec["root"])
@@ -1453,7 +1468,7 @@ def bind_native_notifications(client, runtime, runtime_spec, anchor):
     client.native_notifications = True
     client.fixture_flow = NativeNotificationFlow()
     client.native_direct_notice = None
-    if anchor["version"] in (25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58) and runtime_spec.get("direct_tool_policy") == anchor.get("direct_tool_policy") and anchor["direct_tool_policy"]["mode"] == "direct":
+    if anchor["version"] in (25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59) and runtime_spec.get("direct_tool_policy") == anchor.get("direct_tool_policy") and anchor["direct_tool_policy"]["mode"] == "direct":
         host_program = str(Path(runtime["binary"]).parent / "codex-code-mode-host")
         client.native_direct_notice = ("Code Mode is unavailable because failed to spawn code-mode host " + host_program + ": host executable was not found. Falling back to direct tools; enable `features.code_mode_host` and install `codex-code-mode-host`.")
         client.native_direct_notice_seen = False
@@ -1908,6 +1923,11 @@ class Admission(EffectAdmission):
 
 
 def phase_transport_limit(state, slot, version=6):
+    if version == 59:
+        require(slot == edit_u2.SLOT and not state["stopped"], "edit-transport-slot-stop")
+        used = sum(e["kind"] in ("control", "generation") for e in state["events"])
+        require(0 <= used < 13, "edit-transport-cap")
+        return 13 - used
     if version == 58:
         require(slot == 's4' and not state['stopped'], 'v58-transport-slot-stop')
         used = sum(e['kind'] in ('control', 'generation') for e in state['events'])
@@ -1958,7 +1978,7 @@ def frozen_network_peer(version, addresses, evidence):
     require(isinstance(addresses,list) and 0 < len(addresses) <= 32 and len(set(addresses))==len(addresses)
             and all(str(ipaddress.ip_address(ip))==ip and ipaddress.ip_address(ip).is_global and not ipaddress.ip_address(ip).is_multicast for ip in addresses), "FD frozen addresses")
     expected={"host":"chatgpt.com","addresses":addresses,"resolution_count":1}
-    if version == 58:
+    if version in (58, 59):
         expected["selected_peer"] = "104.18.32.47"
         require(type(evidence.get("resolution_count")) is int and "104.18.32.47" in addresses,
                 "v58-approved-peer-unavailable")
@@ -1987,7 +2007,7 @@ class PreparedFdController:
         require(all(str(ipaddress.ip_address(ip)) == ip and ipaddress.ip_address(ip).is_global and
                     not ipaddress.ip_address(ip).is_multicast for ip in addresses), "FD target not public")
         self.selected_peer = frozen_network_peer(budget.anchor["version"],addresses,resolver_evidence)
-        if budget.anchor["version"] == 58:
+        if budget.anchor["version"] in (58, 59):
             require(self.selected_peer == "104.18.32.47", "v58-FD-peer-binding")
         state = budget.read()
         require(not state["stopped"] and state["paused_at"] is None and state["remaining_ms"] > budget.execution_reserve_ms(), "FD budget unavailable")
@@ -1995,6 +2015,7 @@ class PreparedFdController:
         expected = {"slot":slot, "start_id":((clock_allocation(budget.anchor["version"])["proxy_start"] if budget.anchor["version"] in (24,25,26,27,28,29,30) else diagnostic_allocation(budget.anchor["version"])["proxy_start"] if budget.anchor["version"] in (21,22,23) else "s4-13" if budget.anchor["version"]==20 else "s4-12" if budget.anchor["version"]==19 else "s4-11" if budget.anchor["version"]==18 else "s4-10" if budget.anchor["version"]==17 else "s4-09" if budget.anchor["version"]==16 else "s4-08" if budget.anchor["version"] in (14,15,16,17,18,19,20) else "s4-07" if budget.anchor["version"] in (9,10,11,12,13,14,15,16,17,18,19,20) else "s4-06" if budget.anchor["version"]==8 else "s4-05" if budget.anchor["version"]==7 else "s4-04" if budget.anchor["version"] == 6 else "s4-03" if budget.anchor["version"] == 5 else "s4-02") if slot=="s4" else "s6-01")} if budget.anchor["version"] >= 3 else {"slot":slot}
         if budget.anchor["version"] in (31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57):expected={"slot":u2_allocation(budget.anchor["version"]).get("proxy_slot","s4"),"start_id":u2_allocation(budget.anchor["version"])["proxy_start"]}
         if budget.anchor["version"] == 58: expected = {"slot":"s4", "start_id":"v58-" + budget.anchor["run_id"]}
+        if budget.anchor["version"] == 59: expected = {"slot":edit_u2.SLOT, "start_id":"edit-" + budget.anchor["run_id"]}
         require(last["kind"] == "proxy-start" and last["subject"] == expected, "FD proxy reservation missing")
         self.max_requests = phase_transport_limit(state, slot, budget.anchor["version"])
         self.reservation, self.addresses, self.nonce = state["prev"], list(addresses), secrets.token_hex(32)
@@ -2211,24 +2232,37 @@ def protected_auth_metadata(auth_home):
 
 def validate_native_launch(runtime, spec, anchor, anchor_sha256, env):
     require(set(runtime)=={"binary","binary_sha256","spec","spec_sha256","launch_mode","launch_contract","launch_contract_sha256"}, "native runtime fields")
-    require(runtime["launch_mode"]==spec.get("launch_mode")==anchor.get("launch_mode")=="trusted-native-runtime" and spec.get("version")==2 and anchor.get("version") in (4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58), "native launch mode")
+    require(runtime["launch_mode"]==spec.get("launch_mode")==anchor.get("launch_mode")=="trusted-native-runtime" and spec.get("version")==2 and anchor.get("version") in (4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59), "native launch mode")
     for key in ("binary","spec","launch_contract"):
         path=Path(runtime[key])
         require(path.resolve(strict=True)==path and digest(artifact_read(path,executable=True) if key=="binary" else control_read(path,1_048_576))==runtime[key+"_sha256"], "native input drift")
     require(runtime["launch_contract"]==spec.get("launch_contract") and runtime["launch_contract_sha256"]==spec.get("launch_contract_sha256")==anchor.get("launch_contract_sha256"), "native launch contract binding")
     contract=json.loads(control_read(runtime["launch_contract"]),object_pairs_hook=reject_duplicate_keys)
-    require(set(contract)=={"version","launch_mode","candidate","source_identity","launches","roles"} | ({"network"} if anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58) else set()) | ({"direct_tool_policy"} if anchor["version"] in (20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58) else set()) | ({"diagnostic_policy"} if anchor["version"] in (21,22,23) else set()) and contract["version"]==(2 if anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58) else 1) and contract["launch_mode"]==runtime["launch_mode"] and
+    require(set(contract)=={"version","launch_mode","candidate","source_identity","launches","roles"} | ({"network"} if anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59) else set()) | ({"direct_tool_policy"} if anchor["version"] in (20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59) else set()) | ({"diagnostic_policy"} if anchor["version"] in (21,22,23) else set()) and contract["version"]==(2 if anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59) else 1) and contract["launch_mode"]==runtime["launch_mode"] and
             contract["candidate"]==runtime["binary_sha256"]==spec["candidate"]==anchor["candidate"] and contract["source_identity"]==spec["source_identity"]==anchor["source_identity"], "native contract identity")
-    if anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58): require(contract["network"]=={'host': 'chatgpt.com', 'port': 443, 'peer': '104.18.32.47'},"native network binding")
+    if anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59): require(contract["network"]=={'host': 'chatgpt.com', 'port': 443, 'peer': '104.18.32.47'},"native network binding")
     if anchor["version"] in (20,21,22,23,24,25,26,27,28,29,30):
         policy={"version":1,"mode":"direct","model":"gpt-6-astra","profiles":["clock","u2"],"approval":anchor["approval"]}
-        require(spec.get("direct_tool_policy")==contract.get("direct_tool_policy")==anchor.get("direct_tool_policy")==policy and spec.get("approval")==anchor["approval"] and spec.get("profile")=="clock" and spec.get("phase")=="clock" and spec.get("start")==(clock_allocation(anchor["version"])["start"] if anchor["version"] in (24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58) else diagnostic_allocation(anchor["version"])["start"] if anchor["version"] in (21,22,23) else "clock-11"), "MCP41 Direct policy binding")
+        require(spec.get("direct_tool_policy")==contract.get("direct_tool_policy")==anchor.get("direct_tool_policy")==policy and spec.get("approval")==anchor["approval"] and spec.get("profile")=="clock" and spec.get("phase")=="clock" and spec.get("start")==(clock_allocation(anchor["version"])["start"] if anchor["version"] in (24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59) else diagnostic_allocation(anchor["version"])["start"] if anchor["version"] in (21,22,23) else "clock-11"), "MCP41 Direct policy binding")
     if anchor["version"] in (21,22,23):require(spec.get("diagnostic_policy")==contract.get("diagnostic_policy")==anchor.get("diagnostic_policy")==DIAGNOSTIC_POLICY,"diagnostic policy binding")
-    if anchor["version"] in (24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58):require("diagnostic_policy" not in spec and "diagnostic_policy" not in contract and "diagnostic_policy" not in anchor,"clock diagnostic policy forbidden")
+    if anchor["version"] in (24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59):require("diagnostic_policy" not in spec and "diagnostic_policy" not in contract and "diagnostic_policy" not in anchor,"clock diagnostic policy forbidden")
     if anchor["version"] in (31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57):
         u2_anchor_fields(anchor)
         require(spec.get("phase")==u2_allocation(anchor["version"]).get("phase","synthetic") and spec.get("profile")=="u2" and spec.get("start") in u2_allocation(anchor["version"])["starts"] and spec.get("approval")==anchor["approval"] and spec.get("direct_tool_policy")==contract.get("direct_tool_policy")==anchor["direct_tool_policy"],"U2 Direct launch binding")
-    require(spec.get('execution_template_sha256') == fresh_u2.TEMPLATE_SHA256 if anchor['version'] == 58 else 'execution_template_sha256' not in spec, 'v58-template-spec-binding')
+    descriptor = execution_policy(anchor)
+    require(spec.get('execution_template_sha256') == descriptor.TEMPLATE_SHA256 if descriptor else 'execution_template_sha256' not in spec, 'execution-template-spec-binding')
+    if anchor['version'] == 59:
+        edit_u2.contract(anchor, Budget.fresh_bound)
+        require(spec.get('phase') == edit_u2.PHASE and spec.get('profile') == 'u2' and spec.get('start') == edit_u2.START
+                and spec.get('approval') == anchor['approval'] and spec.get('direct_tool_policy') == contract.get('direct_tool_policy') == anchor['direct_tool_policy']
+                and spec.get('journal_anchor') == str(Path(anchor['run_directory']) / 'anchor.json'), 'edit-launch-binding')
+        require(spec['expires_unix_ms'] <= min(anchor['run_deadline_ms'], anchor['total_deadline_ms']) - edit_u2.RESERVE_MS, 'edit-launch-deadline')
+        require(spec.get('work') == anchor['work'] and spec.get('input_template_identity') == anchor['input_identity']
+                and spec['document_policy']['sources'] == anchor['edit_scope']['files']
+                and spec['document_policy']['outputs'] == [anchor['edit_scope']['output']['id']]
+                and spec['document_policy']['approval'] == anchor['approval'], 'edit-launch-task-binding')
+        require(spec['transport']['slot'] == edit_u2.SLOT and type(spec['transport']['max_requests']) is int
+                and 0 < spec['transport']['max_requests'] <= 13, 'edit-launch-transport')
     if anchor['version'] == 58:
         execution_os(require, purpose='codex-v58')
         fresh_u2.contract(anchor, Budget.fresh_bound)
@@ -2258,7 +2292,11 @@ class LiveSession:
         self.deadline_active_ms = self.runtime_spec["expires_unix_ms"]
         self.owner_text = control_read(Path(spec["owner_input"]), 65_536).decode("utf-8")
         require(digest(self.owner_text.encode()) == spec["owner_input_sha256"], "Owner input drift")
-        require(spec["phase"] in PHASE_CAPS and (spec["start"] in (spec["phase"] + "-01", spec["phase"] + "-02") or (budget.anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30) and spec["phase"]=="clock" and spec["start"]==(clock_allocation(budget.anchor["version"])["start"] if budget.anchor["version"] in (24,25,26,27,28,29,30) else diagnostic_allocation(budget.anchor["version"])["start"] if budget.anchor["version"] in (21,22,23) else "clock-11" if budget.anchor["version"]==20 else "clock-10" if budget.anchor["version"] in (18,19) else "clock-09" if budget.anchor["version"]==17 else "clock-08" if budget.anchor["version"]==16 else "clock-07" if budget.anchor["version"] in (14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30) else "clock-06" if budget.anchor["version"] in (9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30) else "clock-05" if budget.anchor["version"]==8 else "clock-04" if budget.anchor["version"]==7 else "clock-03"))), "phase/start allocation")
+        if budget.anchor["version"] == 59:
+            edit_u2.anchor_fields(budget.anchor)
+            require(spec["phase"] == edit_u2.PHASE and spec["start"] == edit_u2.START and not spec.get("resume_checkpoint"), "edit-phase-or-resume")
+        else:
+            require(spec["phase"] in PHASE_CAPS and (spec["start"] in (spec["phase"] + "-01", spec["phase"] + "-02") or (budget.anchor["version"] in (6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30) and spec["phase"]=="clock" and spec["start"]==(clock_allocation(budget.anchor["version"])["start"] if budget.anchor["version"] in (24,25,26,27,28,29,30) else diagnostic_allocation(budget.anchor["version"])["start"] if budget.anchor["version"] in (21,22,23) else "clock-11" if budget.anchor["version"]==20 else "clock-10" if budget.anchor["version"] in (18,19) else "clock-09" if budget.anchor["version"]==17 else "clock-08" if budget.anchor["version"]==16 else "clock-07" if budget.anchor["version"] in (14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30) else "clock-06" if budget.anchor["version"] in (9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30) else "clock-05" if budget.anchor["version"]==8 else "clock-04" if budget.anchor["version"]==7 else "clock-03"))), "phase/start allocation")
 
     def deadline(self):
         state = self.budget.read()
@@ -2267,7 +2305,7 @@ class LiveSession:
         return time.monotonic() + remaining / 1000
 
     def launch(self):
-        require(self.budget.anchor["version"] != 58, "v58-requires-readonly-session")
+        require(self.budget.anchor["version"] not in (58, 59), "fresh-kind-requires-dedicated-session")
         runtime = self.spec["runtime"]
         require(self.fd_controller is not None and self.runtime_spec.get("transport") == self.fd_controller.runtime_transport(), "prepared FD controller binding required")
         env=closed_environment({"TMPDIR":str(Path(self.runtime_spec["root"])/"tmp")})
@@ -2442,6 +2480,7 @@ class LiveSession:
         return value
 
     def iterate(self):
+        require(self.budget.anchor["version"] not in (58, 59), "fresh-kind-requires-dedicated-iteration")
         while True:
             state = self.budget.read()
             version = self.budget.anchor["version"]
