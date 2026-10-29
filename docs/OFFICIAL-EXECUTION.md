@@ -43,6 +43,7 @@ Agent는 다음 필드만 포함한 JSON을 준비한다. 누락·추가 필드�
 | `documents.output` | 파일 ID 하나. 서로 다른 ID가 같은 파일을 가리킬 수 없다. |
 | `documents.claims` | 출력 ID 아래 `required`, `forbidden`, `evidence`. evidence 각 항목은 참조 문서의 `file_id`와 실제 존재하는 `quote`다. |
 | `documents.approved_external_links` | 허용할 HTTPS 또는 mailto 링크 목록. |
+| `documents.link_targets` | 선택 필드. 초기 출력 전체에서 참조하지만 files에 없는 로컬 대상의 `{path, anchors}` 목록. 최대64개이며 빈 목록은 생략한다. anchor가 있는 대상은 최대8개, 대상별 anchor는 최대32개·각512 UTF-8 byte다. |
 | `read_ids` | files의 모든 ID를 정렬한 목록. 문서는 1–8개이며 근거를 위한 참조 문서가 필요하다. |
 | `prompt`, `owner_statement` | 수행 지시와 로컬 운영자의 승인 선언. 각각 최대 32 KiB와 4,096자. |
 | `runtime` | 아래 고정 `paths`, `sha256` 집합. 임의 인자는 받지 않는다. |
@@ -69,3 +70,15 @@ update와 rollback은 검증된 동일 window 사이에서만 가능하다. 지�
 ## Runtime 입력과 지원 경계
 
 공식 CLI 0.165.0의 고정 binary/helper identity, 허용된 Python, 기존 기본 ChatGPT 로그인, 설정·rules·전역 지침의 명시적 읽기 경로를 사용한다. 임의 API key/provider, 추가 도구·MCP, 별도 권한 profile은 허용하지 않는다. 고정 macOS 정책은 App Server와 문서 worker를 분리하며 문서 읽기와 쓰기는 Host가 허용한 worker만 수행한다. 네트워크는 공식 runtime의 정상 TLS transport에 한정된 정책 경계를 사용한다. 다른 OS나 CLI 버전의 제품 지원을 이 결과로 추론하지 않는다.
+
+## 추가 로컬 링크 검증
+
+`documents.link_targets`는 모델이 읽을 문서 목록을 늘리지 않는다. 각 `path`는 worker root 아래의 존재하는 일반 파일을 가리키는 절대 실제 경로다. symlink·hardlink·dev/inode 중복·문서와의 중복, 대소문자를 달리한 `.git`/`.hrn` 및 `colvia` 경로는 거절한다. 초기 출력 전체의 로컬 링크에서 참조한 추가 대상과 anchor를 빠짐없이 정확히 지정해야 하며, 참조하지 않은 추가 경로나 anchor도 거절한다. 폴더 링크는 지원하지 않는다. anchor는 `#` 없이 URL decode된 정확한 문자열이며 대소문자를 유지한다. 중복은 거절하고 spec에는 정렬해 저장한다.
+
+예를 들어 출력에 `[설치](guide.md#설치)`가 있고 guide.md가 files에 없으면, 그 파일의 절대 실제 경로와 `anchors: ["설치"]`를 지정한다. fragment 없는 링크만 있으면 `anchors: []`다. 추가 링크 metadata 처리와 문서 worker는 이런 대상의 파일 identity·권한·크기·mtime만 결속하고 본문 읽기 권한을 추가하지 않는다. 기존 trusted Host의 Work snapshot은 프로젝트 파일 내용을 읽어 digest를 확인하며 이 변경으로 제거하거나 축소하지 않는다. 그 내용은 모델에 보내지 않는다. 내용 동일성을 보장하지 않으며 같은 크기로 내용을 바꾸고 mtime을 복원하면 검출하지 못한다. anchor 대상만 최대128KiB UTF-8 본문을 읽어 digest와 지정 anchor를 확인한다. 어느 경우도 추가 본문을 모델에 전송하지 않는다.
+
+prepare는 원본 출력 전체의 DOC-LINKS를 in-process 읽기 전용으로 실행하며 파일·capsule·worker를 만들지 않는다. 초기 출력의 로컬 링크 대상 누락·범위 밖 경로·anchor 누락·미승인 외부 링크·query 또는 절대 경로 링크는 편집 구간 안에 있어도 기존 요청을 거절한다. 따라서 그런 링크를 고치는 작업은 이 제한된 진입점의 지원 범위 밖이다. 사전검사는 링크 오류만 거절하므로 active HTML 제거 작업을 새로 막지 않으며, 수정 뒤에는 기존 전체 검증이 남은 active HTML도 거절한다. files에 없는 새 metadata 대상이나 기존 metadata 대상의 새 anchor는 초기 링크에서 승인할 수 없다. 이미 files에 포함된 문서와 그 유효한 anchor는 기존 범위다. 모델이 새 범위 밖 링크를 쓰면 사후 검증이 실패하며 자동으로 재시도하지 않는다.
+
+실행 전에 preview의 대상·anchor·metadata를 확인하고, 실행 중에는 링크 대상도 변경하지 않는다. metadata 변경은 drift로 중단될 수 있으며 모델 오류로 간주하지 않는다. 마지막 확인 뒤 파일이 사라지지 않는다는 보장은 없다. 이미 남은 capsule의 status/cancel/resolve/closed restore는 링크 대상의 현재 상태를 다시 승인 조건으로 삼지 않으며, 원 기록은 보존한다.
+
+추가 대상의 경로·inode·크기·mtime과 anchor 본문 digest도 capsule에 남아 Git commit에 포함될 수 있다. 기존 원문·진단 검토에 이 metadata도 포함한다. 새 link_targets를 쓰는 실제 adopter 실행 전에는 opaque/anchor·하위 폴더·opaque 본문 읽기 거절을 포함한 합성 native sandbox worker 검증이 필요하다. 소스의 in-process 검증이나 profile 검사만으로 이 OS 실행 경로를 입증하지 않는다.

@@ -1,5 +1,7 @@
 # Development Index
 
+- 공식 링크 metadata native 검증: [실행 근거와 한계](CHORE-20261030-001-official-link-native-validation.md).
+
 - 공식 adapter 제품 연결: [승인 범위와 진행](FEAT-20261029-002-official-adapter-product.md).
 
 ## Current Task — 2026-10-29
@@ -268,3 +270,5 @@ None created by this proposal. Allocate a plain development record ID only when 
 [DR-0004: First B1 Permission Observation Activation](../decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md#first-b1-permission-observation-activation--2026-10-15) records the accepted exact supplement and retained preparation-label interpretation. [Preparation and verification history](binding-permissions-amendment.md) remains preserved. Exact adopter application and public qualification retain their separate decisions.
 
 [Binding permission technical closeout](binding-permissions-amendment.md#technical-closeout--2026-10-16) — source result, exact identities, accepted evidence and remaining limits; existing preparation and private originals remain preserved.
+
+- 공식 링크 검증 정보 연결: [승인 범위와 진행](PATCH-20261029-003-official-link-metadata.md).

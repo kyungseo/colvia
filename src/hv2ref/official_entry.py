@@ -79,6 +79,76 @@ def observe_work(target, request, *, after_effect=False):
             'worker_snapshot': observed, 'product_ref': product['binding_ref'],
             'release_path': product['release_path'], 'inventory': product['inventory']}
 
+def document_path(path, worker_root):
+    p = canonical_existing(path, False)
+    state.need(p.is_relative_to(worker_root) and
+               not {'.git', '.hrn'} & {part.casefold() for part in p.relative_to(worker_root).parts} and
+               p.name.casefold() != 'colvia', 'document-outside-worker')
+    return p
+
+
+def link_inputs(docs, records, worker_root, parser_path, parser_sha256):
+    """Bind only original-output link targets; bodies remain outside model reads."""
+    from urllib.parse import unquote, urlsplit
+    from .official_documents import document_stat_key
+    from .official_worker import GFM, DocumentHTML
+    supplied = docs.get('link_targets', [])
+    state.need(type(supplied) is list and len(supplied) <= 64 and
+               ('link_targets' not in docs or bool(supplied)), 'link-target-list')
+    by_path = {entry['path'] for entry in records.values()}
+    output = records[docs['output']]
+    parser = GFM(parser_path, parser_sha256)
+    try:
+        rendered = DocumentHTML()
+        raw = state.regular(output['path'], 131072)
+        state.need(state.digest(raw) == output['sha256'], 'output-link-input-drift')
+        rendered.feed(parser.render(raw.decode('utf-8')))
+        rendered.close()
+        required = {}
+        for link in rendered.links:
+            parts = urlsplit(link)
+            if parts.scheme or parts.netloc:
+                continue  # The shared verifier checks external-link approval below.
+            state.need(not parts.query and not unquote(parts.path).startswith('/'), 'link-target-outside-scope')
+            destination = os.path.normpath(str(Path(output['path']).parent / unquote(parts.path))) if parts.path else output['path']
+            if destination not in by_path:
+                anchors = required.setdefault(destination, set())
+                if parts.fragment:
+                    anchors.add(unquote(parts.fragment))
+        metadata, identities, anchored = {}, {tuple(v['identity']) for v in records.values()}, 0
+        for item in supplied:
+            exact(item, {'path', 'anchors'}, 'link-target-fields')
+            path = document_path(item['path'], worker_root)
+            name, anchors = str(path), item['anchors']
+            state.need(name not in metadata and name not in by_path, 'link-target-alias')
+            state.need(type(anchors) is list and len(anchors) <= 32 and
+                       all(type(a) is str and 0 < len(a.encode()) <= 512 and
+                           not any(c in a for c in ('\x00', '\r', '\n')) for a in anchors) and
+                       len(set(anchors)) == len(anchors), 'link-anchor-list')
+            state.need(name in required and set(anchors) == required[name], 'unreferenced-or-missing-link-target-anchor')
+            before = path.lstat()
+            identity = (before.st_dev, before.st_ino)
+            state.need(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and identity not in identities, 'link-target-alias')
+            identities.add(identity)
+            content_sha = None
+            if anchors:
+                anchored += 1
+                state.need(anchored <= 8, 'anchored-target-limit')
+                record, raw = file_record(path, limit=131072)
+                state.need(record['identity'] == list(identity) and
+                           document_stat_key(path.lstat()) == document_stat_key(before), 'link-target-drift')
+                target = DocumentHTML(); target.feed(parser.render(raw.decode('utf-8'))); target.close()
+                state.need(set(anchors) <= target.anchors, 'link-anchor-missing')
+                content_sha = record['sha256']
+            metadata[name] = {'identity': list(identity), 'mode': stat.S_IMODE(before.st_mode),
+                              'size': before.st_size, 'mtime_ns': before.st_mtime_ns,
+                              'sha256': content_sha, 'anchors': sorted(anchors)}
+        state.need(set(metadata) == set(required), 'link-target-outside-scope')
+        return metadata
+    finally:
+        parser.close()
+
+
 def prepare(target, request):
     target = canonical_existing(str(Path(target)), True)
     exact(request, {'work_id', 'worker_root', 'documents', 'read_ids', 'prompt', 'owner_statement',
@@ -95,11 +165,12 @@ def prepare(target, request):
     paths = runtime_input(request['runtime'])
     runtime_root = canonical_existing(request['runtime_root'], True)
     state.need(stat.S_IMODE(runtime_root.stat().st_mode) & 0o077 == 0, 'private-runtime-root')
-    worker_root = Path(request['worker_root'])
+    worker_root = canonical_existing(request['worker_root'], True)
     for protected in (target, worker_root):
         state.need(runtime_root != protected and protected not in runtime_root.parents and runtime_root not in protected.parents, 'runtime-project-overlap')
     docs = request['documents']
-    exact(docs, {'files', 'output', 'claims', 'approved_external_links'}, 'document-request')
+    exact(docs, {'files', 'output', 'claims', 'approved_external_links'} |
+          ({'link_targets'} if type(docs) is dict and 'link_targets' in docs else set()), 'document-request')
     ids = request['read_ids']
     state.need(type(ids) is list and 1 <= len(ids) <= 8 and all(type(i) is str and i.isascii() and i.isalnum() and len(i) <= 64 for i in ids)
                and len(set(ids)) == len(ids) and type(docs['files']) is dict and set(ids) == set(docs['files']), 'document-id-set')
@@ -107,8 +178,7 @@ def prepare(target, request):
     records = {}
     for key in ids:
         item = docs['files'][key]; exact(item, {'path', 'view'}, 'document-entry')
-        p = canonical_existing(item['path'], False)
-        state.need(p.is_relative_to(worker_root) and '.hrn' not in p.relative_to(worker_root).parts and '.git' not in p.relative_to(worker_root).parts and p.name != 'colvia', 'document-outside-worker')
+        p = document_path(item['path'], worker_root)
         record, raw = file_record(p, limit=131072)
         raw.decode('utf-8')
         record['view'] = item['view']; records[key] = record
@@ -121,7 +191,8 @@ def prepare(target, request):
                        0 <= ranges[0][0] < ranges[0][1] <= len(raw), 'single-edit-range')
         else:
             state.need(item['view'] == {'kind': 'full'}, 'reference-view')
-    state.need(len({p['path'] for p in records.values()}) == len(records), 'document-path-alias')
+    state.need(len({p['path'] for p in records.values()}) == len(records) and
+               len({tuple(p['identity']) for p in records.values()}) == len(records), 'document-path-alias')
     from .official_documents import document_view, safe_text
     safe_text(request['prompt'])
     exact(docs['claims'], {docs['output']}, 'claims-output-coverage')
@@ -150,6 +221,19 @@ def prepare(target, request):
                  'view_contracts': initial_view_contracts(records), 'link_metadata': {}, **resources}
     for key, p in resources.items():
         documents[key + '_sha256'] = state.digest(state.regular(p, 512 * 1024 * 1024))
+    from .official_documents import parent_identities
+    from .official_worker import verify, WorkerRefusal
+    try:
+        documents['link_metadata'] = link_inputs(docs, records, worker_root, resources['parser'], documents['parser_sha256'])
+        preflight = dict(documents, parents=parent_identities([v['path'] for v in records.values()] + list(documents['link_metadata'])))
+        findings = verify(preflight, 'DOC-LINKS')['findings']
+    except UnicodeError:
+        state.need(False, 'link-anchor-encoding')
+    except WorkerRefusal:
+        state.need(False, 'initial-document-links-failed')
+    # Admission checks link scope. Active HTML cleanup retains the existing path:
+    # the unchanged full post-write verifier must reject any remaining active HTML.
+    state.need(all(item['code'] == 'active-html' for item in findings), 'initial-document-links-failed')
     state.need(pack_reads(records, origin={'sources': documents['source_digests'], 'approval': 'owner-official-' + '0' * 64}) == [ids], 'single-ordered-read-pack')
     spec = {'version': 1, 'target': str(target), 'request': request, 'work': work, 'documents': documents,
             'runtime_paths': paths, 'runtime_root': str(runtime_root), 'policy': 'official-cli-0.165.0-macos'}
