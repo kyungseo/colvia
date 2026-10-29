@@ -115,3 +115,7 @@ Before starting work, name the existing project plan and the item it covers. Aft
 ## Windows-2 Entry
 
 For a qualified windows-2 target, invoke the verified colvia file with an absolute allowed Python path and -I -B from native Windows PowerShell. This replaces only the generic ./colvia prefix; preserve arguments, human authorization and verified view/manual routing. Independent source lifecycle requires the explicit windows-2 profile, matching candidate and admitted native runtime. A POSIX shell, executable bit, entry-1 fallback or unverified interpreter alias is not a substitute. Fresh and same-window operations only; no old-window/cross-OS migration or detached-authority reinitialization. Report the exact qualified tuple and unavailable observations. These instructions grant no intent/result acceptance, writer authorization or environment qualification.
+
+## Optional Official Execution Candidate
+
+The shared source still declares `continuation-1`. Preparing `scripts/prepare-official.py --output NEW_DIRECTORY` creates the explicit macOS `official-execution-1` payload without installation or execution. Install only with separate authorization and the existing lifecycle preview/apply procedure. The verified release includes `docs/OFFICIAL-EXECUTION.md`. The candidate does not authorize updating an existing adopter or qualify Windows.

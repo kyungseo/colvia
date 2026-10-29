@@ -537,7 +537,7 @@ def _continuation_confirmation(target, ticket, works, product):
     else:
         try:
             _require(product is not None, "verified active product unavailable")
-            _require(product["inventory"]["inventory_id"] in ("continuation-1", "windows-2"), "continuation-capable runtime required")
+            _require(product["inventory"]["inventory_id"] in ("continuation-1", "windows-2", "official-execution-1"), "continuation-capable runtime required")
             runtime = {key: product[key] for key in ("binding_ref", "launcher_sha256")}
             runtime["inventory_id"] = product["inventory"]["inventory_id"]
             store = ContinuationStore(target)
@@ -740,7 +740,7 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
             status, works, intents = before = _observe(target)
             classification = status["classification"]
             lines = ["# Colvia — project review", "", "Read-only observation; human acceptance and exact application remain separate.", ""]
-            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "pending_continuation", "next_action", "error_code", "reason", "message", "lifecycle_ready", "retired_entry_collision", "continuation_unavailable"}}})
+            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "pending_continuation", "next_action", "error_code", "reason", "message", "lifecycle_ready", "retired_entry_collision", "continuation_unavailable", "official_execution"}}})
             if "runtime" in status: lines += fields({"runtime_supported": status["runtime"].get("supported", "unavailable")})
             product = _product(target)
             if product:

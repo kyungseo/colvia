@@ -1,0 +1,60 @@
+(version 1)
+(deny default)
+(allow process-info* (target self))
+(allow signal (target same-sandbox))
+(allow process-fork)
+(allow process-exec (literal (param "BIN")))
+(allow sysctl-read)
+(allow file-read-metadata)
+(allow file-read* (subpath "/System/Library") (subpath "/usr/lib") (subpath "/private/var/db/dyld") (subpath "/private/var/db/timezone") (subpath "/System/Cryptexes/OS/System/Library") (subpath "/System/Volumes/Preboot/Cryptexes/OS/System/Library"))
+(allow file-read-data (require-all (vnode-type DIRECTORY) (require-any (literal "/") (literal "/System/Cryptexes/OS") (literal "/System/Volumes/Preboot/Cryptexes/OS"))))
+(allow file-read* (literal "/dev/null") (literal "/dev/random") (literal "/dev/urandom"))
+(allow file-write-data (literal "/dev/null"))
+(allow file-read* (literal (param "BIN")) (subpath (param "PYROOT")) (subpath (param "RUNTIME")))
+(allow file-write* (subpath (param "SESSION")))
+(allow file-read* (literal "/opt/homebrew/opt/gettext/lib/libintl.8.dylib") (literal "/opt/homebrew/Cellar/gettext/1.0/lib/libintl.8.dylib"))
+; Official credential/config access; neither file is copied or exposed as a dynamic tool.
+(allow file-read* (literal (param "CODEX_CONFIG")) (literal (param "CODEX_AUTH")))
+(allow file-write* (literal (param "CODEX_AUTH")))
+; Ordinary official transport is trusted by this probe's approved contract.
+(allow network-outbound (remote tcp))
+(allow network-outbound (remote udp "*:53"))
+(allow mach-lookup (global-name "com.apple.system.logger") (global-name "com.apple.trustd.agent") (global-name "com.apple.securityd") (global-name "com.apple.networkd") (global-name "com.apple.SystemConfiguration.configd") (global-name "com.apple.dnssd.service"))
+(allow file-read* (literal "/private/etc/resolv.conf") (literal "/private/etc/hosts") (literal "/private/etc/services") (literal "/private/etc/protocols") (literal "/private/etc/ssl/cert.pem"))
+
+; Approved domain-scoped preference IPC.
+(allow mach-lookup
+  (global-name "com.apple.cfprefsd.daemon")
+  (global-name "com.apple.cfprefsd.agent")
+  (local-name "com.apple.cfprefsd.agent"))
+(allow user-preference-read (preference-domain "com.openai.codex"))
+(allow ipc-posix-shm-read* (ipc-posix-name-prefix "apple.cfprefs."))
+
+(allow file-read-data file-write-data (literal (param "INSTALLATION_ID")))
+
+; Observed DNSConfiguration bootstrap lookup denied (1100).
+(allow mach-lookup (global-name "com.apple.SystemConfiguration.DNSConfiguration"))
+
+; Observed AF_SYSTEM/protocol2 creation EPERM.
+(allow system-socket (require-all (socket-domain AF_SYSTEM) (socket-protocol 2)))
+
+; Owner-approved exact resolver endpoints.
+(allow file-read-data (literal "/private/var/run/resolv.conf"))
+(allow network-outbound (remote unix-socket (literal "/private/var/run/mDNSResponder")))
+
+; Exact public OS ICU data needed by the legacy certificate path.
+(allow file-read-data (literal "/usr/share/icu/icudt78l.dat"))
+
+; Exact legacy SecurityServer bootstrap service; requires Owner approval.
+(allow mach-lookup (global-name "com.apple.SecurityServer"))
+
+; Owner-approved exact existing execution-rule directory and file reads.
+(allow file-read-data (literal (param "CODEX_RULES_DIR")))
+(allow file-read-data (literal (param "CODEX_RULES_FILE")))
+
+; Owner-approved existing global instruction file; canonical target only.
+(allow file-read-data (literal (param "GLOBAL_INSTRUCTIONS")))
+
+; Owner-approved official orchestration helper, pinned by the trusted Driver.
+(allow file-read-data (literal (param "CODE_MODE_HOST")))
+(allow process-exec (literal (param "CODE_MODE_HOST")))

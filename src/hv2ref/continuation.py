@@ -439,7 +439,7 @@ class ContinuationStore:
 
     def _runtime(self):
         runtime = self.work_store._runtime()
-        require(runtime.get("inventory_id") in ("continuation-1", "windows-2"), "continuation writing requires a continuation-capable current runtime")
+        require(runtime.get("inventory_id") in ("continuation-1", "windows-2", "official-execution-1"), "continuation writing requires a continuation-capable current runtime")
         return runtime
 
     def _observe(self):

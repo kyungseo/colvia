@@ -1,5 +1,11 @@
 # Development Index
 
+- 공식 adapter 제품 연결: [승인 범위와 진행](FEAT-20261029-002-official-adapter-product.md).
+
+## Current Task — 2026-10-29
+
+- 공식 CLI 정책과 합성 U2 검증: [진행·결과·한계](PATCH-20261029-001-official-runtime-policy.md). 합성 source-only 결과는 Owner가 수락했으며 제품 연결은 후속 작업이다.
+
 ## Current Task — 2026-10-28
 
 - 단일 문서 편집 연결: [Owner 수락·source 완료와 한계](FEAT-20261028-001-single-document-edit.md#final-owner-acceptance-and-source-completion--2026-10-28). 다른 도입 프로젝트의 실제 적용과 Git 통합은 별도다.

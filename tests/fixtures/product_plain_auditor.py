@@ -12,6 +12,7 @@ ENTRY_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.jso
 DELEGATION_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/colvia-work/SKILL.md', 'colvia', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'src/hv2ref/__init__.py', 'src/hv2ref/candidates.py', 'src/hv2ref/cli.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/umbrella.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
 CONTINUATION_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILITIES.json', 'README.md', 'adapters/colvia-work/SKILL.md', 'colvia', 'docs/CONCEPTS.md', 'docs/GENERAL-WORK.md', 'docs/GETTING-STARTED.md', 'docs/GUIDED-INTENT-FORMATION.md', 'docs/MAINTAINING.md', 'docs/MANUAL-OPERATION.md', 'docs/OPERATIONS.md', 'docs/README.md', 'docs/REFERENCE.md', 'docs/SECURITY-AND-SUPPORT.md', 'docs/WORKSPACE-CONTRACT.md', 'src/hv2ref/__init__.py', 'src/hv2ref/candidates.py', 'src/hv2ref/cli.py', 'src/hv2ref/continuation.py', 'src/hv2ref/errors.py', 'src/hv2ref/intent.py', 'src/hv2ref/jsonio.py', 'src/hv2ref/product.py', 'src/hv2ref/umbrella.py', 'src/hv2ref/view.py', 'src/hv2ref/work.py', 'src/hv2ref/workspace.py')
 
+OFFICIAL_PATHS = tuple(sorted(CONTINUATION_PATHS + ('docs/OFFICIAL-EXECUTION.md', 'src/hv2ref/official_adapter.py', 'src/hv2ref/official_admission.py', 'src/hv2ref/official_documents.py', 'src/hv2ref/official_entry.py', 'src/hv2ref/official_host.py', 'src/hv2ref/official_os.py', 'src/hv2ref/official_policy.py', 'src/hv2ref/official_state.py', 'src/hv2ref/official_worker.py', 'runtime/official/marked-LICENSE.md', 'runtime/official/marked.umd.js', 'runtime/official/official-codex-macos.sb', 'runtime/official/worker.sb.in')))
 
 # Independent stdlib receipt/byte auditor. This intentionally does not import or
 # duplicate the full Work/intent state-machine implementation.
@@ -41,7 +42,7 @@ def safe_directory(path):
 
 
 def remaining_window(version,remove,remaining):
-    if version != 6:
+    if version not in (6,7):
         # Independent literal detection; do not add new validation to old pairs.
         import ast
         for name, data in remaining.items():
@@ -61,10 +62,10 @@ def remaining_window(version,remove,remaining):
                 for node in tree.body:
                     if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "WORKSPACE_INVENTORY_ID" for t in node.targets):
                         if isinstance(node.value, ast.Constant): seen.append(node.value.value)
-            require(not any(isinstance(w, str) and w in ("windows-1", "windows-2") for w in seen), "legacy-pair-versus-Windows-witness")
+            require(not any(isinstance(w, str) and w in ("windows-1", "windows-2", "official-execution-1") for w in seen), "legacy-pair-versus-Windows-witness")
         return
-    expected_window="windows-2"
-    allowed={"windows-2"}
+    expected_window="official-execution-1" if version==7 else "windows-2"
+    allowed={"continuation-1","official-execution-1"} if version==7 else {"windows-2"}
     def admitted(window):return isinstance(window,str) and window in allowed
     for name,data in remaining.items():
         if name.endswith("/inventory.json"):
@@ -72,7 +73,7 @@ def remaining_window(version,remove,remaining):
             require(inv["record_type"]=="release-inventory" and type(inv["schema_version"]) is int and inv["schema_version"]==1,"remaining-inventory-schema")
             window=inv["inventory_id"];require(admitted(window),"pair-versus-remaining-inventory")
             actual=entries(inv["entries"])
-            expected=set(CONTINUATION_PATHS) if window in ("continuation-1","windows-2") else set(DELEGATION_PATHS) if window=="delegation-1" else set(ENTRY_PATHS) if window=="entry-1" else set(SERIAL_PATHS)
+            expected=set(OFFICIAL_PATHS) if window=="official-execution-1" else set(CONTINUATION_PATHS) if window in ("continuation-1","windows-2") else set(DELEGATION_PATHS) if window=="delegation-1" else set(ENTRY_PATHS) if window=="entry-1" else set(SERIAL_PATHS)
             if window in ("umbrella-1","planning-1","checkout-1"):expected.add("src/hv2ref/umbrella.py")
             if window in ("planning-1","checkout-1"):expected.add("src/hv2ref/candidates.py")
             require(set(actual)==expected,"remaining-inventory-membership")
@@ -226,7 +227,7 @@ def continuation_refs(saved,base,current):
 def audit_once(target):
     home=target/".hrn";safe_directory(home)
     require(not any(p.name.casefold()==".hrn" and p.name!=".hrn" for p in target.iterdir()),"home-alias")
-    require(set(p.name for p in home.iterdir())<={"format.json",".gitignore","detached.json","product","work","intents","planning","locks","staging"},"unknown-home-member")
+    require(set(p.name for p in home.iterdir())<={"format.json",".gitignore","detached.json","product","work","intents","planning","locks","staging","executions"},"unknown-home-member")
     for name in ("locks","staging"):
         if safe_present(home/name):safe_directory(home/name)
     fmt_raw=raw_file(home/"format.json");fmt=strict_json(fmt_raw)
@@ -239,13 +240,13 @@ def audit_once(target):
     receipt_raw=raw_file(home/"detached.json");receipt=strict_json(receipt_raw)
     keys(receipt,{"record_type","schema_version","operation_id","plan","prior_binding_ref","result_binding_ref"})
     plan=keys(receipt["plan"],{"record_type","schema_version","operation_id","action","target_fingerprint","authority_home_id","expected_binding_ref","candidate_release","format_sha256","truth_refs","remove","preserve","created_at"})
-    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4, 5, 6)
+    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4, 5, 6, 7)
             and plan["record_type"]=="lifecycle-plan" and type(plan["schema_version"]) is int and plan["schema_version"]==receipt["schema_version"] and plan["action"]=="detach","detach-record-type")
     require(valid_id(plan["operation_id"]) and receipt["operation_id"]==plan["operation_id"] and isinstance(plan["created_at"],str) and plan["created_at"].strip(),"detach-operation")
     require(plan["authority_home_id"]==fmt["authority_home_id"] and plan["format_sha256"]==sha(fmt_raw) and valid_sha(plan["target_fingerprint"]),"detach-identity")
     require(receipt["prior_binding_ref"]==ref(plan["expected_binding_ref"]) and receipt["result_binding_ref"] is None and plan["candidate_release"] is None,"detach-binding")
     remove=entries(plan["remove"]);preserve=entries(plan["preserve"])
-    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia",5:"colvia",6:"colvia"}[plan["schema_version"]]
+    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia",5:"colvia",6:"colvia",7:"colvia"}[plan["schema_version"]]
     expected={launcher,".hrn/product/init-plan.json",".hrn/product/binding.json"};releases=set();receipt_ids=set()
     for name in set(remove)-expected:
         parts=name.split("/")
@@ -261,11 +262,14 @@ def audit_once(target):
         paths = set(SERIAL_PATHS) | {"src/hv2ref/umbrella.py"} if prefix+"payload/src/hv2ref/umbrella.py" in remove else SERIAL_PATHS
         if prefix+"payload/src/hv2ref/candidates.py" in remove:paths=set(paths)|{"src/hv2ref/candidates.py"}
         if prefix+"payload/colvia" in remove:
-            require(plan["schema_version"] in (3,4,5,6),"old-schema-entry-membership")
+            require(plan["schema_version"] in (3,4,5,6,7),"old-schema-entry-membership")
             paths=ENTRY_PATHS if plan["schema_version"]==3 else DELEGATION_PATHS
             if prefix+"payload/src/hv2ref/continuation.py" in remove:
-                require(plan["schema_version"]in (5,6),"old-schema-continuation-membership")
+                require(plan["schema_version"]in (5,6,7),"old-schema-continuation-membership")
                 paths=CONTINUATION_PATHS
+        if prefix+"payload/src/hv2ref/official_entry.py" in remove:
+            require(plan["schema_version"]==7,"official-detach-schema")
+            paths=OFFICIAL_PATHS
         expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in paths}
         require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24],"release-inventory")
     require(set(remove)==expected and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"],"remove-completeness")
@@ -276,18 +280,31 @@ def audit_once(target):
     require(isinstance(plan["truth_refs"],list),"truth-list");truth={};truth_names=[]
     for t in plan["truth_refs"]:
         keys(t,{"path","sha256"});name=t["path"]
-        require(isinstance(name,str) and (name=="planning/candidates.json" or (name.split("/")[0] in ("intents","work") and len(name.split("/"))>=3)) and valid_sha(t["sha256"]),"truth-path")
+        require(isinstance(name,str) and (name=="planning/candidates.json" or (name.split("/")[0] in ("intents","work","executions") and len(name.split("/"))>=3)) and valid_sha(t["sha256"]),"truth-path")
         truth[".hrn/"+name]=t["sha256"];truth_names.append(name)
     require(truth_names==sorted(set(truth_names),key=lambda n:n.encode()) and set(preserve)==set(truth)|{".hrn/format.json",".hrn/.gitignore"},"truth-preservation")
     saved={".hrn/format.json":fmt_raw,".hrn/.gitignore":raw_file(home/".gitignore")}
     require(saved[".hrn/.gitignore"]==b"staging/\nlocks/\n","ignore-bytes")
-    for collection in ("intents","work","planning"):
+    for collection in ("intents","work","planning","executions"):
         allowed={n for n in truth if n.startswith(".hrn/"+collection+"/")}
         dirs={".hrn/"+collection}|{p.as_posix() for n in allowed for p in Path(n).parents if p.as_posix().startswith(".hrn/"+collection)}
+        if collection=="executions" and safe_present(home/collection):
+            # Lifecycle truth binds regular bytes; safe empty capsule subdirectories
+            # are deliberately not records and may survive detach.
+            capsules={"/".join(n.split("/")[:3]) for n in allowed}
+            for p in (home/collection).rglob("*"):
+                name=p.relative_to(target).as_posix()
+                if p.is_dir():
+                    safe_directory(p)
+                    require(any(name==base or name.startswith(base+"/") for base in capsules),"unknown-execution-directory")
+                    dirs.add(name)
         files,_=scan(home/collection,allowed,dirs);require(set(files)==allowed,"missing-truth");saved.update(files)
     for name,data in saved.items():
         require(sha(data)==preserve[name]["sha256"] and len(data)==preserve[name]["size_bytes"],"changed-preserved-bytes")
-        if name in truth:require(sha(data)==truth[name],"truth-ref-mismatch");strict_json(data)
+        if name in truth:
+            require(sha(data)==truth[name],"truth-ref-mismatch")
+            if not name.startswith(".hrn/executions/"):strict_json(data)
+            else:require(plan["schema_version"]==7,"execution-truth-in-old-detach")
     files_order=[launcher]+[n for n in remove if n!=launcher]
     dirs={p.as_posix() for n in files_order if n!=launcher for p in Path(n).parents if p.as_posix().startswith(".hrn/product")}
     dir_order=sorted(dirs,key=lambda n:(-len(n.split("/")),n.encode()))
@@ -301,15 +318,36 @@ def audit_once(target):
     require(remaining_names==files_order[len(files_order)-len(remaining_names):],"invalid-file-prefix")
     if remaining_names:require(present_dirs==dirs,"early-directory-removal")
     else:require([n for n in dir_order if n in present_dirs]==dir_order[len(dir_order)-len(present_dirs):],"invalid-directory-prefix")
-    if plan["schema_version"] in (3,4,5,6):
+    if plan["schema_version"] in (3,4,5,6,7):
         import unicodedata
         require(not any(unicodedata.normalize("NFC",p.name).casefold()=="hv2" for p in target.iterdir()),"retired-entry-collision-preserved")
+    capsule_prefixes={"/".join(n.split("/")[:3]) for n in saved if n.startswith(".hrn/executions/")}
+    require(all(base+"/grant.json" in saved and base+"/journal.jsonl" in saved for base in capsule_prefixes),"execution-core-records-missing")
+    execution_summaries={}
+    for name,data in saved.items():
+        if not name.startswith(".hrn/executions/") or not name.endswith("/grant.json"):continue
+        value=keys(strict_json(data),{"record_type","schema_version","grant","spec"})
+        base=name.rsplit("/",1)[0];grant=base.split("/")[-1]
+        require(value["record_type"]=="official-execution-grant" and type(value["schema_version"]) is int and value["schema_version"]==1
+                and value["grant"]==grant==sha((json.dumps(value["spec"],ensure_ascii=False,sort_keys=True,indent=2)+"\n").encode()),"execution-grant-binding")
+        journal=saved.get(base+"/journal.jsonl");require(journal is not None and journal.endswith(b"\n"),"execution-journal")
+        previous="0"*64;last=None
+        for index,line in enumerate(journal.splitlines(),1):
+            row=json.loads(line);keys(row,{"seq","previous","kind","value","sha256"})
+            body={k:v for k,v in row.items() if k!="sha256"}
+            compact=lambda x:(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\n").encode()
+            require(type(row["seq"]) is int and row["seq"]==index and row["previous"]==previous and row["sha256"]==sha(compact(body)) and compact(row)==line+b"\n","execution-journal-chain")
+            if index==1:require(row["kind"]=="granted" and row["value"]=={"grant":grant},"execution-first-row")
+            previous=row["sha256"];last=row
+        require(last is not None and (last["kind"]=="operator-resolved-unknown" or
+                last["kind"]=="terminal" and last["value"]["status"] in ("completed","interrupted","revoked-before-launch")),"execution-not-closed")
+        execution_summaries[grant]={"head":previous,"terminal_kind":last["kind"],"full_execution_semantics":"not-reimplemented"}
     selected={}
     for name,data in saved.items():
         if not name.endswith("/current.json"):continue
         current=strict_json(data);base=name.rsplit("/",1)[0]
         if base.endswith("/continuation"):
-            require(plan["schema_version"] in (5,6),"continuation-truth-in-old-detach")
+            require(plan["schema_version"] in (5,6,7),"continuation-truth-in-old-detach")
             keys(current,{"record_type","schema_version","authority_home_id","work_id","selection_ref"})
             wid=base.split("/")[-2]
             require(current["record_type"]=="continuation-current" and type(current["schema_version"]) is int
@@ -326,7 +364,7 @@ def audit_once(target):
         require(path in saved and sha(saved[path])==revision_ref["sha256"],"selected-revision-ref")
         selected[base]={"selection_ref":selection_ref,"revision_ref":revision_ref}
     return {"classification":"partial" if remaining_names or present_dirs else "detached", "authority_home_id":fmt["authority_home_id"],
-            "receipt_sha256":sha(receipt_raw),"preserved_files":len(saved),"selected":selected,
+            "receipt_sha256":sha(receipt_raw),"execution_summaries":execution_summaries,"preserved_files":len(saved),"selected":selected,
             "remaining_files":remaining_names,"remaining_directories":[n for n in dir_order if n in present_dirs],
             "verification":"receipt-inventory-and-selected-refs", "full_record_semantics":"not-reimplemented", "mutation_authorized":False}
 

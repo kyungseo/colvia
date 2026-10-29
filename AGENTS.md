@@ -50,3 +50,7 @@ The optional direct-child parent gate requires human acceptance of the integrate
 ## Source Development Closeout
 
 At Harness source closeout, follow [Adopter Impact At Development Closeout](docs/MAINTAINING.md#adopter-impact-at-development-closeout); include the update recommendation in the existing completion report. This excludes ordinary work in installed projects.
+
+## Official Execution Candidate
+
+An explicitly installed `official-execution-1` release adds bounded document execution. Read `docs/OFFICIAL-EXECUTION.md` in that release only when that verified window is active. The default source declaration remains `continuation-1`; installation, execution, and Owner result acceptance are separate.
