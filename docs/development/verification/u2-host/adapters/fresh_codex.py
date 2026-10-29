@@ -13,6 +13,7 @@ from ..contracts import (require, HostRefusal, canonical, wire_bytes, digest, co
 from ..execution_os import execution_os
 from . import codex as native
 from . import fresh_codex_contract as policy
+from .consumption_guard import check_consumption
 
 
 def consume_activation(anchor, *, ledger_path, controller_lock_path, admission):
@@ -51,10 +52,7 @@ def consume_activation(anchor, *, ledger_path, controller_lock_path, admission):
             'allocation':policy.ALLOCATION,'owner_message_id':activation['owner_message_id'],'parent':'C-Codex-live',
             'counts_before':snapshot['counts'],'limits':snapshot['limits']}
         require(reservation[0]['value'] == expected_parent and reservation[0] == rows[-1], 'v58-parent-allocation-drift')
-        require(not any(r['kind'] == 'v58-consumed' and (r['value'].get('reservation_id') == rid
-            or r['value'].get('activation_sha256') == anchor['activation']['sha256']
-            or r['value'].get('run_directory') == anchor['run_directory']
-            or r['value'].get('snapshot_sha256') == anchor['accounting_snapshot']['sha256']) for r in rows), 'v58-replay-consumed')
+        check_consumption(rows, anchor, activation, snapshot)
         directory = Path(anchor['run_directory'])
         require(directory.parent.resolve(strict=True) == directory.parent and not os.path.lexists(directory), 'v58-run-consumed-or-aliased')
         counts_after = {k:v + policy.ALLOCATION.get(k,0) for k,v in snapshot['counts'].items()}

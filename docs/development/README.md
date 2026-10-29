@@ -1,5 +1,9 @@
 # Development Index
 
+## Current Task — 2026-10-28
+
+- 단일 문서 편집 연결: [Owner 수락·source 완료와 한계](FEAT-20261028-001-single-document-edit.md#final-owner-acceptance-and-source-completion--2026-10-28). 다른 도입 프로젝트의 실제 적용과 Git 통합은 별도다.
+
 ## Current Task And Closeout Links — 2026-10-27
 
 - U2 source/adapter qualification: [closed with Owner acceptance](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#final-owner-acceptance-and-work-done--2026-10-27-kst); [accepted scope, remaining limits and application boundary](FEAT-20261022-001-prepared-tool-plan-live-qualification.md#accepted-scope-and-remaining-limits).

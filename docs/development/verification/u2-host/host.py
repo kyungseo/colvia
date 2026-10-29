@@ -31,6 +31,7 @@ contracts = _importlib.import_module(_package_name + '.contracts')
 codex = _importlib.import_module(_package_name + '.adapters.codex')
 claude_code = _importlib.import_module(_package_name + '.adapters.claude_code')
 fresh_codex = _importlib.import_module(_package_name + ".adapters.fresh_codex")
+edit_codex = _importlib.import_module(_package_name + ".adapters.edit_codex")
 FreshCodexSession = fresh_codex.FreshCodexSession
 ClaudeCodeAdapter = claude_code.ClaudeCodeAdapter
 for _module in (contracts, codex):
@@ -44,6 +45,19 @@ def load_host_spec(path):
     require(spec.get("version") == 1, "host spec version")
     require(Path(spec["run"]).resolve(strict=False) == Path(spec["run"]), "run path alias")
     return spec
+
+
+def edit_only(action, *, snapshot_reader, baseline_reader, cfg=None, execution=None, destination=None,
+              spec_path=None, fd_controller=None):
+    """Trusted caller entry. Data never selects a reader, plugin, or authority writer."""
+    require(callable(snapshot_reader) and callable(baseline_reader), 'edit-trusted-readers-required')
+    if action == 'prepare':
+        require(spec_path is None and fd_controller is None, 'edit-prepare-launch-forbidden')
+        return edit_codex.prepare_execution(cfg, execution, destination,
+            snapshot_reader=snapshot_reader, baseline_reader=baseline_reader)
+    require(action == 'execute' and cfg is None and execution is None and destination is None, 'edit-action-or-resume-forbidden')
+    return edit_codex.run_edit(load_host_spec(spec_path), fd_controller=fd_controller,
+        snapshot_reader=snapshot_reader, baseline_reader=baseline_reader)
 
 
 def run_live_command(command, spec_path, fd_controller=None):

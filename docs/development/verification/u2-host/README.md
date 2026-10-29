@@ -1,5 +1,11 @@
 # U2 Host — Qualification Candidate
 
+## Single-Document Edit Candidate — 2026-10-28
+
+[`single-document-edit-v1`](../../FEAT-20261028-001-single-document-edit.md)은 macOS/Codex의 기존 문서 하나를 한 구간만 바꾸는 source-only 후속 후보다. 입력 ID는 총 1–8개이며 read1 → write1 → `DOC-LINKS`·`DOC-GFM`·`DOC-CLAIMS` 각1회 → 봉인 순서다. 마지막 callback은 durable 후보 receipt를 남긴 뒤 응답을 보내지 않고 종료하며, 정상 terminal은 `sealed-terminated`다. resume·correction·authority/recovery apply는 허용하지 않는다. 이전 qualification의 수락이 이 후보의 실제 실행 검증을 대신하지 않는다.
+
+trusted Driver는 `host.edit_only('prepare', ...)`에 task 데이터와 신뢰한 snapshot/baseline reader를 전달한다. 같은 함수가 anchor·activation·launch contract·역할 profile을 만들며, 새 업무마다 source나 공통 template을 고치지 않는다. 준비는 reservation 소비와 별도다. 승인 후 소비·FD controller 준비를 마치면 `host.edit_only('execute', ...)`으로 실행한다. 입력 데이터가 임의 코드·reader를 고르는 loader는 제공하지 않는다. 실행 파일은 trusted Driver가 경로·hash를 고정한다. 이 entry의 구현과 offline 결과, 아직 관측하지 않은 실제 native 종료 동작은 연결된 개발 기록에서 구분한다.
+
 ## Current Navigation — 2026-10-27
 
 승인된 source/adapter qualification과 첫 운영 가이드의 완료 판단은 [최종 Owner 수락과 Done](../../FEAT-20261022-001-prepared-tool-plan-live-qualification.md#final-owner-acceptance-and-work-done--2026-10-27-kst)에 있다. 아래 후보 설명과 과거 미검증 표기는 작성 당시의 근거·한계와 함께 보존한다. 실제 다음 실행은 [수락 범위와 남은 한계](../../FEAT-20261022-001-prepared-tool-plan-live-qualification.md#accepted-scope-and-remaining-limits), 이 문서의 [공개 이력 allocation 경계](#public-history-allocation-boundary), 해당 새 대상·입력의 승인을 함께 확인해야 한다. 일반 설치 payload에는 이 검증용 Host가 포함되지 않는다. 이번 안내 연결은 [CHORE-20261027-002](../../CHORE-20261027-002-user-flow-and-development-doc-alignment.md)가 소유한다.
