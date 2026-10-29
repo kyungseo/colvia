@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 import re
 import stat
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -222,7 +223,7 @@ def _tree(home: Path) -> dict[str, bytes]:
             for path in members:
                 require(path.suffix == ".json", "unknown continuation member")
                 identifier(path.stem)
-                result[str(path.relative_to(home))] = _read_file(path, CHOICE_BYTES if member.name == "choices" else SMALL_BYTES)
+                result[path.relative_to(home).as_posix()] = _read_file(path, CHOICE_BYTES if member.name == "choices" else SMALL_BYTES)
         else:
             require(member.name == "current.json", "unknown continuation member: " + member.name)
             result[member.name] = _read_file(member, SMALL_BYTES)
@@ -234,17 +235,23 @@ def _tree(home: Path) -> dict[str, bytes]:
 def _read_file(path: Path, limit: int) -> bytes:
     from .workspace import _require_kind
     _require_kind(path, False)
-    before = path.lstat()
-    require(stat.S_ISREG(before.st_mode) and before.st_size <= limit, "continuation file size/type invalid")
-    def stamp(value):
-        return (value.st_dev, value.st_ino, value.st_mode, value.st_size,
-                value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
-    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
-    with os.fdopen(fd, "rb") as handle:
-        require(stamp(os.fstat(handle.fileno())) == stamp(before), "continuation input descriptor changed")
-        data = handle.read(limit + 1)
-        require(stamp(os.fstat(handle.fileno())) == stamp(before), "continuation descriptor changed while reading")
-    require(len(data) <= limit and stamp(path.lstat()) == stamp(before), "continuation file changed while reading")
+    if sys.platform == "win32":
+        # Reuse the binary native path/handle and repeated-content observation.
+        # POSIX stat/fd stamps are not interchangeable on Windows.
+        from .jsonio import windows_bounded_bytes
+        data = windows_bounded_bytes(path, limit)
+    else:
+        before = path.lstat()
+        require(stat.S_ISREG(before.st_mode) and before.st_size <= limit, "continuation file size/type invalid")
+        def stamp(value):
+            return (value.st_dev, value.st_ino, value.st_mode, value.st_size,
+                    value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        with os.fdopen(fd, "rb") as handle:
+            require(stamp(os.fstat(handle.fileno())) == stamp(before), "continuation input descriptor changed")
+            data = handle.read(limit + 1)
+            require(stamp(os.fstat(handle.fileno())) == stamp(before), "continuation descriptor changed while reading")
+        require(len(data) <= limit and stamp(path.lstat()) == stamp(before), "continuation file changed while reading")
     value = decode_json_bytes(data, require_canonical=True)
     bounded_bytes(value, limit)
     return data
@@ -401,7 +408,7 @@ def read_continuation(target: Path, work_id: str, *, _source_graph=None, _topolo
             require({k: v for k, v in before.items() if k != "continuation"} == after,
                     "source/target Work changed while reading continuation")
         require(raw == _tree(home / "continuation"), "continuation changed while reading")
-        paths = [str((home / "continuation" / path).relative_to(target)) for path in data]
+        paths = [(home / "continuation" / path).relative_to(target).as_posix() for path in data]
         if paths:
             work._visible_truth(target, paths, _topology_observation=_topology_observation)
         return result
@@ -432,7 +439,7 @@ class ContinuationStore:
 
     def _runtime(self):
         runtime = self.work_store._runtime()
-        require(runtime.get("inventory_id") == "continuation-1", "continuation writing requires continuation-1")
+        require(runtime.get("inventory_id") in ("continuation-1", "windows-2"), "continuation writing requires a continuation-capable current runtime")
         return runtime
 
     def _observe(self):
@@ -562,7 +569,7 @@ class ContinuationStore:
             home = self.target / ".hrn/work" / wid / "continuation"
             paths = ["current.json", "choices/" + choice["record_id"] + ".json",
                      "selections/" + selection["record_id"] + ".json"]
-            work._visible_truth(self.target, [str((home / p).relative_to(self.target)) for p in paths])
+            work._preflight_publication(self.target, [(home / p).relative_to(self.target).as_posix() for p in paths])
             def check():
                 fresh_runtime = self._runtime()
                 require(runtime == fresh_runtime, "continuation runtime changed")

@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import os
+import sys
 from pathlib import Path
 import threading
 import unittest
@@ -12,7 +13,8 @@ import test_worktree_execution as worker_fixtures
 import test_general_work_recovery as serial_fixtures
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.intent import WorkspaceIntentStore, read_workspace_intent_graph, workspace_intents, workspace_intent_graph
-from hv2ref.work import WorkStore, make_manifest, snapshot, read_work, record_ref, work_graph
+from hv2ref.work import WorkStore, make_manifest, read_work, record_ref, work_graph
+from tests.platform_fixtures import fixture_snapshot as snapshot, fixture_window
 from hv2ref.jsonio import canonical_json_bytes
 from test_productization_safety import exact_snapshot
 
@@ -39,7 +41,7 @@ class DelegatedAcceptanceTests(unittest.TestCase):
         self.base = self.target.parent
         (self.target / 'b').write_bytes(b'before-b\n')
         self.store = WorkStore(self.target, lambda target: {'binding_ref': copy.deepcopy(self.binding),
-            'launcher_sha256': None, 'inventory_id': 'delegation-1'})
+            'launcher_sha256': None, 'inventory_id': fixture_window('delegation-1')})
         self.istore = WorkspaceIntentStore(self.target, self.store.runtime_check)
         self.grant_number = 1
 
@@ -116,7 +118,8 @@ class DelegatedAcceptanceTests(unittest.TestCase):
     def refusal(self, action, reason=None, *, new_lock=False, code=None):
         before=exact_snapshot(self.target)
         # Only named first-guard refusals admit the normal scratch anchor.
-        # mkdir uses 0777 & umask; bind that expectation without changing the runner.
+        # POSIX honors umask; Windows CRT reports its regular/directory modes.
+        # Keep exact zero bytes, member set and platform mode checks.
         prior_umask=os.umask(0o077) if new_lock else None
         try:
             with self.assertRaisesRegex(ContractError,reason or ".*") as caught: action()
@@ -128,8 +131,8 @@ class DelegatedAcceptanceTests(unittest.TestCase):
         after=exact_snapshot(self.target)
         additions={}
         if new_lock and '.hrn/locks/writer.lock' not in before:
-            additions['.hrn/locks/writer.lock']=('file',hashlib.sha256(b'').hexdigest(),0o600)
-            if '.hrn/locks' not in before: additions['.hrn/locks']=('directory',0o700)
+            additions['.hrn/locks/writer.lock']=('file',hashlib.sha256(b'').hexdigest(),0o666 if sys.platform=='win32' else 0o600)
+            if '.hrn/locks' not in before: additions['.hrn/locks']=('directory',0o777 if sys.platform=='win32' else 0o700)
         self.assertEqual(before | additions,after)
 
     def refresh(self, *, old_intent=None):

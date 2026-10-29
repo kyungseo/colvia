@@ -97,17 +97,20 @@ class DetachTopologySharingTests(unittest.TestCase):
 
     def test_between_removals_unknown_member_stops_before_next_unlink(self):
         unlink = Path.unlink; removed = []; changed = []
+        lock=self.target/'.hrn/locks/writer.lock';lock_before=lock.read_bytes()
         def remove(path, *args, **kwargs):
             result = unlink(path, *args, **kwargs)
             if path == self.target / 'colvia':
                 removed.append(str(path))
                 (self.target / '.hrn/product/unplanned').write_text('preserve me\n')
-                changed.append(fixtures.exact_snapshot(self.target))
+                changed.append(fixtures.exact_snapshot(self.target, writer_lock_held=True))
             return result
         with patch.object(Path, 'unlink', remove), self.assertRaisesRegex(ContractError, 'unknown detach member'):
             product.workspace_detach_apply(self.target, self.preview['request'],
                 confirm_token=self.preview['confirm_token'], recover=True)
-        self.assertEqual(1, len(removed)); self.assertEqual(changed[0], fixtures.exact_snapshot(self.target))
+        self.assertEqual(1, len(removed))
+        self.assertEqual(changed[0], fixtures.exact_snapshot(self.target, writer_lock_held=True))
+        self.assertEqual(lock_before, lock.read_bytes())
 
     def test_contexts_close_after_success_and_failure(self):
         contexts = []; init = workspace._DetachTopologyObservation.__init__

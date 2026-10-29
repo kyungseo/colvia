@@ -1,7 +1,7 @@
 """Real process contention/death, with unmodified installed product bytes."""
 from __future__ import annotations
 import copy
-import fcntl
+from tests.platform_fixtures import fixture_pgid, fixture_kill, fixture_assert_lock
 import hashlib
 import json
 import os
@@ -64,13 +64,13 @@ class ContinuationProcessTests(unittest.TestCase):
               str(self.target),str(folder),str(folder/"config.json")]
         process=subprocess.Popen(argv,cwd=self.target,stdin=stdin,stdout=stdout,stderr=stderr)
         self.children.append(process)
-        (folder/"invocation.json").write_text(json.dumps({"argv":argv,"pid":process.pid,"pgid":os.getpgid(process.pid),
+        (folder/"invocation.json").write_text(json.dumps({"argv":argv,"pid":process.pid,"pgid":fixture_pgid(process.pid),
              "input_sha256":hashlib.sha256(payload).hexdigest()})+"\n")
         return process,folder
 
     def wait_event(self,child,folder,event):
         deadline=time.monotonic()+120
-        while not (folder/(event+".json")).is_file():
+        while not (folder/(event+".ready")).is_file():
             if child.poll() is not None:
                 self.fail((folder/"stdout.log").read_text()+(folder/"stderr.log").read_text())
             self.assertLess(time.monotonic(),deadline,"event deadline: "+event)
@@ -80,12 +80,13 @@ class ContinuationProcessTests(unittest.TestCase):
         return value
 
     def truth(self):
-        return {str(path.relative_to(self.target)):path.read_bytes()
+        return {path.relative_to(self.target).as_posix():path.read_bytes()
                 for path in (self.target/".hrn").rglob("*.json")
-                if "/continuation/" not in str(path) and not path.is_relative_to(self.target/".hrn/staging")}
+                if "/continuation/" not in path.as_posix() and not path.is_relative_to(self.target/".hrn/staging")}
 
     def run_contention(self,competing):
         p=self.prepare_cont()
+        lock=self.target/".hrn/locks/writer.lock";lock_before=lock.read_bytes()
         tickets=[p["ticket"],copy.deepcopy(p["ticket"])]
         if competing:tickets[1]["request_id"]="cont-competing"
         process=[]
@@ -108,10 +109,11 @@ class ContinuationProcessTests(unittest.TestCase):
         second_event=self.wait_event(*process[second],"acquired")
         first_event=json.loads((process[first][1]/"leaving.json").read_bytes())
         self.assertGreaterEqual(second_event["monotonic_ns"],first_event["monotonic_ns"])
-        after=installed.exact_snapshot(self.target)
+        after=installed.exact_snapshot(self.target,writer_lock_held=True)
         (process[second][1]/"permit").write_text("apply")
         self.assertEqual(65 if competing else 0,process[second][0].wait(timeout=120))
-        self.assertEqual(after,installed.exact_snapshot(self.target))
+        self.assertEqual(after,installed.exact_snapshot(self.target,writer_lock_held=True))
+        self.assertEqual(lock_before,lock.read_bytes())
         self.assertEqual(original,self.truth())
         state=read_continuation(self.target,"work-a")
         self.assertEqual(1,len(state["choices"]));self.assertEqual(1,len(state["selections"]))
@@ -130,16 +132,14 @@ class ContinuationProcessTests(unittest.TestCase):
         event=self.wait_event(child,folder,"barrier")
         self.assertTrue(event["guard_held"]);self.assertEqual(phase,event["point"])
         lock=self.target/".hrn/locks/writer.lock"
-        with lock.open("rb") as stream:
-            with self.assertRaises(BlockingIOError):fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        fixture_assert_lock(self, lock, blocked=True)
         prefix=read_continuation(self.target,"work-a")
         (folder/"prefix.json").write_bytes(canonical_json_bytes(prefix))
-        child.kill();self.assertEqual(-signal.SIGKILL,child.wait(timeout=10))
+        fixture_kill(self, child)
         self.assertFalse((folder/"leaving.json").exists());self.assertFalse((folder/"released.json").exists())
-        with lock.open("rb") as stream:
-            fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB);fcntl.flock(stream,fcntl.LOCK_UN)
+        fixture_assert_lock(self, lock, blocked=False)
         self.assertEqual(prefix,read_continuation(self.target,"work-a"))
-        (folder/"death.json").write_text(json.dumps({"signal":"SIGKILL","exit_code":child.returncode,
+        (folder/"death.json").write_text(json.dumps({"termination":"TerminateProcess" if sys.platform == "win32" else "SIGKILL","exit_code":child.returncode,
             "guard_held_before":True,"lock_released_by_process_death":True,"prefix_unchanged":True})+"\n")
         return prefix
 
@@ -185,7 +185,7 @@ class ContinuationProcessTests(unittest.TestCase):
         self.wait_event(second,waiting,"lock-attempting")
         self.assertFalse((waiting/"acquired.json").exists())
         before=self.truth()
-        first.kill();self.assertEqual(-signal.SIGKILL,first.wait(timeout=10))
+        fixture_kill(self, first)
         self.assertEqual(65,second.wait(timeout=120))
         acquired=self.wait_event(second,waiting,"acquired")
         self.assertTrue(acquired["guard_held"])

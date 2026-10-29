@@ -1,7 +1,12 @@
 """Schema2 writer and local recovery tests; bound runtime is a fixture double."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_snapshot,
+    fixture_window,
+)
 import copy
 import hashlib
+import sys
 import unittest
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.intent import WorkspaceIntentStore, workspace_intents
@@ -23,7 +28,7 @@ class UmbrellaWriterTests(unittest.TestCase):
 
     def setUp(self):
         fixtures.IntentWriterTests.setUp(self)
-        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':'umbrella-1'}
+        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':fixture_window('umbrella-1')}
         self.store=WorkStore(self.target,runtime);self.intents=WorkspaceIntentStore(self.target,runtime)
         self.accept();self.child_intent=copy.deepcopy(self.intent)
         self.composition={'parent':self.q('work','parent'),'required_children':[
@@ -58,7 +63,7 @@ class UmbrellaWriterTests(unittest.TestCase):
         for wid in ('child-a','child-b'):
             self.choose(wid)
             for op in ('start','submit-result'):
-                if op=='submit-result':(self.target/'a').write_text(wid+' result\n')
+                if op=='submit-result':(self.target/'a').write_text(wid+' result\n', newline="\n")
                 p=self.proposal(op);p[0]['relations']=[{'relation':'parent','target':self.q('work','parent')}];self.publish(p)
             self.apply(self.prepare())
         self.choose('parent')
@@ -185,14 +190,14 @@ class UmbrellaWriterTests(unittest.TestCase):
 
     def test_entry_window_parent_capability_keeps_schema2_completion(self):
         # Capability double only; native entry execution has independent factory cases.
-        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':'entry-1'}
+        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':fixture_window('entry-1')}
         self.store.runtime_check=runtime;self.intents.work_store.runtime_check=runtime
         self.test_schema2_parent_completes_with_v1_selector_and_ticket()
 
 
     def test_delegation_window_parent_capability_keeps_schema2_completion(self):
         # Capability double only; native entry execution has independent factory cases.
-        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':'delegation-1'}
+        runtime=lambda target:{'binding_ref':copy.deepcopy(self.binding),'launcher_sha256':None,'inventory_id':fixture_window('delegation-1')}
         self.store.runtime_check=runtime;self.intents.work_store.runtime_check=runtime
         self.test_schema2_parent_completes_with_v1_selector_and_ticket()
 
@@ -229,7 +234,8 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
             args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
         import subprocess
         from hv2ref.work import git_environment
-        return subprocess.run(['git','-C',str(cwd or self.target),*args],capture_output=True,check=True,env=git_environment(),timeout=30).stdout.strip().decode()
+        config = ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf'] if sys.platform == 'win32' else []
+        return subprocess.run(['git',*config,'-C',str(cwd or self.target),*args],capture_output=True,check=True,env=git_environment(),timeout=30).stdout.strip().decode()
 
     def parent_proposal(self,operation='start',**kw):
         from hv2ref.work import snapshot,make_manifest
@@ -242,7 +248,7 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
         if operation in ('start','rebind'):
             self.git('add','.');self.git('commit','--allow-empty','-qm','synthetic parent baseline')
             oid=self.git('rev-parse','HEAD');ref='refs/heads/base-'+r['record_id'];self.git('branch',ref[11:],oid)
-            tree=snapshot(self.target);m=make_manifest(tree,tree,scope=getattr(self,'parent_scope',['a']),base_commit=oid,candidate_commit=oid,base_retention_ref=ref,candidate_retention_ref=ref)
+            tree=fixture_snapshot(self.target);m=make_manifest(tree,tree,scope=getattr(self,'parent_scope',['a']),base_commit=oid,candidate_commit=oid,base_retention_ref=ref,candidate_retention_ref=ref)
         else:
             m=self.candidate_manifest
             sha=hashlib.sha256((self.worker/'a').read_bytes()).hexdigest()
@@ -260,9 +266,9 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
         baseline=value[1];self.worker=self.target.parent/'parent-worker'
         self.git('worktree','add','-q','-b','parent-result',str(self.worker),baseline['base_commit'])
         self.assertEqual('child-b result\n',(self.worker/'a').read_text())
-        (self.worker/'a').write_text('fixture integration result and evidence\n')
+        (self.worker/'a').write_text('fixture integration result and evidence\n', newline="\n")
         self.git('add','a',cwd=self.worker);self.git('commit','-qm','synthetic parent report',cwd=self.worker)
-        self.candidate_manifest=make_manifest(baseline['result'],snapshot(self.worker),scope=['a'],base_commit=baseline['base_commit'],candidate_commit=self.git('rev-parse','HEAD',cwd=self.worker),base_retention_ref=baseline['base_retention_ref'],candidate_retention_ref='refs/heads/parent-result')
+        self.candidate_manifest=make_manifest(baseline['result'],fixture_snapshot(self.worker),scope=['a'],base_commit=baseline['base_commit'],candidate_commit=self.git('rev-parse','HEAD',cwd=self.worker),base_retention_ref=baseline['base_retention_ref'],candidate_retention_ref='refs/heads/parent-result')
         self.publish(self.parent_proposal('submit-result'),worker=self.worker)
         return self.prepare()
 
@@ -300,7 +306,7 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
     def candidate_with_child_input(self, *, evidence=False):
         from hv2ref.work import snapshot,make_manifest
         self.parent_scope=['a','input.md']
-        (self.target/'input.md').write_text('accepted child input\n')
+        (self.target/'input.md').write_text('accepted child input\n', newline="\n")
         first=workspace_intents(self.target)['intent-a']['drafts']['draft-1']
         draft=self.draft(2,prior=first);self.intents.publish_draft(draft)
         ref={'path':'input.md','sha256':hashlib.sha256((self.target/'input.md').read_bytes()).hexdigest(),'required':True,'role':'brief'}
@@ -311,10 +317,10 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
         value=self.parent_proposal('rebind',old_intent=self.parent_intent);self.publish(value);self.apply(self.prepare('rebind',revision_ref=record_ref(value[0])))
         baseline=value[1];self.worker=self.target.parent/'parent-worker'
         self.git('worktree','add','-q','-b','parent-result',str(self.worker),baseline['base_commit'])
-        (self.worker/'a').write_text('fixture integration result and evidence\n')
-        (self.worker/'input.md').write_text('parent overwrote child input\n')
+        (self.worker/'a').write_text('fixture integration result and evidence\n', newline="\n")
+        (self.worker/'input.md').write_text('parent overwrote child input\n', newline="\n")
         self.git('add','a','input.md',cwd=self.worker);self.git('commit','-qm','synthetic overlapping report',cwd=self.worker)
-        self.candidate_manifest=make_manifest(baseline['result'],snapshot(self.worker),scope=['a','input.md'],base_commit=baseline['base_commit'],candidate_commit=self.git('rev-parse','HEAD',cwd=self.worker),base_retention_ref=baseline['base_retention_ref'],candidate_retention_ref='refs/heads/parent-result')
+        self.candidate_manifest=make_manifest(baseline['result'],fixture_snapshot(self.worker),scope=['a','input.md'],base_commit=baseline['base_commit'],candidate_commit=self.git('rev-parse','HEAD',cwd=self.worker),base_retention_ref=baseline['base_retention_ref'],candidate_retention_ref='refs/heads/parent-result')
         return self.parent_proposal('submit-result')
 
 
@@ -337,7 +343,7 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
         from hv2ref.work import snapshot, make_manifest
         old_text = 'historically accepted child result\n'
         new_text = 'parent integration replaces the historical result\n'
-        (self.target / 'input.md').write_text(old_text)
+        (self.target / 'input.md').write_text(old_text, newline="\n")
         old_sha = hashlib.sha256(old_text.encode()).hexdigest()
         category = 'evidence_refs' if evidence else 'document_refs'
         ref = {'path': 'input.md', 'sha256': old_sha, 'required': True}
@@ -346,7 +352,7 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
             self.choose(wid)
             for operation in ('start', 'submit-result'):
                 if operation == 'submit-result':
-                    (self.target / 'a').write_text(wid + ' result\n')
+                    (self.target / 'a').write_text(wid + ' result\n', newline="\n")
                 value = self.proposal(operation)
                 value[0]['relations'] = [{'relation': 'parent', 'target': self.q('work', 'parent')}]
                 if operation == 'submit-result':
@@ -366,10 +372,10 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
         self.publish(value);self.apply(self.prepare('rebind', revision_ref=record_ref(value[0])))
         baseline = value[1];self.worker = self.target.parent / 'parent-worker'
         self.git('worktree', 'add', '-q', '-b', 'parent-result', str(self.worker), baseline['base_commit'])
-        (self.worker / 'input.md').write_text(new_text)
+        (self.worker / 'input.md').write_text(new_text, newline="\n")
         self.git('add', 'input.md', cwd=self.worker)
         self.git('commit', '-qm', 'synthetic child historical result replacement', cwd=self.worker)
-        self.candidate_manifest = make_manifest(baseline['result'], snapshot(self.worker), scope=['a', 'input.md'], base_commit=baseline['base_commit'], candidate_commit=self.git('rev-parse', 'HEAD', cwd=self.worker), base_retention_ref=baseline['base_retention_ref'], candidate_retention_ref='refs/heads/parent-result')
+        self.candidate_manifest = make_manifest(baseline['result'], fixture_snapshot(self.worker), scope=['a', 'input.md'], base_commit=baseline['base_commit'], candidate_commit=self.git('rev-parse', 'HEAD', cwd=self.worker), base_retention_ref=baseline['base_retention_ref'], candidate_retention_ref='refs/heads/parent-result')
         self.assertEqual(['input.md'], [c['path'] for c in self.candidate_manifest['changes']])
         self.publish(self.parent_proposal('submit-result'), worker=self.worker)
         self.assertEqual('review', read_work(self.target, 'parent')['state'])
@@ -382,7 +388,7 @@ class UmbrellaWorkerRecoveryTests(unittest.TestCase):
         result = self.apply(prepared)
         self.assertEqual('completed', result['state'])
         self.assertEqual([], result['pending_decisions'])
-        self.assertEqual(self.candidate_manifest['result'], snapshot(self.target))
+        self.assertEqual(self.candidate_manifest['result'], fixture_snapshot(self.target))
         self.assertEqual(child_history, {wid: read_work(self.target, wid) for wid in child_history})
         self.assertEqual(intents_before, workspace_intents(self.target))
         self.assertNotEqual(old_sha, hashlib.sha256((self.target / 'input.md').read_bytes()).hexdigest())

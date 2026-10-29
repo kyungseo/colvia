@@ -4,7 +4,11 @@ Barriers wrap original calls in memory; product bytes and installed checks stay
 unchanged. These tests establish process death, not power-loss durability.
 """
 from __future__ import annotations
-import fcntl
+from tests.platform_fixtures import (
+    fixture_assert_lock,
+    fixture_kill,
+    fixture_pgid,
+)
 import hashlib
 import json
 import os
@@ -29,7 +33,7 @@ from pathlib import Path
 target, evidence, phase, token = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], sys.argv[4]
 held=False
 def emit(name, **extra):
-    value={'event':name,'pid':os.getpid(),'pgid':os.getpgrp(),'monotonic_ns':time.monotonic_ns(),'guard_held':held,**extra}
+    value={'event':name,'pid':os.getpid(),'pgid':None if sys.platform == 'win32' else os.getpgrp(),'monotonic_ns':time.monotonic_ns(),'guard_held':held,**extra}
     temporary=evidence/(name+'.writing')
     with temporary.open('x') as f:json.dump(value,f)
     os.replace(temporary,evidence/(name+'.json'))
@@ -109,7 +113,7 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
             stdin=request.open('rb');out=(evidence/'child.stdout').open('xb');err=(evidence/'child.stderr').open('xb');handles.extend([stdin,out,err])
             argv=[sys.executable,'-I','-B',str(script),str(self.target),str(evidence),phase,token]
             child=subprocess.Popen(argv,cwd=self.target,stdin=stdin,stdout=out,stderr=err)
-            pid=child.pid;pgid=os.getpgid(pid)
+            pid=child.pid;pgid=fixture_pgid(pid)
             commands.append({'argv':argv,'cwd':str(self.target),'pid':pid,'pgid':pgid,'input_sha256':hashlib.sha256(data).hexdigest()})
             deadline=time.monotonic()+180
             while not (evidence/'barrier.json').exists():
@@ -119,10 +123,9 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
             barrier=json.loads((evidence/'barrier.json').read_text())
             self.assertEqual(pid,barrier['pid']);self.assertEqual(pgid,barrier['pgid'])
             self.assertTrue(barrier['guard_held']);self.assertEqual(phase,barrier['point'])
-            self.assertIsNone(child.poll());self.assertEqual(pgid,os.getpgid(pid))
+            self.assertIsNone(child.poll());self.assertEqual(pgid,fixture_pgid(pid))
             lock=self.target/'.hrn/locks/writer.lock'
-            with lock.open('rb') as handle:
-                with self.assertRaises(BlockingIOError):fcntl.flock(handle,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            fixture_assert_lock(self, lock, blocked=True)
             observations['lock_blocked_while_child_alive']=True
             prefix=read_work(self.target,'work-a');save('prefix-graph',prefix)
             self.assertEqual('review',prefix['state']);self.assertEqual(current,prefix['current'])
@@ -138,11 +141,10 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
             observations['prefix_contents']={k:v.decode() for k,v in contents.items()}
             observations['prefix_current_unchanged']=True
             # Popen owns this exact live child; no external PID lookup or group kill.
-            child.kill();self.assertEqual(-signal.SIGKILL,child.wait(timeout=10))
-            observations['kill_signal']='SIGKILL';observations['killed_exit_code']=child.returncode
+            fixture_kill(self, child)
+            observations['kill_mechanism']='TerminateProcess' if sys.platform == 'win32' else 'SIGKILL';observations['killed_exit_code']=child.returncode
             self.assertFalse((evidence/'leaving.json').exists());self.assertFalse((evidence/'released.json').exists())
-            with lock.open('rb') as handle:
-                fcntl.flock(handle,fcntl.LOCK_EX|fcntl.LOCK_NB);fcntl.flock(handle,fcntl.LOCK_UN)
+            fixture_assert_lock(self, lock, blocked=False)
             observations['lock_available_after_death']=True
             self.assertEqual(prefix,read_work(self.target,'work-a'))
             self.assertEqual(contents,{p:(self.target/p).read_bytes() for p in ('a','b')})
@@ -216,7 +218,7 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
             for handle in handles:handle.close()
             if not success:
                 with tarfile.open(evidence/'failed-target.tar.gz','w:gz') as archive:archive.add(self.target,arcname='target')
-            receipt={'kind':'instrumented installed CLI; actual SIGKILL; ordinary installed retry','phase':phase,'success':success,'commands':commands,'child_joined':child is not None and child.poll() is not None,'observations':observations}
+            receipt={'kind':'instrumented installed CLI; actual platform process termination; ordinary installed retry','phase':phase,'success':success,'commands':commands,'child_joined':child is not None and child.poll() is not None,'observations':observations}
             save('receipt',receipt)
             print(json.dumps({'interruption_case':self._testMethodName,'phase':phase,'success':success,'killed_exit':child.returncode if child else None}),flush=True)
 
@@ -224,36 +226,39 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
         evidence=self.base.parent/('worker-edge-evidence-'+self.base.name);evidence.mkdir()
         child=None;success=False;commands=[]
         try:
-            prepared=self.prepare_worker_result(two_files=True);initial=exact_snapshot(self.target)
+            prepared=self.prepare_worker_result(two_files=True)
+            lock=self.target/'.hrn/locks/writer.lock';lock_before=lock.read_bytes()
+            initial=exact_snapshot(self.target,writer_lock_held=True)
             git_before=exact_snapshot(self.target/'.git');graph_before=read_work(self.target,'work-a')
             # Instrument existing durability calls only in the child process.
             script=CHILD.replace("original_publish(path,value)\n            kind=value.get('record_type')", "kind=value.get('record_type')\n            if kind=='work-decision':pause('before-decision',path)\n            original_publish(path,value)")
             marker="work._publish_immutable=publish;work._apply_worker_path=apply_path"
             replacement=marker+"\n        original_current=work._publish_current\n        def current(target,path,*args,**kwargs):\n            original_current(target,path,*args,**kwargs)\n            pause('after-current',path)\n        work._publish_current=current"
-            assert marker in script;script=script.replace(marker,replacement)
+            self.assertIn(marker,script);script=script.replace(marker,replacement)
             (evidence/'child.py').write_text(script);data=canonical_json_bytes(prepared['ticket']);(evidence/'input.json').write_bytes(data)
             argv=[sys.executable,'-I','-B',str(evidence/'child.py'),str(self.target),str(evidence),phase,prepared['confirm_token']]
             with (evidence/'input.json').open('rb') as inp,(evidence/'stdout').open('xb') as out,(evidence/'stderr').open('xb') as err:
                 child=subprocess.Popen(argv,cwd=self.target,stdin=inp,stdout=out,stderr=err)
-                commands.append({'argv':argv,'cwd':str(self.target),'pid':child.pid,'pgid':os.getpgid(child.pid),'input_sha256':hashlib.sha256(data).hexdigest()})
+                commands.append({'argv':argv,'cwd':str(self.target),'pid':child.pid,'pgid':fixture_pgid(child.pid),'input_sha256':hashlib.sha256(data).hexdigest()})
                 deadline=time.monotonic()+90
                 while not (evidence/'barrier.json').exists():
                     self.assertIsNone(child.poll());self.assertLess(time.monotonic(),deadline);time.sleep(.01)
                 barrier=json.loads((evidence/'barrier.json').read_text());self.assertEqual(child.pid,barrier['pid']);self.assertTrue(barrier['guard_held']);self.assertEqual(phase,barrier['point'])
-                lock=self.target/'.hrn/locks/writer.lock'
-                with lock.open('rb') as f:
-                    with self.assertRaises(BlockingIOError):fcntl.flock(f,fcntl.LOCK_EX|fcntl.LOCK_NB)
-                observed=read_work(self.target,'work-a');prefix=exact_snapshot(self.target)
+                fixture_assert_lock(self, lock, blocked=True)
+                observed=read_work(self.target,'work-a');prefix=exact_snapshot(self.target,writer_lock_held=True)
                 if phase=='before-decision':self.assertEqual(graph_before,observed);self.assertEqual(initial,prefix)
                 else:
                     self.assertEqual('completed',observed['state']);self.assertEqual([],observed['pending_decisions']);self.assertEqual([],observed['pending_selections'])
-                child.kill();self.assertEqual(-signal.SIGKILL,child.wait(timeout=10))
-            self.assertEqual(prefix,exact_snapshot(self.target))
-            with lock.open('rb') as f:fcntl.flock(f,fcntl.LOCK_EX|fcntl.LOCK_NB);fcntl.flock(f,fcntl.LOCK_UN)
+                fixture_kill(self, child)
+            self.assertEqual(prefix,exact_snapshot(self.target,writer_lock_held=True))
+            fixture_assert_lock(self, lock, blocked=False)
+            self.assertEqual(lock_before,lock.read_bytes())
+            after_death=exact_snapshot(self.target)
             retry=self.installed(['work','apply','--confirm',prepared['confirm_token']],prepared['ticket'])
             (evidence/'retry.stdout').write_bytes(retry.stdout);(evidence/'retry.stderr').write_bytes(retry.stderr)
             commands.append({'argv':list(map(str,retry.args)),'cwd':str(self.target),'exit':retry.returncode,'stdout_sha256':hashlib.sha256(retry.stdout).hexdigest(),'stderr_sha256':hashlib.sha256(retry.stderr).hexdigest()})
-            if phase=='after-current':self.assertEqual(prefix,exact_snapshot(self.target))
+            if phase=='after-current':self.assertEqual(after_death,exact_snapshot(self.target))
+            self.assertEqual(lock_before,lock.read_bytes())
             final=read_work(self.target,'work-a');self.assertEqual('completed',final['state']);self.assertEqual(1,len(final['decisions']))
             self.assertEqual(1,sum(s['decision_ref'] is not None for s in final['selections'].values()))
             self.assertEqual(b'installed worker result\n',(self.target/'a').read_bytes());self.assertEqual(b'second result\n',(self.target/'b').read_bytes());self.assertEqual(git_before,exact_snapshot(self.target/'.git'))
@@ -261,7 +266,7 @@ class InstalledWorkerInterruptionTests(unittest.TestCase):
         finally:
             if child is not None and child.poll() is None:child.kill();child.wait(timeout=10)
             with tarfile.open(evidence/'fixture.tar.gz','w:gz') as archive:archive.add(self.base,arcname='fixture')
-            (evidence/'receipt.json').write_text(json.dumps({'phase':phase,'success':success,'commands':commands,'child_pid':child.pid if child else None,'child_exit':child.returncode if child else None,'child_joined':child is not None and child.poll() is not None,'kind':'actual SIGKILL with in-memory barriers; not OS crash'},indent=2)+'\n')
+            (evidence/'receipt.json').write_text(json.dumps({'phase':phase,'success':success,'commands':commands,'child_pid':child.pid if child else None,'child_exit':child.returncode if child else None,'child_joined':child is not None and child.poll() is not None,'kind':'actual platform process termination with in-memory barriers; not OS crash'},indent=2)+'\n')
 
     def test_kill_before_decision_preserves_truth_then_explicit_retry(self):
         self.run_edge_interruption('before-decision')

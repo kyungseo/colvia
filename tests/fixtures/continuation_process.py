@@ -2,7 +2,6 @@
 from __future__ import annotations
 import builtins
 import contextlib
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -14,12 +13,14 @@ target, evidence, config_path = map(Path, sys.argv[1:4])
 config=json.loads(config_path.read_bytes())
 held=False
 def emit(name, **extra):
-    payload={"event":name,"pid":os.getpid(),"pgid":os.getpgrp(),"monotonic_ns":time.monotonic_ns(),
+    payload={"event":name,"pid":os.getpid(),"pgid":None if sys.platform == "win32" else os.getpgrp(),"monotonic_ns":time.monotonic_ns(),
              "guard_held":held,**extra}
     staged=evidence/(name+".writing")
     with staged.open("x") as stream:
         json.dump(payload,stream);stream.flush();os.fsync(stream.fileno())
     os.replace(staged,evidence/(name+".json"))
+    # Signal readiness only after replacement has returned and closed its handle.
+    (evidence/(name+".ready")).write_text("ready")
 
 def wait_for(path):
     deadline=time.monotonic()+120
@@ -32,12 +33,6 @@ def pause(point,path):
     if not held:raise RuntimeError("publication barrier outside real guard")
     emit("barrier",point=point,path=str(path.relative_to(target)))
     wait_for(evidence/"continue")
-
-original_flock=fcntl.flock
-def observed_flock(fd,operation):
-    if operation==fcntl.LOCK_EX:emit("lock-attempting")
-    return original_flock(fd,operation)
-fcntl.flock=observed_flock
 
 original_import=builtins.__import__
 workspace_patched=False
@@ -55,6 +50,7 @@ def instrument(name,globals=None,locals=None,fromlist=(),level=0):
             global held
             emit("waiting")
             if config["mode"]=="contend":wait_for(evidence.parent/"start")
+            emit("lock-attempting")
             with original_guard(*args,**kwargs):
                 held=True;emit("acquired")
                 if config["mode"]=="contend":wait_for(evidence/"permit")

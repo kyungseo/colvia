@@ -81,3 +81,51 @@ Compatible same-window update/rollback must preserve all continuation and existi
 Continuation pending recovery/cancellation is bound to the original home/location, exact binding and references. Moving or cloning pending authority does not rebind it. Read the preserved history; recovery is possible only after separately authorized restoration to the original conditions passes every original check. A read-only clone audit is not recovery.
 
 Detach preserves continuation choices, selections and current with intent, Work and planning truth. Its new paired schema-5 receipt is auditable independently; old schema-4 and earlier pending detach require their retained source. The project-entry cleanup after verified detach remains a separate authorized change.
+
+## Windows-2 Native Entry And Recovery
+
+For a qualified windows-2 project, invoke the verified managed colvia file through an absolute allowed Python path with -I -B from native Windows PowerShell. Replace the illustrative paths with the exact qualified paths; do not copy them as installed locations:
+
+```powershell
+& 'C:\Runtime\python.exe' -I -B 'C:\Project\colvia' view
+```
+
+For independent source init/update/rollback/detach, retain --source-checkout and explicitly select --profile windows-2 together with the existing target, candidate and operation arguments. Source repair retains its existing interface and exact-active-source checks; do not invent a new repair profile argument. The profile selects a requested policy, while verified candidate/active release and actual runtime checks establish whether that request is admissible. Do not fall back to entry-1 or select a window from host OS alone.
+
+Use only fresh or same-window operations. Retain original preview requests/tokens and compatible recovery source outside the target on durable storage before applying. Interrupted lifecycle uses its existing --apply --recover --input FILE --confirm TOKEN path where supported; worker acceptance uses the original work apply ticket and does not gain a lifecycle --recover option. Re-observe state and preserve unknown/torn bytes; automatic replace retry is zero. Existing exact authorization can cover the original retry without a new generic approval step.
+
+Before mutation, apply Workspace Contract's actual native local NTFS path checks and whole-operation read-only preflight for existing files to replace/remove and existing files requiring write-capable flushes. New files are read-only clear; preserved/read-only source files are not normalized. For detach the complete remove set and any required-flush files must pass before publishing the detach receipt. Recovery includes required reflushes of the admitted existing prefix. Pure read/preserve exemption does not waive exact bound observations, and completed read-only replay gains no mutation or reflush. Later drift or failure still requires exact prefix preservation.
+
+For repair, distinguish retrying the original exact request from preparing a separate request. If an attribute or other bound observation differs from admitted before/after, refuse the old retry without changing its token/backup or claiming success. External restoration of the original attribute permits reconsideration only if every exact byte/observation, backup, candidate, binding and prefix condition holds; it is not a product action, a restoration instruction or a success guarantee. External repair evidence alone is not a product pending barrier. While a remaining replacement target is read-only, a fresh preview is also non-pass with no executable request/token. Only when no such target remains and all current active-product/candidate/truth and existing pending guards permit it may a separate preview describe an executable repair. Its apply must satisfy the full Workspace preflight, including required flushes. Use a new operation identity/request/token and new backup destination, preserve prior originals/evidence and obtain the authorization required for that exact apply. Do not bypass actual pending lifecycle/detach, automatically re-preview, clear attributes, or treat the new result as completion of the old request.
+
+Detach6 publishes the receipt first and preserves project truth and instructions as the existing detach procedure requires. After launcher removal, mutation recovery uses compatible independent windows-2 source and the same plan/token. Read-only validation uses the complete plan embedded in the receipt and does not require a separate external original-plan file or token. A validated complete detach6 identifies the windows-2 policy but does not certify runtime, prior flush outcomes or permit reinitialization. Keep useful manuals and any required exact recovery inputs outside the removal set. Historical detach1/2/3 retain their own reader/recovery scope; never reinterpret them from the current Windows host.
+
+## Windows Init
+
+The agent prepares machine input; the human reviews the target, proposed action and exact confirmation. Prefer `--input FILE` in Windows PowerShell 5.1. A request or ticket must be UTF-8 without a BOM, use LF only and end with exactly one LF. Canonical JSON also requires sorted keys, two-space indentation and unescaped Unicode. The agent can emit it with Python's `json.dumps(value, ensure_ascii=False, allow_nan=False, indent=2, sort_keys=True) + "\n"`, encoded as UTF-8 and written in binary mode. Save only the returned `request` for lifecycle apply or `ticket` for intent/Work apply, not the enclosing preview/prepare response. Keep the exact file and confirmation token on durable storage outside the target before applying.
+
+Do not pass JSON through PowerShell text pipelines, default output redirection or a JSON reserialization step and assume its bytes survive. Stdin is supported only when its transport preserves the canonical bytes; use a file when that cannot be verified. Preserve quoting and Unicode in paths and values. Single-quoted PowerShell literals keep `$` and `&` literal; represent a literal apostrophe by doubling it. Check the native command's `$LASTEXITCODE` before continuing.
+
+For a separately qualified fresh windows-2 installation, substitute the actual allowed Python, prepared source and target paths below. This example uses one PowerShell line per command and creates no permission to install. The common continuation-1 source cannot stand in for explicitly prepared windows-2 source.
+
+```powershell
+$Python = 'C:\Runtime\python.exe'
+$Source = 'C:\Source'
+$Project = 'C:\Project'
+$Launcher = Join-Path $Source 'colvia'
+& $Python -I -B $Launcher --source-checkout init --profile windows-2 --target $Project --source $Source --authority-home-id project-home --operation-id init-1 --observed-at 2026-01-01T00:00:00Z
+if ($LASTEXITCODE -ne 0) { throw 'Init preview failed; preserve and inspect the output.' }
+```
+
+Use the actual unique operation ID and observation time. After the agent saves the canonical request and the human authorizes that exact action, apply using the saved file and its matching token. Replace the illustrative input path and token; preserve the source and request for recovery.
+
+```powershell
+$RequestFile = 'C:\Recovery\init-request.json'
+$ConfirmToken = 'TOKEN_FROM_THIS_PREVIEW'
+& $Python -I -B $Launcher --source-checkout init --profile windows-2 --target $Project --source $Source --apply --input $RequestFile --confirm $ConfirmToken
+if ($LASTEXITCODE -ne 0) { throw 'Init did not report success; preserve the request and inspect current state.' }
+& $Python -I -B (Join-Path $Project 'colvia') status
+if ($LASTEXITCODE -ne 0) { throw 'Installed status is non-pass; inspect the reported state.' }
+```
+
+Do not infer from a failed apply that no bytes were published. Use the original request/token and the supported recovery path only after checking the observed prefix. Unknown state, read-only targets and unverified runtime or filesystem conditions remain non-pass; these examples do not establish native qualification or a successful fresh-reader exercise.

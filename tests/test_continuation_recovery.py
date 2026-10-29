@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 import hashlib
 import os
+import sys
+from tests.platform_fixtures import fixture_is_link, fixture_unsafe_link, fixture_unlink
 import unittest
 from unittest.mock import patch
 from hv2ref.errors import ContractError, InjectedCrash
@@ -224,16 +226,25 @@ class ContinuationRecoveryTests(unittest.TestCase):
         home=self.target/".hrn/work/work-a/continuation"
         target=home/"current.json"
         original=target.read_bytes()
-        for kind in ("symlink","hardlink","directory"):
+        # A standard-account NTFS junction is directory-reparse refusal evidence;
+        # it does not establish native file-symlink creation or qualification.
+        link_kind="junction" if sys.platform=="win32" else "symlink"
+        external=(self.target/"a").read_bytes()
+        for kind in (link_kind,"hardlink","directory"):
             with self.subTest(kind=kind):
                 target.unlink()
-                if kind=="symlink": target.symlink_to(self.target/"a")
-                elif kind=="hardlink": os.link(self.target/"a",target)
-                else: target.mkdir()
-                with self.assertRaises(ContractError): self.state()
-                if kind=="directory": target.rmdir()
-                else: target.unlink()
-                target.write_bytes(original)
+                try:
+                    if kind==link_kind: fixture_unsafe_link(target,self.target/"a")
+                    elif kind=="hardlink": os.link(self.target/"a",target)
+                    else: target.mkdir()
+                    with self.assertRaises(ContractError): self.state()
+                    self.assertEqual(external,(self.target/"a").read_bytes())
+                finally:
+                    if fixture_is_link(target): fixture_unlink(target)
+                    elif target.is_dir(): target.rmdir()
+                    elif target.exists(): target.unlink()
+                    target.write_bytes(original)
+                self.assertEqual(original,target.read_bytes())
         data=copy.deepcopy(self.state()["data"])
         base=read_work(self.target,"work-a")
         t=copy.deepcopy(next(iter(data[k] for k in data if k.startswith("choices/")))["confirmation"])

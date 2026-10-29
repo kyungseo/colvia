@@ -1,4 +1,16 @@
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_directory_link,
+    fixture_is_link,
+    fixture_init_schema,
+    fixture_snapshot_paths,
+    fixture_temporary_directory,
+    fixture_unlink,
+    fixture_unsafe_link,
+    fixture_window,
+    posix_mechanism,
+)
+import sys
 
 import hashlib
 import os
@@ -17,18 +29,20 @@ from hv2ref.workspace import bootstrap_root, classify_target, git_environment, i
 
 class WorkspaceRootTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory(prefix="new-workspace-")
+        self.tmp = fixture_temporary_directory(prefix="new-workspace-")
         self.base = Path(self.tmp.name).resolve()
         self.target = self.base / "project"
         self.target.mkdir()
         (self.target / "README.md").write_text("Project content stays.\n")
         self.format = {"record_type":"workspace-format", "format_version":1, "authority_home_id":"project-a", "created_at":"2026-01-01T00:00:00Z", "lineage":None}
-        self.plan = {"record_type":"lifecycle-plan", "schema_version":1, "operation_id":"init-a", "action":"init", "target_fingerprint":target_fingerprint(self.target), "authority_home_id":"project-a", "expected_binding_ref":None, "candidate_release":{"id":"product-release-"+"a"*24,"sha256":"a"*64,"inventory_id":"human-1"}, "format_sha256":hashlib.sha256(canonical_json_bytes(self.format)).hexdigest(), "truth_refs":[], "remove":[], "preserve":[], "created_at":"2026-01-01T00:00:00Z"}
+        self.plan = {"record_type":"lifecycle-plan", "schema_version":fixture_init_schema(), "operation_id":"init-a", "action":"init", "target_fingerprint":target_fingerprint(self.target), "authority_home_id":"project-a", "expected_binding_ref":None, "candidate_release":{"id":"product-release-"+"a"*24,"sha256":"a"*64,"inventory_id":fixture_window("human-1")}, "format_sha256":hashlib.sha256(canonical_json_bytes(self.format)).hexdigest(), "truth_refs":[], "remove":[], "preserve":[], "created_at":"2026-01-01T00:00:00Z"}
 
     def tearDown(self):
         self.tmp.cleanup()
 
     def git(self, *args, target=None):
+        if sys.platform == "win32" and args and args[0] == "clone":
+            args = ("-c", "core.autocrlf=false", "-c", "core.eol=lf", *args)
         if args and args[0] == "commit":
             args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
         return subprocess.run(["git", "-C", str(target or self.target), *args], env=git_environment(), check=True, capture_output=True, text=True).stdout.strip()
@@ -41,7 +55,7 @@ class WorkspaceRootTests(unittest.TestCase):
         self.git("commit", "-qm", "fixture")
 
     def tree(self):
-        return {str(p.relative_to(self.target)):p.read_bytes() for p in self.target.rglob("*") if p.is_file() and not p.is_symlink()}
+        return {str(p.relative_to(self.target)):p.read_bytes() for p in fixture_snapshot_paths(self.target) if not fixture_is_link(p) and p.is_file()}
 
     def test_non_git_and_primary_are_explicit(self):
         self.assertEqual(classify_target(self.target, mutation=True)["kind"], "non-git")
@@ -103,7 +117,7 @@ class WorkspaceRootTests(unittest.TestCase):
 
     def test_target_symlink_and_symlink_ancestor_are_refused(self):
         alias = self.base / "alias"
-        alias.symlink_to(self.target, target_is_directory=True)
+        fixture_directory_link(alias, self.target)
         with self.assertRaises(ContractError):
             classify_target(alias, mutation=True)
         child = self.target / "child"
@@ -234,10 +248,10 @@ class WorkspaceRootTests(unittest.TestCase):
     def test_symlinked_root_member_never_reads_external_bytes(self):
         bootstrap_root(self.target, self.plan, self.format)
         path = self.target / ".hrn/format.json"
-        path.unlink()
+        fixture_unlink(path)
         sentinel = self.base / "private-sentinel"
         sentinel.write_bytes(b"never read or overwrite")
-        path.symlink_to(sentinel)
+        fixture_unsafe_link(path, sentinel)
         self.assertEqual(inspect_root(self.target)["classification"], "integrity-failure")
         with self.assertRaises(ContractError):
             bootstrap_root(self.target, self.plan, self.format, recover=True)

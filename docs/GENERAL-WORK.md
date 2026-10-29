@@ -160,6 +160,105 @@ Work publish requires `identity`, `revision`, `manifest`, `selection_id`,
 requires `work_id`, `action`, `actor`, `reason`, `request_id`, `observed_at`,
 `revision_ref`, `supersedes`, with explicit null for unused optional references.
 
+### Ordinary Local Work Input
+
+This recipe covers a schema-1 ordinary `local` Work, from an accepted intent to a submitted result. It does not enable worker, parent, rebind or delegated acceptance paths. First prepare the project documents and ignore rules, obtain acceptance of the exact intent using [Ordinary Draft Input](GUIDED-INTENT-FORMATION.md#ordinary-draft-input), and observe a healthy installed product without a blocking pending operation. Keep canonical inputs outside project content. Agents prepare these inputs; humans review the purpose, scope, evidence and exact decisions rather than hand-editing JSON.
+
+The following Python notation describes data construction, not a new product command. Supply actual observations for its variables; it does not read files or grant a write. Canonical encoding and its digest are:
+
+```python
+import hashlib
+import json
+
+def canonical(value):
+    return (json.dumps(value, ensure_ascii=False, sort_keys=True,
+                       indent=2, allow_nan=False) + "\n").encode("utf-8")
+
+def H(value):
+    return hashlib.sha256(canonical(value)).hexdigest()
+```
+
+A record reference is `{id, sha256}` where the digest covers the whole canonical record. A document reference is `{path, sha256, role, required}`; its digest covers the file's bytes, its role is `decision`, `brief`, `plan`, `narrative` or `result`, and `required` is boolean. An evidence reference uses `{path, sha256, required, verification}` instead; verification is `worker-observed` or `control-required`, and required evidence must use `control-required`. Preserve actual provenance and the existing live-reference rules. IDs use ASCII `[A-Za-z0-9][A-Za-z0-9_-]{0,95}`. Nullable keys remain present as null; unknown keys are refused.
+
+#### Observe The Whole Content Tree
+
+Each `entries` row has exactly `path`, `mode`, `sha256` and `size_bytes`. Observe actual regular-file bytes, sizes and admitted modes, with literal relative NFC paths and `/` separators. Sort entries by path UTF-8 bytes. Include the whole project membership, not just the Work's scope: for example, project README and agent-entry files belong to a non-Git baseline. Exclude root authority metadata and only the managed root launcher whose bytes match the verified active release. Refuse links, special files, aliases, nested authorities and unavailable or changing observations under the content rules above. Two complete observations must agree before using a baseline; publication rechecks live content.
+
+For a native windows-2 non-Git project, every ordinary content file has logical mode `100644` and `ignore_fingerprint` is SHA-256 of the literal bytes `no-git-v1`. All ordinary files are members, even if `.gitignore` names them; empty directories are not entries. On other platforms and in Git projects, use the content and effective ignore-policy rules above; do not copy this non-Git fingerprint or mode rule. A caller-observed list is evidence for the proposed input, not an accepted manifest or an exemption from Core validation.
+
+```python
+tree_body = {
+    "policy_version": 1,
+    "ignore_fingerprint": observed_ignore_fingerprint,
+    "entries": observed_entries,
+}
+tree = {**tree_body, "sha256": H(tree_body)}
+manifest = {
+    "record_type": "result-manifest", "schema_version": 1,
+    "base": tree, "result": tree, "changes": [],
+    "base_commit": None, "candidate_commit": None,
+    "base_retention_ref": None, "candidate_retention_ref": None,
+}
+manifest_ref = {"id": H(manifest), "sha256": H(manifest)}
+```
+
+The tree digest excludes its own `sha256` key. A manifest digest includes every field of the manifest, and its reference ID is that same full digest. The four Git provenance fields are null for local Work, including local Work in a Git control checkout. An initial baseline has identical base/result trees and no changes. It does not accept a prior edit.
+
+#### Publish A Start Baseline
+
+Create the immutable identity and start revision with all fields below. `accepted_intent_ref` is the selected reference described in the intent guide; `authority_home_id` and `acceptance_authority` must agree with that accepted intent. Choose unused IDs and accurate UTC times. Choose an actual project plan/narrative reference so a fresh session can find the task description. Explain its `required` flag; do not infer permission to change references later.
+
+```python
+identity = {
+    "record_type": "work-identity", "schema_version": 1,
+    "authority_home_id": authority_home_id, "work_id": work_id,
+    "work_type": "implementation", "created_at": observed_at,
+    "acceptance_authority": acceptance_authority, "lineage": None,
+}
+revision = {
+    "record_type": "work-revision", "schema_version": 1,
+    "authority_home_id": authority_home_id, "work_id": work_id,
+    "record_id": start_revision_id, "observed_at": observed_at,
+    "observed_scope": observed_scope, "unavailable_scope": unavailable_scope,
+    "author": author, "operation": "start",
+    "expected_prior_selection": None, "intent_ref": accepted_intent_ref,
+    "scope": scope, "document_refs": document_refs,
+    "evidence_refs": [], "result_refs": {"manifest": manifest_ref},
+    "progress": "active", "next_action": next_action,
+    "relations": [], "rebind_from": None,
+    "execution_context": {"mode": "local", "attempt_id": attempt_id},
+}
+publish_input = {
+    "identity": identity, "revision": revision, "manifest": manifest,
+    "selection_id": selection_id, "operation_id": operation_id,
+}
+```
+
+`work_type`, author, time, acceptance authority and next-action text are nonempty strings. `scope` is a list of exact project-file paths; it does not shrink the tree. `observed_scope` and `unavailable_scope` are lists of nonempty descriptions of what was or was not observed, and may be empty. They are not substitutes for required verification. `document_refs` follows the shape above. Empty evidence/relations in this ordinary example declare none; do not discard actual required evidence or relationships to fit the example. A non-null lineage is a qualified `{authority_home_id, kind, id}` object. Relations, when applicable, are `{relation, target}` with a qualified Work target, `parent`, `depends_on` or `continues`; their existence and graph rules still apply.
+
+Invoke installed `work publish --input FILE` only within the authorized scope. A successful response is graph `G`: `G["current"]["selection_ref"]` selects a record in `G["selections"]`, whose `revision_ref` selects a record in `G["revisions"]`. Its `result_refs.manifest.id` selects the exact manifest in `G["manifests"]`. Preserve this response and the baseline, verify the selected Work with `view work WORK_ID`, and use these references on resume. Do not edit immutable stored records or choose the most recently named file.
+
+#### Submit And Review The Result
+
+A new session starts with the installed `view`, the selected Work, its referenced project narrative and current intent. Confirm scope, authorization, pending state and live content before continuing. A paused active Work needs no new checkpoint merely because the agent session changed.
+
+After the authorized edit, independently observe the whole result tree with the same policy. Retain the selected baseline's `result` as the new manifest's `base`. Its `changes` array is the exact difference across the union of base/result paths, sorted by UTF-8 path bytes: each row has `path`, `pre` and `post`, with each side the complete corresponding entry or null for absence. Include only differing rows; every changed path must be in Work scope. Do not regenerate the base from the edited project. Keep all four local provenance fields null, and compute the new tree and manifest digests as above.
+
+Reuse the unchanged identity and accepted intent reference. Create a new revision ID with `operation: "submit-result"`, `progress: "review"`, current `observed_at`, truthful observation lists and `next_action`, `expected_prior_selection` equal to the actual current selection ref, and `result_refs.manifest` equal to the new manifest ref. Keep scope, local execution context and other unchanged fields; update document/evidence references only as authorized and observed. Use new selection/operation IDs in the five-field publish input. Submit-result publication is a proposal, not completion.
+
+After successful publication, use its selected revision reference in this complete prepare input:
+
+```python
+prepare_input = {
+    "work_id": work_id, "action": "accept",
+    "actor": acceptance_authority, "reason": owner_reason,
+    "request_id": new_request_id, "observed_at": observed_at,
+    "revision_ref": selected_revision_ref, "supersedes": None,
+}
+```
+
+Run `work prepare --input FILE`; review `view work WORK_ID --revision REVISION_ID` and `view confirmation --input TICKET_FILE` for the returned ticket. Explain changed content and unavailable evidence to the human. Only after the exact decision, apply that canonical ticket with `work apply --input TICKET_FILE --confirm TOKEN`. Re-read the Work/view and independently check live result bytes. Preserve any refusal, original input/token and actual prefix; follow the existing recovery rules instead of retrying automatically. The apply selects stored completion; current file agreement remains a separate observation.
+
 Installed `status` and `doctor` are read-only and validate product plus all typed
 records. They label pending publication, worker topology and runtime support.
 They do not attest fresh project content or acceptance of a later unsubmitted edit.
@@ -257,6 +356,22 @@ Submission records review state and leaves control project bytes, HEAD and index
 
 Worker accept prepare checks the pre-image and retained post blobs without applying bytes. Apply records the human decision durably before replacing only the manifest changes; add/delete/executable-mode changes leave HEAD, index and refs unchanged. Completion is selected only after the whole result and required live references match. An interrupted acceptance resumes only remaining pre-images from retained control Git objects, even if the worker directory is unavailable. Changed paths that match neither their pre-image nor their post-image, unsafe occupants, changed ignore policy or outside drift block recovery; existing bytes are preserved. An open accept with no durable selection can instead be explicitly rejected only while every changed path is still pre; outside drift and stale intent do not grant new authority and do not prevent that cancellation. Mixed application cannot be cancelled. A durable result selection is never repaired by reapplying content. Historical completed replay is read-only. Human worker baseline rebind uses the existing D→S→current publication with repeated live/ref checks and exact recovery; it has no new cancellation path. Preserve changed bytes before restoring prerequisites and replaying the same ticket. The submission fixture tests only its bounded scenario. Real parallel adoption, multi-process races and final result integration need their own qualification. [Security and Support](SECURITY-AND-SUPPORT.md) describes the limits of historical process/integration and private-use observations. General multi-worker efficiency and project-specific usefulness remain unverified.
 
+
+### Windows Initial Worker Application
+
+The windows-2 successor adds a mode-feasibility condition to worker result acceptance. All existing retained Git provenance, exact baseline, scope, membership, ignore-policy, physical-occupant, authority/runtime and required-reference checks remain mandatory. The operation does not change the control HEAD, index or refs. This condition does not authorize an uncommitted worker result or replace any existing guard. Workspace Contract's Windows Native Observation And Publication also applies its operation-specific NTFS/read-only preflight to these writes.
+
+For windows-2, extend the unchanged explicit CRLF exception to verified active windows-2 under exactly the same retained text/eol=crlf proof and exclusions; other windows keep their original admission. Windows lifecycle follows Workspace Contract's Windows Fresh And Same-Window Lifecycle and Operations' Windows-2 Native Entry And Recovery. Those Windows-only clauses qualify this document's entry-1 source-profile, exact-active-repair and schema-3 detach descriptions; they do not admit an old-window transition.
+
+Using the currently validated control classification, predict the logical mode that a remaining result path would have after application without changing the index: use its supported stage-0 index mode, or 100644 only when the path is successfully classified as untracked. A result deletion requires absence after application. Across the union of base and result paths, every predicted mode or absence must agree with the result; a mismatch refuses the entire operation, and an indeterminate classification remains non-pass without default substitution. Prediction is an additional necessary condition, not evidence of actual content or absence. Re-observe actual bytes, membership, mode and absence independently before selecting completion; the whole result must match. The expected manifest cannot supply the current observation.
+
+Initial application eligibility is defined by that common condition together with every existing guard, not by a closed example list. Examples include stable tracked 100644/100755 content changes, eligible existing untracked 100644 content changes or deletions, new untracked 100644 results, and tracked deletions of either mode. A supported stage-0 index entry for a path absent from both the exact base and the safely observed actual control namespace may also allow a result addition at the same index mode, including 100755, if all retained-source, baseline and physical checks hold. It is not a new untracked 100755 case. Qualification must cover these distinct classifications; an example is not an unconditional support grant.
+
+Mode-changing results and new untracked destinations requiring 100755 are initially unsupported, including rename/move/copy results requiring that destination mode. Evaluate actual manifest changes and destination classification rather than imposing a blanket rename prohibition. An index entry surviving a real deletion is not proof of a remaining file. Mixed supported/unsupported results refuse as a whole.
+
+New accept prepare refuses an unsupported result without issuing an applicable ticket. Apply repeats existing baseline/authority checks and the mode-feasibility check before publishing a new decision, selection, current or project-content change. Lock/scratch effects remain governed by the lock contract; the invocation is not claimed to make zero filesystem writes. Later control index or membership drift follows existing drift/stale rules, distinct from a policy-level unsupported result or unknown classification.
+
+Preserve already published pending prefixes, original decisions, content and exact recovery inputs. Keep existing retry, cancellation and completed-replay conditions, including the all-pre/no-durable-selection cancellation boundary and pending barriers on other writers. A valid review submission and ordinary reject remain distinct from content application; this mode condition alone does not forbid those operations. No new command, index mutation, mode registry or manifest fallback is introduced. Existing macOS worker mode-change behavior and qualification expectations are unchanged.
 
 ## Git Integration And Candidate Reuse
 

@@ -1,5 +1,11 @@
 """Worker publication fixtures; serial runtime double and installed entry separated."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_directory_link,
+    fixture_is_link,
+    fixture_snapshot,
+    fixture_unlink,
+)
 from test_productization_safety import verified_inventory_id
 import copy
 import hashlib
@@ -37,7 +43,9 @@ class WorkerPublicationTests(unittest.TestCase):
     def git(self,target,*args):
         if args and args[0] == "commit":
             args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
-        return subprocess.run(["git","-C",str(target),*args],capture_output=True,check=True,env=git_environment(),timeout=30).stdout.strip().decode()
+        # Synthetic fixtures retain canonical LF bytes across checkout/clone on Windows.
+        config = ["-c", "core.autocrlf=false", "-c", "core.eol=lf"] if sys.platform == "win32" else []
+        return subprocess.run(["git",*config,"-C",str(target),*args],capture_output=True,check=True,env=git_environment(),timeout=30).stdout.strip().decode()
 
     def commit_control(self):
         self.git(self.target,"add",".");self.git(self.target,"commit","-qm","synthetic baseline")
@@ -51,7 +59,7 @@ class WorkerPublicationTests(unittest.TestCase):
         return r,manifest,s,o
 
     def baseline(self,operation="start"):
-        oid=self.commit_control();tree=snapshot(self.target)
+        oid=self.commit_control();tree=fixture_snapshot(self.target)
         m=make_manifest(tree,tree,scope=["a"],base_commit=oid,candidate_commit=oid,base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-base")
         p=self.bind(self.proposal(operation,old_intent=self.intent if operation=="rebind" else None),m)
         return p
@@ -61,14 +69,14 @@ class WorkerPublicationTests(unittest.TestCase):
         self.git(self.target,"worktree","add","-q","-b","retained-candidate",str(self.worker),start[1]["base_commit"])
         (self.worker/"a").write_bytes(b"worker result\n")
         self.git(self.worker,"add","a");self.git(self.worker,"commit","-qm","synthetic result")
-        m=make_manifest(start[1]["base"],snapshot(self.worker),scope=["a"],base_commit=start[1]["base_commit"],candidate_commit=self.git(self.worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-candidate")
+        m=make_manifest(start[1]["base"],fixture_snapshot(self.worker),scope=["a"],base_commit=start[1]["base_commit"],candidate_commit=self.git(self.worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-candidate")
         return self.bind(self.proposal("submit-result"),m)
 
     def test_worker_checkpoint_cannot_absorb_submitted_result(self):
         from hv2ref.work import work_graph
         submitted=self.start_and_result();graph=self.publish(submitted,worker=self.worker)
         (self.target/"a").write_bytes((self.worker/"a").read_bytes())
-        tree=snapshot(self.target);oid=submitted[1]["candidate_commit"]
+        tree=fixture_snapshot(self.target);oid=submitted[1]["candidate_commit"]
         manifest=make_manifest(tree,tree,scope=["a"],base_commit=oid,candidate_commit=oid,base_retention_ref="refs/heads/retained-candidate",candidate_retention_ref="refs/heads/retained-candidate")
         proposal=self.bind(self.proposal("checkpoint"),manifest)
         # Even an unselected revision is rejected by the pure graph reader.
@@ -143,7 +151,7 @@ class WorkerPublicationTests(unittest.TestCase):
         self.git(self.target,"worktree","add","-q","-b","competing-result",str(other),first[1]["base_commit"])
         (other/"a").write_bytes(b"different worker result\n")
         self.git(other,"add","a");self.git(other,"commit","-qm","competing result")
-        manifest=make_manifest(first[1]["base"],snapshot(other),scope=["a"],base_commit=first[1]["base_commit"],candidate_commit=self.git(other,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/competing-result")
+        manifest=make_manifest(first[1]["base"],fixture_snapshot(other),scope=["a"],base_commit=first[1]["base_commit"],candidate_commit=self.git(other,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/competing-result")
         second=self.bind(self.proposal("submit-result"),manifest)
         self.assertNotEqual(first[1]["candidate_commit"],second[1]["candidate_commit"])
         self.assertNotEqual(first[1]["result"],second[1]["result"])
@@ -262,9 +270,17 @@ class WorkerApplicationTests(unittest.TestCase):
             (self.worker/"a").write_bytes(b"worker result\n")
             (self.worker/"b").unlink();(self.worker/"new").mkdir()
             (self.worker/"new/run").write_bytes(b"executable result\n");(self.worker/"new/run").chmod(0o755)
-            self.git(self.worker,"add",".");self.git(self.worker,"commit","-qm","synthetic multi-path result")
+            self.git(self.worker,"add",".")
+            if sys.platform == "win32":
+                # Native execute intent is a Git mode, not a chmod side effect.
+                self.git(self.worker,"update-index","--chmod=+x","new/run")
+            self.git(self.worker,"commit","-qm","synthetic multi-path result")
+            if sys.platform == "win32":
+                blob=self.git(self.worker,"rev-parse","HEAD:new/run")
+                self.git(self.target,"update-index","--add","--cacheinfo","100755,"+blob+",new/run")
+                self.assertFalse((self.target/"new/run").exists())
             proposal=self.proposal("submit-result");proposal[0]["scope"]=start[0]["scope"]
-            proposal=self.bind(proposal,make_manifest(start[1]["base"],snapshot(self.worker),scope=start[0]["scope"],base_commit=start[1]["base_commit"],candidate_commit=self.git(self.worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-candidate"))
+            proposal=self.bind(proposal,make_manifest(start[1]["base"],fixture_snapshot(self.worker),scope=start[0]["scope"],base_commit=start[1]["base_commit"],candidate_commit=self.git(self.worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-candidate"))
         proposal[0]["document_refs"]=[{"path":"a","sha256":hashlib.sha256(b"worker result\n").hexdigest(),"required":True,"role":"result"}]
         self.publish(proposal,worker=self.worker)
         return proposal
@@ -273,8 +289,12 @@ class WorkerApplicationTests(unittest.TestCase):
         proposal=self.result(multiple=True);prepared=self.prepare()
         git_before={str(p.relative_to(self.target/".git")):p.read_bytes() for p in (self.target/".git").rglob("*") if p.is_file()}
         self.assertEqual("completed",self.apply(prepared)["state"])
-        self.assertEqual(proposal[1]["result"],snapshot(self.target))
-        self.assertFalse((self.target/"b").exists());self.assertTrue((self.target/"new/run").stat().st_mode & 0o100)
+        self.assertEqual(proposal[1]["result"],fixture_snapshot(self.target))
+        self.assertFalse((self.target/"b").exists())
+        if sys.platform == "win32":
+            self.assertEqual("100755",next(e["mode"] for e in fixture_snapshot(self.target)["entries"] if e["path"] == "new/run"))
+        else:
+            self.assertTrue((self.target/"new/run").stat().st_mode & 0o100)
         self.assertEqual(git_before,{str(p.relative_to(self.target/".git")):p.read_bytes() for p in (self.target/".git").rglob("*") if p.is_file()})
         (self.target/"a").write_bytes(b"later unrelated bytes\n")
         before=self.bytes();self.assertEqual("completed",self.apply(prepared)["state"]);self.assertEqual(before,self.bytes())
@@ -305,7 +325,7 @@ class WorkerApplicationTests(unittest.TestCase):
         (self.target/"b").write_bytes(b"neither\n");before=self.bytes()
         with self.assertRaises(ContractError):self.apply(prepared)
         self.assertEqual(before,self.bytes());(self.target/"b").write_bytes(b"delete me\n")
-        self.assertEqual("completed",self.apply(prepared)["state"]);self.assertEqual(proposal[1]["result"],snapshot(self.target))
+        self.assertEqual("completed",self.apply(prepared)["state"]);self.assertEqual(proposal[1]["result"],fixture_snapshot(self.target))
 
     def test_all_pre_cancellation_allows_outside_and_stale_intent_only(self):
         self.result();prepared=self.prepare()
@@ -351,7 +371,7 @@ class WorkerApplicationTests(unittest.TestCase):
         self.git(self.target,"worktree","add","-q","-b","replacement-result",str(worker),refresh[1]["base_commit"])
         (worker/"a").write_bytes(b"replacement result\n")
         self.git(worker,"add","a");self.git(worker,"commit","-qm","replacement result")
-        m=make_manifest(refresh[1]["base"],snapshot(worker),scope=["a"],base_commit=refresh[1]["base_commit"],candidate_commit=self.git(worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/replacement-result")
+        m=make_manifest(refresh[1]["base"],fixture_snapshot(worker),scope=["a"],base_commit=refresh[1]["base_commit"],candidate_commit=self.git(worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/replacement-result")
         self.publish(self.bind(self.proposal("submit-result"),m),worker=worker)
         git_before=exact_snapshot(self.target/".git")
         self.assertEqual("completed",self.apply(self.prepare(request_id="replacement-accept"))["state"])
@@ -369,18 +389,29 @@ class WorkerApplicationTests(unittest.TestCase):
         self.git(self.target,"worktree","add","-q","-b","retained-candidate",str(self.worker),start_manifest["base_commit"])
         (self.worker/"dir").mkdir();(self.worker/"dir/new.cache").write_bytes(b"accepted addition\n")
         self.git(self.worker,"add","-f","dir/new.cache");self.git(self.worker,"commit","-qm","add ignored candidate")
-        result=make_manifest(start_manifest["base"],snapshot(self.worker),scope=scope,base_commit=start_manifest["base_commit"],candidate_commit=self.git(self.worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-candidate")
+        result=make_manifest(start_manifest["base"],fixture_snapshot(self.worker),scope=scope,base_commit=start_manifest["base_commit"],candidate_commit=self.git(self.worker,"rev-parse","HEAD"),base_retention_ref="refs/heads/retained-base",candidate_retention_ref="refs/heads/retained-candidate")
         proposal=self.proposal("submit-result");proposal[0]["scope"]=scope
-        self.publish(self.bind(proposal,result),worker=self.worker);prepared=self.prepare()
+        self.publish(self.bind(proposal,result),worker=self.worker)
+        if sys.platform == "win32":
+            # Ignored new paths are refused before an application ticket exists.
+            before=exact_snapshot(self.target)
+            with self.assertRaisesRegex(ContractError,"Windows worker post path is ignored"):
+                self.prepare()
+            self.assertEqual(before,exact_snapshot(self.target))
+            self.assertEqual("review",read_work(self.target,"work-a")["state"])
+            attempt_acceptance=self.prepare
+        else:
+            prepared=self.prepare()
+            attempt_acceptance=lambda:self.apply(prepared)
         (self.target/"dir").mkdir();(self.target/"dir/new.cache").write_bytes(b"unreviewed occupant\n")
         before=exact_snapshot(self.target)
-        with self.assertRaises(ContractError):self.apply(prepared)
+        with self.assertRaises(ContractError):attempt_acceptance()
         self.assertEqual(before,exact_snapshot(self.target));self.assertEqual("review",read_work(self.target,"work-a")["state"])
         (self.target/"dir/new.cache").unlink();(self.target/"dir").rmdir()
         outside=self.target.parent/"outside";outside.mkdir();(outside/"new.cache").write_bytes(b"outside evidence\n")
-        (self.target/"dir").symlink_to(outside,target_is_directory=True)
+        fixture_directory_link(self.target/"dir", outside)
         before=exact_snapshot(self.target);external=exact_snapshot(outside)
-        with self.assertRaises(ContractError):self.apply(prepared)
+        with self.assertRaises(ContractError):attempt_acceptance()
         self.assertEqual(before,exact_snapshot(self.target));self.assertEqual(external,exact_snapshot(outside))
         self.assertEqual("review",read_work(self.target,"work-a")["state"])
 
@@ -417,7 +448,11 @@ class InstalledWorkerPublicationTests(unittest.TestCase):
         if two_files:(self.target/"b").write_bytes(b"second before\n")
         self.git(self.target,"init","-q");self.git(self.target,"config","user.name","Fixture");self.git(self.target,"config","user.email","fixture@example.invalid")
         self.apply_init(self.preview());intent=self.accept_intent()
-        self.git(self.target,"add",".");self.git(self.target,"commit","-qm","synthetic installed baseline")
+        self.git(self.target,"add",".")
+        if sys.platform == "win32":
+            # Preserve the existing commit oracle's managed-launcher mode explicitly.
+            self.git(self.target,"update-index","--chmod=+x","colvia")
+        self.git(self.target,"commit","-qm","synthetic installed baseline")
         oid=self.git(self.target,"rev-parse","HEAD");self.git(self.target,"branch","retained-base",oid)
         from hv2ref.product import verify_workspace_product
         sha=verify_workspace_product(self.target)["launcher_sha256"];tree=snapshot(self.target,verified_launcher_sha256=sha, verified_inventory_id=verified_inventory_id(self.target))

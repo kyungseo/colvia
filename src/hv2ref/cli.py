@@ -16,14 +16,14 @@ def _print(value: object) -> None:
 
 
 def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(prog="hv2ref", description="Colvia private Public Core candidate CLI")
+    root = argparse.ArgumentParser(prog="hv2ref", description="Colvia private Public Core candidate CLI", epilog='Windows-2 integration candidate: use an absolute allowed Python path with -I -B and the verified launcher in native Windows PowerShell. Explicit source profile windows-2 must match prepared source. Native OS/process and local NTFS checks apply; worker mode changes and new untracked 100755 results are unsupported. Qualification and activation remain pending. See the verified manual.')
     sub = root.add_subparsers(dest="command", required=True)
 
     product_init = sub.add_parser("init", help="preview or initialize one project-local product binding")
     product_init.add_argument("--target", type=Path, required=True)
     product_init.add_argument("--source", type=Path, default=product_source_root())
     product_init.add_argument("--apply", action="store_true")
-    product_init.add_argument("--profile", choices=("continuation-1",))
+    product_init.add_argument("--profile", choices=("continuation-1", "windows-2"))
     product_init.add_argument("--authority-home-id")
     product_init.add_argument("--operation-id")
     product_init.add_argument("--observed-at")
@@ -59,7 +59,7 @@ def parser() -> argparse.ArgumentParser:
     )
 
     for p in (product_update, product_rollback):
-        p.add_argument("--profile", choices=("continuation-1",))
+        p.add_argument("--profile", choices=("continuation-1", "windows-2"))
         p.add_argument("--operation-id")
         p.add_argument("--observed-at")
         p.add_argument("--input")
@@ -85,7 +85,7 @@ def parser() -> argparse.ArgumentParser:
         "--inject-at", choices=("after-receipt", "after-launcher", "after-file", "after-files", "after-directory", "after-product"), help=argparse.SUPPRESS
     )
 
-    product_detach.add_argument("--profile",choices=("continuation-1",))
+    product_detach.add_argument("--profile",choices=("continuation-1", "windows-2"))
     product_detach.add_argument("--operation-id")
     product_detach.add_argument("--observed-at")
     product_detach.add_argument("--input")
@@ -109,8 +109,19 @@ def run(args: argparse.Namespace) -> object:
     if args.command == "repair":
         return _workspace_repair(args)
     if args.command in ("init", "update", "rollback", "detach"):
-        if args.profile != "continuation-1":
-            raise ContractError("HV2-WORKSPACE-COMMAND", "source lifecycle requires explicit continuation-1 profile; use retained old source for older windows")
+        from .product import _launcher_inventory_window, _serial_file
+        from .workspace import require_supported_runtime
+        declared = _launcher_inventory_window(_serial_file(product_source_root() / "colvia"))
+        if args.profile != declared:
+            guidance = ("; use retained old source for older windows" if args.profile is None
+                        else " matching the prepared source; preserve older windows")
+            raise ContractError("HV2-WORKSPACE-COMMAND", "source lifecycle requires explicit " + declared + " profile" + guidance)
+        require_supported_runtime(declared)
+        source = getattr(args, "source", None)
+        if source is not None:
+            from .product import workspace_candidate
+            if workspace_candidate(source)["release_ref"]["inventory_id"] != declared:
+                raise ContractError("HV2-WORKSPACE-COMMAND", "candidate declaration differs from source profile; no cross-window fallback")
         if args.command == "init":
             return _source_workspace_init(args)
         if args.command == "detach":
@@ -185,7 +196,7 @@ def _view_parser(sub, target):
 
 
 def workspace_parser(target: Path) -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(prog="colvia", description="Single-home human review and serial machine interface")
+    root = argparse.ArgumentParser(prog="colvia", description="Single-home human review and serial machine interface", epilog='Windows-2 integration candidate: use an absolute allowed Python path with -I -B and the verified launcher in native Windows PowerShell. Explicit source profile windows-2 must match prepared source. Native OS/process and local NTFS checks apply; worker mode changes and new untracked 100755 results are unsupported. Qualification and activation remain pending. See the verified manual.')
     sub = root.add_subparsers(dest="command", required=True)
     for name in ("status", "doctor"):
         p = sub.add_parser(name);p.add_argument("--target", type=Path, default=target)

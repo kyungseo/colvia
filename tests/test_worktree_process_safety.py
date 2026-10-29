@@ -4,6 +4,9 @@ No product bytes or guard semantics are replaced. The in-memory wrapper delays
 entry/yield for deterministic observation; these are instrumented CLI tests.
 """
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_pgid,
+)
 import copy
 import hashlib
 import json
@@ -22,28 +25,39 @@ import test_worktree_execution as fixtures
 
 
 CHILD = r"""
-import builtins, contextlib, fcntl, json, os, runpy, sys, time
+import builtins, contextlib, json, os, runpy, sys, time
 from pathlib import Path
 target, signals, identity, token = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], sys.argv[4]
 mine = signals / identity
 def emit(name):
     with (mine / (name + '.json')).open('x') as f:
-        json.dump({'event':name,'pid':os.getpid(),'pgid':os.getpgrp(),'monotonic_ns':time.monotonic_ns()},f)
+        json.dump({'event':name,'pid':os.getpid(),'pgid':None if sys.platform == 'win32' else os.getpgrp(),'monotonic_ns':time.monotonic_ns()},f)
 def wait_for(path):
     deadline=time.monotonic()+180
     while not path.exists():
         if time.monotonic()>deadline:raise TimeoutError('test barrier deadline: '+path.name)
         time.sleep(.01)
-original_flock=fcntl.flock
-def observed_flock(fd, operation):
-    if operation == fcntl.LOCK_EX:emit('lock-attempting')
-    return original_flock(fd, operation)
-fcntl.flock=observed_flock
+if sys.platform != 'win32':
+    import fcntl
+    original_flock=fcntl.flock
+    def observed_flock(fd, operation):
+        if operation == fcntl.LOCK_EX:emit('lock-attempting')
+        return original_flock(fd, operation)
+    fcntl.flock=observed_flock
 original_import = builtins.__import__
 patched = False
+native_lock_patched = False
 def instrument(name, globals=None, locals=None, fromlist=(), level=0):
-    global patched
+    global patched, native_lock_patched
     module=original_import(name, globals, locals, fromlist, level)
+    jsonio=sys.modules.get('hv2ref.jsonio')
+    if sys.platform == 'win32' and not native_lock_patched and jsonio is not None and hasattr(jsonio,'_windows_api'):
+        native_lock_patched=True
+        api=jsonio._windows_api();original_lock=api.LockFileEx
+        def observed_native_lock(*args):
+            emit('lock-attempting')
+            return original_lock(*args)
+        api.LockFileEx=observed_native_lock
     workspace=sys.modules.get('hv2ref.workspace')
     if not patched and workspace is not None and hasattr(workspace,'writer_guard'):
         patched=True
@@ -79,6 +93,7 @@ class InstalledWorkerProcessTests(unittest.TestCase):
 
     def run_contention(self, *, competing):
         prepared=self.prepare_worker_result()
+        lock=self.target/'.hrn/locks/writer.lock';lock_before=lock.read_bytes()
         tickets=[prepared['ticket'],copy.deepcopy(prepared['ticket'])]
         if competing:tickets[1]['request_id']='competing-acceptance'
         # Evidence is outside project content. The runner retains this directory.
@@ -105,7 +120,7 @@ class InstalledWorkerProcessTests(unittest.TestCase):
                 stdin=input_path.open('rb');out=(evidence/f'stdout-{i}.log').open('xb');err=(evidence/f'stderr-{i}.log').open('xb');handles.extend([stdin,out,err])
                 command=[sys.executable,'-I','-B',str(script),str(self.target),str(signals),str(i),token]
                 p=subprocess.Popen(command,cwd=self.target,stdin=stdin,stdout=out,stderr=err)
-                processes.append(p);commands.append({'argv':command,'pid':p.pid,'pgid':os.getpgid(p.pid),'input_sha256':hashlib.sha256(data).hexdigest()})
+                processes.append(p);commands.append({'argv':command,'pid':p.pid,'pgid':fixture_pgid(p.pid),'input_sha256':hashlib.sha256(data).hexdigest()})
             await_state(lambda:all(observe('waiting',i).exists() for i in range(2)),'both started')
             self.assertNotEqual(processes[0].pid,processes[1].pid)
             (signals/'start').write_text('go')
@@ -121,14 +136,15 @@ class InstalledWorkerProcessTests(unittest.TestCase):
             while not observe('acquired',second).exists():
                 self.assertIsNone(processes[second].poll())
                 self.assertLess(time.monotonic(),deadline);time.sleep(.01)
-            after_first=exact_snapshot(self.target)
+            after_first=exact_snapshot(self.target,writer_lock_held=True)
             first_leave=json.loads(observe('leaving',first).read_text())
             second_acquire=json.loads(observe('acquired',second).read_text())
             self.assertGreaterEqual(second_acquire['monotonic_ns'],first_leave['monotonic_ns'])
             (signals/str(second)/'permit').write_text('apply')
             second_code=processes[second].wait(timeout=240)
             self.assertEqual(65 if competing else 0,second_code)
-            self.assertEqual(after_first,exact_snapshot(self.target))
+            self.assertEqual(after_first,exact_snapshot(self.target,writer_lock_held=True))
+            self.assertEqual(lock_before,lock.read_bytes())
             graph=read_work(self.target,'work-a');self.assertEqual('completed',graph['state'])
             self.assertEqual(1,len(graph['decisions']))
             self.assertEqual(1,sum(s['decision_ref'] is not None for s in graph['selections'].values()))

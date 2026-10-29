@@ -48,8 +48,15 @@ class RuntimeAdmissionTests(unittest.TestCase):
                 value=json.loads(result.stdout);self.assertEqual("unsupported",value["classification"])
                 self.assertFalse(value["runtime"]["supported"])
                 self.assertEqual("pypy" if mode=="implementation-double" else "cpython",value["runtime"]["implementation"])
-                self.assertIn("CPython 3.14.6, 3.14.7 before mutation",value["next_action"])
-                self.assertIn("documentation_root",value);self.assertEqual(before,helpers.exact_snapshot(t.target))
+                if sys.platform == "win32":
+                    # The Windows launcher refuses before importing product readers.
+                    self.assertEqual({"classification", "code", "message", "runtime"}, set(value))
+                    self.assertEqual("HV2-WORKSPACE-RUNTIME", value["code"])
+                    self.assertEqual("OS/process/Python tuple is outside windows-2 policy", value["message"])
+                else:
+                    self.assertIn("CPython 3.14.6, 3.14.7 before mutation",value["next_action"])
+                    self.assertIn("documentation_root",value)
+                self.assertEqual(before,helpers.exact_snapshot(t.target))
         healthy=self.installed(t,"supported-control",["status"])
         self.assertEqual(0,healthy.returncode);self.assertTrue(json.loads(healthy.stdout)["runtime"]["supported"])
 
@@ -64,7 +71,10 @@ class RuntimeAdmissionTests(unittest.TestCase):
                 with self.subTest(mode=mode,command=args[:2]):
                     result=self.installed(t,mode,args,value);self.assertEqual(65,result.returncode,result.stdout+result.stderr)
                     error=json.loads(result.stdout);self.assertEqual("HV2-WORKSPACE-RUNTIME",error["code"])
-                    self.assertIn("CPython 3.14.6, 3.14.7",error["message"])
+                    if sys.platform == "win32":
+                        self.assertEqual("OS/process/Python tuple is outside windows-2 policy", error["message"])
+                    else:
+                        self.assertIn("CPython 3.14.6, 3.14.7",error["message"])
                     self.assertEqual(before,helpers.exact_snapshot(t.target))
         success=self.installed(t,"supported-control",["intent","draft"],t.draft())
         self.assertEqual(0,success.returncode,success.stdout+success.stderr)
@@ -120,7 +130,10 @@ class RuntimeAdmissionTests(unittest.TestCase):
         for version,free_threaded,expected in cases:
             with self.subTest(version=version,free_threaded=free_threaded):
                 with mock.patch.object(sys,"version_info",version_type(*version)), mock.patch.object(workspace.sysconfig,"get_config_var",return_value=free_threaded):
-                    self.assertIs(expected,workspace.runtime_supported())
+                    window = "windows-2" if sys.platform == "win32" else None
+                    self.assertIs(expected,workspace.runtime_supported(window))
+                    if sys.platform == "win32":
+                        self.assertFalse(workspace.runtime_supported())
 
     def test_runtime_capability_declaration_matches_admission(self):
         from hv2ref.workspace import SUPPORTED_PYTHON_STRINGS

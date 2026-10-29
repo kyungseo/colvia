@@ -1,5 +1,7 @@
 ---
 name: colvia-work
+For the separate Windows-2 candidate, follow [Windows entry and boundaries](../../docs/README.md#windows-2-integration-candidate).
+
 description: Guide candidate planning, requested project briefs and decisions, intent, session handoff, targeted document checks, Work review and exact acceptance through the installed human interface.
 ---
 
@@ -21,6 +23,10 @@ For fresh resume, begin again with `./colvia view`, open the current accepted in
 
 This development adapter has no automatic agent-runtime discovery, scheduler or intake registry. Human comprehension, actual adoption and native runtime qualification need separate evidence.
 
+
+## Windows-2 Entry
+
+For a qualified windows-2 target, invoke the verified colvia file with an absolute allowed Python path and -I -B from native Windows PowerShell. This replaces only the generic ./colvia prefix; preserve arguments, human authorization and verified view/manual routing. Independent source lifecycle requires the explicit windows-2 profile, matching candidate and admitted native runtime. A POSIX shell, executable bit, entry-1 fallback or unverified interpreter alias is not a substitute. Fresh and same-window operations only; no old-window/cross-OS migration or detached-authority reinitialization. Report the exact qualified tuple and unavailable observations. These instructions grant no intent/result acceptance, writer authorization or environment qualification.
 
 ## Human Review Response
 
@@ -120,7 +126,7 @@ After an authorized intent acceptance for the selected candidate, record `link` 
 
 For bookkeeping link/amend, use the original relevant Owner statement or the fixed label `bookkeeping: prior authorized candidate/Work relation`; never invent a new Owner utterance. State narrative corrections without attributing an unsaid decision to the human.
 
-On a refusal, report that this call made no new write, quote the short requested idea in conversation, and name the recovery step. Read planning before claiming that the requested decision is absent; a previous interrupted call may already have published it. Keep the original request for an exact retry after interruption; after stale-CAS rejection re-read and prepare a new request. Do not claim failure after a crash means nothing was saved: read first and check that request ID. Unknown, damaged, conflicted or over-limit records are preserved; do not compact history or invent an empty backlog. Product does not authenticate Owner statements or decide priority automatically.
+On a refusal, quote the short requested idea in conversation and name the recovery step. Report no new publication only when an identified pre-publication refusal establishes it. A failed flush, interrupted call or post-publication refusal may follow a successful replacement. Read planning and check the request ID before claiming that the requested decision is absent; this or a previous call may already have published it. Keep the original request for an exact retry after interruption; after stale-CAS rejection re-read and prepare a new request. Do not claim failure after a crash means nothing was saved: read first and check that request ID. Unknown, damaged, conflicted or over-limit records are preserved; do not compact history or invent an empty backlog. Product does not authenticate Owner statements or decide priority automatically.
 
 ## Checkout-1 Transition Handoff
 

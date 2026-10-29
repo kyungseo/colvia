@@ -255,7 +255,7 @@ def read_workspace_intent_graph(target: Path, intent_id: str, *, _topology_obser
         folders = {"drafts", "acceptances", "selections"}
         data = _record_tree(home, folders)
         _require(data == _record_tree(home, folders), "unstable intent observation")
-        truth_paths = [str(home.relative_to(target) / path) for path in data]
+        truth_paths = [(home.relative_to(target) / path).as_posix() for path in data]
         if _topology_observation is None:
             _visible_truth(target, truth_paths)
         else:
@@ -334,7 +334,7 @@ class WorkspaceIntentStore:
 
     def publish_draft(self, draft: dict[str, Any], *, inject_at: str | None = None) -> dict[str, Any]:
         from .workspace import writer_guard, _file_json, validate_format, _durable_directory
-        from .work import _require, _identifier, _canonical_record_bytes, _publish_immutable, _publish_object_home, _visible_truth
+        from .work import _require, _identifier, _canonical_record_bytes, _publish_immutable, _publish_object_home, _preflight_publication
         from .errors import InjectedCrash
         _require(inject_at in (None, "after-staged-identity", "after-home", "after-draft"), "unknown intent crash point")
         _require(isinstance(draft, dict), "intent draft object required")
@@ -356,7 +356,7 @@ class WorkspaceIntentStore:
             workspace_intent_graph(data, iid, authority)
             if draft["schema_version"] == 2: self.work_store._umbrella_runtime(runtime)
             if draft["schema_version"] == 3: self.work_store._delegation_runtime(runtime)
-            _visible_truth(self.target, [f".hrn/intents/{iid}/identity.json", f".hrn/intents/{iid}/drafts/{rid}.json"])
+            _preflight_publication(self.target, [f".hrn/intents/{iid}/identity.json", f".hrn/intents/{iid}/drafts/{rid}.json"])
             self.work_store._runtime_equal(runtime)
             root = self.target / ".hrn/intents"; _durable_directory(root)
             _require(not any(p.name.casefold() == iid.casefold() and p.name != iid for p in root.iterdir()), "intent ID case alias")
@@ -395,7 +395,7 @@ class WorkspaceIntentStore:
 
     def apply(self, ticket: dict[str, Any], *, confirm_token: str, inject_at: str | None = None) -> dict[str, Any]:
         from .workspace import writer_guard, target_fingerprint
-        from .work import _require, _digest, record_ref, validate_ticket, _publish_immutable, _publish_current, _canonical_record_bytes, _live_external_refs, _visible_truth
+        from .work import _require, _digest, record_ref, validate_ticket, _publish_immutable, _publish_current, _canonical_record_bytes, _live_external_refs, _preflight_publication
         from .errors import InjectedCrash
         _require(inject_at in (None, "after-acceptance", "after-selection", "after-staged-current", "after-current"), "unknown intent crash point")
         validate_ticket(ticket)
@@ -421,7 +421,7 @@ class WorkspaceIntentStore:
             for value in (acceptance, selection, current): _canonical_record_bytes(value)
             _live_external_refs(self.target, ticket, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
             home = self.target / ".hrn/intents" / iid
-            _visible_truth(self.target, [f".hrn/intents/{iid}/acceptances/{aid}.json", f".hrn/intents/{iid}/selections/{selection['selection_id']}.json", f".hrn/intents/{iid}/current.json"])
+            _preflight_publication(self.target, [f".hrn/intents/{iid}/acceptances/{aid}.json", f".hrn/intents/{iid}/selections/{selection['selection_id']}.json", f".hrn/intents/{iid}/current.json"])
             _publish_immutable(home / "acceptances" / (aid + ".json"), acceptance)
             if inject_at == "after-acceptance": raise InjectedCrash(inject_at)
             self.work_store._runtime_equal(runtime)

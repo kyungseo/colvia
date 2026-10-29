@@ -1,7 +1,9 @@
 # Agent Entry
 
-This is the canonical agent entry for Colvia’s single-home `continuation-1` profile.
-Read [docs/README.md](docs/README.md) for document authority and currentness.
+Windows-2 candidate: follow [entry and boundaries](docs/README.md#windows-2-integration-candidate).
+
+Canonical agent entry for Colvia’s single-home `continuation-1` profile.
+For authority and currentness, read [docs/README.md](docs/README.md).
 
 These instructions describe the `continuation-1` profile; in an installed project, use the verified installed release; see [Profile and authorization](docs/README.md#continuation-1). Owner authorization and source-contract activation come from their actual decisions. Do not infer either from document presence or a verified binding. Editing these files does not activate the contract.
 
@@ -25,7 +27,7 @@ Lifecycle commands preview by default. Intent/Work publication writes machine re
 
 ## Candidate Entry
 
-Read `./colvia view candidates` before recording an idea or answering what to do next. Planning is project-owned but grants no execution authority. Follow the installed adapter's Candidate Conversation section. Recommendations and ambiguous resume requests are read-only; an explicit planning request authorizes only that named planning change. Never upgrade the runtime merely to save an idea.
+Read `./colvia view candidates` before recording ideas or recommending next work; follow the installed adapter’s Candidate Conversation. Project-owned planning grants no execution authority. Recommendations and ambiguous resume requests stay read-only; explicit planning requests authorize only the named change. Never upgrade the runtime merely to save an idea.
 
 ## Follow-Up And Plan Alignment
 
@@ -41,10 +43,10 @@ On resume, read the selected Work, its referenced plan and `./colvia view contin
 - Recovery and exit: [Operations](docs/OPERATIONS.md), [Manual Operation](docs/MANUAL-OPERATION.md)
 - Trust and support: [Security and Support](docs/SECURITY-AND-SUPPORT.md)
 
-Use evidence for the exact current source or installed release when assessing general usability, real-project multi-worker efficiency or production readiness. Keep the historical observations in [Security and Support](docs/SECURITY-AND-SUPPORT.md) within their recorded scope; do not use them as qualification of the current source or installed release.
+General usability, real-project multi-worker efficiency and production readiness need separate evidence. [Historical observations](docs/SECURITY-AND-SUPPORT.md) do not qualify current source or installed releases.
 
-The optional direct-child parent gate requires human acceptance of the integrated result. Follow the current index and the exact installed release; development acceptance does not qualify a release candidate.
+The optional direct-child parent gate requires human acceptance of the integrated result. Follow the current index and exact installed release; development acceptance does not qualify a release candidate.
 
 ## Source Development Closeout
 
-When closing a Harness source change, follow [Adopter Impact At Development Closeout](docs/MAINTAINING.md#adopter-impact-at-development-closeout) and report the update recommendation in the existing completion report. This applies to Harness development, not ordinary work inside an installed project.
+At Harness source closeout, follow [Adopter Impact At Development Closeout](docs/MAINTAINING.md#adopter-impact-at-development-closeout); include the update recommendation in the existing completion report. This excludes ordinary work in installed projects.

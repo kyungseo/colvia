@@ -5,10 +5,20 @@ No result is implied by constructing this suite. Children inherit the reviewed
 controller sandbox/process group; this module never opens a shell or a session.
 """
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_is_link,
+    fixture_snapshot_paths,
+    fixture_unlink,
+    fixture_unsafe_link,
+    posix_mechanism,
+)
 
 import ast
 import copy
-import fcntl
+if __import__("sys").platform != "win32":
+    import fcntl
+else:
+    fcntl = None
 import hashlib
 import json
 import os
@@ -966,7 +976,7 @@ def build_entry_suite(old_source, candidate_source, expected_predecessor, prefix
                 child,log=self.spawn(command,'link-negative');token=self.wait_ready(child,ready,target)
                 backing=self.base/('release-backing-'+kind)
                 write_file(backing,canonical({'scenario_sha256':token['scenario_sha256'],'sequence':token['sequence'],'action':'continue'}))
-                if kind=='symlink':release.symlink_to(backing)
+                if kind=='symlink':fixture_unsafe_link(release, backing)
                 else:os.link(backing,release)
                 code,data=self.finish(child,log,expected=None)
                 self.assertNotEqual(0,code)
@@ -1554,9 +1564,9 @@ def build_entry_suite(old_source, candidate_source, expected_predecessor, prefix
             from hv2ref.errors import ContractError
             for kind in ('symlink','hardlink','directory','bytes','binding-next'):
                 target=self.old_target(kind);self.bp_complete(target);binding=target/'.hrn/product/binding.json';raw=binding.read_bytes()
-                if kind=='symlink':binding.unlink();binding.symlink_to('init-plan.json')
+                if kind=='symlink':fixture_unlink(binding);fixture_unsafe_link(binding, 'init-plan.json')
                 elif kind=='hardlink':os.link(binding,self.base/'binding-link')
-                elif kind=='directory':binding.unlink();binding.mkdir()
+                elif kind=='directory':fixture_unlink(binding);binding.mkdir()
                 elif kind=='bytes':binding.write_bytes(raw+b' ')
                 else:write_file(target/'.hrn/staging/entry-entry-transition/binding.next',raw)
                 before=snapshot(target,allow_hardlinks=True)
@@ -1698,7 +1708,7 @@ def build_entry_suite(old_source, candidate_source, expected_predecessor, prefix
                 target=self.directory('negative-'+str(index)+'-'+kind+'-'+name)
                 if kind=='file':write_file(target/name,b'project-owned\n')
                 elif kind=='directory':(target/name).mkdir()
-                else:(target/name).symlink_to('missing-project-content')
+                else:fixture_unsafe_link(target/name, 'missing-project-content')
                 before=snapshot(target)
                 code,data,_=self.call(target,['--source-checkout','init','--profile','entry-1','--target',target,'--source',candidate_source,
                     '--authority-home-id','fixture-home','--operation-id','entry-init','--observed-at',FIXTURE_TIME])
@@ -2760,7 +2770,7 @@ print(json.dumps({'kind':'actual-old-api-local','pid':os.getpid(),'pgid':os.getp
                    ('wrong-mode',payload,0o644),('symlink',None,None),('unknown-binding-stage',None,None))
             for label,data,mode in cases:
                 target=self.old_target(label);preview=self.transition(target);self.interrupted_api(target,preview,'after-release')
-                if label=='symlink':(target/'colvia').symlink_to('a')
+                if label=='symlink':fixture_unsafe_link(target/'colvia', 'a')
                 elif label=='unknown-binding-stage':
                     write_file(target/'.hrn/staging/entry-entry-transition/foreign',b'preserve')
                 else:write_file(target/'colvia',data,mode)
@@ -5191,7 +5201,7 @@ print(json.dumps({'kind':'actual-old-api-local','pid':os.getpid(),'pgid':os.getp
                 target=self.directory('occupant-'+str(number))
                 if kind=='file':write_file(target/name,b'project bytes\n')
                 elif kind=='directory':(target/name).mkdir()
-                else:(target/name).symlink_to('missing')
+                else:fixture_unsafe_link(target/name, 'missing')
                 before=snapshot(target)
                 with self.assertRaises(ContractError) as caught:
                     product.workspace_init_preview(candidate_source,target,authority_home_id='fixture-home',operation_id='entry-init',created_at=FIXTURE_TIME)

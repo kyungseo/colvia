@@ -11,6 +11,7 @@ from hv2ref.continuation import (ContinuationStore, current_record, current_snap
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.work import WorkStore, read_work, record_ref
 from tests import test_general_work_recovery as serial
+from tests.platform_fixtures import fixture_window
 
 
 class ContinuationTests(unittest.TestCase):
@@ -22,7 +23,7 @@ class ContinuationTests(unittest.TestCase):
     def setUp(self):
         serial.SerialWriterTests.setUp(self)
         self.runtime = lambda target: {"binding_ref": copy.deepcopy(self.binding),
-                                      "launcher_sha256": None, "inventory_id": "continuation-1"}
+                                      "launcher_sha256": None, "inventory_id": fixture_window("continuation-1")}
         self.store = WorkStore(self.target, self.runtime)
         self.cont = ContinuationStore(self.target, self.runtime)
         self.publish(self.proposal())
@@ -109,7 +110,7 @@ class ContinuationTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError, "Owner"):
             self.prepare_cont(actor="delegate")
         older = ContinuationStore(self.target, lambda target: {**self.runtime(target), "inventory_id": "delegation-1"})
-        with self.assertRaisesRegex(ContractError, "requires continuation-1"):
+        with self.assertRaisesRegex(ContractError, "requires a continuation-capable current runtime"):
             older.prepare("work-a", action="select", actor="owner", owner_statement="Owner", reason="r",
                           request_id="old", observed_at=serial.TIME, choice={"kind": "none"})
         self.assertEqual(before, self.bytes())
@@ -313,12 +314,30 @@ class ContinuationTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             validate_ticket(changed)
 
+    def test_windows_reader_uses_bounded_binary_observation_and_keeps_canonical_gate(self):
+        from types import SimpleNamespace
+        from hv2ref import continuation, jsonio
+        path = self.target / "native-read.json"; raw = b"{}\n"; path.write_bytes(raw)
+        # Dispatch and canonical validation only; real handles are native obligations.
+        with patch.object(continuation, 'sys', SimpleNamespace(platform='win32')):
+            with patch.object(jsonio, 'windows_bounded_bytes', return_value=raw) as bounded:
+                self.assertEqual(raw, continuation._read_file(path, 4096))
+                bounded.assert_called_once_with(path, 4096)
+            with patch.object(jsonio, 'windows_bounded_bytes', return_value=b"{}\r\n"):
+                with self.assertRaises(ContractError): continuation._read_file(path, 4096)
+            with patch.object(jsonio, 'windows_bounded_bytes', side_effect=ContractError('HV2-WINDOWS-PATH', 'synthetic native drift')):
+                with self.assertRaisesRegex(ContractError, 'synthetic native drift'): continuation._read_file(path, 4096)
+
     def test_reader_ignores_access_time_but_refuses_changed_content_metadata(self):
         from types import SimpleNamespace
         from hv2ref.continuation import _read_file
         path = self.target / "observation.json"
         path.write_bytes(b"{}\n")
-        original = Path.lstat
+        import os, sys
+        # Change the metadata source actually used by each platform's reader.
+        # Native handle/content checks remain real and unpatched.
+        owner, method = (os, 'fstat') if sys.platform=='win32' else (Path, 'lstat')
+        original = getattr(owner, method)
         calls = [0]
         def changing(field):
             def observed(value):
@@ -328,8 +347,8 @@ class ContinuationTests(unittest.TestCase):
                 attributes[field] += calls[0]
                 return SimpleNamespace(**attributes)
             return observed
-        with patch.object(Path, "lstat", changing("st_atime_ns")):
+        with patch.object(owner, method, changing("st_atime_ns")):
             self.assertEqual(b"{}\n", _read_file(path, 4096))
-        with patch.object(Path, "lstat", changing("st_mtime_ns")):
-            with self.assertRaisesRegex(ContractError, "descriptor changed"):
+        with patch.object(owner, method, changing("st_mtime_ns")):
+            with self.assertRaisesRegex(ContractError, "content changed during read observation" if sys.platform=='win32' else "descriptor changed"):
                 _read_file(path, 4096)

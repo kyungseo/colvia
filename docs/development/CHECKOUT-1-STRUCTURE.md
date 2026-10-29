@@ -114,6 +114,14 @@ All four manifest provenance fields are null for local execution. For isolated-w
 
 `changes` is derived from the union of base/result paths, retaining only unequal entries in UTF-8 path order. Additions have null pre; deletions have null post; edits retain both. The manifest has no separate ID field. Its `Ref` has `id == sha256 == D(manifest)`.
 
+#### Windows Successor Content Observation
+
+For windows-2 only, Git index entries and non-ignored untracked paths define candidate membership; they do not prove that a file exists. A snapshot includes only safely observed regular files under the existing scope-independent membership and ignore rules. An ordinary tracked candidate that is confirmed absent from the actual namespace has no TreeEntry, even while its index entry remains. Confirm absence under Workspace Contract's Windows Native Observation And Publication for the exact path and its examined ancestors. Aliases, unexpected types, reparse points, inaccessible paths and unstable observations make the affected observation non-pass; do not omit them from a successful snapshot or record them as deletions. Special index states whose absence cannot be classified as deletion remain non-pass.
+
+Within windows-2, an existing supported stage-0 tracked file takes logical mode from the validated index and bytes from the working tree. An unstaged content change is not refused merely because its bytes differ from the index blob. A successfully classified untracked or standalone non-Git regular file uses logical mode 100644 regardless of extension. Failed Git/index classification, unmerged entries, unsupported modes and indeterminate flags do not fall back to that default. Re-evaluate the same policy on each observation. This policy does not change the two allowed TreeEntry modes, exact tree/digest rules, retained-tree verification or existing baseline and drift guards. A logical mode is not evidence of Windows permissions or executability.
+
+Preserve original manifest modes and bytes as expected values for existing records. Do not relabel a retained 100755 record, select a historical manifest as current observation or rewrite an unsupported pending operation. The initial windows-2 non-Git path has no product input for creating or changing a 100755 intent and does not support mutation or pending recovery requiring that intent to be reproduced. Reads and historical completed replay retain their existing checks; application limitations do not add a mutation gate to an otherwise permitted read-only replay. Existing windows and macOS semantics are unchanged.
+
 ## Work Shapes And State
 
 ```text
@@ -348,6 +356,90 @@ src/hv2ref/workspace.py
 ```
 
 Current entry-1 membership replaces only `hv2` with `colvia` and `adapters/harness-v2-work/SKILL.md` with `adapters/colvia-work/SKILL.md` in membership; its actual ordered inventory is UTF-8 sorted and still has 29 paths. Retain the old lists literally in readers, independently of the new set. A retained release directory contains exactly `inventory.json` plus its window's payload paths and their required ancestor directories. Every payload size/digest and the launcher's declared window must agree with its inventory. Files not in this set cannot silently enter the release.
+
+### Windows Successor Policy Binding
+
+The windows-2 inventory window carries one accepted Windows content-mode policy across all its allowed releases. Existing ReleaseRef, Inventory and Binding fields carry that policy identity through the exact release/window and verified payload. Do not reinterpret an existing window by host OS or silently change this policy within the same window.
+
+An installed writer selects the policy through its verified active binding, release, inventory and launcher/payload, and separately verifies actual native Windows/runtime conditions. Fresh source init requires explicit profile windows-2 and a verified windows-2 candidate; neither profile nor OS alone proves the candidate. The original canonical request/plan includes candidate_release with id, sha256 and inventory_id and binds the confirmation token. Exact recovery revalidates that same identity and original plan. Candidate or profile mismatch is non-pass before mutation, apart from existing guard-permitted scratch effects.
+
+Windows detach uses only paired plan/receipt schema 6 under the Windows Window And Record Pairs clause. The unchanged fields retain prior binding reference, removal inventory and preservation inventory. Version 6 designates windows-2 even after product removal, only when the complete receipt, membership, digest and prefix checks pass. Historical versions 1/2/3 are not relabeled. A digest alone cannot recover deleted inventory bytes or the window name, and policy identification is not runtime qualification. Detached authority cannot be reinitialized or attached by this contract.
+
+Use the exact membership and record pairs below. Unknown/inconsistent combinations or execution outside the Windows runtime scope remain non-pass with state preserved. Known cooperating old writers that can reach the candidate must be verified to refuse before authority/content publication. An unverified or unavailable refusal check for such an exposed writer, as well as an observed publication, prevents completion of candidate qualification and activation until an effective minimum refusal mechanism is verified or evidenced non-exposure removes that access path. Unknown exposure is not non-exposure. Bound the actual exposed-writer set and identities; this is not a requirement to recover every historical writer. A residual-risk label or usage warning is insufficient. Reaccept any changed persisted meaning, support scope or trust boundary; failure does not by itself prove a new field is necessary. Initial lifecycle is fresh and same-window only. Existing macOS defaults and historical meanings are unchanged.
+
+### Windows Window And Record Pairs
+
+For windows-2 only, this section extends the Window scalar in Common Types And Exact Bytes and qualifies the closed candidate-window, lifecycle-version and window-rank statements in Plans, Bindings And Receipts, the mode rule in Exact Repair Request and the new-write/pair rules in Detach Plan And Receipt. Add windows-2 as an admitted candidate/readable window only under these explicit pairs; it has no rank permitting transition to or from older windows. Existing entries and their historical meanings remain literal.
+
+Windows-2 uses WORKSPACE_INVENTORY_ID = "windows-2" in the managed colvia launcher and explicit source profile windows-2. Its ordered managed membership is exactly the following 30 paths in UTF-8 order. The path set matches continuation-1 and includes continuation.py; window identity and payload bytes are separate. Do not derive historical memberships from this list or silently add a module or wrapper.
+
+Prepare and explicitly identify a Windows source/artifact whose launcher already contains that literal and whose payload bytes are fixed before candidate creation. Candidate construction reads and verifies those bytes; --profile windows-2 and the current OS do not synthesize or rewrite the literal/payload. Preserve the macOS default continuation-1 input. The future build/packaging plan must identify the prepared Windows source bytes and any explicit preparation step from common source. Candidate packaging preserves those fixed bytes under the existing source/artifact equality rules; checkout conversion and runtime/profile selection do not rewrite them. The preparation mechanism remains a plan detail unless it changes accepted identity or support semantics, in which case exact acceptance is required. This clause selects no build mechanism and creates no artifact.
+
+```text
+.gitignore
+AGENTS.md
+CLAUDE.md
+PRODUCT-CAPABILITIES.json
+README.md
+adapters/colvia-work/SKILL.md
+colvia
+docs/CONCEPTS.md
+docs/GENERAL-WORK.md
+docs/GETTING-STARTED.md
+docs/GUIDED-INTENT-FORMATION.md
+docs/MAINTAINING.md
+docs/MANUAL-OPERATION.md
+docs/OPERATIONS.md
+docs/README.md
+docs/REFERENCE.md
+docs/SECURITY-AND-SUPPORT.md
+docs/WORKSPACE-CONTRACT.md
+src/hv2ref/__init__.py
+src/hv2ref/candidates.py
+src/hv2ref/cli.py
+src/hv2ref/continuation.py
+src/hv2ref/errors.py
+src/hv2ref/intent.py
+src/hv2ref/jsonio.py
+src/hv2ref/product.py
+src/hv2ref/umbrella.py
+src/hv2ref/view.py
+src/hv2ref/work.py
+src/hv2ref/workspace.py
+```
+
+| Family/action | Windows-2 versions and binding |
+| --- | --- |
+| Root format / inventory / binding | 1 / 1 / 1; existing exact fields; release inventory_id is windows-2 |
+| Init plan / receipt | 6 / 6; candidate windows-2, expected binding null |
+| Update or rollback plan / receipt | 6 / 6; prior and candidate windows-2; existing exact same-window chain |
+| Repair plan / receipt | 6 / 6; candidate equals exact active windows-2; unchanged binding; Windows Exact Repair Observation below defines mode |
+| Detach plan / receipt | 6 / 6; candidate null; expected/prior binding ref and existing remove/preserve fields; windows-2 only |
+| Intent, Work, manifest, ticket, decision, selection, current and planning | Existing family-specific versions and fields, including current parent revision forms; no new per-entry mode-policy field |
+
+Do not treat schema 6 switch alone as a window proof: its release references must identify the admitted same window. Paired detach 6 designates windows-2 because that version admits no other window or membership. Verify the whole canonical plan/receipt, matching versions, operation/home/target, original binding digest, exact inventories and actual prefix. Before product removal, establish the window from verified release inventories; afterward validate the full retained removal/preservation lists, internal links and actual removal prefix under Workspace Contract's Windows Fresh And Same-Window Lifecycle. The fixed schema-6 contract retains policy meaning; it does not make removed bytes currently available for rehashing. Historical pairs remain literal and are never re-emitted as 6.
+
+Windows-2 extends the existing narrowly defined unchanged-CRLF exception under the same retained text/eol=crlf proof, whole-tree and raw-byte rules. It does not admit changed converted files, changed attributes or arbitrary filters, or silently normalize inventory/manifest bytes. Qualification must establish this behavior under both autocrlf settings. Its declaration is not runtime evidence.
+
+Every allowed windows-2 release must preserve records and fixed mode semantics in both read directions, including Q-created local/worker/parent/planning/delegation/continuation records after rollback to P and detach6 reading/recovery. Unknown or inconsistent pairs refuse mutation. An incompatible semantic change needs a separately accepted window/transition design; neither matching membership nor a new profile grants migration.
+
+#### Windows Exact Repair Observation
+
+This is a windows-2-only persisted meaning for the existing RepairFile.before/after FileObservation shape in repair plan/receipt 6. Select it only from the verified exact active candidate_release with inventory_id windows-2 and the unchanged binding, never from the current host, filename or integer alone. Other windows retain their original POSIX mode interpretation; do not rewrite historical requests.
+
+For an existing safely observed regular file, mode is integer 1 when native FILE_ATTRIBUTE_READONLY is set and integer 0 when it is clear. Booleans, other integers and unavailable attribute observations are invalid here; do not derive it from stat permissions, extension, Git mode or the expected manifest. Observe bytes, size, attribute and identity consistently; an unreadable, unsafe or unstable observation is non-pass. A missing file still has before null, not a fabricated mode. sha256 and size_bytes continue to bind the exact raw bytes.
+
+After bytes and size equal the exact active candidate. An executable repair request admits before null or an existing observation with mode 0, and after.mode is integer 0 for every path including colvia. Mode 1 remains a valid read-only observation, but if such a file needs replacement, preview reports unsupported/non-pass and produces no executable repair request/token; a supplied request containing that replacement is refused before durable publication. Preserving the pre-existing attribute applies only to writable files; this rule does not authorize clearing a target attribute. Before must differ from after. Read-only-only changes are not repaired or normalized, and no launcher-0755 requirement applies. This field does not represent ACLs, ownership, executable capability, TreeEntry logical mode or all NTFS attributes.
+
+Recompute observations before apply and again under the writer guard. Initial apply requires each actual observation to equal its original before; authorized recovery permits only before or after under the existing exact prefix rules. Attribute drift is request drift even if bytes match. Never replace an original expectation with a new observation. Unlisted active files must already satisfy their exact candidate bytes/size and all independent product/prefix checks; their read-only flag is not a hidden executable-mode repair requirement. If an operation requires a write-capable flush of such a file, Workspace's separate preflight still applies; pure reading alone does not create that obligation.
+
+The external backup retains canonical request.json and exact original byte files before replacement. Publish the existing repair receipt and select completion only after every actual target observation equals its after and all independent candidate-byte, active-product, binding and admitted-prefix checks pass. The request records original mode; the byte backup does not claim to preserve an ACL or all file metadata. Missing originals cannot be reconstructed from repaired bytes. Validate backup membership, byte digests/sizes and its exact request before recovery. Completed replay requires the complete existing backup/receipt, each actual target observation equal to its after and independent active-product/binding/prefix validation; a receipt or mode match alone is insufficient. Changing a bound repaired file from after.mode 0 to 1 makes completed replay non-pass even though replay is read-only; the mutation-preflight exemption does not waive these observations.
+
+Prepare replacement files with the requested after attribute clear before publication. Before any backup/request/receipt/content publication, apply Workspace's whole-operation read-only preflight to existing replacement/removal files and existing files requiring write-capable flushes, together with its native local NTFS path checks. This includes existing external backup request/original files when exact recovery must reflush them; their unchanged bytes do not exempt them. Do not clear the original attribute, broaden ACLs, change ownership or use delete-then-copy to force replacement. Later attribute drift or failed publication preserves the exact request, backup and actual prefix as non-pass. No permission-only repair or success for every read-only target is promised. Attribute mismatch/failure never proves missing bytes or completed publication.
+
+An exact retry/recovery keeps the original request/token, backup and before/after expectations. While an attribute differs from the admitted original before/after observation, the old request is refused. If the original attribute is restored externally, the original retry may be reconsidered only with every exact byte/observation, backup, candidate, binding and prefix check satisfied; restoration alone does not ensure success. This is not a product attribute-clearing action or an instruction to restore it. The external repair backup/receipt is evidence, not a pending node in the product binding-selection chain. A fresh preview is a separate read of current state: while any remaining damaged file requiring replacement is read-only, it is non-pass and produces no executable request/token. Only when no such replacement target remains and all current active-product, candidate, truth and existing pending guards permit it may a fresh preview produce an executable request. Do not bypass a real pending lifecycle/detach barrier; its apply must also pass Workspace's required-flush preflight. A fresh repair preview may also report a known read-only file requiring a write-capable open for that operation's mandatory flush as non-pass without mutation and without an executable request/token; this optional early diagnostic neither replaces apply's whole-operation preflight nor makes an issued token proof of apply admissibility. Use a new operation identity, canonical request/token and new external backup destination, retaining prior requests, original backup bytes and partial evidence until explicitly dispositioned. New apply requires authorization covering that exact request. It does not complete/cancel the prior attempt or reconstruct its original backup from repaired bytes. Do not automatically re-preview/apply or clear attributes as a fallback.
+
+Qualify missing/damaged launcher/member cases, writable observations, whole-operation refusal of read-only replacement/removal and required-write-capable-flush targets before any durable publication, pure read-only preserved/unlisted files, attribute drift after preflight, failed replace/flush, interruption before/after backup and replacement, exact recovery and completed replay. Cover bound after-attribute drift on completed replay, existing backup files requiring reflush, and any original retry after external attribute restoration with all exact guards still required. Separately check fresh-preview refusal while a read-only replacement target remains, an admissible fresh preview with retained external evidence and new identity/backup, and refusal for actual product pending or another existing guard. Existing pending exceptions, preservation and two-direction windows-2 reader obligations remain. These are future product qualification requirements, not executed results or new automatic recovery actions.
 
 ### Plans, Bindings And Receipts
 

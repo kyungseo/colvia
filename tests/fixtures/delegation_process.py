@@ -10,7 +10,6 @@ import io
 import runpy
 from contextlib import redirect_stdout
 from unittest import mock
-import fcntl
 import hashlib
 import json
 import os
@@ -363,6 +362,8 @@ def main():
     # A parent-held native guard supplies ordering; there is no sleep ordering.
     lock=request.pop("lock_observation",None)
     if lock:
+        # Only this retained POSIX lock-observation route needs fcntl.
+        import fcntl
         native=fcntl.flock; expected=(target/".hrn/locks/writer.lock").stat()
         def observed(fd,operation):
             number=fd.fileno() if hasattr(fd,"fileno") else fd
