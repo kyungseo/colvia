@@ -1,5 +1,15 @@
 """Human projection tests: actual installed CLI plus explicitly labeled graph fixtures."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_is_link,
+    fixture_snapshot_paths,
+    fixture_temporary_directory,
+    fixture_unlink,
+    fixture_unsafe_link,
+    fixture_window,
+    posix_mechanism,
+)
+import sys
 from test_productization_safety import verified_inventory_id
 import ast
 import copy
@@ -55,7 +65,7 @@ class HumanViewInstalledTests(unittest.TestCase):
         a=self.screen([]);b=self.screen([],source=True)
         self.assertIn('No Work',a);self.assertIn('natural_language_adapter',a);self.assertNotIn('inventory:',a);self.assertNotIn('src/hv2ref/view.py',a)
         self.assertIn('not the bound release',b)
-        self.assertEqual('continuation-1',workspace_candidate(self.source)['inventory']['inventory_id'])
+        self.assertEqual(fixture_window('continuation-1'),workspace_candidate(self.source)['inventory']['inventory_id'])
         self.assertEqual(30,len(workspace_candidate(self.source)['inventory']['entries']))
 
     def test_draft_is_not_acceptance_and_hostile_facets_are_escaped(self):
@@ -103,7 +113,7 @@ class HumanViewInstalledTests(unittest.TestCase):
         value={'intent_id':'intent-a','revision_ref':record_ref(draft,'revision_id'),'actor':'owner','reason':'fixture','request_id':'accept-a','observed_at':self.TIME}
         p=json.loads(self.installed(['intent','prepare'],value).stdout);ticket=self.base/'ticket.json';ticket.write_bytes(canonical_json_bytes(p['ticket']))
         self.assertIn(p['confirm_token'],self.screen(['confirmation','--input',ticket]))
-        link=self.base/'link';link.symlink_to(ticket);self.screen(['confirmation','--input',link],expected=65)
+        link=self.base/'link';fixture_unsafe_link(link, ticket);self.screen(['confirmation','--input',link],expected=65)
 
     def test_partial_pending_and_malformed_selector_never_look_completed(self):
         self.apply_init(self.preview());self.complete_work()
@@ -112,10 +122,10 @@ class HumanViewInstalledTests(unittest.TestCase):
 
     def test_view_no_import_backedge_from_core(self):
         for name in ['work','intent','product','workspace','jsonio','candidates','continuation']:
-            tree=ast.parse((self.source/'src/hv2ref'/f'{name}.py').read_text())
+            tree=ast.parse((self.source/'src/hv2ref'/f'{name}.py').read_text(encoding='utf-8'))
             for n in ast.walk(tree):
                 if isinstance(n,ast.ImportFrom):self.assertNotEqual(n.module,'view')
-        tree=ast.parse((self.source/'src/hv2ref/view.py').read_text())
+        tree=ast.parse((self.source/'src/hv2ref/view.py').read_text(encoding='utf-8'))
         forbidden={'apply','prepare','publish','publish_draft','writer_guard','write_text','write_bytes','mkdir','unlink'}
         self.assertFalse([n.func.attr for n in ast.walk(tree) if isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute) and n.func.attr in forbidden])
 
@@ -185,7 +195,9 @@ class HumanViewInstalledTests(unittest.TestCase):
     def test_linked_worktree_view_is_non_authoritative_and_no_write(self):
         subprocess.run(['git','init','-q',str(self.target)],check=True)
         self.apply_init(self.preview())
-        for key,value in [('user.name','Fixture'),('user.email','fixture@example.invalid')]:subprocess.run(['git','-C',str(self.target),'config',key,value],check=True)
+        config=[('user.name','Fixture'),('user.email','fixture@example.invalid')]
+        if sys.platform == 'win32':config += [('core.autocrlf','false'),('core.eol','lf')]
+        for key,value in config:subprocess.run(['git','-C',str(self.target),'config',key,value],check=True)
         subprocess.run(['git','-C',str(self.target),'add','.'],check=True)
         # Isolate the view's no-write assertion from detached setup maintenance.
         subprocess.run(['git','-c','maintenance.auto=false','-c','gc.auto=0','-C',str(self.target),'commit','-qm','fixture'],check=True)
@@ -265,7 +277,8 @@ class HumanWorkerViewTests(unittest.TestCase):
         from hv2ref.intent import workspace_intents
         f=self.f;before=f.bytes();works=f.store._all();intents=workspace_intents(f.target)
         # An unverified runtime double keeps exact-blob proof; it does not enable delegation-1.
-        product={"binding_ref":f.binding,"launcher_sha256":None,"inventory":{"inventory_id":None}}
+        # The native fixture supplies its required window, without a verified launcher.
+        product={"binding_ref":f.binding,"launcher_sha256":None,"inventory":{"inventory_id":fixture_window()}}
         with patch.object(view.WorkStore,'prepare',side_effect=AssertionError('view called prepare')),patch.object(view.WorkStore,'apply',side_effect=AssertionError('view called apply')),patch.object(view.WorkStore,'publish',side_effect=AssertionError('view called publish')):
             lines=view._confirmation(f.target,ticket,works,intents,product) if ticket else view._work(f.target,works['work-a'],revision,product,intents,works)
         self.assertEqual(before,f.bytes())
@@ -330,9 +343,16 @@ class HumanViewInputTests(unittest.TestCase):
             root=Path(tmp).resolve();p=root/'doc';p.write_text('hello')
             ref={'path':'doc','sha256':hashlib.sha256(b'hello').hexdigest(),'required':False,'role':'brief'}
             self.assertEqual('matches',reference_observation(root,ref));p.write_text('changed');self.assertEqual('stale',reference_observation(root,ref))
-            p.unlink();p.symlink_to(root/'absent');self.assertIn('unavailable',reference_observation(root,ref));p.unlink();os.mkfifo(p);self.assertIn('unavailable',reference_observation(root,ref));p.unlink()
+            fixture_unlink(p);fixture_unsafe_link(p, root/'absent');self.assertIn('unavailable',reference_observation(root,ref));fixture_unlink(p);
             p.write_bytes(b'x'*(4*1024*1024+1));self.assertIn('unavailable',reference_observation(root,ref))
-            p.unlink();p.mkdir();self.assertIn('unavailable',reference_observation(root,ref))
+            fixture_unlink(p);p.mkdir();self.assertIn('unavailable',reference_observation(root,ref))
+
+    @posix_mechanism("filesystem FIFO; other reference forms run on both platforms")
+    def test_posix_fifo_reference_is_unavailable(self):
+        with fixture_temporary_directory() as tmp:
+            root=Path(tmp).resolve();p=root/'fifo';os.mkfifo(p)
+            ref={'path':'fifo','sha256':hashlib.sha256(b'hello').hexdigest(),'required':False,'role':'brief'}
+            self.assertIn('unavailable',reference_observation(root,ref))
 
     def test_internal_observation_errors_stay_gfm(self):
         from hv2ref import view

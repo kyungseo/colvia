@@ -1,5 +1,14 @@
 """Planning behavior/authority/refusal tests. Runtime doubles are labelled; installed tests are separate."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_is_link,
+    fixture_snapshot,
+    fixture_snapshot_paths,
+    fixture_unlink,
+    fixture_unsafe_link,
+    fixture_window,
+    posix_mechanism,
+)
 from test_productization_safety import verified_inventory_id
 import copy
 import json
@@ -54,14 +63,14 @@ class CandidateContractTests(unittest.TestCase):
         return '\n'.join(render_candidates(self.target,works=self.store._all(),intents=workspace_intents(self.target))[0])
 
     def test_add_select_defer_resume_is_durable_and_does_not_create_work(self):
-        before=truth_bytes(self.target);content=snapshot(self.target)
+        before=truth_bytes(self.target);content=fixture_snapshot(self.target)
         for cid in ('a','b','c'):self.act(cid=cid)
         self.act('select','a');self.act('defer','b',payload={'resume_condition':'Owner가 다시 요청할 때'})
         fresh=read_candidates(self.target)['store'];self.assertEqual('a',fresh['selected']);self.assertEqual('deferred',fresh['candidates']['b']['disposition'])
         text=self.lines();self.assertIn('Owner가 다시 요청할 때',text);self.assertIn('실행 승인 아님',text)
         self.act('resume','b',payload={'condition_observation':'Owner가 명시적으로 재검토 요청'})
         after=read_candidates(self.target)['store'];self.assertEqual('a',after['selected']);self.assertEqual('open',after['candidates']['b']['disposition'])
-        self.assertEqual(before,truth_bytes(self.target));self.assertEqual(content,snapshot(self.target))
+        self.assertEqual(before,truth_bytes(self.target));self.assertEqual(content,fixture_snapshot(self.target))
 
     def test_duplicate_request_exact_retry_and_stale_parallel_request(self):
         r=proposal(self.target);other=proposal(self.target,cid='other')
@@ -125,9 +134,9 @@ class CandidateContractTests(unittest.TestCase):
         g=read_candidates(self.target)['store'];self.assertEqual(old,g['decisions'][:len(old)]);self.assertEqual('open',g['candidates']['idea-a']['disposition']);self.assertEqual({},self.store._all())
 
     def test_successful_candidate_writes_preserve_submitted_acceptance_and_real_content_guard(self):
-        self.submitted();ticket=self.prepare();truth=truth_bytes(self.target);content=snapshot(self.target)
+        self.submitted();ticket=self.prepare();truth=truth_bytes(self.target);content=fixture_snapshot(self.target)
         self.act();self.act('select');self.act('defer',payload={'resume_condition':'later'})
-        self.assertEqual(truth,truth_bytes(self.target));self.assertEqual(content,snapshot(self.target))
+        self.assertEqual(truth,truth_bytes(self.target));self.assertEqual(content,fixture_snapshot(self.target))
         (self.target/'a').write_text('outside mutation\n')
         with self.assertRaises(ContractError):self.apply(ticket)
         (self.target/'a').write_bytes(b'after\n');self.assertEqual('completed',self.apply(ticket)['state'])
@@ -163,9 +172,9 @@ class CandidateContractTests(unittest.TestCase):
 
     def test_linked_and_unsafe_planning_paths_refuse_without_overwriting(self):
         self.act();path=self.target/'.hrn/planning/candidates.json';old=path.read_bytes();outside=self.target.parent/'outside';path.rename(outside)
-        path.symlink_to(outside)
+        fixture_unsafe_link(path, outside)
         with self.assertRaises(ContractError):read_candidates(self.target)
-        self.assertEqual(old,outside.read_bytes());path.unlink();os.link(outside,path)
+        self.assertEqual(old,outside.read_bytes());fixture_unlink(path);os.link(outside,path)
         with self.assertRaises(ContractError):read_candidates(self.target)
         self.assertEqual(old,outside.read_bytes())
 
@@ -229,14 +238,14 @@ class CandidateContractTests(unittest.TestCase):
         with self.assertRaises(ContractError) as error:self.act()
         self.assertEqual('HV2-CANDIDATE-WINDOW',error.exception.code)
         # This runtime double can create only the shared guard's exact scratch anchors.
-        self.assertEqual({**before,'.hrn/locks/writer.lock':b''},self.bytes())
+        self.assertEqual({**before,Path('.hrn/locks/writer.lock').as_posix():b''},self.bytes())
         after=fixtures.exact_snapshot(self.target)
         self.assertEqual(shape,{path:value for path,value in after.items() if path in shape})
         self.assertEqual({'.hrn/locks','.hrn/locks/writer.lock'},set(after)-set(shape))
-        self.assertEqual(('directory',0o755),after['.hrn/locks'])
+        self.assertEqual(('directory',0o777 if sys.platform == 'win32' else 0o755),after['.hrn/locks'])
         lock=self.target/'.hrn/locks/writer.lock'
         self.assertFalse(lock.is_symlink());self.assertTrue(lock.is_file())
-        self.assertEqual(0o600,lock.lstat().st_mode&0o777)
+        self.assertEqual(0o666 if sys.platform == 'win32' else 0o600,lock.lstat().st_mode&0o777)
         self.assertEqual(1,lock.lstat().st_nlink)
         self.assertFalse((self.target/'.hrn/planning').exists())
 

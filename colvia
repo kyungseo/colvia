@@ -18,10 +18,13 @@ def fail(code: str, message: str) -> int:
 
 def regular_bytes(path: Path) -> bytes:
     for parent in reversed(path.parents):
-        if not stat.S_ISDIR(parent.lstat().st_mode):
+        observed = parent.lstat()
+        if (not stat.S_ISDIR(observed.st_mode)
+                or (WORKSPACE_INVENTORY_ID == "windows-2" and getattr(observed, "st_file_attributes", 0) & 0x400)):
             raise ValueError("non-directory launcher ancestor")
     before = path.lstat()
-    if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+    if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+            or (WORKSPACE_INVENTORY_ID == "windows-2" and getattr(before, "st_file_attributes", 0) & 0x400)):
         raise ValueError("non-regular or shared launcher input")
     data = path.read_bytes()
     after = path.lstat()
@@ -72,7 +75,10 @@ def workspace_source(root: Path) -> Path:
     expected = {"src/hv2ref/" + name + ".py" for name in modules}
     package = release / "payload/src/hv2ref"
     for directory in reversed((package, *package.parents)):
-        if not stat.S_ISDIR(directory.lstat().st_mode): raise ValueError("unsafe package directory")
+        observed = directory.lstat()
+        if (not stat.S_ISDIR(observed.st_mode)
+                or (WORKSPACE_INVENTORY_ID == "windows-2" and getattr(observed, "st_file_attributes", 0) & 0x400)):
+            raise ValueError("unsafe package directory")
     if {p.name for p in package.parent.iterdir()} != {"hv2ref"}:
         raise ValueError("unexpected import root member")
     if {p.name for p in package.iterdir()} != {name + ".py" for name in modules}:
@@ -87,7 +93,69 @@ def workspace_source(root: Path) -> Path:
     return release / "payload/src"
 
 
+def windows_runtime_observation() -> dict:
+    """Observe the actual Windows client and process pair, never just a profile."""
+    result = {"supported": False, "classification": "unsupported", "platform": sys.platform}
+    if sys.platform != "win32":
+        result["reason"] = "windows-2 requires native Windows"
+        return result
+    try:
+        import ctypes as C
+        from ctypes import wintypes as W
+        import sysconfig
+        kernel = C.WinDLL("kernel32", use_last_error=True)
+        process = kernel.GetCurrentProcess
+        process.argtypes, process.restype = [], W.HANDLE
+        machine = kernel.IsWow64Process2
+        machine.argtypes, machine.restype = [W.HANDLE, C.POINTER(W.USHORT), C.POINTER(W.USHORT)], W.BOOL
+        process_machine, native_machine = W.USHORT(), W.USHORT()
+        if not machine(process(), C.byref(process_machine), C.byref(native_machine)):
+            raise C.WinError(C.get_last_error())
+        class Version(C.Structure):
+            _fields_ = [("size", W.DWORD), ("major", W.DWORD), ("minor", W.DWORD),
+                        ("build", W.DWORD), ("platform", W.DWORD), ("service_pack", W.WCHAR * 128),
+                        ("sp_major", W.WORD), ("sp_minor", W.WORD), ("suite", W.WORD),
+                        ("product_type", W.BYTE), ("reserved", W.BYTE)]
+        version = Version()
+        version.size = C.sizeof(version)
+        query = C.WinDLL("ntdll").RtlGetVersion
+        query.argtypes, query.restype = [C.POINTER(Version)], W.LONG
+        status = query(C.byref(version))
+        if status != 0:
+            result.update(classification="unknown", reason="RtlGetVersion failed", ntstatus=int(status))
+            return result
+        result.update(os_version=[version.major, version.minor, version.build],
+                      product_type=int(version.product_type), process_machine=int(process_machine.value),
+                      native_machine=int(native_machine.value), pointer_bits=C.sizeof(C.c_void_p) * 8,
+                      implementation=sys.implementation.name, python=list(sys.version_info[:3]),
+                      releaselevel=sys.version_info.releaselevel,
+                      free_threaded=bool(sysconfig.get_config_var("Py_GIL_DISABLED")),
+                      process_platform=sysconfig.get_platform())
+        result["supported"] = (version.major == 10 and version.build >= 22000 and version.product_type == 1
+                               and process_machine.value == 0
+                               and {"win-amd64": 0x8664, "win-arm64": 0xAA64}.get(result["process_platform"]) == native_machine.value
+                               and C.sizeof(C.c_void_p) == 8 and sys.implementation.name == "cpython"
+                               and sys.version_info[:3] in {(3, 14, 6), (3, 14, 7)}
+                               and sys.version_info.releaselevel == "final" and not result["free_threaded"])
+        result["classification"] = "supported" if result["supported"] else "unsupported"
+        result["reason"] = "native tuple admitted" if result["supported"] else "OS/process/Python tuple is outside windows-2 policy"
+    except (AttributeError, OSError, ValueError) as exc:
+        result.update(classification="unknown", reason=type(exc).__name__, winerror=getattr(exc, "winerror", None))
+    return result
+
+
 def main() -> int:
+    if sys.platform == "win32":
+        for stream in (sys.stdout, sys.stderr):
+            stream.reconfigure(encoding="utf-8", errors="strict", newline="\n")
+    if WORKSPACE_INVENTORY_ID == "windows-2":
+        observed = windows_runtime_observation()
+        if not observed["supported"]:
+            print(json.dumps({"classification": observed["classification"], "code": "HV2-WORKSPACE-RUNTIME",
+                              "message": observed["reason"], "runtime": observed}, sort_keys=True))
+            return 16 if any(arg in {"status", "doctor", "view"} for arg in sys.argv[1:2]) else 65
+        if not sys.flags.isolated or not sys.dont_write_bytecode:
+            return fail("HV2-WORKSPACE-RUNTIME", "windows-2 requires explicit allowed Python -I -B")
     root = Path(__file__).absolute().parent
     workspace = root / ".hrn"
     try:

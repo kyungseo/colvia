@@ -1,3 +1,11 @@
+from tests.platform_fixtures import (
+    fixture_is_link,
+    fixture_snapshot_paths,
+    fixture_unlink,
+    fixture_unsafe_link,
+    posix_mechanism,
+)
+import sys
 """Declaration reuse must not reuse filesystem observations or failed parses."""
 import tempfile
 import unittest
@@ -121,9 +129,9 @@ class DeclarationCacheTests(unittest.TestCase):
                 backup = root / kind
                 launcher.rename(backup)
                 if kind == 'hardlink': os.link(backup, launcher)
-                else: launcher.symlink_to(backup)
+                else: fixture_unsafe_link(launcher, backup)
                 with self.assertRaises(ContractError): product.workspace_candidate(source)
-                launcher.unlink()
+                fixture_unlink(launcher)
                 backup.rename(launcher)
             release = root / first['release_ref']['id']
             (release / 'payload').mkdir(parents=True)

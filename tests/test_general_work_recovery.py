@@ -1,5 +1,19 @@
 """Internal serial writer fixtures; installed runtime verifier is an explicit double."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_directory_link,
+    fixture_is_link,
+    fixture_runtime,
+    fixture_snapshot,
+    fixture_snapshot_paths,
+    fixture_temporary_directory,
+    fixture_unlink,
+    fixture_unsafe_link,
+    fixture_window,
+    fixture_init_schema,
+    posix_mechanism,
+)
+import sys
 import copy
 import hashlib
 from pathlib import Path
@@ -26,17 +40,17 @@ def put(path, value):
 
 class SerialWriterTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="serial-records-")
+        self.temp = fixture_temporary_directory(prefix="serial-records-")
         self.addCleanup(self.temp.cleanup)
         self.target = Path(self.temp.name).resolve() / "project"
         self.target.mkdir()
         (self.target / "a").write_bytes(b"before\n")
         fmt = {"record_type":"workspace-format","format_version":1,"authority_home_id":"home-a","created_at":TIME,"lineage":None}
         self.binding = {"id":"binding-a","sha256":"b"*64}
-        plan = {"record_type":"lifecycle-plan","schema_version":1,"operation_id":"init-a","action":"init","target_fingerprint":target_fingerprint(self.target),"authority_home_id":"home-a","expected_binding_ref":None,"candidate_release":{"id":"product-release-"+"a"*24,"sha256":"a"*64,"inventory_id":"human-1"},"format_sha256":digest(fmt),"truth_refs":[],"remove":[],"preserve":[],"created_at":TIME}
+        plan = {"record_type":"lifecycle-plan","schema_version":fixture_init_schema(),"operation_id":"init-a","action":"init","target_fingerprint":target_fingerprint(self.target),"authority_home_id":"home-a","expected_binding_ref":None,"candidate_release":{"id":"product-release-"+"a"*24,"sha256":"a"*64,"inventory_id":fixture_window("human-1")},"format_sha256":digest(fmt),"truth_refs":[],"remove":[],"preserve":[],"created_at":TIME}
         bootstrap_root(self.target, plan, fmt)
         # This double is deliberately not proof of installed release verification.
-        self.store = WorkStore(self.target, lambda target: {"binding_ref":copy.deepcopy(self.binding),"launcher_sha256":None})
+        self.store = WorkStore(self.target, lambda target: fixture_runtime(self.binding))
         self.intent = self.accept_intent(1)
         self.identity = {"record_type":"work-identity","schema_version":1,"authority_home_id":"home-a","work_id":"work-a","work_type":"change","created_at":TIME,"acceptance_authority":"owner","lineage":None}
         self.serial = 0
@@ -63,7 +77,7 @@ class SerialWriterTests(unittest.TestCase):
         except ContractError:
             graph = None
         prior = graph["current"]["selection_ref"] if graph and graph["current"] else None
-        tree = snapshot(self.target)
+        tree = fixture_snapshot(self.target)
         if operation == "submit-result":
             old = graph["revisions"][graph["selections"][prior["id"]]["revision_ref"]["id"]]
             base = graph["manifests"][old["result_refs"]["manifest"]["id"]]["result"]
@@ -89,10 +103,10 @@ class SerialWriterTests(unittest.TestCase):
         return self.store.apply(prepared["ticket"],confirm_token=prepared["confirm_token"],**kwargs)
 
     def bytes(self):
-        return {str(p.relative_to(self.target)):p.read_bytes() for p in self.target.rglob("*") if p.is_file() and not p.is_symlink()}
+        return {p.relative_to(self.target).as_posix():p.read_bytes() for p in fixture_snapshot_paths(self.target) if not fixture_is_link(p) and p.is_file()}
 
     def test_port_parallel_scope_is_exact_files_without_claim_normalization(self):
-        tree = snapshot(self.target)
+        tree = fixture_snapshot(self.target)
         before = self.bytes()
         invalid = [[""], ["/absolute"], ["."], ["src/../escape"], ["src\\alias"], [".git/config"], [".hrn/format.json"], ["cafe\u0301.txt"], ["src/Foo", "src/foo"], ["src", "src/module"], ["a", "a"]]
         messages = ["invalid project path", "path must be literal relative NFC", "path must be literal relative NFC", "path must be literal relative NFC", "invalid project path", "metadata path cannot be project content", "metadata path cannot be project content", "path must be literal relative NFC", "case alias in project paths", "file is also a parent directory", "duplicate path"]
@@ -105,7 +119,7 @@ class SerialWriterTests(unittest.TestCase):
         self.assertEqual(make_manifest(tree, tree, scope=[])["changes"], [])
         (self.target / "a").write_bytes(b"changed\n")
         with self.assertRaises(ContractError) as caught:
-            make_manifest(tree, snapshot(self.target), scope=[])
+            make_manifest(tree, fixture_snapshot(self.target), scope=[])
         self.assertEqual(caught.exception.code, "HV2-WORK-CONTENT")
         self.assertEqual(caught.exception.message, "result changes exceed exact file scope")
 
@@ -144,15 +158,15 @@ class SerialWriterTests(unittest.TestCase):
         original = read_work(self.target, "work-a")["current"]
         outside = self.target.parent / "outside.txt"
         outside.write_bytes(b"outside remains\n")
-        (self.target / "later-link").symlink_to(outside)
+        fixture_unsafe_link(self.target / "later-link", outside)
         before = self.bytes()
         self.assertEqual(read_work(self.target, "work-a")["current"], original)
         for operation in (self.prepare, lambda: self.apply(prepared)):
             with self.assertRaises(ContractError) as caught:
                 operation()
-            self.assertEqual(caught.exception.code, "HV2-WORK-CONTENT")
+            self.assertEqual(caught.exception.code, "HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-WORK-CONTENT")
             self.assertEqual(before, self.bytes())
-            self.assertTrue((self.target / "later-link").is_symlink())
+            self.assertTrue(fixture_is_link(self.target / "later-link"))
             self.assertEqual(outside.read_bytes(), b"outside remains\n")
 
     def test_port_parallel_immutable_io_error_is_not_reclassified_as_conflict(self):
@@ -399,10 +413,10 @@ class SerialWriterTests(unittest.TestCase):
         self.publish(self.proposal());home=self.target/".hrn/work/work-a"
         extra=home/".DS_Store";extra.write_bytes(b"keep")
         with self.assertRaises(ContractError):read_work(self.target,"work-a")
-        self.assertEqual(extra.read_bytes(),b"keep");extra.unlink()
+        self.assertEqual(extra.read_bytes(),b"keep");fixture_unlink(extra)
         current=home/"current.json";current.write_bytes(b"")
         with self.assertRaises(ContractError):read_work(self.target,"work-a")
-        current.unlink();current.symlink_to(self.target/"a")
+        fixture_unlink(current);fixture_unsafe_link(current, self.target/"a")
         with self.assertRaises(ContractError):read_work(self.target,"work-a")
         self.assertEqual((self.target/"a").read_bytes(),b"before\n")
 
@@ -576,7 +590,7 @@ class SerialWriterTests(unittest.TestCase):
         self.assertTrue(all(Path(p).read_bytes()==value for p,value in residue.items()))
 
     def test_resolved_target_alias_reads_same_intent(self):
-        alias=self.target.parent/"alias";alias.symlink_to(self.target,target_is_directory=True)
+        alias=self.target.parent/"alias";fixture_directory_link(alias, self.target)
         # safe_target deliberately rejects a symlink target: no relative_to crash.
         with self.assertRaises(ContractError):read_workspace_intent(alias,"intent-a",self.intent)
 

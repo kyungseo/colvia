@@ -82,6 +82,9 @@ def _stamp(s):
 
 def bounded_bytes(path: Path) -> bytes:
     """Descriptor-relative no-follow reads; exact spelling, regular single-link files only."""
+    if sys.platform == "win32":
+        from .jsonio import windows_bounded_bytes
+        return windows_bounded_bytes(path, READ_LIMIT)
     path = Path(os.path.abspath(path))
     fd = os.open(path.anchor, os.O_RDONLY | os.O_DIRECTORY)
     try:
@@ -534,9 +537,9 @@ def _continuation_confirmation(target, ticket, works, product):
     else:
         try:
             _require(product is not None, "verified active product unavailable")
-            _require(product["inventory"]["inventory_id"] == "continuation-1", "continuation-1 runtime required")
+            _require(product["inventory"]["inventory_id"] in ("continuation-1", "windows-2"), "continuation-capable runtime required")
             runtime = {key: product[key] for key in ("binding_ref", "launcher_sha256")}
-            runtime["inventory_id"] = "continuation-1"
+            runtime["inventory_id"] = product["inventory"]["inventory_id"]
             store = ContinuationStore(target)
             store._check(ticket, works, runtime, existing=choice["record_id"] in state["choices"])
             _, _, usage = store._prospective(base, state, ticket)
@@ -742,7 +745,7 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
             product = _product(target)
             if product:
                 from .product import WINDOW_ADAPTERS
-                root = str(Path(product["release_path"]).relative_to(target) / "payload")
+                root = (Path(product["release_path"]).relative_to(target) / "payload").as_posix()
                 lines += ["", "## Next entry", ""] + fields({"manual": root + "/docs/README.md", "natural_language_adapter": root + "/" + WINDOW_ADAPTERS[product["inventory"]["inventory_id"]]})
             readable_continuation_damage = bool(status.get("continuation_unavailable")) and kind in (None, "work", "continuation", "intent")
             if classification not in ("degraded", "uninitialized", "incompatible", "unstable") or readable_continuation_damage:

@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import stat
 import subprocess
+import sys
 import unicodedata
 from typing import Any
 
@@ -104,13 +105,34 @@ def _decode(data: bytes) -> str:
         raise _fail("Git path is not UTF-8") from exc
 
 
-def _stable_file(path: Path) -> tuple[str, int, str]:
-    before = path.lstat()
-    if not stat.S_ISREG(before.st_mode):
-        raise _fail("unsupported file type: " + path.name)
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
-    fd = os.open(path, flags)
-    try:
+def _stable_file(path: Path, *, _capture_bytes: bool = False):
+    # Detach may consume the bytes covered by this exact native observation.
+    # The default signature-only path and all freshness checks are unchanged.
+    if _capture_bytes and sys.platform != "win32":
+        raise _fail("native byte capture requires Windows")
+    captured = bytearray() if _capture_bytes else None
+    from contextlib import ExitStack
+    with ExitStack() as resources:
+        native = None
+        fd = None
+        if sys.platform == "win32":
+            import msvcrt
+            from .jsonio import (windows_path_observation, windows_verify_handle,
+                                 _windows_detach_read_observation, _windows_open_read)
+            scope = _windows_detach_read_observation.get()
+            if scope is not None and scope.capture_serial and scope.accepts(scope.absolute(path)):
+                native, fd = resources.enter_context(_windows_open_read(path))
+            else:
+                native = windows_path_observation(path)
+        before = path.lstat()
+        if not stat.S_ISREG(before.st_mode):
+            raise _fail("unsupported file type: " + path.name)
+        if fd is None:
+            flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+            fd = os.open(path, flags)
+            resources.callback(os.close, fd)
+        if native is not None:
+            windows_verify_handle(path, msvcrt.get_osfhandle(fd), mutation=False, expected=native, content_unchanged=True)
         opened = os.fstat(fd)
         if (before.st_dev, before.st_ino) != (opened.st_dev, opened.st_ino):
             raise _fail("file changed while opening")
@@ -119,15 +141,40 @@ def _stable_file(path: Path) -> tuple[str, int, str]:
         while chunk := os.read(fd, 1024 * 1024):
             size += len(chunk)
             hasher.update(chunk)
+            if captured is not None:
+                captured.extend(chunk)
+        if native is not None:
+            # Native timestamps are observations, not a content version. Compare
+            # a second byte observation as well; this is not a hostile-race lock.
+            os.lseek(fd, 0, os.SEEK_SET)
+            checked_hash = hashlib.sha256()
+            checked_size = 0
+            while chunk := os.read(fd, 1024 * 1024):
+                checked_size += len(chunk)
+                checked_hash.update(chunk)
+            if checked_size != size or checked_hash.digest() != hasher.digest():
+                raise _fail("file changed during repeated content observation")
         after = os.fstat(fd)
-    finally:
-        os.close(fd)
+        if native is not None:
+            windows_verify_handle(path, msvcrt.get_osfhandle(fd), mutation=False, expected=native, content_unchanged=True)
     current = path.lstat()
+    if native is not None:
+        final_native = windows_path_observation(path)
+        if final_native["chain"] != native["chain"] or final_native["content_signature"] != native["content_signature"]:
+            raise _fail("native path or content changed during content observation")
     def signature(s: os.stat_result) -> tuple[int, ...]:
         return (s.st_dev, s.st_ino, s.st_mode, s.st_size, s.st_mtime_ns, s.st_ctime_ns)
-    if signature(before) != signature(after) or signature(after) != signature(current) or size != after.st_size:
+    if native is None:
+        changed = signature(before) != signature(after) or signature(after) != signature(current)
+    else:
+        # CPython's Windows path stat and fd stat differ in ctime and extension
+        # executable bits. Compare each API with itself; native handle metadata
+        # above independently checks cross-observation identity and content drift.
+        changed = signature(before) != signature(current) or signature(opened) != signature(after)
+    if changed or size != after.st_size:
         raise _fail("file changed during content observation")
-    return hasher.hexdigest(), size, "100755" if current.st_mode & 0o100 else "100644"
+    evidence = (hasher.hexdigest(), size, "100755" if current.st_mode & 0o100 else "100644")
+    return (evidence, bytes(captured)) if captured is not None else evidence
 
 
 def _regular_files(target: Path) -> list[str]:
@@ -135,6 +182,9 @@ def _regular_files(target: Path) -> list[str]:
     prefixes: dict[str, str] = {}
     def visit(directory: Path, relative: str) -> None:
         for member in sorted(directory.iterdir(), key=lambda p: os.fsencode(p.name)):
+            if sys.platform == "win32":
+                from .jsonio import windows_path_observation
+                windows_path_observation(member)
             path = relative + member.name
             mode = member.lstat().st_mode
             if not relative and member.name in {".git", ".hrn"}:
@@ -156,6 +206,19 @@ def _regular_files(target: Path) -> list[str]:
     visit(target, "")
     _path_set(result)
     return result
+
+
+def _default_git_ignore_path(target: Path) -> Path:
+    xdg = os.environ.get("XDG_CONFIG_HOME")
+    if xdg:
+        return Path(xdg) / "git" / "ignore"
+    # Git resolves HOME itself; Windows Path.home() follows different variables.
+    query = _git(target, "config", "--file", os.devnull, "--null", "--path",
+                 "--default", "~/.config/git/ignore", "--get", "core.excludesFile")
+    parts = query.stdout.split(b"\0")
+    if len(parts) != 2 or not parts[0] or parts[1]:
+        raise _fail("ambiguous default excludesFile")
+    return Path(_decode(parts[0]))
 
 
 def _policy(target: Path, all_files: list[str]) -> str:
@@ -189,14 +252,16 @@ def _policy(target: Path, all_files: list[str]) -> str:
             external = target / external
     else:
         # Git's default global ignore file is effective even without a config key.
-        xdg = os.environ.get("XDG_CONFIG_HOME")
-        external = (Path(xdg) if xdg else Path.home() / ".config") / "git" / "ignore"
+        external = _default_git_ignore_path(target)
     for label, path in (("info/exclude", common / "info" / "exclude"), ("core.excludesFile", external)):
         digest = None
         if path is not None:
             # External policy files may use dotfile-manager symlinks. Their
             # resolved regular contents are observed twice, without storing paths.
             if path.exists() or path.is_symlink():
+                if sys.platform == "win32":
+                    from .jsonio import windows_path_observation
+                    windows_path_observation(path)
                 digest = _stable_file(path.resolve(strict=True))[0]
         inputs.append({"source": label, "sha256": digest})
     return _digest(inputs)
@@ -206,16 +271,127 @@ def _verified_launcher_path(sha: str | None, window: str | None) -> str | None:
     if sha is None:
         return None
     paths = {"human-1": "hv2", "worker-1": "hv2", "umbrella-1": "hv2",
-             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia", "delegation-1": "colvia", "continuation-1": "colvia"}
+             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia", "delegation-1": "colvia", "continuation-1": "colvia", "windows-2": "colvia"}
     if not _sha(sha) or not isinstance(window, str) or window not in paths:
         raise _fail("managed launcher proof requires a supported verified inventory window")
     return paths[window]
 
 
+
+def _windows_content_policy(window: str | None) -> bool:
+    if sys.platform != "win32" and window != "windows-2":
+        return False
+    from .workspace import require_supported_runtime
+    require_supported_runtime(window)
+    if window != "windows-2":
+        raise _fail("native content policy requires verified windows-2")
+    return True
+
+
+def _windows_index_modes(data: bytes) -> dict[str, str]:
+    """Parse the qualified Git debug shape; unknown flags/format fail closed.
+
+The five diagnostic lines are not a stable Git public format. Qualification
+must exercise the actual Git input; no alternate parser or mode fallback exists.
+"""
+    debug = re.compile(rb"  ctime: [0-9]+:[0-9]+\n  mtime: [0-9]+:[0-9]+\n"
+                       rb"  dev: [0-9]+\tino: [0-9]+\n  uid: [0-9]+\tgid: [0-9]+\n"
+                       rb"  size: [0-9]+\tflags: ([0-9a-f]+)\n")
+    modes: dict[str, str] = {}
+    offset = 0
+    while offset < len(data):
+        end = data.find(b"\0", offset)
+        if end < 0:
+            raise _fail("Windows index classification unavailable: missing record terminator")
+        row = data[offset:end]
+        header, separator, path_bytes = row.partition(b"\t")
+        fields = header.split(b" ")
+        if not separator or len(fields) != 3:
+            raise _fail("Windows index classification unavailable: malformed entry")
+        mode, oid, stage = fields
+        if mode not in (b"100644", b"100755") or stage != b"0" or _OID.fullmatch(_decode(oid)) is None:
+            raise _fail("unmerged or unsupported Windows index entry")
+        found = debug.match(data, end + 1)
+        if found is None:
+            raise _fail("Windows index classification unavailable: unknown diagnostic shape")
+        if int(found.group(1), 16) != 0:
+            raise _fail("Windows index special flags are unsupported; preserve original index")
+        path = _decode(path_bytes)
+        if not path.startswith(".hrn/"):
+            project_path(path)
+        if not path or path in modes:
+            raise _fail("duplicate or empty Windows index path")
+        modes[path] = _decode(mode)
+        offset = found.end()
+    return modes
+
+
+def _windows_git_state(target: Path) -> dict[str, Any]:
+    stages = _git(target, "ls-files", "--stage", "--debug", "--full-name", "--abbrev=64", "-z").stdout
+    tracked = _windows_index_modes(stages)
+    others = _git(target, "ls-files", "--others", "--exclude-standard", "--full-name", "-z").stdout
+    ignored = _git(target, "ls-files", "--others", "--ignored", "--exclude-standard", "--full-name", "-z").stdout
+    def paths(raw):
+        if raw and not raw.endswith(b"\0"):
+            raise _fail("Windows membership classification unavailable")
+        values = [_decode(p) for p in raw.split(b"\0") if p]
+        if len(values) != len(set(values)):
+            raise _fail("duplicate Windows membership entry")
+        return {p for p in values if not p.startswith(".hrn/")}
+    untracked, excluded = paths(others), paths(ignored)
+    tracked = {p: mode for p, mode in tracked.items() if not p.startswith(".hrn/")}
+    _path_set(list(tracked.keys() | untracked | excluded))
+    if tracked.keys() & untracked or tracked.keys() & excluded or untracked & excluded:
+        raise _fail("Windows Git membership classifications overlap")
+    return {"raw": (stages, others, ignored), "tracked": tracked, "untracked": untracked, "ignored": excluded}
+
+
+def _windows_non_git_manifest(target: Path, manifest: dict[str, Any], window: str | None) -> None:
+    if _windows_content_policy(window) and classify_target(target)["kind"] == "non-git":
+        if any(entry["mode"] == "100755" for side in ("base", "result") for entry in manifest[side]["entries"]):
+            raise _fail("Windows non-Git mutation cannot reproduce retained 100755 mode; preserve original manifest")
+
+
+def _windows_worker_modes(target: Path, manifest: dict[str, Any], window: str | None) -> None:
+    """Additional acceptance condition, after all existing baseline/source guards."""
+    if not _windows_content_policy(window):
+        return
+    if classify_target(target)["kind"] != "primary":
+        raise _fail("Windows worker mode prediction requires primary Git control")
+    state = _windows_git_state(target)
+    base = {e["path"]: e for e in manifest["base"]["entries"]}
+    result = {e["path"]: e for e in manifest["result"]["entries"]}
+    checked_ignore = []
+    for path in sorted(base.keys() | result.keys()):
+        before, after = base.get(path), result.get(path)
+        if before is not None and after is not None and before["mode"] != after["mode"]:
+            raise _fail("Windows worker cannot apply an existing-file mode change without changing control index")
+        if after is None:
+            continue  # Real post-application absence is independently observed.
+        predicted = state["tracked"].get(path)
+        if predicted is None:
+            # ls-files --others cannot name a future absent file. Query ignore
+            # policy for its literal name; only successful non-ignored is default.
+            ignored = _git(target, "check-ignore", "--no-index", "-q", "--", path, allowed=(0, 1))
+            if ignored.returncode != 1 or path in state["ignored"]:
+                raise _fail("Windows worker post path is ignored or membership is unsupported")
+            checked_ignore.append(path)
+            predicted = "100644"
+        if predicted != after["mode"]:
+            raise _fail("Windows worker post mode cannot be reproduced by current control index/default policy")
+    if _windows_git_state(target) != state:
+        raise _fail("Windows index or membership changed during worker mode prediction")
+    for path in checked_ignore:
+        if _git(target, "check-ignore", "--no-index", "-q", "--", path, allowed=(0, 1)).returncode != 1:
+            raise _fail("Windows ignore classification changed during worker mode prediction")
+
+
 def _snapshot_once(target: Path, verified_launcher_sha256: str | None, verified_inventory_id: str | None) -> dict[str, Any]:
+    native = _windows_content_policy(verified_inventory_id)
     kind = classify_target(target)["kind"]
     if kind not in {"primary", "linked-worktree", "non-git"}:
         raise _fail("unsupported content target topology")
+    native_state = _windows_git_state(target) if native and kind != "non-git" else None
     files = _regular_files(target)
     if kind == "non-git":
         members = set(files)
@@ -223,30 +399,39 @@ def _snapshot_once(target: Path, verified_launcher_sha256: str | None, verified_
     else:
         _offline_objects(target)
         members: set[str] = set()
-        stages = _git(target, "ls-files", "--stage", "-z").stdout
-        for row in stages.split(b"\0"):
-            if not row:
-                continue
-            header, path_bytes = row.split(b"\t", 1)
-            mode, _oid, stage = header.split(b" ")
-            path = project_path(_decode(path_bytes)) if not _decode(path_bytes).startswith(".hrn/") else _decode(path_bytes)
-            if stage != b"0" or mode not in {b"100644", b"100755"}:
-                raise _fail("unmerged or unsupported tracked entry")
-            members.add(path)
-        others = _git(target, "ls-files", "--others", "--exclude-standard", "-z").stdout
-        members.update(_decode(p) for p in others.split(b"\0") if p)
-        members = {p for p in members if not p.startswith(".hrn/")}
-        ignored_bytes = _git(target, "ls-files", "--others", "--ignored", "--exclude-standard", "-z").stdout
-        ignored = {_decode(p) for p in ignored_bytes.split(b"\0") if p and not _decode(p).startswith(".hrn/")}
+        if native_state is not None:
+            members = native_state["tracked"].keys() | native_state["untracked"]
+            ignored = native_state["ignored"]
+        else:
+            stages = _git(target, "ls-files", "--stage", "-z").stdout
+            for row in stages.split(b"\0"):
+                if not row:
+                    continue
+                header, path_bytes = row.split(b"\t", 1)
+                mode, _oid, stage = header.split(b" ")
+                path = project_path(_decode(path_bytes)) if not _decode(path_bytes).startswith(".hrn/") else _decode(path_bytes)
+                if stage != b"0" or mode not in {b"100644", b"100755"}:
+                    raise _fail("unmerged or unsupported tracked entry")
+                members.add(path)
+            others = _git(target, "ls-files", "--others", "--exclude-standard", "-z").stdout
+            members.update(_decode(p) for p in others.split(b"\0") if p)
+            members = {p for p in members if not p.startswith(".hrn/")}
+            ignored_bytes = _git(target, "ls-files", "--others", "--ignored", "--exclude-standard", "-z").stdout
+            ignored = {_decode(p) for p in ignored_bytes.split(b"\0") if p and not _decode(p).startswith(".hrn/")}
         _path_set(list(members | ignored | set(files)))
         if members & ignored or set(files) - members - ignored:
             raise _fail("Git and filesystem membership disagree")
         for path in members - set(files):
             # Deletion is represented by absence only, never an alias/type mismatch.
-            try:
-                (target / path).lstat()
-            except FileNotFoundError:
-                continue
+            if native:
+                from .jsonio import windows_path_observation
+                if not windows_path_observation(target / path, allow_missing=True)["exists"]:
+                    continue
+            else:
+                try:
+                    (target / path).lstat()
+                except FileNotFoundError:
+                    continue
             raise _fail("tracked path exists under a different filesystem spelling or type")
         policy = _policy(target, files)
     launcher = _verified_launcher_path(verified_launcher_sha256, verified_inventory_id)
@@ -258,7 +443,11 @@ def _snapshot_once(target: Path, verified_launcher_sha256: str | None, verified_
     entries = []
     for path in sorted(members & available, key=lambda p: p.encode("utf-8")):
         digest, size, mode = _stable_file(target / path)
+        if native:
+            mode = native_state["tracked"].get(path, "100644") if native_state is not None else "100644"
         entries.append({"path": path, "mode": mode, "sha256": digest, "size_bytes": size})
+    if native_state is not None and _windows_git_state(target) != native_state:
+        raise _fail("Windows index or membership changed during content observation")
     tree = {"policy_version": 1, "ignore_fingerprint": policy, "entries": entries}
     tree["sha256"] = _digest(tree)
     return tree
@@ -384,6 +573,8 @@ immediately before each write and before publication; outside actors are trusted
 """
     target = Path(classify_target(target, mutation=True)["target"])
     validate_manifest(manifest)
+    native = _windows_content_policy(verified_inventory_id)
+    native_state = (_windows_git_state(target) if native and classify_target(target)["kind"] != "non-git" else None)
     states: dict[str, str] = {}
     launcher_name = _verified_launcher_path(verified_launcher_sha256, verified_inventory_id)
     for change in manifest["changes"]:
@@ -406,17 +597,29 @@ immediately before each write and before publication; outside actors are trusted
                     raise _fail("changed path has unsafe ancestor")
                 if index == len(pieces) - 1 and not stat.S_ISREG(mode):
                     raise _fail("changed path has unsupported occupant")
+        if native:
+            from .jsonio import windows_path_observation
+            physical = windows_path_observation(current, mutation=True, allow_missing=True)
+            if physical["exists"] == missing:
+                raise _fail("changed path existence changed during native observation")
         observed = None
         if not missing:
             digest, size, mode = _stable_file(current)
+            if native:
+                if native_state is not None and path not in native_state["tracked"] and path not in native_state["untracked"]:
+                    states[path] = "neither"  # Preserve ignored/unknown physical occupant.
+                    continue
+                mode = native_state["tracked"].get(path, "100644") if native_state is not None else "100644"
             observed = {"path": path, "sha256": digest, "mode": mode, "size_bytes": size}
         states[path] = "pre" if observed == change["pre"] else "post" if observed == change["post"] else "neither"
+    if native_state is not None and _windows_git_state(target) != native_state:
+        raise _fail("Windows index or membership changed during changed-path preflight")
     return states
 
 
 def _allows_unchanged_crlf(verified_inventory_id: str | None) -> bool:
     """A verified active window, never a caller-facing conversion option."""
-    return verified_inventory_id in ("checkout-1", "entry-1", "delegation-1", "continuation-1")
+    return verified_inventory_id in ("checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2")
 
 
 def _unchanged_crlf_matches(target: Path, manifest: dict[str, Any],
@@ -562,11 +765,16 @@ def _offline_objects(target: Path) -> None:
         raise _fail("promisor/partial clone is unsupported; no lazy fetching")
     common = Path(_decode(_git(target, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout).rstrip("\n"))
     objects = common / "objects"
+    if sys.platform == "win32":
+        from .jsonio import windows_path_observation
+        windows_path_observation(objects)
     if objects.is_symlink() or not objects.is_dir():
         raise _fail("external object directory is unsupported")
     for directory, dirs, files in os.walk(objects, followlinks=False):
         for name in dirs + files:
             entry = Path(directory) / name
+            if sys.platform == "win32":
+                windows_path_observation(entry)
             mode = entry.lstat().st_mode
             if not (stat.S_ISDIR(mode) or stat.S_ISREG(mode)):
                 raise _fail("external or special object storage is unsupported")
@@ -994,10 +1202,11 @@ _lifecycle_visibility = ContextVar("lifecycle_visibility", default=None)
 class _LifecycleVisibility:
     """Batch Git reads within one checkpoint, bracketed by independent reads."""
 
-    def __init__(self, target: Path):
+    def __init__(self, target: Path, *, _detach_topology=None):
         from .workspace import _TopologyObservation
         self.target = target
-        self.topology = _TopologyObservation(target)
+        self._detach_topology = _detach_topology
+        self.topology = _detach_topology if _detach_topology is not None else _TopologyObservation(target)
         self.before = self._snapshot()
         self.paths = {name for name, value in self.before.items() if value[-1] is not None}
         self.policy = self._policy()
@@ -1014,6 +1223,14 @@ class _LifecycleVisibility:
                 value.st_size, value.st_mtime_ns, value.st_ctime_ns)
 
     def _snapshot(self):
+        from .jsonio import _windows_detach_read_observation
+        scope = _windows_detach_read_observation.get() if sys.platform == "win32" and self._detach_topology is not None else None
+        reads = []
+        def observe_file(item):
+            path, signature = item
+            digest = _stable_file(path)[0]
+            _require(signature == self._signature(path), "unstable lifecycle observation member")
+            return path.relative_to(self.target).as_posix(), (*signature, digest)
         root = self.target / ".hrn"
         root_signature = self._signature(root)
         _require(root_signature is not None and stat.S_ISDIR(root_signature[2]),
@@ -1022,6 +1239,8 @@ class _LifecycleVisibility:
         pending = [self.target / name for name in (
             "colvia", ".hrn/format.json", ".hrn/.gitignore", ".hrn/product",
             ".hrn/work", ".hrn/intents", ".hrn/planning")]
+        if self._detach_topology is not None:
+            pending.append(root / "detached.json")
         while pending:
             path = pending.pop()
             signature = self._signature(path)
@@ -1033,10 +1252,15 @@ class _LifecycleVisibility:
             digest = None
             if stat.S_ISDIR(mode):
                 pending.extend(path.iterdir())
+            elif scope is not None:
+                reads.append((path, signature))
+                continue
             else:
                 digest = _stable_file(path)[0]
             _require(signature == self._signature(path), "unstable lifecycle observation member")
             result[path.relative_to(self.target).as_posix()] = (*signature, digest)
+        if scope is not None:
+            result.update(scope.read_batch(observe_file, reads))
         _require(root_signature == self._signature(root), "lifecycle root changed during observation")
         return result
 
@@ -1050,8 +1274,7 @@ class _LifecycleVisibility:
         watched = {self.target / ".git/info/exclude"}
         if exclude_query.returncode == 1:
             # Unset uses Git's default; an explicitly empty value does not.
-            xdg = os.environ.get("XDG_CONFIG_HOME")
-            default_ignore = (Path(xdg) if xdg else Path.home() / ".config") / "git/ignore"
+            default_ignore = _default_git_ignore_path(self.target)
             watched.add(default_ignore if default_ignore.is_absolute() else self.target / default_ignore)
         for item in config.split(b"\0"):
             if item.startswith(b"file:"):
@@ -1061,9 +1284,14 @@ class _LifecycleVisibility:
             if item:
                 path = Path(os.fsdecode(item)).expanduser()
                 watched.add(path if path.is_absolute() else self.target / path)
+        # Build the same watch set without revisiting shared lexical ancestors.
+        # Every policy invocation still observes each watched path afresh below.
+        parents = set()
+        stop = self.target.parent
         for name in self.paths:
             parent = (self.target / name).parent
-            while parent != self.target.parent:
+            while parent != stop and parent not in parents:
+                parents.add(parent)
                 watched.add(parent / ".gitignore")
                 parent = parent.parent
         # Follow a config symlink only for metadata; its target identity must
@@ -1094,7 +1322,8 @@ class _LifecycleVisibility:
     def finish(self):
         _require(self.before == self._snapshot(), "lifecycle inputs changed during checkpoint")
         _require(self.policy == self._policy(), "Git policy changed during checkpoint")
-        self.topology.finish()
+        if self._detach_topology is None:
+            self.topology.finish()
         _require(self.ignored == self._ignored(), "Git visibility changed during checkpoint")
 
 
@@ -1122,9 +1351,33 @@ def _lifecycle_git_observation(target: Path):
             observed.topology.close()
 
 
+@contextmanager
+def _detach_git_observation(target: Path, topology):
+    """Batch visibility only inside one independently rechecked detach sweep.
+
+    The caller owns and finishes the exact topology observation. Other readable
+    topologies keep their existing checks; this context never spans a removal.
+    """
+    if classify_target(target, _topology_observation=topology)["kind"] != "primary":
+        yield
+        return
+    _require(_lifecycle_visibility.get() is None, "nested lifecycle observation")
+    token = None
+    try:
+        observed = _LifecycleVisibility(target, _detach_topology=topology)
+        token = _lifecycle_visibility.set(observed)
+        yield
+        observed.finish()
+    except (OSError, ValueError, RecursionError) as exc:
+        raise _fail("lifecycle observation unavailable or unstable") from exc
+    finally:
+        if token is not None:
+            _lifecycle_visibility.reset(token)
+
+
 def _visible_truth(target: Path, paths: list[str], *, _topology_observation=None) -> None:
     observed = _lifecycle_visibility.get()
-    if observed is not None and _topology_observation is None:
+    if observed is not None and (_topology_observation is None or _topology_observation is observed.topology):
         observed.visible(target, paths)
         return
     topology = (classify_target(target) if _topology_observation is None else
@@ -1132,6 +1385,13 @@ def _visible_truth(target: Path, paths: list[str], *, _topology_observation=None
     if topology["kind"] != "non-git" and paths:
         result = _git(target, "check-ignore", "--no-index", "-z", "--stdin", input_data=b"\0".join(p.encode() for p in paths) + b"\0", allowed=(0, 1))
         _require(result.returncode == 1 and not result.stdout, "truth hidden by effective Git ignore policy")
+
+
+def _preflight_publication(target: Path, paths: list[str]) -> None:
+    """Check the operation's replace/reflush union without changing read paths."""
+    from .jsonio import windows_preflight_files
+    _visible_truth(target, paths)
+    windows_preflight_files(target / path for path in paths)
 
 
 def read_work(target: Path, work_id: str, *, _intent_graph_reader=None, _topology_observation=None,
@@ -1142,7 +1402,7 @@ def read_work(target: Path, work_id: str, *, _intent_graph_reader=None, _topolog
         folders = {"revisions", "decisions", "selections", "results"}
         data = _record_tree(home, folders, allow_continuation=True)
         _require(data == _record_tree(home, folders, allow_continuation=True), "unstable Work observation")
-        truth_paths = [str(home.relative_to(safe_target(target)) / key) for key in data]
+        truth_paths = [(home.relative_to(safe_target(target)) / key).as_posix() for key in data]
         if _topology_observation is None:
             _visible_truth(target, truth_paths)
         else:
@@ -1267,7 +1527,8 @@ def _worker_record_preflight(target: Path, revision: dict[str, Any], manifest: d
         common = _git(target, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.rstrip(b"\n")
         _require(_git(worker, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.rstrip(b"\n") == common, "worker belongs to another repository")
         registered = [row[len(b"worktree "):] for row in _git(target, "worktree", "list", "--porcelain", "-z").stdout.split(b"\0") if row.startswith(b"worktree ")]
-        _require(os.fsencode(worker) in registered, "worker registration is missing")
+        registered_path = worker.as_posix() if sys.platform == "win32" else worker
+        _require(os.fsencode(registered_path) in registered, "worker registration is missing")
         _require(_decode(_git(worker, "rev-parse", "--verify", "HEAD").stdout).strip() == manifest["candidate_commit"], "worker HEAD differs from candidate")
         _require(snapshot(worker, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id) == manifest["result"], "worker bytes differ from committed result")
         _require(all(v == "pre" for v in preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id).values()), "control changed-path occupant is not pre")
@@ -1297,13 +1558,14 @@ def _worker_content_state(target, manifest, launcher_sha, *, verified_inventory_
 def _apply_worker_path(target, change, post, launcher_sha, manifest, inject_at, *, verified_inventory_id=None):
     """Replace one verified pre image; never touch Git or restore other bytes."""
     from .workspace import _durable_directory, _require_kind
-    from .jsonio import _sync_fd, sync_directory
+    from .jsonio import _sync_fd, sync_directory, replace_file, windows_preflight_files, remove_path
     from .errors import InjectedCrash
     import tempfile
     path = target / change["path"]
     if post is None:
         _require(preflight_changed_paths(target, manifest, verified_launcher_sha256=launcher_sha, verified_inventory_id=verified_inventory_id)[change["path"]] == "pre", "worker path changed before deletion")
-        path.unlink(); sync_directory(path.parent)
+        windows_preflight_files([path])
+        remove_path(path); sync_directory(path.parent)
         return
     staging = target / ".hrn/staging"
     _durable_directory(staging); _require_kind(staging, True)
@@ -1311,7 +1573,8 @@ def _apply_worker_path(target, change, post, launcher_sha, manifest, inject_at, 
     staged = Path(name)
     with os.fdopen(fd, "wb") as handle:
         handle.write(post); handle.flush()
-        os.fchmod(handle.fileno(), 0o755 if change["post"]["mode"] == "100755" else 0o644)
+        if sys.platform != "win32":
+            os.fchmod(handle.fileno(), 0o755 if change["post"]["mode"] == "100755" else 0o644)
         _sync_fd(handle.fileno())
     sync_directory(staging)
     if inject_at == "after-staged-file": raise InjectedCrash(inject_at)
@@ -1321,13 +1584,13 @@ def _apply_worker_path(target, change, post, launcher_sha, manifest, inject_at, 
         parent = parent / component
         if not parent.exists(): _durable_directory(parent)
         _require_kind(parent, True)
-    os.replace(staged, path)
+    replace_file(staged, path)
     sync_directory(path.parent); sync_directory(staging)
 
 
 def _publish_object_home(target: Path, category: str, object_id: str, identity: dict[str, Any], inject_at: str | None) -> Path:
     from .workspace import _durable_directory, _require_kind
-    from .jsonio import sync_directory
+    from .jsonio import sync_directory, rename_directory
     from .errors import InjectedCrash
     import tempfile
     _require(category in ("work", "intents"), "unknown object category")
@@ -1335,6 +1598,12 @@ def _publish_object_home(target: Path, category: str, object_id: str, identity: 
     if home.exists() or home.is_symlink():
         _require_kind(home, True)
         _publish_immutable(home / "identity.json", identity)
+        if sys.platform == "win32":
+            # A previous rename may have published before its parent sync.
+            # Completed Work/intent replay returns before this writer helper.
+            sync_directory(home.parent)
+            staging = target / ".hrn/staging"
+            if staging.exists(): sync_directory(staging)
         return home
     staging = target / ".hrn/staging"
     _durable_directory(staging)
@@ -1343,7 +1612,7 @@ def _publish_object_home(target: Path, category: str, object_id: str, identity: 
     _publish_immutable(staged / "identity.json", identity)
     sync_directory(staged)
     if inject_at == "after-staged-identity": raise InjectedCrash(inject_at)
-    os.rename(staged, home)  # Shared writer guard serializes cooperative writers.
+    rename_directory(staged, home)  # Shared writer guard serializes cooperative writers.
     sync_directory(home.parent); sync_directory(staging)
     if inject_at == "after-home": raise InjectedCrash(inject_at)
     return home
@@ -1351,7 +1620,7 @@ def _publish_object_home(target: Path, category: str, object_id: str, identity: 
 
 def _publish_current(target: Path, path: Path, value: dict[str, Any], inject_at: str | None) -> None:
     from .workspace import _durable_directory, _require_kind
-    from .jsonio import _sync_fd, sync_directory
+    from .jsonio import _sync_fd, sync_directory, replace_file
     from .errors import InjectedCrash
     import tempfile
     staging = target / ".hrn/staging"
@@ -1364,7 +1633,7 @@ def _publish_current(target: Path, path: Path, value: dict[str, Any], inject_at:
         handle.write(data); handle.flush(); _sync_fd(handle.fileno())
     sync_directory(staging)
     if inject_at == "after-staged-current": raise InjectedCrash(inject_at)
-    os.replace(staged, path)
+    replace_file(staged, path)
     sync_directory(path.parent); sync_directory(staging)
 
 
@@ -1391,7 +1660,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         result = self.runtime_check(self.target)
         _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
         if "inventory_id" in result:
-            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1"), "unsupported writer inventory window")
+            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
         _verified_launcher_path(result["launcher_sha256"], result.get("inventory_id"))
@@ -1402,7 +1671,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     @staticmethod
     def _delegation_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("delegation-1", "continuation-1"), "delegation history requires a delegation-capable writer")
+        _require(runtime.get("inventory_id") in ("delegation-1", "continuation-1", "windows-2"), "delegation history requires a delegation-capable writer")
 
     def _graph(self, identity, revisions, decisions, selections, manifests, current):
         from .intent import workspace_intents
@@ -1411,7 +1680,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     @staticmethod
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1"), "umbrella writer requires an installed umbrella-capable runtime")
+        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2"), "umbrella writer requires an installed umbrella-capable runtime")
 
     def _all(self, *, _intent_graph_reader=None, _topology_observation=None,
              _continuation_errors=None) -> dict[str, Any]:
@@ -1527,6 +1796,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                 if revision["execution_context"]["mode"] == "isolated-worktree":
                     _worker_record_preflight(self.target, revision, manifest, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"), worker=worker, initial_baseline=revision["record_id"] not in graph["revisions"] and revision["operation"] in ("start", "rebind"))
                 else:
+                    _windows_non_git_manifest(self.target, manifest, runtime.get("inventory_id"))
                     _live_external_refs(self.target, revision, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
                     _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id")) == manifest["result"], "live result differs from proposed manifest")
             check_publication()
@@ -1551,7 +1821,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             planned_home = ".hrn/work/" + wid + "/"
             planned = ["identity.json", "results/" + _digest(manifest) + ".json", "revisions/" + revision["record_id"] + ".json"]
             if revision["operation"] != "rebind": planned += ["selections/" + selection_id + ".json", "current.json"]
-            _visible_truth(self.target, [planned_home + name for name in planned])
+            _preflight_publication(self.target, [planned_home + name for name in planned])
             self._runtime_equal(runtime)
             if revision["execution_context"]["mode"] == "isolated-worktree" or revision["schema_version"] == 2: check_publication()
             root = self.target / ".hrn/work"; _durable_directory(root)
@@ -1589,6 +1859,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         if ticket["execution_mode"] == "isolated-worktree":
             self._worker_confirmation(ticket, revision, manifest, runtime, initial=decision["record_id"] not in graph["decisions"])
         elif grants_authority:
+            _windows_non_git_manifest(self.target, manifest, runtime.get("inventory_id"))
             _live_external_refs(self.target, revision, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
             _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id")) == manifest["result"], "result changed before confirmation")
         return {"ticket": ticket, "confirm_token": _digest(ticket)[:16]}
@@ -1634,6 +1905,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                 if worker_mode:
                     return self._worker_confirmation(ticket, revision, manifest, runtime, initial=initial, final=final)
                 if grants_authority:
+                    _windows_non_git_manifest(self.target, manifest, runtime.get("inventory_id"))
                     _live_external_refs(self.target, revision, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
                     _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id")) == manifest["result"], "result changed since submission")
             check_confirmation(initial=did not in graph["decisions"], final=bool(existing))
@@ -1642,7 +1914,11 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             self._graph(graph["identity"], graph["revisions"], decisions, selections, graph["manifests"], graph["current"])
             _canonical_record_bytes(decision); _canonical_record_bytes(selection)
             home = self.target / ".hrn/work" / wid
-            _visible_truth(self.target, [f".hrn/work/{wid}/decisions/{did}.json", f".hrn/work/{wid}/selections/selection-{_digest(ticket)}.json", f".hrn/work/{wid}/current.json"])
+            _preflight_publication(self.target, [f".hrn/work/{wid}/decisions/{did}.json", f".hrn/work/{wid}/selections/selection-{_digest(ticket)}.json", f".hrn/work/{wid}/current.json"])
+            if worker_mode and ticket["action"] == "accept" and not existing:
+                from .jsonio import windows_preflight_files
+                states = _worker_content_state(self.target, manifest, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
+                windows_preflight_files(self.target / path for path, state in states.items() if state != "post")
             _publish_immutable(home / "decisions" / (did + ".json"), decision)
             if inject_at == "after-decision": raise InjectedCrash(inject_at)
             if worker_mode and ticket["action"] == "accept" and not existing:
@@ -1668,6 +1944,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
             sources = verify_worker_sources(self.target, manifest, verified_launcher_sha256=sha, verified_inventory_id=runtime.get("inventory_id"))
             _worker_required_refs(self.target, revision, manifest, sha, sources, verified_inventory_id=runtime.get("inventory_id"))
             _worker_content_state(self.target, manifest, sha, initial=initial, final=final, verified_inventory_id=runtime.get("inventory_id"))
+            _windows_worker_modes(self.target, manifest, runtime.get("inventory_id"))
             if final: _live_external_refs(self.target, revision, sha, verified_inventory_id=runtime.get("inventory_id"))
             return sources
         elif ticket["action"] == "reject" and ticket["supersedes_decision_ref"] is not None:

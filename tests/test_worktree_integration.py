@@ -4,6 +4,9 @@ Compute is a deterministic fixture transformation, not an agent or application
 benchmark. All commits and rebase are operator fixture actions outside Work apply.
 """
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_pgid,
+)
 from test_productization_safety import verified_inventory_id
 import hashlib
 import json
@@ -28,7 +31,7 @@ root,signals,identity=Path(sys.argv[1]),Path(sys.argv[2]),sys.argv[3]
 mine=signals/identity
 def emit(event):
     p=mine/(event+'.writing')
-    p.write_text(json.dumps({'event':event,'pid':os.getpid(),'pgid':os.getpgrp(),'monotonic_ns':time.monotonic_ns()}))
+    p.write_text(json.dumps({'event':event,'pid':os.getpid(),'pgid':None if sys.platform == 'win32' else os.getpgrp(),'monotonic_ns':time.monotonic_ns()}))
     os.replace(p,mine/(event+'.json'))
 def wait(name):
     deadline=time.monotonic()+180
@@ -38,7 +41,7 @@ def wait(name):
 emit('ready');wait('compute')
 p=root/'a';s=p.read_text();old=identity+' = 0';new=identity+' = 1'
 assert s.count(old)==1
-p.write_text(s.replace(old,new));emit('computed');wait('finish')
+p.write_text(s.replace(old,new), newline='\n');emit('computed');wait('finish')
 """
 RETEST="""from pathlib import Path
 import sys
@@ -91,7 +94,8 @@ class InstalledTwoWorkerIntegrationTests(unittest.TestCase):
     def git(self,target,*args):
         if args and args[0] == "commit":
             args = ("-c", "maintenance.auto=false", "-c", "gc.auto=0", *args)
-        start=time.monotonic();p=subprocess.run(['git','-C',str(target),*args],capture_output=True,env=git_environment(),timeout=30)
+        config = ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf'] if sys.platform == 'win32' else []
+        start=time.monotonic();p=subprocess.run(['git',*config,'-C',str(target),*args],capture_output=True,env=git_environment(),timeout=30)
         self.record(p,'operator-git',cwd=target,seconds=round(time.monotonic()-start,6));self.assertEqual(0,p.returncode,p.stderr.decode(errors='replace'))
         return p.stdout.strip().decode()
 
@@ -125,10 +129,13 @@ class InstalledTwoWorkerIntegrationTests(unittest.TestCase):
 
     def test_two_workers_same_file_stale_refresh_rebase_and_record_only_commit(self):
         initial='alpha = 0\n'+''.join(f'unchanged {i}\n' for i in range(20))+'beta = 0\n'
-        (self.target/'a').write_text(initial)
+        (self.target/'a').write_text(initial, newline='\n')
         self.git(self.target,'init','-q');self.git(self.target,'config','user.name','Fixture');self.git(self.target,'config','user.email','fixture@example.invalid')
         self.apply_init(self.preview());self.intent=self.accept_intent()
-        self.git(self.target,'add','.');self.git(self.target,'commit','-qm','synthetic shared base')
+        self.git(self.target,'add','.')
+        if sys.platform == 'win32':
+            self.git(self.target,'update-index','--chmod=+x','colvia')
+        self.git(self.target,'commit','-qm','synthetic shared base')
         base_oid=self.git(self.target,'rev-parse','HEAD');self.git(self.target,'branch','base-start',base_oid)
         self.sha=verify_workspace_product(self.target)['launcher_sha256'];base=self.observe(self.target)
         baseline=self.manifest(base,base,base_oid,base_oid,'base-start','base-start')
@@ -142,7 +149,7 @@ class InstalledTwoWorkerIntegrationTests(unittest.TestCase):
             (signals/name).mkdir();out=(self.evidence/(name+'.stdout')).open('xb');err=(self.evidence/(name+'.stderr')).open('xb');self.handles.extend([out,err])
             argv=[sys.executable,'-I','-B',str(script),str(worker),str(signals),name]
             p=subprocess.Popen(argv,cwd=worker,stdout=out,stderr=err);self.children.append(p)
-            self.events[name]={'argv':argv,'pid':p.pid,'pgid':os.getpgid(p.pid)}
+            self.events[name]={'argv':argv,'pid':p.pid,'pgid':fixture_pgid(p.pid)}
         def await_both(event):
             deadline=time.monotonic()+180
             while not all((signals/name/(event+'.json')).exists() for name in workers):
@@ -183,7 +190,7 @@ class InstalledTwoWorkerIntegrationTests(unittest.TestCase):
         beta=workers['beta'];self.git(beta,'-c','maintenance.auto=false','-c','gc.auto=0','rebase','--onto',after_a_oid,base_oid)
         expected=initial.replace('alpha = 0','alpha = 1').replace('beta = 0','beta = 1')
         self.assertEqual(expected,(beta/'a').read_text())
-        expected_path=self.evidence/'expected-result.txt';expected_path.write_text(expected)
+        expected_path=self.evidence/'expected-result.txt';expected_path.write_text(expected, newline='\n')
         retest=self.evidence/'retest.py';retest.write_text(RETEST)
         command=[sys.executable,'-I','-B',str(retest),str(beta),str(expected_path)]
         checked=subprocess.run(command,capture_output=True,cwd=beta,timeout=30);self.record(checked,'synthetic-retest',cwd=beta);self.assertEqual(0,checked.returncode)

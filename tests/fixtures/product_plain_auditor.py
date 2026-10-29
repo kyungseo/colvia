@@ -24,11 +24,92 @@ def require(ok, message):
     if not ok: raise ValueError(message)
 
 
+
+def safe_present(path):
+    """Missing means a missing component below already checked real directories."""
+    parts=list(reversed((path,*path.parents)))
+    for index,member in enumerate(parts):
+        try: observed=member.lstat()
+        except FileNotFoundError:return False
+        require(not getattr(observed,"st_file_attributes",0)&0x400,"reparse-member")
+        if index < len(parts)-1:require(stat.S_ISDIR(observed.st_mode),"unsafe-ancestor")
+    return True
+
+
+def safe_directory(path):
+    require(safe_present(path) and stat.S_ISDIR(path.lstat().st_mode),"unsafe-directory")
+
+
+def remaining_window(version,remove,remaining):
+    if version != 6:
+        # Independent literal detection; do not add new validation to old pairs.
+        import ast
+        for name, data in remaining.items():
+            seen = []
+            if name.endswith("/inventory.json") or name == ".hrn/product/binding.json":
+                try: value = strict_json(data)
+                except (ValueError, TypeError, UnicodeError, RecursionError): continue
+                if isinstance(value, dict):
+                    seen.append(value.get("inventory_id"))
+                    for field in ("active_release", "prior_release"):
+                        ref = value.get(field)
+                        if isinstance(ref, dict): seen.append(ref.get("inventory_id"))
+            elif name == "colvia" or name.endswith("/payload/colvia"):
+                if len(data) > 1024 * 1024: continue
+                try: tree = ast.parse(data)
+                except (SyntaxError, ValueError, UnicodeError, RecursionError, MemoryError): continue
+                for node in tree.body:
+                    if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "WORKSPACE_INVENTORY_ID" for t in node.targets):
+                        if isinstance(node.value, ast.Constant): seen.append(node.value.value)
+            require(not any(isinstance(w, str) and w in ("windows-1", "windows-2") for w in seen), "legacy-pair-versus-Windows-witness")
+        return
+    expected_window="windows-2"
+    allowed={"windows-2"}
+    def admitted(window):return isinstance(window,str) and window in allowed
+    for name,data in remaining.items():
+        if name.endswith("/inventory.json"):
+            inv=keys(strict_json(data),{"record_type","schema_version","inventory_id","entries"})
+            require(inv["record_type"]=="release-inventory" and type(inv["schema_version"]) is int and inv["schema_version"]==1,"remaining-inventory-schema")
+            window=inv["inventory_id"];require(admitted(window),"pair-versus-remaining-inventory")
+            actual=entries(inv["entries"])
+            expected=set(CONTINUATION_PATHS) if window in ("continuation-1","windows-2") else set(DELEGATION_PATHS) if window=="delegation-1" else set(ENTRY_PATHS) if window=="entry-1" else set(SERIAL_PATHS)
+            if window in ("umbrella-1","planning-1","checkout-1"):expected.add("src/hv2ref/umbrella.py")
+            if window in ("planning-1","checkout-1"):expected.add("src/hv2ref/candidates.py")
+            require(set(actual)==expected,"remaining-inventory-membership")
+            prefix=name[:-len("inventory.json")]+"payload/"
+            for item in actual.values():
+                full=prefix+item["path"]
+                require(remove.get(full)==dict(item,path=full),"remaining-inventory-remove-link")
+        elif name=="colvia" or name.endswith("/payload/colvia"):
+            import ast
+            require(len(data)<=1024*1024,"launcher-limit")
+            tree=ast.parse(data);declarations=[];stores=[]
+            for node in tree.body:
+                if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name) and node.targets[0].id=="WORKSPACE_INVENTORY_ID":
+                    declarations.append(node)
+            for node in ast.walk(tree):
+                if isinstance(node,ast.Name) and node.id=="WORKSPACE_INVENTORY_ID" and isinstance(node.ctx,(ast.Store,ast.Del)):stores.append(node)
+            require(len(declarations)==1 and stores==[declarations[0].targets[0]] and isinstance(declarations[0].value,ast.Constant)
+                    and (declarations[0].value.value==expected_window if name=="colvia" else admitted(declarations[0].value.value)),"pair-versus-remaining-launcher")
+    if ".hrn/product/binding.json" in remaining:
+        b=keys(strict_json(remaining[".hrn/product/binding.json"]),{"record_type","schema_version","authority_home_id","operation_id","active_release","prior_release"})
+        require(b["record_type"]=="product-binding" and type(b["schema_version"]) is int and b["schema_version"]==1,"remaining-binding-schema")
+        for field in ("active_release","prior_release"):
+            value=b[field]
+            if field=="prior_release" and value is None:continue
+            value=keys(value,{"id","sha256","inventory_id"})
+            require(admitted(value["inventory_id"]) and valid_sha(value["sha256"]) and value["id"]=="product-release-"+value["sha256"][:24],"pair-versus-remaining-binding")
+            item=remove.get(".hrn/product/releases/"+value["id"]+"/inventory.json")
+            require(item is not None and item["sha256"]==value["sha256"],"remaining-binding-inventory-link")
+        require(b["active_release"]["inventory_id"]==expected_window,"active-window-pair")
+
+
 def raw_file(path):
+    require(safe_present(path),"missing-file")
     before=path.lstat()
     require(stat.S_ISREG(before.st_mode) and before.st_nlink==1,"unsafe-file")
     data=path.read_bytes();after=path.lstat()
-    require((before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns)==(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns),"unstable-file")
+    require((before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns,before.st_ctime_ns,getattr(before,"st_file_attributes",0))==(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns,getattr(after,"st_file_attributes",0)),"unstable-file")
     return data
 
 
@@ -42,7 +123,15 @@ def strict_json(data):
         for k,v in items:
             require(k not in result,"duplicate-json-key");result[k]=v
         return result
-    value=json.loads(data,object_pairs_hook=pairs,parse_constant=lambda _:(_ for _ in ()).throw(ValueError("nonfinite-json")))
+    require(len(data)<=4*1024*1024,"json-byte-limit")
+    def integer(value):
+        require(len(value.lstrip("-"))<=1024,"json-integer-limit");return int(value)
+    value=json.loads(data,parse_int=integer,object_pairs_hook=pairs,parse_constant=lambda _:(_ for _ in ()).throw(ValueError("nonfinite-json")))
+    pending=[(value,1)]
+    while pending:
+        child,depth=pending.pop();require(depth<=128,"json-depth-limit")
+        if isinstance(child,dict):pending.extend((v,depth+1) for v in child.values())
+        elif isinstance(child,list):pending.extend((v,depth+1) for v in child)
     require(data==canonical(value),"noncanonical-json")
     return value
 
@@ -78,20 +167,20 @@ def entries(value):
 
 def safe_target(value):
     p=Path(os.path.abspath(value))
-    for a in reversed((p,*p.parents)):require(stat.S_ISDIR(a.lstat().st_mode),"unsafe-target")
+    for a in reversed((p,*p.parents)):safe_directory(a)
     return p
 
 
 def scan(root,allowed_files,allowed_dirs):
-    found={};dirs=set();todo=[root] if os.path.lexists(root) else []
+    found={};dirs=set();todo=[root] if safe_present(root) else []
     while todo:
-        directory=todo.pop();require(stat.S_ISDIR(directory.lstat().st_mode),"unsafe-directory")
+        directory=todo.pop();safe_directory(directory)
         name=directory.relative_to(root.parent.parent).as_posix()  # target/.hrn/<collection>
         require(name in allowed_dirs,"unknown-directory");dirs.add(name)
         for p in directory.iterdir():
             name=p.relative_to(root.parent.parent).as_posix()
             if name in allowed_dirs:
-                require(stat.S_ISDIR(p.lstat().st_mode),"unsafe-directory");todo.append(p)
+                safe_directory(p);todo.append(p)
             else:
                 require(name in allowed_files,"unknown-file");found[name]=raw_file(p)
     return found,dirs
@@ -135,11 +224,11 @@ def continuation_refs(saved,base,current):
 
 
 def audit_once(target):
-    home=target/".hrn";require(stat.S_ISDIR(home.lstat().st_mode),"unsafe-home")
+    home=target/".hrn";safe_directory(home)
     require(not any(p.name.casefold()==".hrn" and p.name!=".hrn" for p in target.iterdir()),"home-alias")
     require(set(p.name for p in home.iterdir())<={"format.json",".gitignore","detached.json","product","work","intents","planning","locks","staging"},"unknown-home-member")
     for name in ("locks","staging"):
-        if os.path.lexists(home/name):require(stat.S_ISDIR((home/name).lstat().st_mode),"unsafe-ignored-directory")
+        if safe_present(home/name):safe_directory(home/name)
     fmt_raw=raw_file(home/"format.json");fmt=strict_json(fmt_raw)
     keys(fmt,{"record_type","format_version","authority_home_id","created_at","lineage"})
     require(fmt["record_type"]=="workspace-format" and type(fmt["format_version"]) is int and fmt["format_version"]==1,"unsupported-format")
@@ -150,13 +239,13 @@ def audit_once(target):
     receipt_raw=raw_file(home/"detached.json");receipt=strict_json(receipt_raw)
     keys(receipt,{"record_type","schema_version","operation_id","plan","prior_binding_ref","result_binding_ref"})
     plan=keys(receipt["plan"],{"record_type","schema_version","operation_id","action","target_fingerprint","authority_home_id","expected_binding_ref","candidate_release","format_sha256","truth_refs","remove","preserve","created_at"})
-    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4, 5)
+    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4, 5, 6)
             and plan["record_type"]=="lifecycle-plan" and type(plan["schema_version"]) is int and plan["schema_version"]==receipt["schema_version"] and plan["action"]=="detach","detach-record-type")
     require(valid_id(plan["operation_id"]) and receipt["operation_id"]==plan["operation_id"] and isinstance(plan["created_at"],str) and plan["created_at"].strip(),"detach-operation")
     require(plan["authority_home_id"]==fmt["authority_home_id"] and plan["format_sha256"]==sha(fmt_raw) and valid_sha(plan["target_fingerprint"]),"detach-identity")
     require(receipt["prior_binding_ref"]==ref(plan["expected_binding_ref"]) and receipt["result_binding_ref"] is None and plan["candidate_release"] is None,"detach-binding")
     remove=entries(plan["remove"]);preserve=entries(plan["preserve"])
-    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia",5:"colvia"}[plan["schema_version"]]
+    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia",5:"colvia",6:"colvia"}[plan["schema_version"]]
     expected={launcher,".hrn/product/init-plan.json",".hrn/product/binding.json"};releases=set();receipt_ids=set()
     for name in set(remove)-expected:
         parts=name.split("/")
@@ -168,13 +257,14 @@ def audit_once(target):
     require(bool(releases) and bool(receipt_ids) and plan["operation_id"].casefold() not in {n.casefold() for n in receipt_ids},"remove-release-receipt")
     for rid in releases:
         prefix=".hrn/product/releases/"+rid+"/"
+        if plan["schema_version"]==6:require(prefix+"payload/colvia" in remove and prefix+"payload/src/hv2ref/continuation.py" in remove,"detach6-fixed-membership")
         paths = set(SERIAL_PATHS) | {"src/hv2ref/umbrella.py"} if prefix+"payload/src/hv2ref/umbrella.py" in remove else SERIAL_PATHS
         if prefix+"payload/src/hv2ref/candidates.py" in remove:paths=set(paths)|{"src/hv2ref/candidates.py"}
         if prefix+"payload/colvia" in remove:
-            require(plan["schema_version"] in (3,4,5),"old-schema-entry-membership")
+            require(plan["schema_version"] in (3,4,5,6),"old-schema-entry-membership")
             paths=ENTRY_PATHS if plan["schema_version"]==3 else DELEGATION_PATHS
             if prefix+"payload/src/hv2ref/continuation.py" in remove:
-                require(plan["schema_version"]==5,"old-schema-continuation-membership")
+                require(plan["schema_version"]in (5,6),"old-schema-continuation-membership")
                 paths=CONTINUATION_PATHS
         expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in paths}
         require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24],"release-inventory")
@@ -202,13 +292,16 @@ def audit_once(target):
     dirs={p.as_posix() for n in files_order if n!=launcher for p in Path(n).parents if p.as_posix().startswith(".hrn/product")}
     dir_order=sorted(dirs,key=lambda n:(-len(n.split("/")),n.encode()))
     remaining,present_dirs=scan(home/"product",set(remove),dirs)
-    if os.path.lexists(target/launcher):remaining[launcher]=raw_file(target/launcher)
+    if safe_present(target/launcher):remaining[launcher]=raw_file(target/launcher)
     for name,data in remaining.items():require(sha(data)==remove[name]["sha256"] and len(data)==remove[name]["size_bytes"],"changed-remaining-bytes")
+    remaining_window(plan["schema_version"],remove,remaining)
+    for name in remove:
+        if name not in remaining:require(not safe_present(target/name),"removed-path-not-safely-absent")
     remaining_names=[n for n in files_order if n in remaining]
     require(remaining_names==files_order[len(files_order)-len(remaining_names):],"invalid-file-prefix")
     if remaining_names:require(present_dirs==dirs,"early-directory-removal")
     else:require([n for n in dir_order if n in present_dirs]==dir_order[len(dir_order)-len(present_dirs):],"invalid-directory-prefix")
-    if plan["schema_version"] in (3,4,5):
+    if plan["schema_version"] in (3,4,5,6):
         import unicodedata
         require(not any(unicodedata.normalize("NFC",p.name).casefold()=="hv2" for p in target.iterdir()),"retired-entry-collision-preserved")
     selected={}
@@ -216,7 +309,7 @@ def audit_once(target):
         if not name.endswith("/current.json"):continue
         current=strict_json(data);base=name.rsplit("/",1)[0]
         if base.endswith("/continuation"):
-            require(plan["schema_version"]==5,"continuation-truth-in-old-detach")
+            require(plan["schema_version"] in (5,6),"continuation-truth-in-old-detach")
             keys(current,{"record_type","schema_version","authority_home_id","work_id","selection_ref"})
             wid=base.split("/")[-2]
             require(current["record_type"]=="continuation-current" and type(current["schema_version"]) is int
@@ -242,11 +335,11 @@ def main():
     try:
         if len(sys.argv)!=2:raise ValueError("usage: product_plain_auditor.py TARGET")
         target=safe_target(sys.argv[1])
-        require(os.path.lexists(target/".hrn"),"missing .hrn; legacy layouts unsupported")
+        require(safe_present(target/".hrn"),"missing .hrn; legacy layouts unsupported")
         result=audit_once(target);require(result==audit_once(target),"unstable-detached-state")
         print(json.dumps(result,ensure_ascii=False,sort_keys=True))
         return 14 if result["classification"]=="partial" else 0
-    except (ValueError,OSError,KeyError,TypeError,RecursionError) as exc:
+    except (ValueError,OSError,KeyError,TypeError,RecursionError,SyntaxError) as exc:
         print(json.dumps({"classification":"degraded","message":str(exc),"mutation_authorized":False},sort_keys=True))
         return 10
 

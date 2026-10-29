@@ -14,6 +14,7 @@ Reorganization and effective-state record: [DR-0006](decisions/DR-0006-source-co
 | [DR-0004: Colvia Managed Entry And One-Way Transition](decisions/DR-0004-colvia-managed-entry-and-one-way-transition.md) | Accepted (Amended); exact entry-1 activation on 2026-10-14 and the named First B1 supplement on 2026-10-15 |
 | [DR-0005: Delegated Ordinary Work Acceptance](decisions/DR-0005-delegated-ordinary-work-acceptance.md) | Accepted and activated only for the exact delegation-1 successor and named scope in its [activation record](decisions/DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation); earlier guarantees remain except its explicit replacements |
 | [DR-0006: Source Project Rules And Development Workflow](decisions/DR-0006-source-contributor-document-structure.md) | Accepted; source-only relocation and the named navigation cutover effective 2026-10-16; see its acceptance and activation record for exact scope and identities |
+| [DR-0007: Windows Native Runtime Contract](decisions/DR-0007-windows-native-runtime-contract.md) | Accepted; v0.10 S1–S8 and A1–A15 accepted 2026-10-18 as the Windows implementation contract; product implementation, qualification and activation remain pending |
 
 This catalog identifies the records relevant to these entry, procedure and technical-contract boundaries. It is not a complete inventory of concurrent work; consult the Development Index and recheck catalog rows before integration.
 

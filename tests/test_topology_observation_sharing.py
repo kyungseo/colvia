@@ -1,5 +1,11 @@
 """Persistent topology/visibility oracles for observation-local raw probe sharing."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_directory_link,
+    fixture_is_link,
+    fixture_unlink,
+)
+import sys
 
 import copy
 from contextlib import contextmanager, ExitStack
@@ -201,7 +207,8 @@ class TopologyObservationSharingTests(unittest.TestCase):
         return observed
 
     def git(self, target, *args):
-        return subprocess.run(['git', '-C', str(target), *args], check=True, capture_output=True,
+        config = ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf'] if sys.platform == 'win32' and args[:2] == ('worktree', 'add') else []
+        return subprocess.run(['git', *config, '-C', str(target), *args], check=True, capture_output=True,
                               env=workspace.git_environment(), timeout=45).stdout
 
     def test_raw_probe_same_kind_change_requires_fallback(self):
@@ -294,26 +301,26 @@ class TopologyObservationSharingTests(unittest.TestCase):
                 try:
                     if variant == 'ancestor-authority': authority.mkdir()
                     elif variant == 'target-symlink':
-                        self.target.rename(saved); self.target.symlink_to(saved, target_is_directory=True)
+                        self.target.rename(saved); fixture_directory_link(self.target, saved)
                     elif variant == 'ancestor-symlink':
-                        self.f.base.rename(saved_base); self.f.base.symlink_to(saved_base, target_is_directory=True)
+                        self.f.base.rename(saved_base); fixture_directory_link(self.f.base, saved_base)
                     else:
                         (self.target / '.git').rename(metadata)
-                        (self.target / '.git').symlink_to(self.f.base / 'absent-metadata', target_is_directory=True)
+                        fixture_directory_link(self.target / '.git', self.f.base / 'absent-metadata')
                     mutated = fixtures.exact_snapshot(saved_base if variant == 'ancestor-symlink' else self.f.base)
                     with self.assertRaises(ContractError) as cached:
                         workspace.classify_target(self.target, _topology_observation=ctx)
                     with self.assertRaises(ContractError) as fresh: workspace.classify_target(self.target)
                     expected_code = 'HV2-WORKSPACE-CONTRACT' if variant in ('target-symlink', 'ancestor-symlink') else 'HV2-WORKSPACE-TARGET'
-                    self.assertEqual(expected_code, cached.exception.code)
+                    self.assertEqual('HV2-WINDOWS-PATH' if sys.platform == 'win32' and variant != 'ancestor-authority' else expected_code, cached.exception.code)
                     self.assertEqual(fresh.exception.code, cached.exception.code)
                     self.assertEqual(mutated, fixtures.exact_snapshot(saved_base if variant == 'ancestor-symlink' else self.f.base))
                 finally:
                     ctx.close()
                     if variant == 'ancestor-authority': authority.rmdir()
-                    elif variant == 'target-symlink': self.target.unlink(); saved.rename(self.target)
-                    elif variant == 'ancestor-symlink': self.f.base.unlink(); saved_base.rename(self.f.base)
-                    else: (self.target / '.git').unlink(); metadata.rename(self.target / '.git')
+                    elif variant == 'target-symlink': fixture_unlink(self.target); saved.rename(self.target)
+                    elif variant == 'ancestor-symlink': fixture_unlink(self.f.base); saved_base.rename(self.f.base)
+                    else: fixture_unlink(self.target / '.git'); metadata.rename(self.target / '.git')
                     self.assertEqual(before, fixtures.exact_snapshot(self.f.base))
 
     def test_pending_unsupported_nonprimary_use_fresh_path(self):

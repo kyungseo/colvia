@@ -1,5 +1,11 @@
 """Exact intent bindings and independent final reads on installed writer data."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_directory_link,
+    fixture_is_link,
+    fixture_unlink,
+)
+import sys
 
 import copy
 from contextlib import contextmanager
@@ -226,7 +232,7 @@ class IntentObservationSharingTests(unittest.TestCase):
             path.write_bytes(old)
         home = self.target / '.hrn/intents/intent-a'; saved = self.f.base / 'saved-intent'
         def replace():
-            home.rename(saved); home.symlink_to(saved, target_is_directory=True)
+            home.rename(saved); fixture_directory_link(home, saved)
         with self.injection('first-intent', replace):
             status, graphs = product._workspace_status_observation(self.target)
         self.assertEqual('degraded', status['classification']); self.assertIsNone(graphs)

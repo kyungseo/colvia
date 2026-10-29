@@ -4,13 +4,14 @@ from __future__ import annotations
 import copy
 import os
 import stat
+import sys
 import tempfile
 from itertools import islice
 from pathlib import Path
 from typing import Any
 
 from .errors import ContractError, InjectedCrash
-from .jsonio import canonical_json_bytes, decode_json_bytes, sha256_bytes, sync_directory, _sync_fd
+from .jsonio import canonical_json_bytes, decode_json_bytes, sha256_bytes, sync_directory, _sync_fd, replace_file
 from .workspace import (_durable_directory, _exists, _file_json, _id, _require_kind,
                         _sha, classify_target, safe_target, validate_format, writer_guard)
 
@@ -147,6 +148,9 @@ def validate_store(value: Any, authority: str) -> dict:
 
 def _candidate_bytes(path: Path) -> bytes:
     """Bounded no-follow authority read, independent from the human view layer."""
+    if sys.platform == "win32":
+        from .jsonio import windows_bounded_bytes
+        return windows_bounded_bytes(path, MAX_BYTES, limit_code="HV2-CANDIDATE-LIMIT")
     def stamp(s):
         return s.st_dev, s.st_ino, s.st_mode, s.st_nlink, s.st_size, s.st_mtime_ns, s.st_ctime_ns
     fd = os.open(path.anchor, os.O_RDONLY | os.O_DIRECTORY)
@@ -231,13 +235,13 @@ class CandidateStore:
         self.runtime = runtime_verifier or require_workspace_runtime
 
     def mutate(self, request: dict, *, inject_at: str | None = None) -> dict:
-        from .work import _visible_truth
+        from .work import _preflight_publication
         request_shape(request)
         require(inject_at in (None, 'after-temporary', 'after-directory', 'before-replace', 'after-replace'), 'unknown candidate interruption point')
         classify_target(self.target, mutation=True)
         with writer_guard(self.target):
             runtime = self.runtime(self.target)
-            require(runtime.get('inventory_id') in ('delegation-1', 'continuation-1'), 'candidate writing requires an explicitly installed delegation-1 or continuation-1 release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
+            require(runtime.get('inventory_id') in ('delegation-1', 'continuation-1', 'windows-2'), 'candidate writing requires an explicitly installed delegation-1 or current Windows release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
             observed = read_candidates(self.target); store = observed['store']
             require(store['authority_home_id'] == request['authority_home_id'], 'request authority differs')
             works, intents = _graphs(self.target)
@@ -270,7 +274,7 @@ class CandidateStore:
             validate_store(new, store['authority_home_id'])
             raw = canonical_json_bytes(new)
             require(len(raw) <= MAX_BYTES, 'candidate byte limit; not saved; preserve history', 'HV2-CANDIDATE-LIMIT')
-            _visible_truth(self.target, ['.hrn/planning/candidates.json'])
+            _preflight_publication(self.target, ['.hrn/planning/candidates.json'])
             staging = self.target / '.hrn/staging'; _durable_directory(staging)
             fd, name = tempfile.mkstemp(prefix='candidate-', dir=staging); temp = Path(name)
             with os.fdopen(fd, 'wb') as handle:
@@ -285,7 +289,7 @@ class CandidateStore:
             require(runtime == self.runtime(self.target), 'runtime changed before candidate publication')
             require((works, intents) == _graphs(self.target), 'Work/intent changed before candidate publication')
             crash('before-replace')
-            os.replace(temp, directory / 'candidates.json'); sync_directory(directory); sync_directory(staging)
+            replace_file(temp, directory / 'candidates.json'); sync_directory(directory); sync_directory(staging)
             crash('after-replace')
             result = read_candidates(self.target)
             require(result['sha256'] == sha256_bytes(raw), 'candidate changed after publication; read before retry')

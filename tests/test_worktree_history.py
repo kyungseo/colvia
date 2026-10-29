@@ -4,6 +4,7 @@ Q differs only in a managed document; this tests the present window contract,
 not compatibility with an arbitrary future release.
 """
 from __future__ import annotations
+from tests.platform_fixtures import fixture_window
 from test_productization_safety import verified_inventory_id
 import copy
 import hashlib
@@ -56,7 +57,7 @@ class InstalledWorkerHistoryTests(unittest.TestCase):
         (self.target/'unchanged.bat').write_bytes(b'@echo off\r\necho fixture\r\n')
         old_worker_ticket=self.prepare_worker_result()  # Includes real P -> Q.
         binding_q=json.loads((self.target/'.hrn/product/binding.json').read_text())
-        self.assertEqual('continuation-1',binding_q['active_release']['inventory_id'])
+        self.assertEqual(fixture_window('continuation-1'),binding_q['active_release']['inventory_id'])
         local_q=self.local_review();worker_q=read_work(self.target,'work-a')
         truth_q=self.truth();git_q=exact_snapshot(self.target/'.git')
         preview=json.loads(self.installed(['rollback','--operation-id','back-to-p','--observed-at',self.TIME]).stdout)

@@ -4,6 +4,9 @@ Default discovery never substitutes synthetic current code for an older artifact
 The factory requires the exact retained source and its independently recorded hash.
 """
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_window,
+)
 
 import copy
 import hashlib
@@ -59,8 +62,12 @@ class DetachVersionTests(unittest.TestCase):
     def test_paired_version_reader_and_independent_auditor_reject_invalid_versions(self):
         from hv2ref.product import workspace_detached_status
         preview=self.seed();path=self.target/'.hrn/detached.json';raw=path.read_bytes();receipt=json.loads(raw)
-        self.assertEqual(5,receipt['schema_version']);self.assertEqual(5,receipt['plan']['schema_version'])
-        for outer,inner in ((1,5),(5,1),(2,5),(5,2),(4,4),(4,5),(5,4),(6,6),(True,True),(None,None),(5,True)):
+        version=6 if sys.platform=='win32' else 5
+        self.assertEqual(version,receipt['schema_version']);self.assertEqual(version,receipt['plan']['schema_version'])
+        invalid=((1,version),(version,1),(2,version),(version,2),(4,4),(4,version),(version,4),
+                 (version+1,version+1),(True,True),(None,None),(version,True))
+        if version==6: invalid += ((5,5),(5,6),(6,5))
+        for outer,inner in invalid:
             bad=copy.deepcopy(receipt);bad['schema_version']=outer;bad['plan']['schema_version']=inner
             path.write_bytes(canonical_json_bytes(bad));before=fixtures.exact_snapshot(self.target)
             with self.subTest(outer=outer,inner=inner):
@@ -91,9 +98,9 @@ class DetachVersionTests(unittest.TestCase):
             # Synthetic validated-observation seam isolates admission policy;
             # The separate factory covers exact planning-1 only, not these older windows.
             with self.subTest(window=window),mock.patch.object(product,'_workspace_observe',return_value=old):
-                with self.assertRaisesRegex(ContractError,'predecessor'):
+                with self.assertRaisesRegex(ContractError,'native Windows mutation requires a verified windows-2 window' if sys.platform=='win32' else 'predecessor'):
                     workspace_switch_preview(self.target,action='update',source=self.source,operation_id='refuse-a',created_at=self.TIME)
-                with self.assertRaisesRegex(ContractError,'predecessor'):
+                with self.assertRaisesRegex(ContractError,'native Windows mutation requires a verified windows-2 window' if sys.platform=='win32' else 'predecessor'):
                     workspace_switch_apply(self.target,plan['request'],source=counterpart,confirm_token=plan['confirm_token'])
             self.assertEqual(before,fixtures.exact_snapshot(self.target))
 
@@ -124,7 +131,7 @@ class DetachVersionTests(unittest.TestCase):
         directories={'.hrn/product'}
         for name in data:
             if name.startswith('.hrn/product/'):
-                directories.update(str(parent) for parent in Path(name).parents if str(parent).startswith('.hrn/product'))
+                directories.update(parent.as_posix() for parent in Path(name).parents if parent.as_posix().startswith('.hrn/product'))
         for name in sorted(directories,key=lambda n:(n.count('/'),n)):(self.target/name).mkdir(exist_ok=True)
         last=sorted(name for name in data if name!='hv2')[-1];(self.target/last).write_bytes(data[last])
         for version in (1,2):

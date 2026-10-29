@@ -1,4 +1,15 @@
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_directory_link,
+    fixture_is_link,
+    fixture_snapshot_paths,
+    fixture_source,
+    fixture_temporary_directory,
+    fixture_unlink,
+    fixture_unsafe_link,
+    fixture_window,
+    posix_mechanism,
+)
 
 import hashlib
 import json
@@ -25,19 +36,21 @@ def verified_inventory_id(target: Path) -> str:
     return verify_workspace_product(target)["inventory"]["inventory_id"]
 
 
-def exact_snapshot(root: Path) -> dict[str, tuple[object, ...]]:
-    paths = [root, *sorted(root.rglob("*"), key=lambda path: path.as_posix())]
+def exact_snapshot(root: Path, *, writer_lock_held: bool = False) -> dict[str, tuple[object, ...]]:
+    paths = fixture_snapshot_paths(root)
     result: dict[str, tuple[object, ...]] = {}
     for path in paths:
         relative = "." if path == root else path.relative_to(root).as_posix()
-        if path.is_symlink():
-            result[relative] = ("symlink", os.readlink(path))
+        if fixture_is_link(path):
+            result[relative] = ("junction" if sys.platform == "win32" and path.is_junction() else "symlink", os.readlink(path))
         elif path.is_dir():
             result[relative] = ("directory", path.stat().st_mode & 0o777)
         elif path.is_file():
             result[relative] = (
                 "file",
-                hashlib.sha256(path.read_bytes()).hexdigest(),
+                # Native locked bytes are checked separately before/after contention.
+                None if writer_lock_held and sys.platform == "win32" and relative == ".hrn/locks/writer.lock"
+                else hashlib.sha256(path.read_bytes()).hexdigest(),
                 path.stat().st_mode & 0o777,
             )
     return result
@@ -123,11 +136,11 @@ class SingleHomeRuntimeTests(unittest.TestCase):
     """Installation-shaped fixtures, not evidence that a lifecycle installer ran."""
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="workspace-runtime-")
+        self.temp = fixture_temporary_directory(prefix="workspace-runtime-")
         self.addCleanup(self.temp.cleanup)
         self.target = Path(self.temp.name).resolve() / "project"
         self.target.mkdir()
-        self.source = source_root()
+        self.source = fixture_source()
         self.seed()
 
     def seed(self):
@@ -143,10 +156,10 @@ class SingleHomeRuntimeTests(unittest.TestCase):
             data = self.candidate["payload"][item["path"]]
             item.update(sha256=hashlib.sha256(data).hexdigest(), size_bytes=len(data))
         digest = hashlib.sha256(canonical_json_bytes(self.inventory)).hexdigest()
-        self.ref = {"id": "product-release-" + digest[:24], "sha256": digest, "inventory_id": "continuation-1"}
+        self.ref = {"id": "product-release-" + digest[:24], "sha256": digest, "inventory_id": self.inventory["inventory_id"]}
         self.fmt = {"record_type": "workspace-format", "format_version": 1, "authority_home_id": "home-a",
                     "created_at": "2026-01-01T00:00:00Z", "lineage": None}
-        self.plan = {"record_type": "lifecycle-plan", "schema_version": 5, "operation_id": "init-a", "action": "init",
+        self.plan = {"record_type": "lifecycle-plan", "schema_version": 6 if self.ref["inventory_id"] == "windows-2" else 5, "operation_id": "init-a", "action": "init",
                      "authority_home_id": "home-a", "expected_binding_ref": None, "candidate_release": self.ref,
                      "format_sha256": hashlib.sha256(canonical_json_bytes(self.fmt)).hexdigest(),
                      "truth_refs": [], "remove": [], "preserve": [], "created_at": self.fmt["created_at"],
@@ -162,7 +175,7 @@ class SingleHomeRuntimeTests(unittest.TestCase):
         self.binding = {"record_type": "product-binding", "schema_version": 1, "authority_home_id": "home-a",
                         "active_release": self.ref, "prior_release": None, "operation_id": "init-a"}
         self.save(self.product / "binding.json", self.binding)
-        self.receipt = {"record_type": "lifecycle-receipt", "schema_version": 5, "operation_id": "init-a",
+        self.receipt = {"record_type": "lifecycle-receipt", "schema_version": self.plan["schema_version"], "operation_id": "init-a",
                         "plan": self.plan, "prior_binding_ref": None, "result_binding_ref": record_ref(self.binding, "operation_id")}
         (self.product / "receipts").mkdir()
         self.save(self.product / "receipts/init-a.json", self.receipt)
@@ -232,11 +245,11 @@ try:
 except ContractError as exc:
     print(exc.code + ": " + exc.message)
     sys.exit(65)
-'''
+'''.replace('WORKSPACE_INVENTORY_ID = "continuation-1"', 'WORKSPACE_INVENTORY_ID = "' + fixture_window("continuation-1") + '"')
 
     def run_runtime(self, mode="runtime", *args, isolated=True, env=None, launcher=None):
         import sys
-        command = [sys.executable] + (["-I"] if isolated else []) + [str(launcher or self.target / "colvia"), mode, *map(str, args)]
+        command = [sys.executable] + (["-I", "-B"] if isolated else []) + [str(launcher or self.target / "colvia"), mode, *map(str, args)]
         return subprocess.run(command, text=True, capture_output=True, env=env, timeout=45, cwd=self.target)
 
     def check_product(self):
@@ -262,6 +275,98 @@ except ContractError as exc:
         self.assertEqual(self.receipt["result_binding_ref"], result["binding_ref"])
         self.assertEqual(before, exact_snapshot(self.target))
 
+    def _retained_release_observation_fixture(self):
+        import copy
+        from hv2ref import product
+        payload = dict(self.candidate["payload"])
+        payload["docs/REFERENCE.md"] += b"\nObservation fixture.\n"
+        inventory = copy.deepcopy(self.inventory)
+        for entry in inventory["entries"]:
+            data = payload[entry["path"]]
+            entry.update(sha256=hashlib.sha256(data).hexdigest(), size_bytes=len(data))
+        digest = hashlib.sha256(canonical_json_bytes(inventory)).hexdigest()
+        ref = {"id": "product-release-" + digest[:24], "sha256": digest,
+               "inventory_id": self.ref["inventory_id"]}
+        release = self.product / "releases" / ref["id"]
+        for name, data in payload.items():
+            path = release / "payload" / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        self.save(release / "inventory.json", inventory)
+        plan = {**self.plan, "schema_version": 6 if self.ref["inventory_id"] == "windows-2" else 5, "operation_id": "observe-update",
+                "action": "update", "expected_binding_ref": self.receipt["result_binding_ref"],
+                "candidate_release": ref}
+        binding, receipt = product._switch_binding_receipt(plan, self.binding)
+        self.save(self.product / "binding.json", binding)
+        self.save(self.product / "receipts/observe-update.json", receipt)
+        return release, receipt
+
+    def test_windows_product_observation_rechecks_both_retained_releases(self):
+        from hv2ref import product
+        release, receipt = self._retained_release_observation_fixture()
+        before = exact_snapshot(self.target)
+        trees = []
+        original = product._serial_tree
+        def observe(root, *args, **kwargs):
+            trees.append(root)
+            return original(root, *args, **kwargs)
+        with mock.patch.object(product, "sys", mock.Mock(platform="win32")), \
+                mock.patch.object(product, "_serial_tree", side_effect=observe):
+            first = product.verify_workspace_product(self.target)
+            second = product.verify_workspace_product(self.target)
+        self.assertEqual(receipt["result_binding_ref"], first["binding_ref"])
+        self.assertEqual(first, second)
+        self.assertEqual(4, trees.count(self.product))
+        self.assertEqual(4, trees.count(self.release))
+        self.assertEqual(4, trees.count(release))
+        self.assertEqual(before, exact_snapshot(self.target))
+
+    def test_windows_product_observation_refuses_retained_bytes_changed_between_reads(self):
+        from hv2ref import product
+        release, _ = self._retained_release_observation_fixture()
+        original = product._serial_tree
+        for target in (self.release, release):
+            changed = target / "payload/docs/REFERENCE.md"
+            prior = changed.read_bytes()
+            def mutate(root, *args, **kwargs):
+                if root == self.product:
+                    changed.write_bytes(prior + b"changed")
+                return original(root, *args, **kwargs)
+            with mock.patch.object(product, "sys", mock.Mock(platform="win32")), \
+                    mock.patch.object(product, "_serial_tree", side_effect=mutate):
+                with self.assertRaisesRegex(ContractError, "release changed while reading"):
+                    product.verify_workspace_product(self.target)
+            changed.write_bytes(prior)
+
+    def test_windows_product_observation_refuses_new_member_between_reads(self):
+        from hv2ref import product
+        self._retained_release_observation_fixture()
+        original = product._serial_tree
+        extra = self.release / "payload/unknown-empty"
+        def mutate(root, *args, **kwargs):
+            if root == self.product:
+                extra.mkdir()
+            return original(root, *args, **kwargs)
+        with mock.patch.object(product, "sys", mock.Mock(platform="win32")), \
+                mock.patch.object(product, "_serial_tree", side_effect=mutate):
+            with self.assertRaisesRegex(ContractError, "unknown product member"):
+                product.verify_workspace_product(self.target)
+
+    def test_standalone_release_still_compares_independent_reads(self):
+        from hv2ref import product
+        original = product._serial_tree
+        calls = []
+        changed = self.release / "payload/docs/REFERENCE.md"
+        def mutate(root, *args, **kwargs):
+            calls.append(root)
+            if len(calls) == 2:
+                changed.write_bytes(changed.read_bytes() + b"changed")
+            return original(root, *args, **kwargs)
+        with mock.patch.object(product, "_serial_tree", side_effect=mutate):
+            with self.assertRaisesRegex(ContractError, "release changed while reading"):
+                product.verify_workspace_release(str(self.release))
+        self.assertEqual([self.release, self.release], calls)
+
     def test_fixture_launcher_imports_writer_runtime_without_retired_modules(self):
         result = self.run_runtime()
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
@@ -285,7 +390,8 @@ except ContractError as exc:
     def test_nonisolated_python_is_refused(self):
         result = self.run_runtime(isolated=False)
         self.assertEqual(65, result.returncode, result.stdout + result.stderr)
-        self.assertIn("isolated", result.stdout)
+        expected = "HV2-WORKSPACE-RUNTIME: windows-2 mutation requires explicit allowed Python -I -B" if sys.platform == "win32" else "isolated"
+        self.assertIn(expected, result.stdout)
 
     def test_environment_cannot_shadow_isolated_runtime(self):
         shadow = Path(self.temp.name) / "shadow";shadow.mkdir()
@@ -352,8 +458,8 @@ except ContractError as exc:
 
     def test_symlink_payload_file_and_directory_are_refused(self):
         for path in [self.release / "payload/README.md", self.release / "payload/docs"]:
-            moved = path.with_name(path.name + "-saved");path.rename(moved);path.symlink_to(moved.name)
-            self.assert_product_refused();path.unlink();moved.rename(path)
+            moved = path.with_name(path.name + "-saved");path.rename(moved);fixture_unsafe_link(path, moved.name)
+            self.assert_product_refused();fixture_unlink(path);moved.rename(path)
 
     def test_inventory_duplicate_and_order_and_missing_entries_are_refused(self):
         import copy
@@ -369,7 +475,13 @@ except ContractError as exc:
     def test_modified_or_nonexecutable_launcher_is_refused(self):
         path = self.target / "colvia";data = path.read_bytes()
         path.write_bytes(data + b"# drift\n");self.assert_product_refused();path.write_bytes(data)
-        path.chmod(0o644);self.assert_product_refused()
+        path.chmod(0o644)
+        if sys.platform == "win32":
+            before = exact_snapshot(self.target)
+            self.assertEqual(self.receipt["result_binding_ref"], self.check_product()["binding_ref"])
+            self.assertEqual(before, exact_snapshot(self.target))
+        else:
+            self.assert_product_refused()
 
     def test_ignored_product_bytes_are_refused_even_when_tracked(self):
         subprocess.run(["git", "init", "-q", str(self.target)], check=True, capture_output=True)
@@ -452,34 +564,40 @@ except ContractError as exc:
 class ActualWorkspaceInitTests(unittest.TestCase):
     """Actual managed launcher/CLI with disposable targets, not a substituted launcher."""
     TIME = "2026-01-01T00:00:00Z"
+    _NO_STDIN = object()
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="workspace-init-");self.addCleanup(self.temp.cleanup)
+        self.temp = fixture_temporary_directory(prefix="workspace-init-");self.addCleanup(self.temp.cleanup)
         self.base = Path(self.temp.name).resolve();self.target = self.base / "project";self.target.mkdir()
         (self.target / "a").write_bytes(b"before\n")
-        self.source = source_root()
+        self.source = fixture_source()
 
-    def call(self, command, value=None, *, env=None, launcher=None, expected=0):
-        result = subprocess.run([str(launcher or self.source / "colvia"), *(["--source-checkout"] if launcher is None else []), *map(str, command)],
-                                input=canonical_json_bytes(value) if value is not None else None,
-                                capture_output=True, cwd=self.target, env=env, timeout=45)
+    def call(self, command, value=_NO_STDIN, *, env=None, launcher=None, expected=0):
+        # Bound a stalled native detach test; this is not a product latency target.
+        detach_apply = bool(command) and str(command[0]) == "detach" and "--apply" in command
+        timeout = 180 if sys.platform == "win32" and detach_apply else 45
+        result = subprocess.run([*([sys.executable, "-I", "-B"] if sys.platform == "win32" else []), str(launcher or self.source / "colvia"), *(["--source-checkout"] if launcher is None else []), *map(str, command)],
+                                input=canonical_json_bytes(value) if value is not ActualWorkspaceInitTests._NO_STDIN else None,
+                                capture_output=True, cwd=self.target, env=env, timeout=timeout)
         if expected is not None: self.assertEqual(expected, result.returncode, (result.stdout + result.stderr).decode(errors="replace"))
         return result
 
     def preview(self, *, target=None, source=None):
         target = target or self.target;source = source or self.source
-        result = self.call(["init", "--profile", "continuation-1", "--target", target, "--source", source,
+        result = self.call(["init", "--profile", fixture_window("continuation-1"), "--target", target, "--source", source,
                             "--authority-home-id", "home-a", "--operation-id", "init-a", "--observed-at", self.TIME])
         return json.loads(result.stdout)
 
     def apply_init(self, preview, *, recover=False, point=None, expected=0, source=None):
-        args = ["init", "--profile", "continuation-1", "--target", self.target, "--source", source or self.source,
+        args = ["init", "--profile", fixture_window("continuation-1"), "--target", self.target, "--source", source or self.source,
                 "--apply", "--input", "-", "--confirm", preview["confirm_token"]]
         if recover: args.append("--recover")
         if point: args += ["--inject-at", point]
         return self.call(args, preview["request"], expected=expected)
 
-    def installed(self, args, value=None, *, expected=0, env=None):
+    def installed(self, args, value=_NO_STDIN, *, expected=0, env=None):
+        if value is ActualWorkspaceInitTests._NO_STDIN:
+            return self.call(args, launcher=self.target / "colvia", expected=expected, env=env)
         return self.call(args, value, launcher=self.target / "colvia", expected=expected, env=env)
 
     def draft(self):
@@ -574,14 +692,29 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         pattern=re.compile(r"HV2-REPO-IMPL|HV2-PROD-00|OWNER-LOCAL|FEAT-20[0-9]{6}|run-000[0-9]|Claude R[0-9]|/(?:Users|home)/|[a-z0-9]+-reference-private")
         hits=[]
         for relative in CONTINUATION_MANAGED_PATHS:
-            if pattern.search((release/"payload"/relative).read_text(errors="replace")):hits.append(relative)
+            if pattern.search((release/"payload"/relative).read_text(encoding="utf-8",errors="replace")):hits.append(relative)
         self.assertEqual([],hits)
 
     def test_document_port_local_links_resolve(self):
         import re
+        def prose_links(text):
+            # Fenced examples are literal text, including retained historical quotations.
+            fence=None;prose=[]
+            for line in text.splitlines():
+                marker=re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$",line)
+                if fence is not None:
+                    if marker and marker[1][0]==fence[0] and len(marker[1])>=len(fence) and not marker[2].strip():fence=None
+                    continue
+                if marker:
+                    fence=marker[1];continue
+                prose.append(line)
+            return re.findall(r"\[[^\]]+\]\(([^)]+)\)","\n".join(prose))
+        for opening,closing in (("```text","```"),("~~~~markdown","~~~~~")):
+            sample="[live](README.md)\n"+opening+"\n[example](missing-example.md)\n"+closing+"\n[live](AGENTS.md)\n"
+            self.assertEqual(["README.md","AGENTS.md"],prose_links(sample))
         docs=[self.source/"README.md",self.source/"AGENTS.md",self.source/"CLAUDE.md",*sorted((self.source/"docs").glob("*.md"))]
         for doc in docs:
-            for link in markdown_links_outside_fences(doc.read_text()):
+            for link in markdown_links_outside_fences(doc.read_text(encoding="utf-8")):
                 if "://" in link or link.startswith("#"):continue
                 resolved=(doc.parent/link.split("#",1)[0]).resolve()
                 self.assertTrue(resolved.is_relative_to(self.source.resolve()),f"outside repository: {doc.name}: {link}")
@@ -613,7 +746,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         selected=[ast.get_source_segment(source,n) for n in tree.body if getattr(n,"lineno",0)>=start or isinstance(n,ast.FunctionDef) and n.name in shared]
         codes.update(re.findall(token,"\n".join(selected)))
         self.assertGreater(len(codes),35)
-        reference=(self.source/"docs/REFERENCE.md").read_text()
+        reference=(self.source/"docs/REFERENCE.md").read_text(encoding="utf-8")
         documented=set(re.findall(token,reference))
         self.assertEqual([],sorted(codes-documented))
 
@@ -668,9 +801,9 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.target=self.base/kind;self.target.mkdir();preview=self.preview()
                 external=self.base/(kind+"-external");external.write_bytes(b"project-owned\n")
                 if kind=="file":(self.target/"colvia").write_bytes(b"project-owned\n")
-                else:(self.target/"colvia").symlink_to(external)
+                else:fixture_unsafe_link(self.target/"colvia", external)
                 before=exact_snapshot(self.target)
-                result=self.call(["init","--profile","continuation-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
+                result=self.call(["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
                 for response in (result,self.apply_init(preview,expected=65)):
                     error=json.loads(response.stdout);self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
                     self.assertEqual("preexisting launcher or alias is not owned",error["message"])
@@ -680,7 +813,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         from hv2ref.product import workspace_candidate, workspace_init_preview, workspace_init_apply
         candidate=self.switch_candidate()
         preview=workspace_init_preview(candidate,self.target,authority_home_id="home-a",operation_id="init-a",created_at=self.TIME)
-        shutil.rmtree(candidate/"docs");(candidate/"docs").symlink_to(self.source/"docs",target_is_directory=True)
+        shutil.rmtree(candidate/"docs");fixture_directory_link(candidate/"docs", self.source/"docs")
         before=exact_snapshot(self.target);read=Path.read_bytes;opened=os.open;external_reads=[]
         def watched(path):
             return isinstance(path,(str,bytes,os.PathLike)) and Path(os.fsdecode(path)).is_relative_to(candidate/"docs")
@@ -695,8 +828,8 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                            lambda:workspace_init_preview(candidate,self.target,authority_home_id="home-a",operation_id="init-a",created_at=self.TIME),
                            lambda:workspace_init_apply(candidate,self.target,preview["request"],confirm_token=preview["confirm_token"])):
                 with self.assertRaises(ContractError) as error:action()
-                self.assertEqual("HV2-WORKSPACE-CONTRACT",error.exception.code)
-                self.assertEqual("wrong file type: docs",error.exception.message)
+                self.assertEqual("HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-WORKSPACE-CONTRACT",error.exception.code)
+                self.assertEqual("reparse point is unsupported" if sys.platform == "win32" else "wrong file type: docs",error.exception.message)
                 self.assertEqual(before,exact_snapshot(self.target))
         self.assertEqual([],external_reads)
 
@@ -767,7 +900,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.assertFalse(any(p.name.startswith(".harness-v2") for p in self.target.iterdir()))
         before=exact_snapshot(self.target)
         for command in ("status","doctor"):
-            result=self.installed([command],expected=None);self.assertEqual(0 if runtime_supported() else 16,result.returncode,result.stdout)
+            result=self.installed([command],expected=None);self.assertEqual(0 if runtime_supported(fixture_window()) else 16,result.returncode,result.stdout)
             data=json.loads(result.stdout);self.assertEqual("non-git",data["topology"]);self.assertEqual(before,exact_snapshot(self.target))
         self.assertTrue(json.loads(self.apply_init(preview).stdout)["replayed"])
         self.assertEqual(before,exact_snapshot(self.target))
@@ -779,7 +912,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         subprocess.run(["git","init","-q",str(self.target)],check=True,capture_output=True)
         self.apply_init(self.preview());git_commit_all(self.target,"fixture installation")
         self.complete_work();git_commit_all(self.target,"fixture completed Work")
-        result=self.installed(["status"],expected=None);self.assertEqual(0 if runtime_supported() else 16,result.returncode,result.stdout)
+        result=self.installed(["status"],expected=None);self.assertEqual(0 if runtime_supported(fixture_window()) else 16,result.returncode,result.stdout)
         self.assertEqual({"work-a":"completed"},json.loads(result.stdout)["work_states"])
         releases=self.target/".hrn/product/releases"
         self.assertEqual([],list(releases.rglob("*.pyc")))
@@ -794,7 +927,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.apply_init(preview,point=point,expected=75)
                 if point != "after-binding": self.apply_init(preview,expected=65)
                 self.apply_init(preview,recover=True)
-                result=self.installed(["status"],expected=None);self.assertEqual(0 if runtime_supported() else 16,result.returncode,result.stdout)
+                result=self.installed(["status"],expected=None);self.assertEqual(0 if runtime_supported(fixture_window()) else 16,result.returncode,result.stdout)
                 bindings=list((self.target/".hrn/product").glob("binding*.json"));self.assertEqual([self.target/".hrn/product/binding.json"],bindings)
                 self.assertEqual(preview["request"]["plan"]["candidate_release"],json.loads(bindings[0].read_text())["active_release"])
 
@@ -832,7 +965,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
             if kind=="ignored":
                 preview=self.preview();self.apply_init(preview,expected=65)
             else:
-                self.call(["init","--profile","continuation-1","--target",self.target,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
+                self.call(["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
             self.assertEqual(before,exact_snapshot(self.target))
 
     def test_recovery_preserves_unknown_and_torn_staged_bytes(self):
@@ -853,7 +986,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());shadow=self.target/"src/hv2ref";shadow.mkdir(parents=True)
         (shadow/"__init__.py").write_text("raise RuntimeError('untrusted project module')\n")
         env=dict(os.environ,PYTHONPATH=str(self.target/"src"),PYTHONHOME=str(self.base/"absent"))
-        result=self.installed(["status"],expected=None,env=env);self.assertEqual(0 if runtime_supported() else 16,result.returncode,result.stdout+result.stderr)
+        result=self.installed(["status"],expected=None,env=env);self.assertEqual(0 if runtime_supported(fixture_window()) else 16,result.returncode,result.stdout+result.stderr)
 
     def test_tampered_importable_module_is_rejected_before_execution(self):
         preview=self.preview();self.apply_init(preview)
@@ -884,7 +1017,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
             with self.subTest(command=command[0]):
                 result=self.call(command,expected=65); error=json.loads(result.stdout)
                 self.assertEqual("HV2-WORKSPACE-COMMAND",error["code"])
-                self.assertEqual("source lifecycle requires explicit continuation-1 profile; use retained old source for older windows",error["message"])
+                self.assertEqual("source lifecycle requires explicit " + fixture_window("continuation-1") + " profile; use retained old source for older windows",error["message"])
                 self.assertEqual(before,exact_snapshot(self.base))
         result=self.call(["status","--target",self.target],expected=15)
         self.assertEqual("uninitialized",json.loads(result.stdout)["classification"])
@@ -925,7 +1058,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         import hv2ref.workspace as workspace
         preview=self.preview();outside=self.base/"outside";outside.mkdir()
         (outside/"init-plan.json").write_bytes(canonical_json_bytes(preview["request"]["plan"]))
-        (self.target/".hrn").mkdir();(self.target/".hrn/product").symlink_to(outside,target_is_directory=True)
+        (self.target/".hrn").mkdir();fixture_directory_link(self.target/".hrn/product", outside)
         before=exact_snapshot(self.target)
         with mock.patch.object(workspace,"_file_json",wraps=workspace._file_json) as reader:
             with self.assertRaises(ContractError):
@@ -972,14 +1105,14 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def test_source_requires_explicit_profile_for_workspace_descendants(self):
         self.apply_init(self.preview()); child=self.target/"sub"; child.mkdir()
-        alias=self.base/"child-alias"; alias.symlink_to(child,target_is_directory=True)
+        alias=self.base/"child-alias"; fixture_directory_link(alias, child)
         before=exact_snapshot(self.base)
         for target in (child,alias):
             with self.subTest(target=target):
                 result=self.call(["init","--target",target,"--apply"],expected=65)
                 error=json.loads(result.stdout)
                 self.assertEqual("HV2-WORKSPACE-COMMAND",error["code"])
-                self.assertEqual("source lifecycle requires explicit continuation-1 profile; use retained old source for older windows",error["message"])
+                self.assertEqual("source lifecycle requires explicit " + fixture_window("continuation-1") + " profile; use retained old source for older windows",error["message"])
                 self.assertEqual(before,exact_snapshot(self.base))
 
 
@@ -1000,9 +1133,9 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def switch_candidate(self):
         import shutil
-        from hv2ref.product import CONTINUATION_MANAGED_PATHS
+        from hv2ref.product import WINDOW_PATHS
         candidate=self.base/"candidate"
-        for name in CONTINUATION_MANAGED_PATHS:
+        for name in WINDOW_PATHS[fixture_window("continuation-1")]:
             p=candidate/name;p.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(self.source/name,p)
         with (candidate/"colvia").open("a") as f:f.write("\n# Candidate launcher fixture.\n")
         return candidate
@@ -1011,7 +1144,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         args=[action,"--operation-id",operation,"--observed-at",self.TIME]
         if action=="update":args += ["--source",source or self.candidate]
         if installed: result=self.installed(args)
-        else: result=self.call([*args,"--profile","continuation-1","--target",self.target])
+        else: result=self.call([*args,"--profile",fixture_window("continuation-1"),"--target",self.target])
         return json.loads(result.stdout)
 
     def switch_apply(self,preview,*,source=None,recover=False,point=None,expected=0,installed=False):
@@ -1020,7 +1153,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         if recover:args += ["--recover"]
         if point:args += ["--inject-at",point]
         if installed:return self.installed(args,plan,expected=expected)
-        return self.call([*args,"--profile","continuation-1","--target",self.target],plan,expected=expected)
+        return self.call([*args,"--profile",fixture_window("continuation-1"),"--target",self.target],plan,expected=expected)
 
     def test_actual_update_rollback_round_trip_preserves_truth_and_runs_both_launchers(self):
         from hv2ref.product import verify_workspace_product
@@ -1035,12 +1168,12 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 updated=verify_workspace_product(self.target);self.assertNotEqual(initial["launcher_sha256"],updated["launcher_sha256"])
                 self.assertEqual(truth,{k:v for k,v in exact_snapshot(self.target).items() if k.startswith((".hrn/work/",".hrn/intents/"))})
                 self.assertEqual(up["request"]["candidate_release"],json.loads((self.target/".hrn/product/binding.json").read_text())["active_release"])
-                self.assertEqual(0 if runtime_supported() else 16,self.installed(["status"],expected=None).returncode)
+                self.assertEqual(0 if runtime_supported(fixture_window()) else 16,self.installed(["status"],expected=None).returncode)
                 down=self.switch_preview("rollback",operation="rollback-a",installed=True)
                 self.assertEqual("rolled-back",json.loads(self.switch_apply(down,installed=True).stdout)["classification"])
                 final=verify_workspace_product(self.target);self.assertEqual(initial["launcher_sha256"],final["launcher_sha256"])
                 self.assertEqual(initial["release_path"],final["release_path"]);self.assertNotEqual(initial["binding_ref"],final["binding_ref"])
-                self.assertEqual(0 if runtime_supported() else 16,self.installed(["status"],expected=None).returncode)
+                self.assertEqual(0 if runtime_supported(fixture_window()) else 16,self.installed(["status"],expected=None).returncode)
                 self.assertEqual(truth,{k:v for k,v in exact_snapshot(self.target).items() if k.startswith((".hrn/work/",".hrn/intents/"))})
                 before=exact_snapshot(self.target);self.assertEqual("replayed",json.loads(self.switch_apply(up).stdout)["classification"])
                 self.assertEqual(before,exact_snapshot(self.target))
@@ -1056,7 +1189,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 if point!="after-binding":self.assertEqual(prior_binding,binding_path.read_bytes())
                 before=exact_snapshot(self.target)
                 status=json.loads(self.call(["status","--target",self.target],expected=None).stdout)
-                self.assertEqual("partial" if point!="after-binding" else ("pass" if runtime_supported() else "unsupported"),status["classification"])
+                self.assertEqual("partial" if point!="after-binding" else ("pass" if runtime_supported(fixture_window()) else "unsupported"),status["classification"])
                 if point!="after-binding":self.assertNotIn("documentation_root",status)
                 else:self.assertIn("documentation_root",status)
                 self.assertEqual(before,exact_snapshot(self.target))
@@ -1067,7 +1200,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.switch_apply(down,point="after-launcher",expected=75)
                 self.assertEqual(65,self.installed(["status"],expected=None).returncode)
                 self.switch_apply(down,recover=True)
-                self.assertEqual(0 if runtime_supported() else 16,self.installed(["status"],expected=None).returncode)
+                self.assertEqual(0 if runtime_supported(fixture_window()) else 16,self.installed(["status"],expected=None).returncode)
 
     def test_switch_rejects_source_binding_truth_and_token_drift_without_writes(self):
         import copy
@@ -1093,7 +1226,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 (home/"current.json").write_bytes(canonical_json_bytes(current))
                 if form=="decision":selection.unlink()
                 before=exact_snapshot(self.target)
-                result=self.call(["update","--profile","continuation-1","--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
+                result=self.call(["update","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
                 self.assertIn("pending Work",result.stdout.decode());self.switch_apply(up,expected=65)
                 status=json.loads(self.installed(["status"],expected=14).stdout)
                 self.assertEqual(["work-a"],status["pending_work"])
@@ -1110,7 +1243,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 current=json.loads((home/"current.json").read_bytes());(home/"current.json").unlink()
                 if form=="acceptance":(home/"selections"/(current["selection_ref"]["id"]+".json")).unlink()
                 before=exact_snapshot(self.target)
-                result=self.call(["update","--profile","continuation-1","--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
+                result=self.call(["update","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.candidate,"--operation-id","blocked","--observed-at",self.TIME],expected=65)
                 self.assertIn("pending intent",result.stdout.decode());self.switch_apply(up,expected=65)
                 status=json.loads(self.installed(["status"],expected=14).stdout)
                 self.assertEqual(["intent-a"],status["pending_intent"])
@@ -1123,7 +1256,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());self.candidate=self.switch_candidate();up=self.switch_preview()
         self.switch_apply(up,point="after-receipt",expected=75);before=exact_snapshot(self.target)
         self.installed(["intent","draft"],self.draft(),expected=65)
-        self.call(["rollback","--profile","continuation-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME],expected=65)
+        self.call(["rollback","--profile",fixture_window("continuation-1"),"--target",self.target,"--operation-id","other","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target));self.switch_apply(up,recover=True)
 
     def test_switch_unknown_and_torn_published_bytes_are_preserved(self):
@@ -1161,7 +1294,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());self.candidate=self.switch_candidate();up=self.switch_preview();self.switch_apply(up)
         bad=copy.deepcopy(up);bad["request"]["created_at"]="later";bad["confirm_token"]=hashlib.sha256(canonical_json_bytes(bad["request"])).hexdigest()[:16]
         before=exact_snapshot(self.target);self.switch_apply(bad,expected=65)
-        self.call(["rollback","--profile","continuation-1","--target",self.target,"--to","other-release","--operation-id","rollback-a","--observed-at",self.TIME],expected=65)
+        self.call(["rollback","--profile",fixture_window("continuation-1"),"--target",self.target,"--to","other-release","--operation-id","rollback-a","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
 
@@ -1170,7 +1303,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         up["request"]["operation_id"]="INIT-A"
         up["confirm_token"]=hashlib.sha256(canonical_json_bytes(up["request"])).hexdigest()[:16]
         before=exact_snapshot(self.target);self.switch_apply(up,expected=65)
-        self.call(["update","--profile","continuation-1","--target",self.target,"--source",self.candidate,"--operation-id","INIT-A","--observed-at",self.TIME],expected=65)
+        self.call(["update","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.candidate,"--operation-id","INIT-A","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
 
@@ -1196,7 +1329,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());self.candidate=self.switch_candidate();up=self.switch_preview();self.switch_apply(up)
         down=self.switch_preview("rollback",operation="rollback-a");down["request"]["candidate_release"]=[]
         before=exact_snapshot(self.target)
-        result=self.call(["rollback","--profile","continuation-1","--target",self.target,"--to","wrong","--apply","--input","-","--confirm",down["confirm_token"]],down["request"],expected=65)
+        result=self.call(["rollback","--profile",fixture_window("continuation-1"),"--target",self.target,"--to","wrong","--apply","--input","-","--confirm",down["confirm_token"]],down["request"],expected=65)
         self.assertEqual("HV2-WORKSPACE-SWITCH-INPUT",json.loads(result.stdout)["code"])
         self.assertEqual(before,exact_snapshot(self.target))
 
@@ -1205,9 +1338,11 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         import stat
         self.apply_init(self.preview());self.candidate=self.switch_candidate()
         binding=self.target/".hrn/product/binding.json";binding.chmod(0o640)
-        up=self.switch_preview();self.switch_apply(up);self.assertEqual(0o640,stat.S_IMODE(binding.stat().st_mode))
+        expected = 0o666 if sys.platform == "win32" else 0o640
+        self.assertEqual(expected, stat.S_IMODE(binding.stat().st_mode))
+        up=self.switch_preview();self.switch_apply(up);self.assertEqual(expected,stat.S_IMODE(binding.stat().st_mode))
         down=self.switch_preview("rollback",operation="rollback-a");self.switch_apply(down)
-        self.assertEqual(0o640,stat.S_IMODE(binding.stat().st_mode))
+        self.assertEqual(expected,stat.S_IMODE(binding.stat().st_mode))
 
     def test_published_release_is_an_explicit_recovery_source_when_original_drifts(self):
         for point in ("after-release","after-launcher"):
@@ -1219,7 +1354,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.assertEqual(before,exact_snapshot(self.target))
                 payload=self.target/".hrn/product/releases"/up["request"]["candidate_release"]["id"]/"payload"
                 self.switch_apply(up,recover=True,source=payload)
-                self.assertEqual(0 if runtime_supported() else 16,self.installed(["status"],expected=None).returncode)
+                self.assertEqual(0 if runtime_supported(fixture_window()) else 16,self.installed(["status"],expected=None).returncode)
 
     def test_rollback_recovers_all_distinct_publication_prefixes_and_can_toggle(self):
         from hv2ref.product import verify_workspace_product
@@ -1305,17 +1440,24 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.assertEqual(receipt["result_binding_ref"],verify_workspace_product(self.target)["binding_ref"])
         before=exact_snapshot(self.target);saved=exact_snapshot(backup)
         self.repair_apply(preview,recover=True);self.assertEqual(before,exact_snapshot(self.target));self.assertEqual(saved,exact_snapshot(backup))
-        self.assertEqual(0 if runtime_supported() else 16,self.installed(["status"],expected=None).returncode)
+        self.assertEqual(0 if runtime_supported(fixture_window()) else 16,self.installed(["status"],expected=None).returncode)
 
-    def test_repair_missing_launcher_and_mode_only(self):
-        for form in ("missing","mode"):
+    def _check_repair_missing_or_posix_mode(self, forms):
+        for form in forms:
             with self.subTest(form=form):
                 self.target=self.base/form;self.target.mkdir();self.apply_init(self.preview())
                 if form=="missing":(self.target/"colvia").unlink()
                 else:(self.target/"colvia").chmod(0o644)
                 preview=self.repair_preview(backup=self.base/(form+"-backup"));self.repair_apply(preview)
-                self.assertEqual(0o755,(self.target/"colvia").stat().st_mode & 0o7777)
-                self.assertEqual(0 if runtime_supported() else 16,self.installed(["status"],expected=None).returncode)
+                self.assertEqual(0o666 if sys.platform == "win32" else 0o755,(self.target/"colvia").stat().st_mode & 0o7777)
+                self.assertEqual(0 if runtime_supported(fixture_window()) else 16,self.installed(["status"],expected=None).returncode)
+
+    def test_repair_missing_launcher_and_mode_only(self):
+        self._check_repair_missing_or_posix_mode(("missing",))
+
+    @posix_mechanism("POSIX executable mode repair; native mode-0/mode-1 tests are in WindowsLifecycleTests")
+    def test_posix_repair_nonexecutable_launcher(self):
+        self._check_repair_missing_or_posix_mode(("mode",))
 
     def test_repair_resumes_all_complete_publication_prefixes(self):
         for point in ("after-backup-request","after-backup","after-file","after-receipt"):
@@ -1324,7 +1466,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 preview=self.repair_preview(backup=self.base/(point+"-backup"))
                 self.repair_apply(preview,point=point,expected=75)
                 self.repair_apply(preview,recover=True)
-                self.assertEqual(0 if runtime_supported() else 16,self.installed(["status"],expected=None).returncode)
+                self.assertEqual(0 if runtime_supported(fixture_window()) else 16,self.installed(["status"],expected=None).returncode)
 
     def test_repair_allows_pending_work_and_intent_without_changing_records(self):
         for form in ("work-decision","work-selection","intent-acceptance","intent-selection"):
@@ -1366,8 +1508,8 @@ class ActualWorkspaceInitTests(unittest.TestCase):
             with self.subTest(form=form):
                 self.target=self.base/form;self.target.mkdir();self.apply_init(self.preview());release=Path(verify_workspace_product(self.target)["release_path"])
                 if form=="unknown":(release/"payload/unknown").mkdir()
-                elif form=="symlink":(self.target/"colvia").unlink();(self.target/"colvia").symlink_to(self.source/"colvia")
-                elif form=="hardlink":(self.target/"colvia").unlink();os.link(release/"payload/colvia",self.target/"colvia")
+                elif form=="symlink":fixture_unlink(self.target/"colvia");fixture_unsafe_link(self.target/"colvia", self.source/"colvia")
+                elif form=="hardlink":fixture_unlink(self.target/"colvia");os.link(release/"payload/colvia",self.target/"colvia")
                 else:shutil.rmtree(release/"payload/docs")
                 before=exact_snapshot(self.target);self.repair_preview(backup=self.base/(form+"-backup"),expected=65)
                 self.assertEqual(before,exact_snapshot(self.target))
@@ -1429,8 +1571,11 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.assertEqual(before,exact_snapshot(self.target));self.assertFalse((self.base/"backup").exists())
 
     def test_repair_rejects_changed_binding_and_source_before_backup(self):
-        self.apply_init(self.preview());(self.target/"colvia").chmod(0o644);preview=self.repair_preview()
-        (self.target/"colvia").chmod(0o755)
+        self.apply_init(self.preview()); launcher = self.target / "colvia"; original = launcher.read_bytes()
+        if sys.platform == "win32": launcher.write_bytes(b"damaged launcher\n")
+        else: launcher.chmod(0o644)
+        preview=self.repair_preview()
+        launcher.write_bytes(original); launcher.chmod(0o755)
         self.candidate=self.switch_candidate();up=self.switch_preview();self.switch_apply(up)
         before=exact_snapshot(self.target)
         self.repair_apply(preview,source=self.candidate,expected=65)
@@ -1460,13 +1605,13 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def detach_preview(self, *, installed=False, expected=0):
         args=["detach","--target",self.target,"--operation-id","detach-a","--observed-at",self.TIME]
-        if not installed:args += ["--profile","continuation-1"]
+        if not installed:args += ["--profile",fixture_window("continuation-1")]
         r=self.installed(args,expected=expected) if installed else self.call(args,expected=expected)
         return json.loads(r.stdout)
 
     def detach_apply(self, preview, *, installed=False, recover=False, point=None, expected=0):
         args=["detach","--target",self.target,"--apply","--input","-","--confirm",preview["confirm_token"]]
-        if not installed:args += ["--profile","continuation-1"]
+        if not installed:args += ["--profile",fixture_window("continuation-1")]
         if recover:args.append("--recover")
         if point:args += ["--inject-at",point]
         r=self.installed(args,preview["request"],expected=expected) if installed else self.call(args,preview["request"],expected=expected)
@@ -1519,8 +1664,15 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                         raise OSError("fixture removal race")
                     return original(path, *args, **kwargs)
                 with mock.patch.object(Path, operation, new=fail_removal):
-                    with self.assertRaisesRegex(ContractError, "HV2-WORKSPACE-DETACH"):
+                    with self.assertRaises(ContractError) as caught:
                         workspace_detach_apply(self.target, preview["request"], confirm_token=preview["confirm_token"], recover=True)
+                expected_code = "HV2-WINDOWS-IO" if sys.platform == "win32" else "HV2-WORKSPACE-DETACH"
+                self.assertEqual(expected_code, caught.exception.code)
+                if sys.platform == "win32":
+                    api, phase, kind = (("os.unlink/DeleteFileW", "file-removal", "file") if operation == "unlink"
+                                        else ("os.rmdir/RemoveDirectoryW", "directory-removal", "directory"))
+                    self.assertIn(f"api={api}; result=failed; phase={phase}; winerror=None; errno=None; target={kind}", caught.exception.message)
+                    self.assertIn("observed after failure; preserve actual prefix", caught.exception.message)
                 self.assertEqual(before, exact_snapshot(self.target))
                 self.detach_apply(preview, recover=True)
 
@@ -1539,8 +1691,11 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview()); self.accept_intent(); preview = self.detach_preview()
         self.detach_apply(preview, point="after-launcher", expected=75)
         git_commit_all(self.target, "fixture partial detach")
+        tracked = subprocess.run(["git", "-C", str(self.target), "ls-files", "-z"], check=True, capture_output=True).stdout.split(b"\0")
+        expected_bytes = {os.fsdecode(name): (self.target / os.fsdecode(name)).read_bytes() for name in tracked if name}
         clone = self.base / "partial-clone"
-        subprocess.run(["git", "clone", "-q", str(self.target), str(clone)], check=True, capture_output=True)
+        subprocess.run(["git", "-c", "core.autocrlf=false", "-c", "core.eol=lf", "clone", "-q", str(self.target), str(clone)], check=True, capture_output=True)
+        self.assertEqual(expected_bytes, {name: (clone / name).read_bytes() for name in expected_bytes})
         self.target = clone; before = exact_snapshot(self.target)
         self.assertEqual("partial", self.plain_detach(expected=14)["classification"])
         self.detach_apply(preview, recover=True, expected=65)
@@ -1549,15 +1704,15 @@ class ActualWorkspaceInitTests(unittest.TestCase):
     def test_detach_port_plain_audit_and_document_preservation(self):
         from hv2ref.product import verify_workspace_product
         subprocess.run(["git","init","-q",str(self.target)],check=True,capture_output=True)
-        guide=self.target/"project-guide.md";guide.write_text("Project-authored recovery notes.\n")
+        guide=self.target/"project-guide.md";guide.write_bytes(b"Project-authored recovery notes.\n")
         self.apply_init(self.preview());self.complete_work()
         bound=verify_workspace_product(self.target);release=Path(bound["release_path"])
         before=exact_snapshot(self.target);preview=self.detach_preview(installed=True)
         self.assertEqual("preview",preview["classification"]);self.assertEqual(before,exact_snapshot(self.target))
         self.assertEqual(bound["binding_ref"],preview["request"]["expected_binding_ref"])
-        managed_doc=str((release/"payload/docs/MANUAL-OPERATION.md").relative_to(self.target))
+        managed_doc=(release/"payload/docs/MANUAL-OPERATION.md").relative_to(self.target).as_posix()
         self.assertIn(managed_doc,[e["path"] for e in preview["request"]["remove"]])
-        self.assertIn("Before detach, retain a trusted independent source/manual",(self.source/"docs/REFERENCE.md").read_text())
+        self.assertIn("Before detach, retain a trusted independent source/manual",(self.source/"docs/REFERENCE.md").read_text(encoding="utf-8"))
         detached=self.detach_apply(preview,installed=True);self.assertEqual("detached",detached["classification"])
         self.assertFalse((self.target/managed_doc).exists());self.assertEqual(b"Project-authored recovery notes.\n",guide.read_bytes())
         after=exact_snapshot(self.target)
@@ -1604,10 +1759,10 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.assertEqual("HV2-WORKSPACE-PRODUCT",original_init["code"])
                 self.assertEqual("root is not ready",original_init["message"])
                 self.assertEqual(before,exact_snapshot(self.target))
-                for command in (["init","--profile","continuation-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","other","--observed-at",self.TIME],
-                                ["update","--profile","continuation-1","--target",self.target,"--source",self.source,"--operation-id","other","--observed-at",self.TIME],
-                                ["rollback","--profile","continuation-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME],
-                                ["detach","--profile","continuation-1","--target",self.target,"--operation-id","other","--observed-at",self.TIME]):
+                for command in (["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","other","--observed-at",self.TIME],
+                                ["update","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.source,"--operation-id","other","--observed-at",self.TIME],
+                                ["rollback","--profile",fixture_window("continuation-1"),"--target",self.target,"--operation-id","other","--observed-at",self.TIME],
+                                ["detach","--profile",fixture_window("continuation-1"),"--target",self.target,"--operation-id","other","--observed-at",self.TIME]):
                     error=json.loads(self.call(command,expected=65).stdout)
                     self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
                     # A fresh init plan is separately refused; original init replay above exercises the detached-root gate.
@@ -1771,11 +1926,11 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.assertEqual(before, exact_snapshot(self.target))
         staging = self.target / ".hrn/staging"; staging.rename(self.base / "preserved-staging")
         outside = self.base / "outside"; outside.mkdir(); (outside / "sentinel").write_bytes(b"external\n")
-        staging.symlink_to(outside, target_is_directory=True); before = exact_snapshot(self.base)
+        fixture_directory_link(staging, outside); before = exact_snapshot(self.base)
         status = json.loads(self.call(["status", "--target", self.target], expected=10).stdout)
         self.assertEqual("degraded", status["classification"])
-        self.assertEqual(status["error"], "HV2-WORKSPACE-CONTRACT")
-        self.assertEqual(status["message"], "wrong file type: staging")
+        self.assertEqual(status["error"], "HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-WORKSPACE-CONTRACT")
+        self.assertEqual(status["message"], "reparse point is unsupported" if sys.platform == "win32" else "wrong file type: staging")
         error = self.detach_preview(expected=65)
         self.assertEqual(error["code"], "HV2-WORKSPACE-PRODUCT")
         self.assertEqual(error["message"], "root is not ready")
@@ -1791,16 +1946,17 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 launcher = self.target / "colvia"
                 external = self.base / (form + "-external"); external.write_bytes(b"outside\n")
                 if form == "file": launcher.write_bytes(b"user-owned\n")
-                elif form == "symlink": launcher.symlink_to(external)
+                elif form == "symlink": fixture_unsafe_link(launcher, external)
                 elif form == "directory": launcher.mkdir()
                 else: (release / "payload/README.md").write_bytes(b"changed release\n")
                 before = exact_snapshot(self.base)
                 status = json.loads(self.call(["status", "--target", self.target], expected=10).stdout)
                 self.assertEqual("degraded", status["classification"])
                 error = self.detach_apply(preview, recover=True, expected=65)
-                expected_code = "HV2-WORK-CONTENT" if form == "symlink" else "HV2-WORKSPACE-PRODUCT"
-                expected_message = ("unsupported file type: colvia" if form == "symlink" else
-                                    "hardlinked product file: " + str(launcher) if form == "directory" else
+                expected_code = ("HV2-WINDOWS-PATH" if sys.platform == "win32" and form in ("symlink", "directory") else
+                                 "HV2-WORK-CONTENT" if form == "symlink" else "HV2-WORKSPACE-PRODUCT")
+                expected_message = (("reparse point is unsupported" if sys.platform == "win32" else "unsupported file type: colvia") if form == "symlink" else
+                                    ("read input is a directory" if sys.platform == "win32" else "hardlinked product file: " + str(launcher)) if form == "directory" else
                                     "detach remaining bytes changed; preserve")
                 self.assertEqual(error["code"], expected_code)
                 self.assertEqual(error["message"], expected_message)
@@ -1812,7 +1968,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         original = self.target; self.apply_init(self.preview()); self.accept_intent()
         preview = self.detach_preview(); self.detach_apply(preview, point="after-receipt", expected=75)
         foreign = self.base / "foreign"; foreign.mkdir(); self.target = foreign
-        args = ["init", "--profile", "continuation-1", "--target", foreign, "--source", self.source, "--authority-home-id", "foreign-home", "--operation-id", "init-foreign", "--observed-at", self.TIME]
+        args = ["init", "--profile", fixture_window("continuation-1"), "--target", foreign, "--source", self.source, "--authority-home-id", "foreign-home", "--operation-id", "init-foreign", "--observed-at", self.TIME]
         foreign_init = json.loads(self.call(args).stdout); self.apply_init(foreign_init)
         foreign_preview = self.detach_preview(); self.detach_apply(foreign_preview, point="after-receipt", expected=75)
         self.target = original; receipt = original / ".hrn/detached.json"; original_receipt = receipt.read_bytes()
@@ -1837,22 +1993,22 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.assertEqual(error["message"], message)
                 self.assertEqual(before, exact_snapshot(self.base))
         receipt.write_bytes(original_receipt)
-        home = original / ".hrn"; home.rename(self.base / "preserved-home"); home.symlink_to(foreign / ".hrn", target_is_directory=True)
+        home = original / ".hrn"; home.rename(self.base / "preserved-home"); fixture_directory_link(home, foreign / ".hrn")
         before = exact_snapshot(self.base)
         result = self.call(["status", "--target", original], expected=10)
         self.assertNotIn(b"Traceback", result.stderr)
         status = json.loads(result.stdout)
-        self.assertEqual(status["error"], "HV2-WORKSPACE-CONTRACT")
-        self.assertEqual(status["message"], "wrong file type: .hrn")
+        self.assertEqual(status["error"], ("HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-WORKSPACE-CONTRACT"))
+        self.assertEqual(status["message"], ("reparse point is unsupported" if sys.platform == "win32" else "wrong file type: .hrn"))
         error = self.detach_apply(preview, recover=True, expected=65)
-        self.assertEqual(error["code"], "HV2-WORKSPACE-CONTRACT")
-        self.assertEqual(error["message"], "wrong file type: .hrn")
+        self.assertEqual(error["code"], ("HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-WORKSPACE-CONTRACT"))
+        self.assertEqual(error["message"], ("reparse point is unsupported" if sys.platform == "win32" else "wrong file type: .hrn"))
         self.assertEqual(before, exact_snapshot(self.base))
-        home.unlink(); home.symlink_to(self.base / "preserved-home", target_is_directory=True)
+        fixture_unlink(home); fixture_directory_link(home, self.base / "preserved-home")
         before = exact_snapshot(self.base)
         error = self.detach_apply(preview, recover=True, expected=65)
-        self.assertEqual(error["code"], "HV2-WORKSPACE-CONTRACT")
-        self.assertEqual(error["message"], "wrong file type: .hrn")
+        self.assertEqual(error["code"], ("HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-WORKSPACE-CONTRACT"))
+        self.assertEqual(error["message"], ("reparse point is unsupported" if sys.platform == "win32" else "wrong file type: .hrn"))
         self.assertEqual(before, exact_snapshot(self.base))
 
     def test_review_switch_rejects_home_link_before_format_read(self):
@@ -1863,16 +2019,16 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         for kind in ("same-home-link","foreign-home-link","regular-file"):
             with self.subTest(kind=kind):
                 if kind=="regular-file": home.write_bytes(b"not a directory")
-                else: home.symlink_to(retained if kind=="same-home-link" else foreign,target_is_directory=True)
+                else: fixture_directory_link(home, retained if kind=="same-home-link" else foreign)
                 before=exact_snapshot(self.base)
                 with mock.patch("hv2ref.workspace._file_json",side_effect=AssertionError("read before root guard")) as read:
                     with self.assertRaises(ContractError) as caught:
                         workspace_switch_apply(self.target, preview["request"], source=self.candidate, confirm_token=preview["confirm_token"])
-                    self.assertEqual("HV2-WORKSPACE-CONTRACT",caught.exception.code)
-                    self.assertEqual("wrong file type: .hrn",caught.exception.message)
+                    self.assertEqual("HV2-WINDOWS-PATH" if sys.platform == "win32" and kind != "regular-file" else "HV2-WORKSPACE-CONTRACT",caught.exception.code)
+                    self.assertEqual("reparse point is unsupported" if sys.platform == "win32" and kind != "regular-file" else "wrong file type: .hrn",caught.exception.message)
                     read.assert_not_called()
                 self.assertEqual(before,exact_snapshot(self.base))
-                home.unlink()
+                fixture_unlink(home)
 
     def test_review_repair_rejects_home_link_before_format_read(self):
         from hv2ref.product import workspace_repair_apply
@@ -1882,16 +2038,16 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         for kind in ("same-home-link","foreign-home-link","regular-file"):
             with self.subTest(kind=kind):
                 if kind=="regular-file": home.write_bytes(b"not a directory")
-                else: home.symlink_to(retained if kind=="same-home-link" else foreign,target_is_directory=True)
+                else: fixture_directory_link(home, retained if kind=="same-home-link" else foreign)
                 before=exact_snapshot(self.base)
                 with mock.patch("hv2ref.workspace._file_json",side_effect=AssertionError("read before root guard")) as read:
                     with self.assertRaises(ContractError) as caught:
                         workspace_repair_apply(self.source, self.target, preview["request"], confirm_token=preview["confirm_token"])
-                    self.assertEqual("HV2-WORKSPACE-CONTRACT",caught.exception.code)
-                    self.assertEqual("wrong file type: .hrn",caught.exception.message)
+                    self.assertEqual("HV2-WINDOWS-PATH" if sys.platform == "win32" and kind != "regular-file" else "HV2-WORKSPACE-CONTRACT",caught.exception.code)
+                    self.assertEqual("reparse point is unsupported" if sys.platform == "win32" and kind != "regular-file" else "wrong file type: .hrn",caught.exception.message)
                     read.assert_not_called()
                 self.assertEqual(before,exact_snapshot(self.base))
-                home.unlink()
+                fixture_unlink(home)
 
     def test_review_partial_init_refuses_installed_intent_and_work_writes(self):
         preview = self.preview(); self.apply_init(preview, point="after-launcher", expected=75)
@@ -1982,13 +2138,13 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview()); self.accept_intent()
         preview = self.detach_preview(); self.detach_apply(preview, point="after-receipt", expected=75)
         home = self.target / ".hrn"; retained = self.base / "retained-home"
-        home.rename(retained); home.symlink_to(retained, target_is_directory=True)
+        home.rename(retained); fixture_directory_link(home, retained)
         before = exact_snapshot(self.base)
         with mock.patch("hv2ref.workspace._file_json", side_effect=AssertionError("format read attempted before home type guard")) as read:
             with self.assertRaises(ContractError) as caught:
                 workspace_detach_apply(self.target, preview["request"], confirm_token=preview["confirm_token"], recover=True)
-            self.assertEqual(caught.exception.code, "HV2-WORKSPACE-CONTRACT")
-            self.assertEqual(caught.exception.message, "wrong file type: .hrn")
+            self.assertEqual(caught.exception.code, ("HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-WORKSPACE-CONTRACT"))
+            self.assertEqual(caught.exception.message, ("reparse point is unsupported" if sys.platform == "win32" else "wrong file type: .hrn"))
             read.assert_not_called()
         self.assertEqual(before, exact_snapshot(self.base))
 
@@ -2044,8 +2200,8 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         inherited_detach = self.detach_preview(installed=True)
         git_commit_all(self.target, "fixture complete workspace")
         origin = self.target; clone = self.base / "clone"; worker = self.base / "worker"
-        subprocess.run(["git", "clone", "-q", str(origin), str(clone)], check=True, capture_output=True)
-        subprocess.run(["git", "-C", str(origin), "worktree", "add", "--detach", str(worker)], check=True, capture_output=True)
+        subprocess.run(["git", "-c", "core.autocrlf=false", "-c", "core.eol=lf", "clone", "-q", str(origin), str(clone)], check=True, capture_output=True)
+        subprocess.run(["git", "-c", "core.autocrlf=false", "-c", "core.eol=lf", "-C", str(origin), "worktree", "add", "--detach", str(worker)], check=True, capture_output=True)
         truth = {k:(v[0],v[1],bool(v[2] & 0o111)) for k,v in exact_snapshot(origin).items() if k.startswith((".hrn/work/", ".hrn/intents/")) and v[0] != "directory"}
         for target, topology, control in ((clone, "primary", True), (worker, "linked-worktree", False)):
             with self.subTest(topology=topology):
@@ -2061,7 +2217,9 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 self.assertEqual(1, status["intent_count"])
                 self.assertEqual(status, json.loads(self.call(["status", "--target", target]).stdout))
                 launcher = target / "colvia"
-                self.assertFalse(launcher.is_symlink()); self.assertTrue(launcher.stat().st_mode & 0o111)
+                self.assertFalse(launcher.is_symlink())
+                if sys.platform == "win32": self.assertFalse(launcher.stat().st_file_attributes & 1)
+                else: self.assertTrue(launcher.stat().st_mode & 0o111)
                 self.assertEqual((origin / "colvia").read_bytes(), launcher.read_bytes())
                 self.assertEqual(truth, {k:(v[0],v[1],bool(v[2] & 0o111)) for k,v in exact_snapshot(target).items() if k.startswith((".hrn/work/", ".hrn/intents/")) and v[0] != "directory"})
                 self.assertEqual(before, exact_snapshot(target))
@@ -2104,12 +2262,12 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 root = self.target / ".hrn"; fmt = root / "format.json"
                 if form.startswith("root-"):
                     saved = self.base / (form + "-saved"); root.rename(saved)
-                    if form == "root-link": root.symlink_to(saved, target_is_directory=True)
+                    if form == "root-link": fixture_directory_link(root, saved)
                     if form == "root-file": root.write_bytes(b"not a directory\n")
-                elif form == "format-missing": fmt.unlink()
+                elif form == "format-missing": fixture_unlink(fmt)
                 elif form == "format-link":
-                    saved = self.base / (form + "-saved"); fmt.rename(saved); fmt.symlink_to(saved)
-                elif form == "format-directory": fmt.unlink(); fmt.mkdir()
+                    saved = self.base / (form + "-saved"); fmt.rename(saved); fixture_unsafe_link(fmt, saved)
+                elif form == "format-directory": fixture_unlink(fmt); fmt.mkdir()
                 elif form == "format-malformed": fmt.write_bytes(b"{\n")
                 else:
                     value = load_json(fmt, require_canonical=True); value["authority_home_id"] = "another-home"
@@ -2123,7 +2281,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                     self.assertEqual(workspace_status(self.target), source)
                 else:
                     self.assertEqual("degraded", source["classification"])
-                    self.assertEqual("HV2-JSON-SYNTAX" if form == "format-malformed" else "HV2-WORKSPACE-CONTRACT", source["error"])
+                    self.assertEqual("HV2-WINDOWS-PATH" if sys.platform == "win32" and form in ("root-link", "format-link") else "HV2-JSON-SYNTAX" if form == "format-malformed" else "HV2-WORKSPACE-CONTRACT", source["error"])
                     if form == "format-identity": self.assertEqual("init plan/format mismatch", source["message"])
                     if form == "format-missing": self.assertEqual("not an exact bootstrap prefix", source["message"])
                 installed = json.loads(self.installed(["status"], expected=65 if form.startswith("root-") else 10).stdout)
@@ -2142,12 +2300,12 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                     home = self.target / ".hrn" / kind / oid; identity = home / "identity.json"
                     if form.startswith("home-"):
                         saved = self.base / (kind + "-" + form + "-saved"); home.rename(saved)
-                        if form == "home-link": home.symlink_to(saved, target_is_directory=True)
+                        if form == "home-link": fixture_directory_link(home, saved)
                         else: home.write_bytes(b"not a directory\n")
-                    elif form == "missing": identity.unlink()
+                    elif form == "missing": fixture_unlink(identity)
                     elif form == "link":
-                        saved = self.base / (kind + "-" + form + "-saved"); identity.rename(saved); identity.symlink_to(saved)
-                    elif form == "directory": identity.unlink(); identity.mkdir()
+                        saved = self.base / (kind + "-" + form + "-saved"); identity.rename(saved); fixture_unsafe_link(identity, saved)
+                    elif form == "directory": fixture_unlink(identity); identity.mkdir()
                     elif form == "malformed": identity.write_bytes(b"{\n")
                     else:
                         value = load_json(identity, require_canonical=True)
@@ -2156,12 +2314,13 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                     before = exact_snapshot(self.base)
                     source = json.loads(self.call(["status", "--target", self.target], expected=10).stdout)
                     self.assertEqual("degraded", source["classification"])
-                    self.assertEqual("HV2-JSON-SYNTAX" if form == "malformed" else ("HV2-WORKSPACE-CONTRACT" if form in ("home-link", "home-file", "link", "directory") else ("HV2-INTENT-RECORD" if kind == "intents" and form == "missing" else "HV2-WORK-RECORD")), source["error_code"])
+                    self.assertEqual("HV2-WINDOWS-PATH" if sys.platform == "win32" and form in ("home-link", "link") else "HV2-JSON-SYNTAX" if form == "malformed" else ("HV2-WORKSPACE-CONTRACT" if form in ("home-link", "home-file", "link", "directory") else ("HV2-INTENT-RECORD" if kind == "intents" and form == "missing" else "HV2-WORK-RECORD")), source["error_code"])
                     if kind == "intents" and form == "missing":
                         self.assertEqual("partial intent identity", source["message"])
                     self.assertEqual(source, json.loads(self.installed(["status"], expected=10).stdout))
                     self.assertEqual(before, exact_snapshot(self.base))
 
+    @posix_mechanism("POSIX chmod(0) read denial; does not claim Windows ACL-denial qualification")
     def test_port_authority_actual_permission_denial_remains_unavailable(self):
         self.assertNotEqual(0, os.geteuid(), "permission oracle requires a non-root runner")
         for subject in ("root", "format", "intent", "work"):
@@ -2230,7 +2389,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         fmt["authority_home_id"]="other";plan.update(authority_home_id="other",operation_id="other",format_sha256=hashlib.sha256(canonical_json_bytes(fmt)).hexdigest())
         fresh["confirm_token"]=hashlib.sha256(canonical_json_bytes(fresh["request"])).hexdigest()[:16]
         for response in (self.apply_init(fresh,expected=65),self.apply_init(init,recover=True,expected=65),
-                         self.call(["init","--profile","continuation-1","--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)):
+                         self.call(["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)):
             error=json.loads(response.stdout);self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
             self.assertEqual("no durable ownership plan; preserve existing root",error["message"])
         self.assertEqual(before,exact_snapshot(self.target))
@@ -2293,7 +2452,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def test_port_recovery_existing_root_refuses_authority_reissue(self):
         prepared=self.preview();(self.target/".hrn").mkdir();before=exact_snapshot(self.target)
-        response=self.call(["init","--profile","continuation-1","--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
+        response=self.call(["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
         error=json.loads(response.stdout);self.assertEqual("HV2-WORKSPACE-PRODUCT",error["code"])
         self.assertEqual("no durable ownership plan; preserve existing root",error["message"])
         applied=json.loads(self.apply_init(prepared,expected=65).stdout)
@@ -2396,10 +2555,10 @@ class ActualWorkspaceInitTests(unittest.TestCase):
                 if form=="truth":self.accept_intent()
                 elif form=="launcher":(self.target/"colvia").write_bytes(b"user changed launcher")
                 elif form=="unknown":(self.target/".hrn/product/user-data").mkdir()
-                elif form=="symlink":(self.target/"colvia").unlink();(self.target/"colvia").symlink_to(self.source/"colvia")
+                elif form=="symlink":fixture_unlink(self.target/"colvia");fixture_unsafe_link(self.target/"colvia", self.source/"colvia")
                 elif form=="hardlink":
                     from hv2ref.product import verify_workspace_product
-                    release=Path(verify_workspace_product(self.target)["release_path"]);(self.target/"colvia").unlink();os.link(release/"payload/colvia",self.target/"colvia")
+                    release=Path(verify_workspace_product(self.target)["release_path"]);fixture_unlink(self.target/"colvia");os.link(release/"payload/colvia",self.target/"colvia")
                 else:preview["confirm_token"]="wrong"
                 before=exact_snapshot(self.target);self.detach_apply(preview,expected=65);self.assertEqual(before,exact_snapshot(self.target))
                 self.assertFalse((self.target/".hrn/detached.json").exists())
@@ -2439,7 +2598,11 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());self.complete_work();preview=self.detach_preview();self.detach_apply(preview)
         subprocess.run(["git","-C",str(self.target),"add","."],check=True,capture_output=True)
         subprocess.run(["git","-c","maintenance.auto=false","-c","gc.auto=0","-C",str(self.target),"-c","user.name=Fixture","-c","user.email=fixture@example.invalid","commit","-qm","detached fixture"],check=True,capture_output=True)
-        clone=self.base/"clone";subprocess.run(["git","clone","-q",str(self.target),str(clone)],check=True,capture_output=True)
+        tracked = subprocess.run(["git", "-C", str(self.target), "ls-files", "-z"], check=True, capture_output=True).stdout.split(b"\0")
+        expected_bytes = {os.fsdecode(name): (self.target / os.fsdecode(name)).read_bytes() for name in tracked if name}
+        clone = self.base / "clone"
+        subprocess.run(["git", "-c", "core.autocrlf=false", "-c", "core.eol=lf", "clone", "-q", str(self.target), str(clone)], check=True, capture_output=True)
+        self.assertEqual(expected_bytes, {name: (clone / name).read_bytes() for name in expected_bytes})
         self.target=clone;before=exact_snapshot(self.target)
         self.assertEqual("detached",self.plain_detach()["classification"])
         self.assertEqual("detached",json.loads(self.call(["status","--target",self.target]).stdout)["classification"])
@@ -2449,7 +2612,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.apply_init(self.preview());initial=self.preview();preview=self.detach_preview();self.detach_apply(preview)
         before=exact_snapshot(self.target)
         self.apply_init(initial,recover=True,expected=65)
-        self.call(["init","--profile","continuation-1","--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)
+        self.call(["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.source,"--authority-home-id","other","--operation-id","other","--observed-at",self.TIME],expected=65)
         self.repair_preview(expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
@@ -2496,14 +2659,30 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
 
     def test_detach_and_repair_source_module_dispatch_is_defined_before_main(self):
-        self.apply_init(self.preview());(self.target/"colvia").chmod(0o644)
+        self.apply_init(self.preview())
+        launcher = self.target / "colvia"
+        if sys.platform == "win32":
+            launcher.write_bytes(launcher.read_bytes() + b"\n# synthetic damage\n")
+            # Isolated native entry cannot obtain the source from PYTHONPATH.
+            argv = [sys.executable, "-I", "-B", "-c",
+                    "import runpy,sys;sys.path.insert(0,sys.argv.pop(1));runpy.run_module('hv2ref.cli',run_name='__main__')",
+                    str(self.source / "src")]
+        else:
+            launcher.chmod(0o644)
+            argv = [sys.executable, "-B", "-m", "hv2ref.cli"]
         env = dict(os.environ, PYTHONPATH=str(self.source / "src"))
-        result=subprocess.run([sys.executable,"-B","-m","hv2ref.cli","repair","--target",str(self.target),"--source",str(self.source),
-                               "--backup",str(self.base/"backup"),"--operation-id","repair-a","--observed-at",self.TIME],capture_output=True,timeout=45,env=env)
-        self.assertEqual(0,result.returncode,(result.stdout+result.stderr).decode());self.repair_apply(json.loads(result.stdout))
-        result=subprocess.run([sys.executable,"-B","-m","hv2ref.cli","detach","--profile","continuation-1","--target",str(self.target),
-                               "--operation-id","detach-a","--observed-at",self.TIME],capture_output=True,timeout=45,env=env)
-        self.assertEqual(0,result.returncode,(result.stdout+result.stderr).decode());self.assertEqual("preview",json.loads(result.stdout)["classification"])
+        result = subprocess.run(argv + ["repair", "--target", str(self.target), "--source", str(self.source),
+                                "--backup", str(self.base / "backup"), "--operation-id", "repair-a", "--observed-at", self.TIME],
+                                capture_output=True, timeout=45, env=env)
+        self.assertEqual(0, result.returncode, (result.stdout + result.stderr).decode())
+        self.repair_apply(json.loads(result.stdout))
+        before = exact_snapshot(self.target)
+        result = subprocess.run(argv + ["detach", "--profile", fixture_window("continuation-1"), "--target", str(self.target),
+                                "--operation-id", "detach-a", "--observed-at", self.TIME],
+                                capture_output=True, timeout=45, env=env)
+        self.assertEqual(0, result.returncode, (result.stdout + result.stderr).decode())
+        self.assertEqual("preview", json.loads(result.stdout)["classification"])
+        self.assertEqual(before, exact_snapshot(self.target))
 
 
     def test_contract_cli_classification_and_future_format_preserve_target(self):
@@ -2527,7 +2706,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.assertEqual(read_work(self.target,"work-a")["state"],"completed")
         with self.assertRaises(ContractError):
             WorkStore(self.target).prepare("work-a",action="accept",actor="owner",reason="cannot revive",request_id="after-detach",observed_at=self.TIME)
-        self.call(["rollback","--profile","continuation-1","--target",self.target,"--operation-id","after-detach","--observed-at",self.TIME],expected=65)
+        self.call(["rollback","--profile",fixture_window("continuation-1"),"--target",self.target,"--operation-id","after-detach","--observed-at",self.TIME],expected=65)
         self.assertEqual(before,exact_snapshot(self.target))
 
 
@@ -2642,12 +2821,12 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
     TIME = "2026-01-01T00:00:00Z"
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="window-lifecycle-")
+        self.temp = fixture_temporary_directory(prefix="window-lifecycle-")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         self.target = self.root / "project"
         self.target.mkdir()
-        self.source = source_root()
+        self.source = fixture_source()
 
     def initialize(self, target=None):
         from hv2ref.product import workspace_init_preview, workspace_init_apply
@@ -2673,12 +2852,14 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
     def test_candidate_declaration_binds_inventory(self):
         from hv2ref.product import workspace_candidate
         candidate = workspace_candidate(self.source)
-        self.assertEqual('continuation-1', candidate['inventory']['inventory_id'])
+        self.assertEqual(fixture_window('continuation-1'), candidate['inventory']['inventory_id'])
         self.assertEqual(30, len(candidate['inventory']['entries']))
         self.assertEqual(candidate['release_ref']['sha256'], hashlib.sha256(canonical_json_bytes(candidate['inventory'])).hexdigest())
         source = self.changed_source()
         launcher = source / 'colvia'
-        launcher.write_bytes(launcher.read_bytes().replace(b'WORKSPACE_INVENTORY_ID = "continuation-1"', b'# missing declaration'))
+        declaration = ('WORKSPACE_INVENTORY_ID = "' + fixture_window('continuation-1') + '"').encode()
+        original = launcher.read_bytes();self.assertEqual(1, original.count(declaration))
+        launcher.write_bytes(original.replace(declaration, b'# missing declaration'))
         with self.assertRaises(ContractError): workspace_candidate(source)
 
     def test_fresh_init_read_only_status_and_declared_window(self):
@@ -2688,7 +2869,7 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
         result = workspace_status(self.target)
         self.assertEqual('pass', result['classification'])
         binding = load_json(self.target / '.hrn/product/binding.json')
-        self.assertEqual('continuation-1', binding['active_release']['inventory_id'])
+        self.assertEqual(fixture_window('continuation-1'), binding['active_release']['inventory_id'])
         self.assertEqual(before, exact_snapshot(self.target))
 
     def test_source_profile_is_explicit_and_old_profile_refused(self):
@@ -2752,7 +2933,7 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
                 result = workspace_switch_apply(target, preview['request'], source=self.changed_source(), confirm_token=preview['confirm_token'], recover=True)
                 self.assertIn(result['classification'], ('updated','replayed'))
                 self.assertEqual(truth, (target / '.hrn/format.json').read_bytes())
-                self.assertEqual('continuation-1', verify_workspace_product(target)['inventory']['inventory_id'])
+                self.assertEqual(fixture_window('continuation-1'), verify_workspace_product(target)['inventory']['inventory_id'])
 
     def test_exact_repair_and_detach(self):
         from hv2ref.product import workspace_repair_preview, workspace_repair_apply, workspace_detach_preview, workspace_detach_apply, workspace_detached_status
@@ -2776,7 +2957,7 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
 
 
 
-@unittest.skipUnless(runtime_supported(), "requires the supported native runtime")
+@unittest.skipUnless(runtime_supported(fixture_window()), "requires the supported native runtime")
 class ProductLifecycleOutputLimitTests(unittest.TestCase):
     """Ordinary installed writers seed history; limit injection stays in this process."""
     TIME = "2026-01-01T00:00:00Z"
@@ -2784,10 +2965,10 @@ class ProductLifecycleOutputLimitTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from hv2ref import product
-        cls.temp = tempfile.TemporaryDirectory(prefix="lifecycle-limit-seeds-")
+        cls.temp = fixture_temporary_directory(prefix="lifecycle-limit-seeds-")
         cls.addClassCleanup(cls.temp.cleanup)
         cls.root = Path(cls.temp.name).resolve()
-        cls.source = source_root()
+        cls.source = fixture_source()
         cls.candidate = cls.root / "candidate"
         for name in product.CONTINUATION_MANAGED_PATHS:
             destination = cls.candidate / name
@@ -2822,7 +3003,7 @@ class ProductLifecycleOutputLimitTests(unittest.TestCase):
 
     def case(self, action, git, *, anchor=True):
         from hv2ref import product
-        temp = tempfile.TemporaryDirectory(prefix="lifecycle-limit-case-")
+        temp = fixture_temporary_directory(prefix="lifecycle-limit-case-")
         self.addCleanup(temp.cleanup)
         target = Path(temp.name).resolve() / "project"
         shutil.copytree(self.templates[git], target)
@@ -2898,7 +3079,7 @@ class ProductLifecycleOutputLimitTests(unittest.TestCase):
                 after = exact_snapshot(target)
                 self.assertEqual({".hrn/locks", ".hrn/locks/writer.lock"}, set(after) - set(before))
                 self.assertEqual("directory", after[".hrn/locks"][0])
-                self.assertEqual(("file", hashlib.sha256(b"").hexdigest(), 0o600), after[".hrn/locks/writer.lock"])
+                self.assertEqual(("file", hashlib.sha256(b"").hexdigest(), 0o666 if sys.platform == "win32" else 0o600), after[".hrn/locks/writer.lock"])
                 self.assertEqual(before, {key:value for key,value in after.items() if key in before})
 
     def test_under_limit_round_trip(self):

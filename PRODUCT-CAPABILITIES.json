@@ -22,7 +22,7 @@
       "status": "development-bounded-synthetic"
     },
     {
-      "boundary": "cooperating linked workers; one serialized cooperating control writer; Owner default with exact granted ordinary accept exception; general usability and real-project multi-worker efficiency unverified; verified checkout-1, entry-1, delegation-1 or continuation-1 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
+      "boundary": "cooperating linked workers; one serialized cooperating control writer; Owner default with exact granted ordinary accept exception; general usability and real-project multi-worker efficiency unverified; verified checkout-1, entry-1, delegation-1, continuation-1 or windows-2 only: unchanged explicit text/eol=crlf checkout entries only, with exact raw-byte proof; changed converted files and arbitrary Git filters unsupported",
       "evidence": "source contains worker integration, process interruption/contention and checkout-byte fixtures; exact-candidate qualification and actual multi-worker use require separately identified evidence",
       "fallback": "one editing Work in control checkout",
       "id": "same-repository-parallel-integration",
@@ -63,9 +63,16 @@
       "fallback": "preserve exact records and original tickets; trusted independent read-only view; no guessed current or history reset",
       "id": "work-continuation",
       "status": "development-in-progress"
+    },
+    {
+      "boundary": "explicit prepared windows-2 source; 30 paths including continuation; lifecycle schema6; fresh and same-window only; admitted native Windows/CPython architecture pair and local NTFS; unchanged Windows content and read-only policy; no predecessor or cross-OS migration",
+      "evidence": "Integration portable checks are scoped development evidence. Prior Windows-1 native results do not qualify this Windows-2 candidate; native Win32, lifecycle and final matrix evidence remain required.",
+      "fallback": "preserve original requests and exact matching recovery source; independent compatible read-only inspection",
+      "id": "windows-native-runtime",
+      "status": "development-in-progress"
     }
   ],
-  "evidence_as_of": "2026-10-07",
+  "evidence_as_of": "2026-10-19",
   "internal_lineage": "Harness v2",
   "public_version": null,
   "record_type": "product-capability-declaration",

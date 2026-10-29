@@ -34,16 +34,80 @@ SUPPORTED_PYTHON_STRINGS = tuple(".".join(map(str, version)) for version in SUPP
 SUPPORTED_PYTHON_TEXT = ", ".join(SUPPORTED_PYTHON_STRINGS)
 
 
-def runtime_supported() -> bool:
+
+def windows_runtime_observation() -> dict:
+    """Observe the actual Windows client and process pair, never just a profile."""
+    result = {"supported": False, "classification": "unsupported", "platform": sys.platform}
+    if sys.platform != "win32":
+        result["reason"] = "windows-2 requires native Windows"
+        return result
+    try:
+        import ctypes as C
+        from ctypes import wintypes as W
+        import sysconfig
+        kernel = C.WinDLL("kernel32", use_last_error=True)
+        process = kernel.GetCurrentProcess
+        process.argtypes, process.restype = [], W.HANDLE
+        machine = kernel.IsWow64Process2
+        machine.argtypes, machine.restype = [W.HANDLE, C.POINTER(W.USHORT), C.POINTER(W.USHORT)], W.BOOL
+        process_machine, native_machine = W.USHORT(), W.USHORT()
+        if not machine(process(), C.byref(process_machine), C.byref(native_machine)):
+            raise C.WinError(C.get_last_error())
+        class Version(C.Structure):
+            _fields_ = [("size", W.DWORD), ("major", W.DWORD), ("minor", W.DWORD),
+                        ("build", W.DWORD), ("platform", W.DWORD), ("service_pack", W.WCHAR * 128),
+                        ("sp_major", W.WORD), ("sp_minor", W.WORD), ("suite", W.WORD),
+                        ("product_type", W.BYTE), ("reserved", W.BYTE)]
+        version = Version()
+        version.size = C.sizeof(version)
+        query = C.WinDLL("ntdll").RtlGetVersion
+        query.argtypes, query.restype = [C.POINTER(Version)], W.LONG
+        status = query(C.byref(version))
+        if status != 0:
+            result.update(classification="unknown", reason="RtlGetVersion failed", ntstatus=int(status))
+            return result
+        result.update(os_version=[version.major, version.minor, version.build],
+                      product_type=int(version.product_type), process_machine=int(process_machine.value),
+                      native_machine=int(native_machine.value), pointer_bits=C.sizeof(C.c_void_p) * 8,
+                      implementation=sys.implementation.name, python=list(sys.version_info[:3]),
+                      releaselevel=sys.version_info.releaselevel,
+                      free_threaded=bool(sysconfig.get_config_var("Py_GIL_DISABLED")),
+                      process_platform=sysconfig.get_platform())
+        result["supported"] = (version.major == 10 and version.build >= 22000 and version.product_type == 1
+                               and process_machine.value == 0
+                               and {"win-amd64": 0x8664, "win-arm64": 0xAA64}.get(result["process_platform"]) == native_machine.value
+                               and C.sizeof(C.c_void_p) == 8 and sys.implementation.name == "cpython"
+                               and sys.version_info[:3] in {(3, 14, 6), (3, 14, 7)}
+                               and sys.version_info.releaselevel == "final" and not result["free_threaded"])
+        result["classification"] = "supported" if result["supported"] else "unsupported"
+        result["reason"] = "native tuple admitted" if result["supported"] else "OS/process/Python tuple is outside windows-2 policy"
+    except (AttributeError, OSError, ValueError) as exc:
+        result.update(classification="unknown", reason=type(exc).__name__, winerror=getattr(exc, "winerror", None))
+    return result
+
+
+def runtime_supported(window: str | None = None) -> bool:
     """Qualified final, GIL-enabled CPython builds; not interpreter authentication."""
+    if window == "windows-2":
+        return windows_runtime_observation()["supported"]
+    if sys.platform == "win32":
+        return False
     return (sys.implementation.name == "cpython"
             and sys.version_info[:3] in SUPPORTED_PYTHON_VERSIONS
             and getattr(sys.version_info, "releaselevel", None) == "final"
             and not sysconfig.get_config_var("Py_GIL_DISABLED"))
 
 
-def require_supported_runtime() -> None:
-    if not runtime_supported():
+def require_supported_runtime(window: str | None = None) -> None:
+    if window == "windows-2" or sys.platform == "win32":
+        if window != "windows-2":
+            raise ContractError("HV2-WORKSPACE-RUNTIME", "native Windows mutation requires a verified windows-2 window")
+        observed = windows_runtime_observation()
+        if not observed["supported"]:
+            raise ContractError("HV2-WORKSPACE-RUNTIME", "windows-2 runtime " + observed["classification"] + ": " + observed["reason"])
+        if not sys.flags.isolated or not sys.dont_write_bytecode:
+            raise ContractError("HV2-WORKSPACE-RUNTIME", "windows-2 mutation requires explicit allowed Python -I -B")
+    if not runtime_supported(window):
         raise ContractError("HV2-WORKSPACE-RUNTIME", f"mutation requires final GIL-enabled CPython {SUPPORTED_PYTHON_TEXT}; preserve bytes and use a supported runtime")
 
 
@@ -52,6 +116,9 @@ def _error(detail: str) -> ContractError:
 
 
 def _exists(path: Path) -> bool:
+    if sys.platform == "win32":
+        from .jsonio import windows_path_observation
+        return windows_path_observation(path, allow_missing=True)["exists"]
     try:
         path.lstat()
         return True
@@ -60,6 +127,9 @@ def _exists(path: Path) -> bool:
 
 
 def _require_kind(path: Path, directory: bool) -> None:
+    if sys.platform == "win32":
+        from .jsonio import windows_path_observation
+        windows_path_observation(path)
     mode = path.lstat().st_mode
     valid = stat.S_ISDIR(mode) if directory else stat.S_ISREG(mode)
     if stat.S_ISLNK(mode) or not valid:
@@ -111,8 +181,13 @@ def validate_format(value: Any) -> dict[str, Any]:
     return value
 
 
-def safe_target(target: Path) -> Path:
-    absolute = Path(os.path.abspath(target))
+def safe_target(target: Path, *, mutation: bool = False) -> Path:
+    if sys.platform == "win32":
+        from .jsonio import _windows_absolute, windows_path_observation
+        absolute = _windows_absolute(target)
+        windows_path_observation(absolute, mutation=mutation)
+    else:
+        absolute = Path(os.path.abspath(target))
     try:
         for part in reversed((absolute, *absolute.parents)):
             if _exists(part):
@@ -217,9 +292,17 @@ class _DetachTopologyObservation(_TopologyObservation):
 
 
 def _classify_target(target: Path, *, mutation: bool = False, _topology_observation=None) -> dict[str, str]:
-    target = safe_target(target)
+    target = safe_target(target, mutation=mutation)
+    if mutation and sys.platform == "win32":
+        from .jsonio import windows_path_observation
+        windows_path_observation(target, mutation=True)
     if any(any(p.name.casefold() == ROOT_NAME.casefold() for p in parent.iterdir()) for parent in target.parents):
         raise ContractError("HV2-WORKSPACE-TARGET", "nested workspace authority is unsupported")
+    if sys.platform == "win32":
+        from .jsonio import windows_path_observation
+        for ancestor in (target, *target.parents):
+            if _exists(ancestor / ".git"):
+                windows_path_observation(ancestor / ".git")
     try:
         env = git_environment()
         raw = (_topology_probe(target, env) if _topology_observation is None else
@@ -241,6 +324,9 @@ def _classify_target(target: Path, *, mutation: bool = False, _topology_observat
     lines = os.fsdecode(stdout).splitlines()
     if len(lines) not in {3, 4}:
         raise ContractError("HV2-WORKSPACE-TARGET", "ambiguous Git topology")
+    if sys.platform == "win32":
+        for value in lines[:3]:
+            windows_path_observation(Path(value))
     top, git_dir, common_dir = (Path(p).resolve(strict=True) for p in lines[:3])
     if top != target:
         kind = "subdirectory"
@@ -342,16 +428,16 @@ def inspect_root(target: Path) -> dict[str, Any]:
 
 def _validate_plan_shape(plan: Any) -> None:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5) or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not all(_id(plan[k]) for k in ("operation_id", "authority_home_id")) or not _text(plan["created_at"]) or not all(_sha(plan[k]) for k in ("target_fingerprint", "format_sha256")):
         raise _error("invalid init identity or digest")
     if plan["expected_binding_ref"] is not None or any(plan[k] != [] for k in ("truth_refs", "remove", "preserve")):
         raise _error("invalid fresh init claims")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1"}):
+    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2"}):
         raise _error("invalid init release")
-    if plan["schema_version"] != (5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
+    if plan["schema_version"] != (6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
         raise _error("init schema/window pair")
 
 
@@ -366,10 +452,18 @@ def _bootstrap_prefix(root: Path) -> None:
 
 
 def _durable_directory(path: Path) -> None:
+    if sys.platform == "win32":
+        from .jsonio import windows_path_observation
+        windows_path_observation(path, mutation=True, allow_missing=True)
     try:
         path.mkdir()
     except FileExistsError:
         _require_kind(path, True)
+    except OSError as exc:
+        if sys.platform == "win32":
+            from .jsonio import _windows_api
+            raise _windows_api().failure("CreateDirectoryW", "directory-publication", getattr(exc, "winerror", None)) from exc
+        raise
     sync_directory(path.parent)
     sync_directory(path)
 
@@ -379,8 +473,8 @@ def _write_exact(path: Path, data: bytes) -> None:
         _require_kind(path, False)
         if path.read_bytes() != data:
             raise _error(f"immutable mismatch: {path.name}; preserve torn/modified bytes for explicit manual disposition")
-        with path.open("rb") as handle:
-            os.fsync(handle.fileno())
+        from .jsonio import sync_existing_file
+        sync_existing_file(path)
         sync_directory(path.parent)
         return
     write_new_bytes(path, data)
@@ -388,7 +482,7 @@ def _write_exact(path: Path, data: bytes) -> None:
 
 def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[str, Any]:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5) or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not _id(plan["operation_id"]) or plan["authority_home_id"] != value["authority_home_id"] or not _text(plan["created_at"]):
         raise _error("init plan identity")
@@ -397,9 +491,9 @@ def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[
     if plan["expected_binding_ref"] is not None or plan["truth_refs"] != [] or plan["remove"] != [] or plan["preserve"] != []:
         raise _error("fresh init plan cannot claim existing truth")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1"}):
+    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2"}):
         raise _error("init plan candidate")
-    if plan["schema_version"] != (5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
+    if plan["schema_version"] != (6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
         raise _error("init schema/window pair")
     if release["id"] != "product-release-" + release["sha256"][:24]:
         raise _error("init plan release identity")
@@ -412,7 +506,9 @@ def bootstrap_root(target: Path, plan: dict[str, Any], value: dict[str, Any], *,
 No installed entry calls this yet. Each retry is explicit and exact; detached or
 unknown state is never adopted. Process crash tests do not establish power-loss safety.
 """
-    require_supported_runtime()
+    # The init record declares the policy; the operating system never selects it.
+    _validate_plan_shape(plan)
+    require_supported_runtime(plan["candidate_release"]["inventory_id"])
     target = Path(classify_target(target, mutation=True)["target"])
     if _root_aliases(target):
         raise _error("case-alias of workspace root; preserve existing path")
@@ -422,6 +518,9 @@ unknown state is never adopted. Process crash tests do not establish power-loss 
     if inject_at is not None and inject_at not in points:
         raise _error("unknown crash point")
     root = target / ROOT_NAME
+    from .jsonio import windows_preflight_files
+    windows_preflight_files([root / "product/init-plan.json", root / "format.json", root / ".gitignore",
+                             root / "product", root / "intents", root / "work"])
     if _exists(root):
         if not recover:
             raise _error("existing root requires explicit recovery")
@@ -475,6 +574,29 @@ unknown state is never adopted. Process crash tests do not establish power-loss 
 _guard_state = threading.local()
 
 
+def _guard_runtime_window(target: Path) -> str | None:
+    """Read immutable policy before scratch creation; never authorizes a write.
+
+The caller still verifies the current product/records under the common guard.
+Init policy is stable within windows-2; its cross-window transitions are forbidden.
+"""
+    initial = target / ROOT_NAME / "product/init-plan.json"
+    if _exists(initial):
+        plan = _file_json(initial)
+        _validate_plan_shape(plan)
+        return plan["candidate_release"]["inventory_id"]
+    detached = target / ROOT_NAME / "detached.json"
+    if _exists(detached):
+        receipt = _file_json(detached)
+        if receipt.get("schema_version") == 6:
+            from .product import _detach_plan_shape, _detach_receipt
+            plan = _detach_plan_shape(receipt.get("plan"), _file_json(target / ROOT_NAME / "format.json"))
+            if receipt != _detach_receipt(plan):
+                raise _error("detach policy receipt mismatch")
+            return "windows-2"
+    return None
+
+
 @contextmanager
 def writer_guard(target: Path, *, purpose: str = "work"):
     """One stable outer lock for normal writes or exact lifecycle recovery.
@@ -482,7 +604,9 @@ def writer_guard(target: Path, *, purpose: str = "work"):
 Recovery purpose admits only a detach candidate, never arbitrary degraded bytes.
 The caller verifies the receipt and complete operation under the same guard.
 """
-    require_supported_runtime()
+    target = safe_target(target)
+    window = _guard_runtime_window(target)
+    require_supported_runtime(window)
     allowed = {"work": {"root-ready"}, "detach-recovery": {"detach-candidate"}}
     if purpose not in allowed:
         raise _error("unsupported guard purpose")
@@ -498,6 +622,9 @@ The caller verifies the receipt and complete operation under the same guard.
     try:
         with exclusive_file_lock(root / "locks" / "writer.lock"):
             classify_target(target, mutation=True)
+            if _guard_runtime_window(target) != window:
+                raise _error("workspace policy changed while acquiring guard")
+            require_supported_runtime(window)
             if inspect_root(target)["classification"] not in allowed[purpose]:
                 raise _error("workspace changed while acquiring guard")
             yield

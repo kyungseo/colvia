@@ -1,5 +1,15 @@
 """Raw checkout evidence with a bounded unchanged explicit CRLF exception."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_is_link,
+    fixture_snapshot,
+    fixture_snapshot_paths,
+    fixture_unlink,
+    fixture_unsafe_link,
+    fixture_window,
+    posix_mechanism,
+)
+import sys
 
 import json
 import unittest
@@ -17,7 +27,7 @@ class UnchangedCrlfTests(unittest.TestCase):
         # Explicit window double for proof tests; installed cases are separate.
         self.store = WorkStore(self.target, lambda target: {
             "binding_ref": self.binding.copy(), "launcher_sha256": None,
-            "inventory_id": "checkout-1"})
+            "inventory_id": fixture_window("checkout-1")})
     git = fixtures.WorkerPublicationTests.git
     commit_control = fixtures.WorkerPublicationTests.commit_control
     bind = fixtures.WorkerPublicationTests.bind
@@ -30,8 +40,55 @@ class UnchangedCrlfTests(unittest.TestCase):
     apply = fixtures.WorkerPublicationTests.apply
     bytes = fixtures.WorkerPublicationTests.bytes
 
+
+    def doCleanups(self):
+        # Capture failed synthetic bytes before TemporaryDirectory removes them.
+        result = getattr(getattr(self, "_outcome", None), "result", None)
+        failed = list(getattr(result, "errors", ())) + list(getattr(result, "failures", ()))
+        if any(test is self for test, _ in failed):
+            import hashlib
+            import os
+            from pathlib import Path
+            import stat
+
+            files = {}
+            for side in ("target", "worker"):
+                root = getattr(self, side, None)
+                files[side] = {}
+                for name in (".gitattributes", "a", "unchanged.bat"):
+                    if root is None:
+                        files[side][name] = {"unavailable": "fixture root not created"}
+                        continue
+                    try:
+                        path = root / name
+                        observed = path.lstat()
+                        if not stat.S_ISREG(observed.st_mode) or getattr(observed, "st_file_attributes", 0) & 1024:
+                            files[side][name] = {"unavailable": "not an ordinary fixture file"}
+                            continue
+                        raw = path.read_bytes()
+                        files[side][name] = {"hex": raw.hex(), "size_bytes": len(raw),
+                            "sha256": hashlib.sha256(raw).hexdigest(), "filesystem_mode": stat.S_IMODE(observed.st_mode)}
+                    except FileNotFoundError:
+                        files[side][name] = {"missing": True}
+            evidence = {"test": self.id(), "phase": "before-cleanup", "files": files,
+                "different_paths": [name for name in files["target"]
+                    if files["target"][name] != files["worker"][name]],
+                "manifest_trees": getattr(self, "_fixture_manifest_trees", None)}
+            encoded = json.dumps(evidence, sort_keys=True)
+            print("CRLF_FIXTURE_BEFORE_CLEANUP " + encoded, flush=True)
+            if stat.S_ISREG(os.fstat(sys.stdout.fileno()).st_mode):
+                os.fsync(sys.stdout.fileno())
+            output = os.environ.get("COLVIA_FIXTURE_EVIDENCE_ROOT")
+            if output:
+                destination = Path(output) / ("crlf-failure-" + self._testMethodName + ".json")
+                with destination.open("x", encoding="utf-8") as stream:
+                    stream.write(encoded + "\n")
+                    stream.flush()
+                    os.fsync(stream.fileno())
+        return super().doCleanups()
+
     def crlf_input(self):
-        (self.target / ".gitattributes").write_bytes(b"*.bat text eol=crlf\n")
+        (self.target / ".gitattributes").write_bytes(b"* -text\n*.bat text eol=crlf\n")
         (self.target / "unchanged.bat").write_bytes(b"@echo off\r\necho fixture\r\n")
 
     def test_unchanged_crlf_start_submit_accept_keeps_exact_checkout_bytes(self):
@@ -43,13 +100,13 @@ class UnchangedCrlfTests(unittest.TestCase):
         self.assertEqual("review", self.publish(result, worker=self.worker)["state"])
         self.assertEqual("completed", self.apply(self.prepare())["state"])
         self.assertEqual(raw, (self.target / "unchanged.bat").read_bytes())
-        self.assertEqual(result[1]["result"], snapshot(self.target))
+        self.assertEqual(result[1]["result"], fixture_snapshot(self.target))
 
     def baseline_from_current(self, scope=None):
         scope = scope or ["a"]
         oid = self.git(self.target, "rev-parse", "HEAD")
         self.git(self.target, "branch", "-f", "retained-base", oid)
-        tree = snapshot(self.target)
+        tree = fixture_snapshot(self.target)
         manifest = make_manifest(tree, tree, scope=scope, base_commit=oid, candidate_commit=oid,
                                  base_retention_ref="refs/heads/retained-base", candidate_retention_ref="refs/heads/retained-base")
         proposal = self.proposal(); proposal[0]["scope"] = scope
@@ -62,8 +119,9 @@ class UnchangedCrlfTests(unittest.TestCase):
         after = self.bytes()
         # A first writer may create its ordinary empty scratch lock on refusal.
         # Project content, authority and every pre-existing byte must stay exact.
-        if ".hrn/locks/writer.lock" not in before:
-            self.assertEqual(b"", after.pop(".hrn/locks/writer.lock", b""))
+        lock_path = (self.target / ".hrn" / "locks" / "writer.lock").relative_to(self.target).as_posix()
+        if lock_path not in before:
+            self.assertEqual(b"", after.pop(lock_path, b""))
         self.assertEqual(before, after)
         self.assertFalse((self.target / ".hrn/work/work-a").exists())
 
@@ -133,7 +191,14 @@ class UnchangedCrlfTests(unittest.TestCase):
         self.git(self.target, "worktree", "add", "-q", "-b", "retained-candidate", str(self.worker), start[1]["base_commit"])
         (self.worker / path).write_bytes(raw)
         self.git(self.worker, "add", path); self.git(self.worker, "commit", "-qm", "fixture result")
-        manifest = make_manifest(start[1]["base"], snapshot(self.worker), scope=scope,
+        worker_tree = fixture_snapshot(self.worker)
+        self._fixture_manifest_trees = {"base": start[1]["base"], "result": worker_tree}
+        entries = {side: {entry["path"]: entry for entry in tree["entries"]}
+                   for side, tree in self._fixture_manifest_trees.items()}
+        changed = {name for name in entries["base"].keys() | entries["result"].keys()
+                   if entries["base"].get(name) != entries["result"].get(name)}
+        self.assertEqual({path}, changed, "fixture changed unexpected paths before manifest construction")
+        manifest = make_manifest(start[1]["base"], worker_tree, scope=scope,
                                  base_commit=start[1]["base_commit"], candidate_commit=self.git(self.worker, "rev-parse", "HEAD"),
                                  base_retention_ref="refs/heads/retained-base", candidate_retention_ref="refs/heads/retained-candidate")
         result = self.proposal("submit-result"); result[0]["scope"] = scope
@@ -147,7 +212,7 @@ class UnchangedCrlfTests(unittest.TestCase):
         self.assertEqual(before, self.bytes()); self.assertEqual(graph, read_work(self.target, "work-a"))
 
     def test_committed_attribute_change_blocks_exception_even_if_effective_rule_matches(self):
-        result = self.edited_result(".gitattributes", b"*.bat text eol=crlf\n# changed policy bytes\n")
+        result = self.edited_result(".gitattributes", b"* -text\n*.bat text eol=crlf\n# changed policy bytes\n")
         before = self.bytes()
         with self.assertRaises(ContractError):
             self.publish(result, worker=self.worker)
@@ -179,7 +244,7 @@ class UnchangedCrlfTests(unittest.TestCase):
         self.assertEqual("completed", self.apply(self.prepare())["state"])
         self.assertEqual(binary, (self.target / "asset.bin").read_bytes())
         self.assertEqual(b"worker result\n", (self.target / "a").read_bytes())
-        self.assertEqual(result[1]["result"], snapshot(self.target))
+        self.assertEqual(result[1]["result"], fixture_snapshot(self.target))
 
     def test_recovery_retains_crlf_and_refuses_outside_drift(self):
         self.crlf_input(); result = self.start_and_result(); self.publish(result, worker=self.worker)
@@ -195,31 +260,42 @@ class UnchangedCrlfTests(unittest.TestCase):
         self.worker.rename(self.worker.with_name("worker-unavailable"))
         self.assertEqual("completed", self.apply(prepared)["state"])
         self.assertEqual(raw, (self.target / "unchanged.bat").read_bytes())
-        self.assertEqual(result[1]["result"], snapshot(self.target))
+        self.assertEqual(result[1]["result"], fixture_snapshot(self.target))
 
     def test_verified_window_gate_and_view_share_the_same_proof(self):
         from hv2ref.work import verify_worker_sources
         from hv2ref.view import _worker_inspection
         self.crlf_input(); manifest = self.baseline()[1]
-        for window in (None, 'human-1', 'worker-1', 'umbrella-1', 'planning-1', 'unknown'):
+        legacy_windows = ('checkout-1', 'entry-1', 'delegation-1')
+        rejected_windows = (None, 'human-1', 'worker-1', 'umbrella-1', 'planning-1', 'unknown')
+        # Retained-source proof is separate from current-content/native authority.
+        allowed_windows = legacy_windows + (('windows-2',) if sys.platform == 'win32' else ())
+        for window in rejected_windows:
             with self.subTest(window=window), self.assertRaises(ContractError):
                 verify_worker_sources(self.target, manifest, verified_inventory_id=window)
             observed = _worker_inspection(self.target, manifest, {'launcher_sha256':None,'inventory':{'inventory_id':window}})
             self.assertIsNotNone(observed['source_error'])
-        self.assertEqual({},verify_worker_sources(self.target, manifest, verified_inventory_id='checkout-1'))
-        self.assertIsNone(_worker_inspection(self.target, manifest, {'launcher_sha256':None,'inventory':{'inventory_id':'checkout-1'}})['source_error'])
-        self.assertEqual({},verify_worker_sources(self.target,manifest,verified_inventory_id='entry-1'))
-        self.assertIsNone(_worker_inspection(self.target,manifest,{'launcher_sha256':None,'inventory':{'inventory_id':'entry-1'}})['source_error'])
-        self.assertEqual({},verify_worker_sources(self.target,manifest,verified_inventory_id='delegation-1'))
-        self.assertIsNone(_worker_inspection(self.target,manifest,{'launcher_sha256':None,'inventory':{'inventory_id':'delegation-1'}})['source_error'])
+        for window in allowed_windows:
+            with self.subTest(window=window):
+                self.assertEqual({}, verify_worker_sources(self.target, manifest, verified_inventory_id=window))
+                observed = _worker_inspection(self.target, manifest,
+                    {'launcher_sha256': None, 'inventory': {'inventory_id': window}})
+                self.assertIsNone(observed['source_error'])
+                if sys.platform == 'win32':
+                    if window == 'windows-2':
+                        self.assertIsNone(observed['content_error'])
+                        self.assertIsNotNone(observed['content'])
+                    else:
+                        self.assertIsNotNone(observed['content_error'])
+                        self.assertIsNone(observed['content'])
 
     def test_empty_info_attributes_allowed_and_symlink_refused(self):
         self.crlf_input(); proposal = self.baseline()
         info = self.target/'.git/info/attributes'; info.write_bytes(b'')
         from hv2ref.work import verify_worker_sources
-        self.assertEqual({},verify_worker_sources(self.target,proposal[1],verified_inventory_id='checkout-1'))
+        self.assertEqual({},verify_worker_sources(self.target,proposal[1],verified_inventory_id=fixture_window('checkout-1')))
         outside=self.target.parent/'empty-attrs';outside.write_bytes(b'')
-        info.unlink();info.symlink_to(outside)
+        fixture_unlink(info);fixture_unsafe_link(info, outside)
         self.refused_start_unchanged(proposal)
 
     def test_core_conversion_and_text_auto_do_not_supply_explicit_policy(self):
@@ -237,7 +313,7 @@ class UnchangedCrlfTests(unittest.TestCase):
         (self.worker/'unchanged.bat').chmod(0o755)
         self.git(self.worker,'update-index','--chmod=+x','unchanged.bat')
         self.git(self.worker,'commit','-qm','mode fixture')
-        m=make_manifest(start[1]['base'],snapshot(self.worker),scope=start[0]['scope'],base_commit=start[1]['base_commit'],candidate_commit=self.git(self.worker,'rev-parse','HEAD'),base_retention_ref='refs/heads/retained-base',candidate_retention_ref='refs/heads/retained-candidate')
+        m=make_manifest(start[1]['base'],fixture_snapshot(self.worker),scope=start[0]['scope'],base_commit=start[1]['base_commit'],candidate_commit=self.git(self.worker,'rev-parse','HEAD'),base_retention_ref='refs/heads/retained-base',candidate_retention_ref='refs/heads/retained-candidate')
         result=self.proposal('submit-result');result[0]['scope']=start[0]['scope']
         before=self.bytes()
         with self.assertRaises(ContractError):self.publish(self.bind(result,m),worker=self.worker)
@@ -296,12 +372,12 @@ class UnchangedCrlfTests(unittest.TestCase):
         self.assertEqual(b'before\n',(self.target/'a').read_bytes())
 
     def test_entry_window_capability_retains_exact_crlf_completion(self):
-        self.store.runtime_check=lambda target:{'binding_ref':self.binding.copy(),'launcher_sha256':None,'inventory_id':'entry-1'}
+        self.store.runtime_check=lambda target:{'binding_ref':self.binding.copy(),'launcher_sha256':None,'inventory_id':fixture_window('entry-1')}
         self.test_unchanged_crlf_start_submit_accept_keeps_exact_checkout_bytes()
 
     def test_delegation_window_capability_retains_exact_crlf_completion(self):
-        # Keep the original checkout-1 and entry-1 doubles alongside the new window.
-        self.store.runtime_check=lambda target:{'binding_ref':self.binding.copy(),'launcher_sha256':None,'inventory_id':'delegation-1'}
+        # Preserve the POSIX legacy double; Windows uses its admitted fixture window.
+        self.store.runtime_check=lambda target:{'binding_ref':self.binding.copy(),'launcher_sha256':None,'inventory_id':fixture_window('delegation-1')}
         self.test_unchanged_crlf_start_submit_accept_keeps_exact_checkout_bytes()
 
 

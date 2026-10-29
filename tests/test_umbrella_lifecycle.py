@@ -67,10 +67,10 @@ class InstalledUmbrellaLifecycleTests(unittest.TestCase):
         with tarfile.open(self.evidence/'fixture.tar.gz','w:gz') as t:t.add(self.base,arcname='fixture')
         (self.evidence/'outcome.json').write_text(json.dumps({'success':self.success,'commands':len(self.log)})+'\n')
 
-    def call(self,args,value=None,**kw):
+    def call(self,args,value=fixtures.ActualWorkspaceInitTests._NO_STDIN,**kw):
         p=fixtures.ActualWorkspaceInitTests.call(self,args,value,expected=None,**{k:v for k,v in kw.items() if k!='expected'})
         n=str(len(self.log));(self.evidence/(n+'.stdout')).write_bytes(p.stdout);(self.evidence/(n+'.stderr')).write_bytes(p.stderr)
-        if value is not None:(self.evidence/(n+'.input.json')).write_bytes(canonical_json_bytes(value))
+        if value is not fixtures.ActualWorkspaceInitTests._NO_STDIN:(self.evidence/(n+'.input.json')).write_bytes(canonical_json_bytes(value))
         self.log.append({'args':list(map(str,p.args)),'exit':p.returncode})
         self.assertEqual(kw.get('expected',0),p.returncode,(p.stdout+p.stderr).decode(errors='replace'))
         return p
@@ -136,7 +136,7 @@ class InstalledUmbrellaLifecycleTests(unittest.TestCase):
         verify=subprocess.run([sys.executable,'-I','-B','-c','from pathlib import Path; import sys; assert Path(sys.argv[1]).read_text() == "child-b result\\n"; print("combined fixture content verified")',str(self.target/'a')],capture_output=True,timeout=20)
         self.assertEqual(0,verify.returncode,verify.stderr)
         children=capture(self.composition,WorkStore(self.target)._all(),workspace_intents(self.target))['children']
-        (self.target/'report.md').write_text('# 통합 검증\n\n'+verify.stdout.decode()+'\n'+json.dumps({'command':verify.args,'exit':verify.returncode,'children':children},ensure_ascii=False,indent=2)+'\n')
+        (self.target/'report.md').write_text('# 통합 검증\n\n'+verify.stdout.decode()+'\n'+json.dumps({'command':verify.args,'exit':verify.returncode,'children':children},ensure_ascii=False,indent=2)+'\n', encoding='utf-8', newline='\n')
         self.publish('parent',refreshed,'submit-result',parent=True);old_ticket=self.prepare('parent')
         down=json.loads(self.installed(['rollback','--operation-id','back-p','--observed-at',self.TIME]).stdout)
         self.installed(['rollback','--apply','--input','-','--confirm',down['confirm_token']],down['request'])

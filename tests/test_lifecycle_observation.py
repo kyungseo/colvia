@@ -12,11 +12,13 @@ from unittest import mock
 from hv2ref import product, work
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.workspace import git_environment
+from platform_fixtures import (fixture_temporary_directory, fixture_directory_link,
+                               fixture_unsafe_link, fixture_unlink, posix_mechanism)
 
 
 class LifecycleObservationTests(unittest.TestCase):
     def setUp(self):
-        temporary = tempfile.TemporaryDirectory(prefix="lifecycle-observation-")
+        temporary = fixture_temporary_directory(prefix="lifecycle-observation-")
         self.addCleanup(temporary.cleanup)
         self.base = Path(temporary.name).resolve()
         self.target = self.base / "project"
@@ -57,7 +59,7 @@ class LifecycleObservationTests(unittest.TestCase):
         self.assertEqual("Git policy changed during checkpoint", error.exception.message)
         self.assertIsNone(work._lifecycle_visibility.get())
 
-    def test_retired_occupants_are_not_opened_or_traversed(self):
+    def _assert_retired_occupants(self, forms):
         retired = self.target / "hv2"
         external = self.base / "external"
         external.write_bytes(b"private synthetic sentinel\n")
@@ -68,12 +70,12 @@ class LifecycleObservationTests(unittest.TestCase):
         def guarded_list(path):
             self.assertFalse(path == retired or retired in path.parents, "retired directory was traversed")
             return native_list(path)
-        for form in ("file", "directory", "symlink", "dangling", "fifo"):
+        for form in forms:
             with self.subTest(form=form):
                 if form == "directory":
                     retired.mkdir(); (retired / "sentinel").write_bytes(b"private directory sentinel\n")
-                elif form == "symlink": retired.symlink_to(external)
-                elif form == "dangling": retired.symlink_to(self.base / "absent")
+                elif form == "symlink": fixture_unsafe_link(retired, external)
+                elif form == "dangling": fixture_directory_link(retired, self.base / "absent")
                 elif form == "fifo": os.mkfifo(retired)
                 else: retired.write_bytes(b"private retired sentinel\n")
                 try:
@@ -90,7 +92,14 @@ class LifecycleObservationTests(unittest.TestCase):
                     self.assertEqual(b"private synthetic sentinel\n", external.read_bytes())
                 finally:
                     if form == "directory": shutil.rmtree(retired)
-                    else: retired.unlink()
+                    else: fixture_unlink(retired)
+
+    def test_retired_occupants_are_not_opened_or_traversed(self):
+        self._assert_retired_occupants(("file", "directory", "symlink", "dangling"))
+
+    @posix_mechanism("filesystem FIFO; other retired occupant forms run on both platforms")
+    def test_posix_retired_fifo_is_not_opened(self):
+        self._assert_retired_occupants(("fifo",))
 
     def test_incidental_git_updates_do_not_refuse(self):
         def activity():
@@ -106,14 +115,17 @@ class LifecycleObservationTests(unittest.TestCase):
     def test_default_ignore_transient_changes_are_refused(self):
         for location in ("xdg", "home", "empty-xdg"):
             with self.subTest(location=location):
-                with mock.patch.dict(os.environ):
+                with mock.patch.dict(os.environ), mock.patch.object(Path, "home", return_value=self.base / "other-home"):
                     if location == "home": os.environ.pop("XDG_CONFIG_HOME", None)
                     elif location == "empty-xdg": os.environ["XDG_CONFIG_HOME"] = ""
                     ignore = (self.xdg if location == "xdg" else self.home / ".config") / "git/ignore"
                     ignore.parent.mkdir(parents=True, exist_ok=True)
                     ignore.write_bytes(b"")
+                    before_policy = work._policy(self.target, [])
                     def transient():
-                        ignore.write_text(self.truth + "\n")
+                        ignore.write_bytes((self.truth + "\n").encode())
+                        self.assertEqual((self.truth + "\n").encode(), self.git("check-ignore", "--", self.truth))
+                        self.assertNotEqual(before_policy, work._policy(self.target, []))
                         ignore.write_bytes(b"")
                     self.policy_refusal(transient)
                     self.observe()
@@ -123,6 +135,12 @@ class LifecycleObservationTests(unittest.TestCase):
         ignore.parent.mkdir()
         self.policy_refusal(lambda: ignore.write_bytes(b""))
         ignore.unlink()
+        self.observe()
+
+    @posix_mechanism("POSIX file-symlink target observation; default-ignore creation runs on both platforms")
+    def test_posix_default_ignore_symlink_target_is_observed(self):
+        ignore = self.xdg / "git/ignore"
+        ignore.parent.mkdir()
         destination = self.base / "shared-ignore"
         destination.write_bytes(b"")
         ignore.symlink_to(destination)
@@ -175,8 +193,113 @@ class LifecycleObservationTests(unittest.TestCase):
             work._visible_truth(plain, ["not-yet-published"])
         self.assertIsNone(work._lifecycle_visibility.get())
 
+    def observe_detach(self, change=lambda: None, *, repeat=1):
+        from hv2ref.workspace import _DetachTopologyObservation
+        topology = _DetachTopologyObservation(self.target)
+        try:
+            with work._detach_git_observation(self.target, topology):
+                for _ in range(repeat):
+                    work._visible_truth(self.target, [self.truth, ".hrn/detached.json"],
+                                        _topology_observation=topology)
+                change()
+            topology.finish()
+        finally:
+            topology.close()
+
+    def test_detach_explicit_topology_batches_visibility_and_keeps_receipt_visible(self):
+        receipt = self.target / ".hrn/detached.json"
+        receipt.write_bytes(b"synthetic receipt\n")
+        original = work._git
+        calls = []
+        def observe(target, *args, **kwargs):
+            calls.append(args)
+            return original(target, *args, **kwargs)
+        with mock.patch.object(work, "_git", side_effect=observe):
+            self.observe_detach(repeat=20)
+        self.assertEqual(2, sum(args[0] == "check-ignore" for args in calls))
+        self.git("config", "core.excludesfile", "")
+        (self.target / ".git/info/exclude").write_text(".hrn/detached.json\n")
+        with self.assertRaisesRegex(ContractError, "truth hidden"):
+            self.observe_detach()
+        self.assertIsNone(work._lifecycle_visibility.get())
+
+    def test_detach_receipt_truth_and_member_changes_refuse_before_next_removal(self):
+        receipt = self.target / ".hrn/detached.json"
+        receipt.write_bytes(b"synthetic receipt\n")
+        for relative in (".hrn/detached.json", self.truth, ".hrn/product/binding.json"):
+            path = self.target / relative
+            original = path.read_bytes()
+            with self.subTest(path=relative):
+                def reappear():
+                    path.unlink()
+                    path.write_bytes(original)
+                with self.assertRaisesRegex(ContractError, "inputs changed"):
+                    self.observe_detach(reappear)
+                self.assertIsNone(work._lifecycle_visibility.get())
+                self.observe_detach()
+
+    def test_detach_transient_ignore_and_error_do_not_escape_scope(self):
+        receipt = self.target / ".hrn/detached.json"
+        receipt.write_bytes(b"synthetic receipt\n")
+        ignore = self.target / ".git/info/exclude"
+        original = ignore.read_bytes()
+        def transient():
+            ignore.write_bytes(original + b"\n.hrn/detached.json\n")
+            ignore.write_bytes(original)
+        with self.assertRaisesRegex(ContractError, "Git policy changed"):
+            self.observe_detach(transient)
+        self.assertIsNone(work._lifecycle_visibility.get())
+        def fail():
+            raise RuntimeError("synthetic interruption")
+        with self.assertRaisesRegex(RuntimeError, "synthetic interruption"):
+            self.observe_detach(fail)
+        self.assertIsNone(work._lifecycle_visibility.get())
+        self.observe_detach()
+
+    def test_detach_foreign_topology_cannot_borrow_visibility(self):
+        from hv2ref.workspace import _DetachTopologyObservation
+        receipt = self.target / ".hrn/detached.json"
+        receipt.write_bytes(b"synthetic receipt\n")
+        shared = _DetachTopologyObservation(self.target)
+        foreign = _DetachTopologyObservation(self.target)
+        ignore = self.target / ".git/info/exclude"
+        original = ignore.read_bytes()
+        try:
+            with self.assertRaisesRegex(ContractError, "Git policy changed"):
+                with work._detach_git_observation(self.target, shared):
+                    ignore.write_bytes(original + b"\n.hrn/detached.json\n")
+                    with self.assertRaisesRegex(ContractError, "truth hidden"):
+                        work._visible_truth(self.target, [".hrn/detached.json"],
+                                            _topology_observation=foreign)
+                    ignore.write_bytes(original)
+        finally:
+            ignore.write_bytes(original)
+            shared.close()
+            foreign.close()
+        self.assertIsNone(work._lifecycle_visibility.get())
+
+    def test_detach_next_sweep_and_nonprimary_do_not_inherit_visibility(self):
+        from hv2ref.workspace import _DetachTopologyObservation
+        receipt = self.target / ".hrn/detached.json"
+        receipt.write_bytes(b"first receipt\n")
+        self.observe_detach()
+        receipt.write_bytes(b"new independently observed receipt\n")
+        self.observe_detach()
+        plain = self.base / "plain-detach"
+        plain.mkdir()
+        topology = _DetachTopologyObservation(plain)
+        try:
+            with work._detach_git_observation(plain, topology):
+                self.assertIsNone(work._lifecycle_visibility.get())
+                work._visible_truth(plain, ["absent"], _topology_observation=topology)
+            topology.finish()
+        finally:
+            topology.close()
+        self.assertIsNone(work._lifecycle_visibility.get())
+
     def test_exact_candidate_update_recovery_and_replay(self):
-        source = product.source_root()
+        from platform_fixtures import fixture_source
+        source = fixture_source()
         candidate = product.workspace_candidate(source)
         variant = self.base / "variant"
         for entry in candidate["inventory"]["entries"]:
@@ -189,7 +312,7 @@ class LifecycleObservationTests(unittest.TestCase):
         for is_git in (False, True):
             for recover in (False, True):
                 with self.subTest(git=is_git, recover=recover):
-                    target = self.base / f"lifecycle-{is_git}-{recover}"
+                    target = self.base / f"l{int(is_git)}{int(recover)}"
                     target.mkdir(); (target / "sentinel").write_bytes(b"project sentinel\n")
                     if is_git:
                         subprocess.run(["git", "init", "-q", str(target)], check=True, capture_output=True, timeout=20)

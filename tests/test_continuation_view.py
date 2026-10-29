@@ -235,7 +235,7 @@ class ContinuationInstalledTests(unittest.TestCase):
         self.seed();self.apply_cont(self.prepare_cont())
         before={str(p.relative_to(self.target)):p.read_bytes() for p in (self.target/".hrn/work").rglob("*.json")}
         packet=workspace_detach_preview(self.target,operation_id="detach-a",created_at=self.TIME)
-        self.assertEqual(5,packet["request"]["schema_version"])
+        self.assertEqual(6 if sys.platform=='win32' else 5,packet["request"]["schema_version"])
         workspace_detach_apply(self.target,packet["request"],confirm_token=packet["confirm_token"])
         result=subprocess.run([sys.executable,"-I","-B",str(self.source/"tests/fixtures/product_plain_auditor.py"),str(self.target)],
                               capture_output=True,timeout=30)

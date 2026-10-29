@@ -1,5 +1,18 @@
 """New intent writer and real intent-to-Work integration; runtime seam is a double."""
 from __future__ import annotations
+from tests.platform_fixtures import (
+    fixture_directory_link,
+    fixture_is_link,
+    fixture_runtime,
+    fixture_snapshot_paths,
+    fixture_temporary_directory,
+    fixture_unlink,
+    fixture_unsafe_link,
+    fixture_window,
+    fixture_init_schema,
+    posix_mechanism,
+)
+import sys
 import copy
 import hashlib
 from pathlib import Path
@@ -27,13 +40,13 @@ class IntentWriterTests(unittest.TestCase):
     bytes = serial_fixtures.SerialWriterTests.bytes
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="intent-writer-");self.addCleanup(self.temp.cleanup)
+        self.temp = fixture_temporary_directory(prefix="intent-writer-");self.addCleanup(self.temp.cleanup)
         self.target = Path(self.temp.name).resolve()/"project";self.target.mkdir();(self.target/"a").write_bytes(b"before\n")
         fmt={"record_type":"workspace-format","format_version":1,"authority_home_id":"home-a","created_at":TIME,"lineage":None}
         self.binding={"id":"binding-a","sha256":"b"*64}
-        plan={"record_type":"lifecycle-plan","schema_version":1,"operation_id":"init-a","action":"init","target_fingerprint":target_fingerprint(self.target),"authority_home_id":"home-a","expected_binding_ref":None,"candidate_release":{"id":"product-release-"+"a"*24,"sha256":"a"*64,"inventory_id":"human-1"},"format_sha256":digest(fmt),"truth_refs":[],"remove":[],"preserve":[],"created_at":TIME}
+        plan={"record_type":"lifecycle-plan","schema_version":fixture_init_schema(),"operation_id":"init-a","action":"init","target_fingerprint":target_fingerprint(self.target),"authority_home_id":"home-a","expected_binding_ref":None,"candidate_release":{"id":"product-release-"+"a"*24,"sha256":"a"*64,"inventory_id":fixture_window("human-1")},"format_sha256":digest(fmt),"truth_refs":[],"remove":[],"preserve":[],"created_at":TIME}
         bootstrap_root(self.target,plan,fmt)
-        runtime=lambda target:{"binding_ref":copy.deepcopy(self.binding),"launcher_sha256":None}
+        runtime=lambda target:fixture_runtime(self.binding)
         self.store=WorkStore(self.target,runtime);self.intents=WorkspaceIntentStore(self.target,runtime)
         self.identity={"record_type":"work-identity","schema_version":1,"authority_home_id":"home-a","work_id":"work-a","work_type":"change","created_at":TIME,"acceptance_authority":"owner","lineage":None}
         self.serial=0;self.intent=None
@@ -247,7 +260,7 @@ class IntentWriterTests(unittest.TestCase):
         def check(target):
             nonlocal count
             count += 1
-            return {"binding_ref":copy.deepcopy(self.binding) if count == 1 else {"id":"changed","sha256":"c"*64},"launcher_sha256":None}
+            return fixture_runtime(self.binding if count == 1 else {"id":"changed","sha256":"c"*64})
         return check
 
     def test_work_publish_rechecks_runtime_before_truth_write(self):
@@ -398,11 +411,11 @@ class IntentWriterTests(unittest.TestCase):
 
     def test_port_symlinked_intent_member_refuses(self):
         external=self.target.parent/"external";external.mkdir();(external/"sentinel").write_bytes(b"preserve\n")
-        alias=self.target/".hrn/intents/alias";alias.symlink_to(external,target_is_directory=True)
+        alias=self.target/".hrn/intents/alias";fixture_directory_link(alias, external)
         with self.assertRaises(ContractError):self.intents.publish_draft(self.draft(intent_id="alias"))
         self.assertEqual(["sentinel"],sorted(p.name for p in external.iterdir()))
         self.assertEqual(b"preserve\n",(external/"sentinel").read_bytes())
-        self.assertTrue(alias.is_symlink())
+        self.assertTrue(fixture_is_link(alias))
 
     def test_port_intent_does_not_change_work_or_project(self):
         first=self.draft();self.accept(first);self.submitted()
@@ -419,7 +432,7 @@ class IntentWriterTests(unittest.TestCase):
         import shutil
         shutil.copytree(self.target/".hrn",other/".hrn")
         shutil.rmtree(other/".hrn/intents/intent-a")
-        store=WorkspaceIntentStore(other,lambda target:{"binding_ref":copy.deepcopy(self.binding),"launcher_sha256":None})
+        store=WorkspaceIntentStore(other,lambda target:fixture_runtime(self.binding))
         store.publish_draft(draft)
         self.assertEqual(expected,(other/".hrn/intents/intent-a/drafts/draft-1.json").read_bytes())
 
@@ -428,7 +441,7 @@ class SharedJsonDurabilityTests(unittest.TestCase):
     """Shared byte and filesystem contracts without a retired-generation fixture."""
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="json-contract-")
+        self.temp = fixture_temporary_directory(prefix="json-contract-")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
 
@@ -437,13 +450,13 @@ class SharedJsonDurabilityTests(unittest.TestCase):
         lock_path.parent.mkdir(parents=True)
         outside = self.root / "outside-lock"
         outside.write_bytes(b"")
-        lock_path.symlink_to(outside)
-        with self.assertRaisesRegex(ContractError, "HV2-LOCK-ANCHOR"):
+        fixture_unsafe_link(lock_path, outside)
+        with self.assertRaisesRegex(ContractError, "HV2-WINDOWS-PATH" if sys.platform == "win32" else "HV2-LOCK-ANCHOR"):
             with exclusive_file_lock(lock_path):
                 self.fail("symlink lock anchor was admitted")
-        lock_path.unlink()
+        fixture_unlink(lock_path)
         lock_path.mkdir()
-        with self.assertRaisesRegex(ContractError, "HV2-LOCK-ANCHOR"):
+        with self.assertRaisesRegex(ContractError, "HV2-(WINDOWS-IO|LOCK-ANCHOR)" if sys.platform == "win32" else "HV2-LOCK-ANCHOR"):
             with exclusive_file_lock(lock_path):
                 self.fail("directory lock anchor was admitted")
 
@@ -479,20 +492,19 @@ class SharedJsonDurabilityTests(unittest.TestCase):
             decode_json_bytes(deep)
 
     def test_fullfsync_classification_is_explicit(self) -> None:
+        # Pure classification double on either host, never native fsync proof.
+        from types import SimpleNamespace
+        fullfsync=mock.Mock()
+        backend=SimpleNamespace(F_FULLFSYNC=51,fcntl=fullfsync)
         with (
             mock.patch.object(jsonio.sys, "platform", "darwin"),
             mock.patch.object(jsonio.os, "fsync"),
-            mock.patch.object(jsonio.fcntl, "F_FULLFSYNC", 51, create=True),
-            mock.patch.object(jsonio.fcntl, "fcntl") as fullfsync,
+            mock.patch.object(jsonio, "fcntl", backend),
         ):
             self.assertEqual("pass", jsonio._sync_fd(7)["fullfsync"])
             fullfsync.side_effect = OSError(5, "io")
             self.assertEqual("error:5", jsonio._sync_fd(7)["fullfsync"])
-        with (
-            mock.patch.object(jsonio.sys, "platform", "darwin"),
-            mock.patch.object(jsonio.os, "fsync"),
-            mock.patch.object(jsonio.fcntl, "F_FULLFSYNC", None, create=True),
-        ):
+            backend.F_FULLFSYNC=None
             self.assertEqual("unavailable", jsonio._sync_fd(7)["fullfsync"])
 
     def test_new_ancestor_chain_is_directory_synced(self) -> None:

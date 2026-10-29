@@ -5,7 +5,10 @@ All native children inherit the controller's sandbox and process group.
 """
 from __future__ import annotations
 import copy
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    fcntl = None  # Historical POSIX-only matrix; native Windows uses its separate factory.
 import hashlib
 import json
 import os
