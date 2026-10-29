@@ -390,4 +390,284 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertEqual(raw,{p.relative_to(h.run).as_posix():p.read_bytes() for p in h.run.rglob('*') if p.is_file()})
         with self.assertRaises(ContractError):product.workspace_init_preview(self.candidate,self.target,authority_home_id='new',operation_id='new',created_at=TIME)
 
+
+    def linked_request(self, count=1, *, anchored=False):
+        request=copy.deepcopy(self.request);targets=[];links=[]
+        for n in range(count):
+            path=self.target/('linked-'+str(n)+'.md')
+            path.write_text('# Linked Heading\n\nMETADATA BODY MUST NOT REACH MODEL\n')
+            targets.append({'path':str(path),'anchors':['linked-heading'] if anchored else []})
+            links.append('[link]('+path.name+('#linked-heading' if anchored else '')+')')
+        (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+'\n'.join(links).encode())
+        request['documents']['link_targets']=targets
+        return request
+
+    def test_link_metadata_seventeen_targets_keep_two_model_documents_and_no_effects(self):
+        from hv2ref import official_worker as worker
+        from hv2ref.official_documents import parent_identities
+        request=self.linked_request(17)
+        # Non-UTF8 targets are intentionally opaque when only existence is requested.
+        targets={row['path'] for row in request['documents']['link_targets']}
+        for path in targets:Path(path).write_bytes(b'\xffopaque metadata only\x00')
+        before=self.truth();entries={str(p.relative_to(self.folder)) for p in self.folder.rglob('*')}
+        native=os.open
+        def guarded(path,*args,**kwargs):
+            if str(path) in targets or str(path) in {Path(n).name for n in targets}:raise AssertionError('metadata body opened')
+            return native(path,*args,**kwargs)
+        p=self.prepare(request)
+        # Existing Work snapshot fingerprints project bytes. Restrict this no-body-read
+        # assertion to the added metadata admission and shared link verifier, not that snapshot.
+        docs=p['spec']['documents']
+        import io,builtins
+        native_io,native_builtin=io.open,builtins.open
+        def guarded_io(path,*args,**kwargs):
+            if str(path) in targets:raise AssertionError('metadata body opened through io')
+            return native_io(path,*args,**kwargs)
+        def guarded_builtin(path,*args,**kwargs):
+            if str(path) in targets:raise AssertionError('metadata body opened through builtins')
+            return native_builtin(path,*args,**kwargs)
+        with mock.patch.object(os,'open',side_effect=guarded), mock.patch.object(io,'open',side_effect=guarded_io), mock.patch.object(builtins,'open',side_effect=guarded_builtin):
+            self.assertEqual(docs['link_metadata'],entry.link_inputs(request['documents'],docs['files'],self.target,docs['parser'],docs['parser_sha256']))
+            preflight=dict(docs,parents=parent_identities([v['path'] for v in docs['files'].values()]+list(targets)))
+            self.assertTrue(worker.verify(preflight,'DOC-LINKS')['pass'])
+        self.assertEqual(before,self.truth());self.assertEqual(entries,{str(p.relative_to(self.folder)) for p in self.folder.rglob('*')})
+        docs=p['spec']['documents'];self.assertEqual(17,len(docs['link_metadata']))
+        self.assertTrue(all(v['sha256'] is None and v['anchors']==[] for v in docs['link_metadata'].values()))
+        spec={'version':2,'files':docs['files'],'parents':parent_identities([v['path'] for v in docs['files'].values()]+list(targets)),
+              'outputs':docs['outputs'],'swap':{},'parser':docs['parser'],'parser_sha256':docs['parser_sha256'],
+              'claims':docs['claims'],'approved_external_links':[],'link_metadata':docs['link_metadata']}
+        result=worker.execute(spec,{'tool':'u2_read_file','arguments':{'file_ids':request['read_ids']}})
+        self.assertEqual(['Editable','Reference'],[v['file_id'] for v in result['files']])
+        self.assertNotIn('opaque metadata',json.dumps(result));self.assertNotIn('opaque metadata',json.dumps(p))
+
+    def test_initial_full_output_links_refuse_missing_scope_even_inside_edit_range(self):
+        request=self.linked_request();del request['documents']['link_targets'];before=self.truth()
+        with self.assertRaisesRegex(ContractError,'link-target-outside-scope'):self.prepare(request)
+        self.assertEqual(before,self.truth());self.assertFalse((self.target/'.hrn/executions').exists())
+        (self.target/'a').write_bytes(b'[broken](missing.md)\n')
+        request['documents']['files']['Editable']['view']['ranges']=[[0,len((self.target/'a').read_bytes())]]
+        with self.assertRaisesRegex(ContractError,'link-target-outside-scope'):self.prepare(request)
+        self.assertFalse((self.target/'.hrn/executions').exists())
+
+    def test_link_metadata_rejects_unreferenced_target_anchor_and_empty_list(self):
+        request=self.linked_request();extra=self.target/'extra';extra.write_text('private synthetic')
+        variants=[]
+        bad=copy.deepcopy(request);bad['documents']['link_targets'].append({'path':str(extra),'anchors':[]});variants.append(bad)
+        bad=copy.deepcopy(request);bad['documents']['link_targets'][0]['anchors']=['linked-heading'];variants.append(bad)
+        bad=copy.deepcopy(request);bad['documents']['link_targets']=[];variants.append(bad)
+        for bad,code in zip(variants,('unreferenced-or-missing-link-target-anchor','unreferenced-or-missing-link-target-anchor','link-target-list')):
+            with self.subTest(bad=bad['documents']['link_targets']),self.assertRaisesRegex(ContractError,code):self.prepare(bad)
+        self.assertFalse((self.target/'.hrn/executions').exists())
+
+    def test_link_metadata_bounds_types_and_duplicate_anchors(self):
+        request=self.linked_request(anchored=True)
+        for anchors in (['linked-heading']*2, ['x'+str(n) for n in range(33)], ['x'*513], [False], 'linked-heading', ['\x00']):
+            bad=copy.deepcopy(request);bad['documents']['link_targets'][0]['anchors']=anchors
+            with self.subTest(anchors=anchors),self.assertRaisesRegex(ContractError,'link-anchor-list'):self.prepare(bad)
+        bad=copy.deepcopy(request);bad['documents']['link_targets']*=65
+        with self.assertRaisesRegex(ContractError,'link-target-list'):self.prepare(bad)
+        request=self.linked_request(9,anchored=True)
+        with self.assertRaisesRegex(ContractError,'anchored-target-limit'):self.prepare(request)
+
+    def test_link_anchor_binding_matches_url_decoding_and_missing_anchor_refuses(self):
+        request=self.linked_request(anchored=True);target=Path(request['documents']['link_targets'][0]['path'])
+        target.write_text('# 한글\n\n# 두번째\n')
+        request['documents']['link_targets'][0]['anchors']=['한글','두번째']
+        (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+b'[a](linked-0.md#%ED%95%9C%EA%B8%80) [b](linked-0.md#%EB%91%90%EB%B2%88%EC%A7%B8)')
+        p=self.prepare(request);value=p['spec']['documents']['link_metadata'][str(target)]
+        self.assertEqual(sorted(['한글','두번째']),value['anchors']);self.assertEqual(state.digest(target.read_bytes()),value['sha256'])
+        target.write_text('# Different\n')
+        with self.assertRaisesRegex(ContractError,'link-anchor-missing'):self.prepare(request)
+
+    def test_link_metadata_rejects_aliases_and_document_overlap(self):
+        from hv2ref.official_policy import PolicyRefusal
+        request=self.linked_request();path=Path(request['documents']['link_targets'][0]['path'])
+        symlink=self.target/'symlink';symlink.symlink_to(path)
+        hardlink=self.target/'hardlink';os.link(path,hardlink)
+        for alias in (symlink,hardlink):
+            bad=copy.deepcopy(request);bad['documents']['link_targets'][0]['path']=str(alias)
+            (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+('[x]('+alias.name+')').encode())
+            with self.subTest(alias=alias.name),self.assertRaises((PolicyRefusal,ContractError)):self.prepare(bad)
+        hardlink.unlink();symlink.unlink()
+        request=self.linked_request();bad=copy.deepcopy(request);bad['documents']['link_targets']*=2
+        with self.assertRaisesRegex(ContractError,'link-target-alias'):self.prepare(bad)
+        bad=copy.deepcopy(request);bad['documents']['link_targets']=[{'path':str(self.target/'b'),'anchors':[]}]
+        with self.assertRaisesRegex(ContractError,'link-target-alias'):self.prepare(bad)
+        # This candidate is macOS-specific. Assert the case-insensitive filesystem precondition,
+        # then demonstrate inode overlap rather than silently skipping this boundary.
+        case=self.target/'B';self.assertTrue(case.exists(),'case-insensitive qualification filesystem required')
+        (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+b'[case](B)')
+        bad['documents']['link_targets'][0]['path']=str(case)
+        with self.assertRaisesRegex(ContractError,'link-target-alias'):self.prepare(bad)
+
+    def test_link_targets_reject_managed_case_variants_outside_and_directories(self):
+        from hv2ref.official_policy import PolicyRefusal
+        request=self.linked_request();outside=self.folder/'outside';outside.write_text('outside')
+        self.target.joinpath('.GIT').mkdir();self.target.joinpath('.GIT/config').write_text('synthetic')
+        directory=self.target/'real-directory';directory.mkdir()
+        protected=[(self.target/'.GIT/config','.GIT/config'),(self.target/'.Hrn/format.json','.Hrn/format.json'),
+                   (self.target/'Colvia','Colvia'),(outside,'../outside'),(directory,'real-directory')]
+        parser=Path(self.runtime['release_path'])/'payload/runtime/official/marked.umd.js'
+        for path,href in protected:
+            self.assertTrue(path.exists());self.assertEqual(path.is_dir(),path==directory)
+            (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+('[protected]('+href+')').encode())
+            records={key:dict(entry.file_record(item['path'],limit=131072)[0],view=item['view']) for key,item in request['documents']['files'].items()}
+            docs={'output':'Editable','link_targets':[{'path':str(path),'anchors':[]}]}
+            # Test the added link admission directly; .GIT must not be refused first by Work topology.
+            error,code=(PolicyRefusal,'path-kind') if path==directory else (ContractError,'document-outside-worker')
+            with self.subTest(path=path.name),self.assertRaisesRegex(error,code):
+                entry.link_inputs(docs,records,self.target,str(parser),state.digest(parser.read_bytes()))
+
+    def test_prepare_rejects_noncanonical_worker_root_and_document_inode_alias(self):
+        from hv2ref.official_policy import PolicyRefusal
+        bad=copy.deepcopy(self.request);bad['worker_root']=str(self.target)+'/../project'
+        with self.assertRaises(PolicyRefusal):self.prepare(bad)
+        alias=self.folder/'project-alias';alias.symlink_to(self.target,target_is_directory=True)
+        bad['worker_root']=str(alias)
+        with self.assertRaises(PolicyRefusal):self.prepare(bad)
+        bad=copy.deepcopy(self.request);bad['documents']['files']['Reference']['path']=str(self.target/'A')
+        with self.assertRaisesRegex(ContractError,'document-path-alias'):self.prepare(bad)
+
+    def test_metadata_drift_prevents_execute_before_capsule(self):
+        request=self.linked_request();p=self.prepare(request);path=Path(request['documents']['link_targets'][0]['path'])
+        info=path.stat();os.utime(path,ns=(info.st_atime_ns,info.st_mtime_ns+1000000))
+        with self.assertRaisesRegex(ContractError,'stale-execution-confirmation'):entry.execute(self.target,p['spec'],p['confirm_token'])
+        self.assertFalse((self.target/'.hrn/executions').exists())
+
+    def test_anchor_content_drift_with_preserved_size_mtime_prevents_execute(self):
+        request=self.linked_request(anchored=True);p=self.prepare(request);path=Path(request['documents']['link_targets'][0]['path'])
+        info=path.stat();path.write_bytes(path.read_bytes().replace(b'METADATA',b'CHANGED!'));os.utime(path,ns=(info.st_atime_ns,info.st_mtime_ns))
+        with self.assertRaisesRegex(ContractError,'stale-execution-confirmation'):entry.execute(self.target,p['spec'],p['confirm_token'])
+        self.assertFalse((self.target/'.hrn/executions').exists())
+
+    def test_metadata_drift_blocks_worker_but_status_cancel_resolve_restore_survive(self):
+        from hv2ref.official_documents import HostRefusal
+        request=self.linked_request();h=self.new_host(request);path=Path(request['documents']['link_targets'][0]['path'])
+        path.unlink()
+        slots=list((h.run/'workers').iterdir());result=h.dispatch(self.envelope())
+        self.assertFalse(result['worker_admitted']);self.assertEqual('not_started',result['effect_status'])
+        self.assertEqual(slots,list((h.run/'workers').iterdir()));self.assertEqual(0,h.workers)
+        self.assertEqual('incomplete',state.read_capsule(self.target,h.grant)['status'])
+        self.assertTrue(state.cancel(self.target,h.grant,'metadata removed')['cancel_requested'])
+        h.fail(RuntimeError('synthetic metadata drift'));p=state.resolution_preview(self.target,h.grant)
+        result=state.resolve(self.target,h.grant,p['confirm_token']);self.assertEqual('operator-resolved-unknown',result['status'])
+        restored=hostmod.Host.restore_closed(self.target,h.grant)
+        self.assertFalse(restored.dispatch(self.envelope())['worker_admitted'])
+
+    def test_link_profile_literals_only_grant_data_read_for_anchors(self):
+        from hv2ref import official_documents as documents
+        request=self.linked_request(2);path=Path(request['documents']['link_targets'][1]['path'])
+        request['documents']['link_targets'][1]['anchors']=['linked-heading']
+        (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+b'[opaque](linked-0.md) [anchor](linked-1.md#linked-heading)')
+        h=self.new_host(request)
+        # Profile-generation seam only: patch global subprocess.Popen within this block;
+        # bypass the budget callback so Host's preceding Git observer is not intercepted.
+        with mock.patch.object(h.worker_budget,'check_worker_result',return_value=30), \
+             mock.patch.object(documents.subprocess,'Popen',side_effect=OSError('synthetic no child')) as spawn, \
+             self.assertRaisesRegex(OSError,'synthetic no child'):
+            h.controller.dispatch('u2_read_file',{'file_ids':request['read_ids']})
+        spawn.assert_called_once()
+        profile=(h.run/'workers/worker-001/worker.sb').read_text()
+        opaque=request['documents']['link_targets'][0]['path']
+        self.assertFalse(Path(opaque).is_relative_to(Path(h.spec['documents']['python']).parent.parent),'PYROOT must not cover metadata target')
+        metadata=next(line for line in profile.splitlines() if line.startswith('(allow file-read-metadata ') and opaque in line)
+        data=next(line for line in profile.splitlines() if line.startswith('(allow file-read* ') and str(path) in line)
+        self.assertIn(documents.sb_literal(opaque),metadata);self.assertNotIn(documents.sb_literal(opaque),data)
+        import re
+        for line in profile.splitlines():
+            if line.startswith('(allow file-read* ') or line.startswith('(allow file-read-data '):
+                self.assertNotIn(documents.sb_literal(opaque),line)
+            for root in re.findall(r'\(subpath "([^"\n]+)"\)',line):
+                self.assertFalse(Path(opaque).is_relative_to(root),'broad subpath covers opaque target')
+        spec=json.loads((h.run/'workers/worker-001/spec.json').read_text())
+        self.assertEqual(h.spec['documents']['link_metadata'],spec['link_metadata'])
+        # Exercise the exact generated worker verifier contract in-process; no native process claim.
+        from hv2ref.official_worker import verify
+        self.assertTrue(verify(spec,'DOC-LINKS')['pass'])
+
+    def exercise_previous_reader_compatibility(self):
+        self.assertTrue(os.environ.get('COLVIA_PREVIOUS_OFFICIAL_SOURCE'),'explicit previous artifact is required for compatibility qualification')
+        previous=Path(os.environ['COLVIA_PREVIOUS_OFFICIAL_SOURCE'])
+        helper=SOURCE/'tests/fixtures/official_reader_compat.py'
+        def call(action,request=None,grant=None):
+            run=subprocess.run([sys.executable,'-I','-S','-B',str(helper),str(previous),str(self.target),action],
+                               input=state.canonical({'request':request,'grant':grant}),capture_output=True,timeout=30)
+            self.assertEqual(0,run.returncode,run.stdout+run.stderr);return json.loads(run.stdout)
+        # Legacy success has an exactly equal spec/grant across previous and current entry.
+        current=self.prepare();old=call('prepare',self.request);self.assertEqual(current,old)
+        old_grant=call('closed',self.request)['grant']
+        self.assertEqual('revoked-before-launch',state.read_capsule(self.target,old_grant)['status'])
+        request=self.linked_request();h=self.new_host(request);path=Path(request['documents']['link_targets'][0]['path'])
+        h.fail(RuntimeError('synthetic unstarted failure'));path.unlink()
+        self.assertEqual('unknown',call('status',grant=h.grant)['status'])
+        preview=call('resolve-preview',grant=h.grant)
+        self.assertIn('confirm_token',preview)
+        state.resolve(self.target,h.grant,preview['confirm_token'])
+        self.assertEqual('operator-resolved-unknown',call('restore',grant=h.grant)['status'])
+
+
+
+    def test_preflight_active_html_cleanup_retained_and_link_errors_classified(self):
+        from hv2ref.official_documents import parent_identities
+        from hv2ref.official_worker import verify
+        request=copy.deepcopy(self.request);raw=b'<script>alert(1)</script>\n'
+        (self.target/'a').write_bytes(raw);request['documents']['files']['Editable']['view']['ranges']=[[0,len(raw)]]
+        p=self.prepare(request);docs=p['spec']['documents']
+        full=verify(dict(docs,parents=parent_identities([v['path'] for v in docs['files'].values()])),'DOC-LINKS')
+        self.assertFalse(full['pass']);self.assertEqual(['active-html'],[f['code'] for f in full['findings']])
+        for raw,code in [(b'[x](b?q=1)\n','link-target-outside-scope'),(b'[x](/absolute)\n','link-target-outside-scope'),
+                         (b'[x](https://example.invalid/)\n','initial-document-links-failed'),(b'[x](b#missing)\n','initial-document-links-failed')]:
+            (self.target/'a').write_bytes(raw);request['documents']['files']['Editable']['view']['ranges']=[[0,len(raw)]]
+            with self.subTest(raw=raw),self.assertRaisesRegex(ContractError,code):self.prepare(request)
+        self.assertFalse((self.target/'.hrn/executions').exists())
+
+    def test_anchor_encoding_and_required_link_input_digest_refuse(self):
+        request=self.linked_request(anchored=True);target=Path(request['documents']['link_targets'][0]['path'])
+        target.write_bytes(b'\xff')
+        with self.assertRaisesRegex(ContractError,'link-anchor-encoding'):self.prepare(request)
+        target.write_text('# Linked Heading\n');p=self.prepare(request);docs=p['spec']['documents'];native=state.regular
+        def changed(path,*args,**kwargs):
+            if str(path)==str(self.target/'a'):return b'different body\n'
+            return native(path,*args,**kwargs)
+        with mock.patch.object(state,'regular',side_effect=changed),self.assertRaisesRegex(ContractError,'output-link-input-drift'):
+            entry.link_inputs(request['documents'],docs['files'],self.target,docs['parser'],docs['parser_sha256'])
+
+    def test_nested_metadata_and_parent_relative_links_share_worker_resolution(self):
+        from hv2ref.official_documents import parent_identities
+        from hv2ref.official_worker import verify
+        request=self.linked_request(anchored=True);old=Path(request['documents']['link_targets'][0]['path'])
+        nested=self.target/'nested';nested.mkdir();target=nested/'x.md';old.rename(target)
+        request['documents']['link_targets'][0]['path']=str(target)
+        (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+b'[nested](nested/x.md#linked-heading)')
+        p=self.prepare(request);docs=p['spec']['documents']
+        spec=dict(docs,parents=parent_identities([v['path'] for v in docs['files'].values()]+list(docs['link_metadata'])))
+        self.assertTrue(verify(spec,'DOC-LINKS')['pass'])
+        # Unit link contract for an output in a subdirectory; does not fabricate Work scope.
+        output=nested/'output.md';output.write_text('[parent](../b#policy)\n')
+        records={'Editable':dict(entry.file_record(output,limit=131072)[0],view={'kind':'full'})}
+        metadata=entry.link_inputs({'output':'Editable','link_targets':[{'path':str(self.target/'b'),'anchors':['policy']}]},
+                                   records,self.target,docs['parser'],docs['parser_sha256'])
+        spec.update(files=records,link_metadata=metadata,parents=parent_identities([str(output),str(self.target/'b')]))
+        self.assertTrue(verify(spec,'DOC-LINKS')['pass'])
+
+    def test_host_refuses_unclassified_missing_file_before_worker_and_can_resolve(self):
+        h=self.new_host(self.linked_request());slots=list((h.run/'workers').iterdir())
+        # Inject the existing metadata stat exception after the independent Work observation.
+        with mock.patch.object(h.controller,'check_files',side_effect=FileNotFoundError('synthetic metadata stat')):
+            result=h.dispatch(self.envelope())
+        self.assertEqual('FileNotFoundError',result['reason']);self.assertFalse(result['worker_admitted'])
+        self.assertEqual('not_started',result['effect_status']);self.assertEqual(slots,list((h.run/'workers').iterdir()))
+        self.assertEqual('incomplete',state.read_capsule(self.target,h.grant)['status'])
+        h.fail(FileNotFoundError('synthetic metadata stat'));p=state.resolution_preview(self.target,h.grant)
+        self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,p['confirm_token'])['status'])
+
+    def test_anchor_drift_after_capsule_refuses_host_before_worker(self):
+        request=self.linked_request(anchored=True);h=self.new_host(request);target=Path(request['documents']['link_targets'][0]['path'])
+        info=target.stat();target.write_bytes(target.read_bytes().replace(b'METADATA',b'CHANGED!'));os.utime(target,ns=(info.st_atime_ns,info.st_mtime_ns))
+        result=h.dispatch(self.envelope());self.assertFalse(result['worker_admitted']);self.assertEqual('not_started',result['effect_status'])
+        self.assertEqual([],list((h.run/'workers').glob('worker-*')));self.assertEqual(0,h.workers)
+        h.fail(RuntimeError('synthetic anchored drift'));p=state.resolution_preview(self.target,h.grant)
+        self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,p['confirm_token'])['status'])
+
+
 if __name__=='__main__':unittest.main()
