@@ -129,3 +129,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Installed status is non-pass; inspect the repo
 ```
 
 Do not infer from a failed apply that no bytes were published. Use the original request/token and the supported recovery path only after checking the observed prefix. Unknown state, read-only targets and unverified runtime or filesystem conditions remain non-pass; these examples do not establish native qualification or a successful fresh-reader exercise.
+
+## Official Execution Records
+
+The optional macOS `official-execution-1` window preserves project-owned execution capsules under `.hrn/executions/`. Cancellation receipt is not effect cessation. Unresolved effects block new runs and lifecycle mutation; explicit resolution records current document/process observations without deleting evidence or restoring documents. Detach preserves capsules and original outputs. Use the verified release's `docs/OFFICIAL-EXECUTION.md`; no automatic retry or Core acceptance is added.

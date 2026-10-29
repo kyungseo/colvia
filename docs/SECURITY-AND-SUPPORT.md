@@ -56,3 +56,7 @@ The candidate inherits prior content, evidence, lock, durability and unsupported
 ## Continuation Boundary
 
 Continuation shares the trusted local account and serialized writer guard. Actor labels are declarations, not authenticated identities. Project-wide pending/unknown-integrity refusal is intentional; an unrelated malformed continuation can block all official writers, including repair/detach. Exact active repair is only an exception for valid classifiable pending state. Moving a pending home does not rebind recovery. Bounded records, nonrecursive target reading and usage displays do not provide a scheduler, adversarial filesystem isolation or unlimited retention. Exact process/synthetic checks and real fresh-session use require their separately identified evidence.
+
+## Official Execution Candidate Boundary
+
+`official-execution-1` is an explicit macOS product candidate, separate from the default `continuation-1` and native Windows qualifications. It binds the existing Work/intent and current document view to a single-use local approval declaration. A fixed official CLI/helper uses normal TLS transport and the accepted OS IPC policy; stronger prepared-native transport claims do not transfer. The Host owns effects and keeps its shared writer lock through observed child termination. Cancel marker publication is the sole concurrent write exception. Unknown effects stay blocking until an explicit observed resolution. Same-account tampering, unseen detached processes, general quality, actual adopter use and Owner acceptance remain separate limits.

@@ -72,6 +72,8 @@ def workspace_source(root: Path) -> Path:
     # Validate every importable module before any package code executes. Full
     # product/record verification still belongs to the imported readers/guards.
     modules = ("__init__", "candidates", "cli", "continuation", "errors", "intent", "jsonio", "product", "umbrella", "view", "work", "workspace")
+    if WORKSPACE_INVENTORY_ID == "official-execution-1":
+        modules += ('official_adapter', 'official_admission', 'official_documents', 'official_entry', 'official_host', 'official_os', 'official_policy', 'official_state', 'official_worker')
     expected = {"src/hv2ref/" + name + ".py" for name in modules}
     package = release / "payload/src/hv2ref"
     for directory in reversed((package, *package.parents)):

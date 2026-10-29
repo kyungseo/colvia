@@ -70,6 +70,13 @@
       "fallback": "preserve original requests and exact matching recovery source; independent compatible read-only inspection",
       "id": "windows-native-runtime",
       "status": "development-in-progress"
+    },
+    {
+      "id": "official-document-execution",
+      "status": "development-in-progress",
+      "boundary": "explicit macOS official-execution-1 installation; fixed official CLI/helper and ChatGPT path; one bounded document range, five sequential workers; trusted-local approval declarations; no automatic Core acceptance or retry; durable cancellation and unresolved-effect barriers",
+      "evidence": "Implementation candidate; source-only synthetic runtime evidence does not qualify this installed payload. Exact installed lifecycle, normal/optimized regression and live result remain separately identified requirements.",
+      "fallback": "preserve execution capsules and original outputs; inspect explicit status/resolve; use existing manual Work acceptance separately"
     }
   ],
   "evidence_as_of": "2026-10-19",

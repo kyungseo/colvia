@@ -22,7 +22,7 @@ from .jsonio import canonical_json_bytes, exclusive_file_lock, load_json, sync_d
 
 ROOT_NAME = ".hrn"
 IGNORE_BYTES = b"staging/\nlocks/\n"
-ROOT_MEMBERS = frozenset({"format.json", ".gitignore", "detached.json", "product", "intents", "work", "planning", "staging", "locks"})
+ROOT_MEMBERS = frozenset({"format.json", ".gitignore", "detached.json", "product", "intents", "work", "planning", "staging", "locks", "executions"})
 FORMAT_KEYS = {"record_type", "format_version", "authority_home_id", "created_at", "lineage"}
 PLAN_KEYS = {"record_type", "schema_version", "operation_id", "action", "target_fingerprint", "authority_home_id", "expected_binding_ref", "candidate_release", "format_sha256", "truth_refs", "remove", "preserve", "created_at"}
 ID = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,95}\Z")
@@ -99,6 +99,8 @@ def runtime_supported(window: str | None = None) -> bool:
 
 
 def require_supported_runtime(window: str | None = None) -> None:
+    if window == "official-execution-1" and sys.platform != "darwin":
+        raise ContractError("HV2-WORKSPACE-RUNTIME", "official execution requires macOS")
     if window == "windows-2" or sys.platform == "win32":
         if window != "windows-2":
             raise ContractError("HV2-WORKSPACE-RUNTIME", "native Windows mutation requires a verified windows-2 window")
@@ -388,7 +390,7 @@ def inspect_root(target: Path) -> dict[str, Any]:
         for name in ROOT_MEMBERS:
             path = root / name
             if _exists(path):
-                _require_kind(path, name in {"product", "intents", "work", "planning", "staging", "locks"})
+                _require_kind(path, name in {"product", "intents", "work", "planning", "staging", "locks", "executions"})
         product = root / "product"
         if _exists(root / "detached.json"):
             if value is None:
@@ -428,16 +430,16 @@ def inspect_root(target: Path) -> dict[str, Any]:
 
 def _validate_plan_shape(plan: Any) -> None:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6) or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6, 7) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not all(_id(plan[k]) for k in ("operation_id", "authority_home_id")) or not _text(plan["created_at"]) or not all(_sha(plan[k]) for k in ("target_fingerprint", "format_sha256")):
         raise _error("invalid init identity or digest")
     if plan["expected_binding_ref"] is not None or any(plan[k] != [] for k in ("truth_refs", "remove", "preserve")):
         raise _error("invalid fresh init claims")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2"}):
+    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1"}):
         raise _error("invalid init release")
-    if plan["schema_version"] != (6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
+    if plan["schema_version"] != (7 if release["inventory_id"] == "official-execution-1" else 6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
         raise _error("init schema/window pair")
 
 
@@ -482,7 +484,7 @@ def _write_exact(path: Path, data: bytes) -> None:
 
 def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[str, Any]:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6) or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6, 7) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not _id(plan["operation_id"]) or plan["authority_home_id"] != value["authority_home_id"] or not _text(plan["created_at"]):
         raise _error("init plan identity")
@@ -491,9 +493,9 @@ def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[
     if plan["expected_binding_ref"] is not None or plan["truth_refs"] != [] or plan["remove"] != [] or plan["preserve"] != []:
         raise _error("fresh init plan cannot claim existing truth")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2"}):
+    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1"}):
         raise _error("init plan candidate")
-    if plan["schema_version"] != (6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
+    if plan["schema_version"] != (7 if release["inventory_id"] == "official-execution-1" else 6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
         raise _error("init schema/window pair")
     if release["id"] != "product-release-" + release["sha256"][:24]:
         raise _error("init plan release identity")
@@ -530,7 +532,7 @@ unknown state is never adopted. Process crash tests do not establish power-loss 
         for name in ROOT_MEMBERS:
             member = root / name
             if _exists(member):
-                _require_kind(member, name in {"product", "intents", "work", "planning", "staging", "locks"})
+                _require_kind(member, name in {"product", "intents", "work", "planning", "staging", "locks", "executions"})
         product = root / "product"
         if not _exists(product / "init-plan.json"):
             raise _error("no durable ownership plan; preserve root")
@@ -580,20 +582,28 @@ def _guard_runtime_window(target: Path) -> str | None:
 The caller still verifies the current product/records under the common guard.
 Init policy is stable within windows-2; its cross-window transitions are forbidden.
 """
-    initial = target / ROOT_NAME / "product/init-plan.json"
-    if _exists(initial):
-        plan = _file_json(initial)
-        _validate_plan_shape(plan)
-        return plan["candidate_release"]["inventory_id"]
     detached = target / ROOT_NAME / "detached.json"
     if _exists(detached):
         receipt = _file_json(detached)
-        if receipt.get("schema_version") == 6:
+        if receipt.get("schema_version") in (6, 7):
             from .product import _detach_plan_shape, _detach_receipt
             plan = _detach_plan_shape(receipt.get("plan"), _file_json(target / ROOT_NAME / "format.json"))
             if receipt != _detach_receipt(plan):
                 raise _error("detach policy receipt mismatch")
-            return "windows-2"
+            return "official-execution-1" if receipt["schema_version"] == 7 else "windows-2"
+    initial = target / ROOT_NAME / "product/init-plan.json"
+    if _exists(initial):
+        plan = _file_json(initial)
+        _validate_plan_shape(plan)
+        window = plan["candidate_release"]["inventory_id"]
+        # This selects a stricter OS/execution barrier, never establishes authority.
+        # The caller still validates the complete receipt history under the lock.
+        binding_path = target / ROOT_NAME / "product/binding.json"
+        if window == "continuation-1" and _exists(binding_path):
+            binding = _file_json(binding_path)
+            if isinstance(binding, dict) and isinstance(binding.get("active_release"), dict) and binding["active_release"].get("inventory_id") == "official-execution-1":
+                window = "official-execution-1"
+        return window
     return None
 
 
@@ -607,7 +617,7 @@ The caller verifies the receipt and complete operation under the same guard.
     target = safe_target(target)
     window = _guard_runtime_window(target)
     require_supported_runtime(window)
-    allowed = {"work": {"root-ready"}, "detach-recovery": {"detach-candidate"}}
+    allowed = {"work": {"root-ready"}, "detach-recovery": {"detach-candidate"}, "official-resolution": {"root-ready"}}
     if purpose not in allowed:
         raise _error("unsupported guard purpose")
     target = Path(classify_target(target, mutation=True)["target"])
@@ -627,6 +637,14 @@ The caller verifies the receipt and complete operation under the same guard.
             require_supported_runtime(window)
             if inspect_root(target)["classification"] not in allowed[purpose]:
                 raise _error("workspace changed while acquiring guard")
+            if _exists(root / "executions"):
+                if window != "official-execution-1":
+                    raise _error("execution records require the official window")
+                from .official_state import require_no_open
+                if purpose != "official-resolution":
+                    require_no_open(target)
+            elif purpose == "official-resolution":
+                raise _error("no execution records to resolve")
             yield
     finally:
         _guard_state.held = held

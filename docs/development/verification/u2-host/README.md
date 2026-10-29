@@ -64,3 +64,12 @@ v42–v56의 `replacement_work`는 `synthetic-reference-a` / `synthetic-operatio
 기존 approval·receipt는 합성 대상의 새 실행 승인이 아니다. 해당 allocation의 고정 deadline은 모두 과거이며 정상 wall/continuous clock과 기존 budget guard에 따르면 새 실행 예산을 거부한다는 정적 근거가 있다. 이를 모든 환경의 실행 불가능성이나 새 live 거부 검증으로 주장하지 않는다. deadline·guard·부모 binding·v41과 그 밖의 allocation은 그대로 유지한다. 새 실행은 별도의 대상·입력·승인이 필요하다.
 
 이번 공개 정리의 검증 범위는 Python 데이터 계약 3개, Python/Rust JSON literal의 정적 대응·허용 필드 비교와 문서 검사다. Rust compile/test·rebuild 및 native/live 실행은 수행하지 않는다. 기존 native PASS는 원본 후보의 증거이며 이 변경 후보에 승계하지 않는다. 실제 거부 경로는 새로 실행하지 않고 guard 미변경과 원본 검증 근거를 구분해 보고한다.
+
+
+## Official CLI Policy Candidate — 2026-10-29
+
+[공식 CLI 정책](policies/official-codex-macos.sb)과 [경로 검사](official_runtime_policy.py)는 source-only 검증 연결부다. trusted Driver가 정확한 CLI/helper 실행 파일·설정·인증·identity·runtime/session·기존 실행 규칙 directory/file·전역 사용자 지침의 실제 파일 경로와 보호 경계를 전달하면 고정 정책 hash와 경로를 검사하고 argv 배열을 반환한다. 이 함수는 process를 실행하거나 파일을 만들지 않는다. 신뢰한 Driver는 인증/모델/RPC·동시 경로 변경 방지·시간/횟수·process 종료를 별도로 책임진다.
+
+정책은 기본 거절과 정확한 DNS/ICU/SecurityServer 예외, 지정 rules directory 열거와 파일 하나의 읽기 예외를 포함한다. rules 전체 재귀 읽기는 허용하지 않는다. 전역 사용자 지침은 별도 승인된 실제 파일 하나만 읽으며, 모델 문맥에 포함되는 효과도 승인 범위에 포함해야 한다. SecurityServer 조회는 읽기 전용 메시지를 보장하지 않으며 일반 공식 TCP transport·인증 처리의 신뢰 경계는 남는다. 공식 Code Mode helper 하나의 읽기·실행 예외도 포함한다. trusted Driver가 helper hash와 임시 기능 설정을 고정하며, 모델의 도구 호출 코드는 helper에서 실행되고 문서 효과는 외부 Host가 검사한다. 정책 파일을 바꾸면 고정 identity와 근거도 함께 다시 판단해야 한다. 경로 사전 검사는 같은 OS 계정의 적대적 동시 변경 방어가 아니다. 파일 metadata는 정책에서 허용하며 보호 검사는 내용 읽기와 쓰기를 대상으로 한다.
+
+[진행과 검증 한계](../../PATCH-20261029-001-official-runtime-policy.md)를 참조한다. 공식 배포 CLI 0.165.0/macOS 조합에서 합성 정상 편집·쓰기 직전 취소·별도 Host의 폐기권한 복원 거절·새권한 완료를 관측했다. 이 결과는 source-only 경로의 개발검증이며 Owner 결과 수락은 별도다. 기존 수정 native adapter, 설치 payload, 실제 Core 적용, 제품 기본값 및 Windows 지원은 이 후보로 변경하지 않는다.
