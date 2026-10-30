@@ -1,5 +1,7 @@
 # Development Index
 
+- 완료 실행 이력의 Git 권한 호환성: [Owner 결과 수락 및 source 완료](PATCH-20261030-003-completed-history-permissions.md#owner-result-acceptance-and-source-completion--2026-10-30).
+
 - 공식 링크 metadata native 검증: [실행 근거와 한계](CHORE-20261030-001-official-link-native-validation.md).
 
 - 공식 adapter 제품 연결: [승인 범위와 진행](FEAT-20261029-002-official-adapter-product.md).

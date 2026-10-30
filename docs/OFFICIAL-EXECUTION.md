@@ -82,3 +82,11 @@ prepare는 원본 출력 전체의 DOC-LINKS를 in-process 읽기 전용으로 �
 실행 전에 preview의 대상·anchor·metadata를 확인하고, 실행 중에는 링크 대상도 변경하지 않는다. metadata 변경은 drift로 중단될 수 있으며 모델 오류로 간주하지 않는다. 마지막 확인 뒤 파일이 사라지지 않는다는 보장은 없다. 이미 남은 capsule의 status/cancel/resolve/closed restore는 링크 대상의 현재 상태를 다시 승인 조건으로 삼지 않으며, 원 기록은 보존한다.
 
 추가 대상의 경로·inode·크기·mtime과 anchor 본문 digest도 capsule에 남아 Git commit에 포함될 수 있다. 기존 원문·진단 검토에 이 metadata도 포함한다. 새 link_targets를 쓰는 실제 adopter 실행 전에는 opaque/anchor·하위 폴더·opaque 본문 읽기 거절을 포함한 합성 native sandbox worker 검증이 필요하다. 소스의 in-process 검증이나 profile 검사만으로 이 OS 실행 경로를 입증하지 않는다.
+
+## Completed History After Git Checkout
+
+같은 canonical target에서는 무결성과 기존 종료 상태가 확인된 journal을 `0600` 또는 `0644`로 읽을 수 있다. Git checkout 결과도 이 두 권한일 때만 허용한다. 검증한 umask `022`와 `077`에서는 각각 `0644`와 `0600`으로 재생성된다. `0640`·`0664` 등 다른 결과는 계속 거절하며, 읽을 수 없는 이력이 있으면 일반 쓰기와 lifecycle도 차단된다.
+
+판독기는 파일 권한을 바꾸거나 실행 권한을 복원하지 않는다. 종료 이력에는 append 가능한 journal 객체를 반환하지 않으며, 늦은 callback·cancel·resolve가 종료된 실행을 다시 열지 못한다. 미종결·unknown 실행은 기존 private control-file 판정을 유지하고 일반 쓰기를 계속 막는다. 소유권·link·파일 변경·hash chain·종료 근거가 부적합한 기록도 거절한다. 기존 generic private mask가 허용하던 종료 이력의 `0400`·`0700`·특수 권한 역시 새 종료 이력의 허용 집합에 포함되지 않는다.
+
+checkout으로 파일·디렉터리가 `0644`·`0755`가 되면 journal뿐 아니라 grant·복구본 등도 다른 로컬 사용자에게 읽힐 수 있다. 이번 판독 허용은 기밀성 보장이 아니다. 다른 경로의 clone은 기존 grant-target 검사에서 계속 거절되며, 승인 경로를 재결속하거나 실행을 이전하지 않는다. 이전 reader는 `0644` journal을 여전히 거절할 수 있으므로 rollback은 정확한 이전 reader와 현재 기록 상태의 호환성을 별도로 확인해야 한다.
