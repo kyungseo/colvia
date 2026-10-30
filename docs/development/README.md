@@ -272,3 +272,5 @@ None created by this proposal. Allocate a plain development record ID only when 
 [Binding permission technical closeout](binding-permissions-amendment.md#technical-closeout--2026-10-16) — source result, exact identities, accepted evidence and remaining limits; existing preparation and private originals remain preserved.
 
 - 공식 링크 검증 정보 연결: [승인 범위와 진행](PATCH-20261029-003-official-link-metadata.md).
+
+- 공식 실행 이후 최초 설치 이력의 guard 선택 보정: [승인 범위와 진행](PATCH-20261030-002-official-guard-history.md).

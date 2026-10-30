@@ -599,7 +599,11 @@ Init policy is stable within windows-2; its cross-window transitions are forbidd
         # This selects a stricter OS/execution barrier, never establishes authority.
         # The caller still validates the complete receipt history under the lock.
         binding_path = target / ROOT_NAME / "product/binding.json"
-        if window == "continuation-1" and _exists(binding_path):
+        # The immutable init can predate several validated runtime upgrades.
+        # All legacy POSIX histories need the same stricter official barrier;
+        # this hint still cannot authorize a write or a cross-OS transition.
+        if window in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1",
+                      "entry-1", "delegation-1", "continuation-1"} and _exists(binding_path):
             binding = _file_json(binding_path)
             if isinstance(binding, dict) and isinstance(binding.get("active_release"), dict) and binding["active_release"].get("inventory_id") == "official-execution-1":
                 window = "official-execution-1"
