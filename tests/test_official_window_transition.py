@@ -342,6 +342,18 @@ def build_official_suite(*, candidate_source, predecessor_source, variant_source
             before=snapshot(clone)
             result=subprocess.run([str(clone/"colvia"),"view","continuation","local-work"],capture_output=True,timeout=30)
             self.assertEqual(0,result.returncode,result.stdout+result.stderr);self.assertEqual(before,snapshot(clone))
+            # A relocated grant remains unsupported: CLI exit zero must not hide
+            # its unavailable execution history or imply new execution readiness.
+            status=subprocess.run([str(clone/"colvia"),"status"],capture_output=True,timeout=30)
+            self.assertEqual(0,status.returncode,status.stdout+status.stderr)
+            observation=json.loads(status.stdout)
+            self.assertFalse(observation["official_execution"]["available"])
+            self.assertFalse(observation["official_execution"]["ready_for_new_grant"])
+            self.assertFalse(observation["lifecycle_ready"])
+            detail=subprocess.run([str(clone/"colvia"),"run","status","--grant",grant],capture_output=True,timeout=30)
+            self.assertNotEqual(0,detail.returncode)
+            self.assertIn("grant-target",(detail.stdout+detail.stderr).decode())
+            self.assertEqual(before,snapshot(clone))
 
         def test_06_new_detach_and_plain_auditor_preserve_continuation(self):
             target=self.init(candidate);self.call(self.installed(target),target,{"action":"local"});self.continuation(target)
@@ -374,7 +386,9 @@ def build_official_suite(*, candidate_source, predecessor_source, variant_source
             for cut in ('after-backup','after-file'):
                 with self.subTest(repair=cut):
                     target=self.init(candidate);self.call(self.installed(target),target,{'action':'local'})
-                    grant=self.closed_capsule(target);before=self.truth(target)
+                    grant=self.closed_capsule(target)
+                    (target/'.hrn/executions'/grant/'journal.jsonl').chmod(0o644)
+                    before=self.truth(target)
                     (target/'colvia').write_bytes(b'damaged launcher\n');backup=self.base/(target.name+'-backup')
                     packet=self.call(candidate,target,{'action':'repair-preview','operation_id':'repair','backup':str(backup)})
                     self.call(candidate,target,{'action':'repair','packet':packet,'backup':str(backup),'inject_at':cut},86)
@@ -386,7 +400,9 @@ def build_official_suite(*, candidate_source, predecessor_source, variant_source
                 with self.subTest(detach=cut):
                     target=self.init();packet=self.transition(target);self.switch(target,packet)
                     self.call(self.installed(target),target,{'action':'local'});self.continuation(target)
-                    grant=self.closed_capsule(target);before=self.truth(target)
+                    grant=self.closed_capsule(target)
+                    (target/'.hrn/executions'/grant/'journal.jsonl').chmod(0o644)
+                    before=self.truth(target)
                     packet=self.call(candidate,target,{'action':'detach-preview','operation_id':'mixed-detach'})
                     self.call(candidate,target,{'action':'detach','packet':packet,'inject_at':cut},86)
                     auditor=Path(__file__).parent/'fixtures/product_plain_auditor.py'

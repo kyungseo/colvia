@@ -551,6 +551,47 @@ class DocumentController:
 
 import threading
 
+def journal_rows(raw):
+    """One canonical hash-chain parser shared by live and historical reads."""
+    require(not raw or raw.endswith(b'\n'), 'journal-partial')
+    rows, previous = [], '0' * 64
+    for line in raw.splitlines():
+        row = json.loads(line, object_pairs_hook=reject_duplicate_keys)
+        require(isinstance(row, dict) and set(row) == {'seq', 'previous', 'kind', 'value', 'sha256'}, 'journal-fields')
+        body = {key: value for key, value in row.items() if key != 'sha256'}
+        require(type(body['seq']) is int and body['seq'] == len(rows) + 1 and body['previous'] == previous
+                and digest(canonical(body)) == row['sha256'] and canonical(row) == line + b'\n', 'journal-chain')
+        require(len(rows) < 8192, 'journal-count-limit')
+        rows.append(row)
+        previous = row['sha256']
+    return rows
+
+
+def journal_identity(info):
+    return (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_nlink,
+            info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+
+def observe_journal(path):
+    """Read a candidate history without granting append authority or changing mode."""
+    path = Path(path)
+    require(path.is_absolute() and path.resolve(strict=True) == path, 'noncanonical control file')
+    before = path.lstat()
+    mode = stat.S_IMODE(before.st_mode)
+    # Preserve the live reader's private-mode predicate. Only the capsule state
+    # machine may accept exactly 0600/0644 as terminal history.
+    require(stat.S_ISREG(before.st_mode) and before.st_uid == os.getuid() and before.st_nlink == 1
+            and (mode == 0o644 or not mode & 0o077), 'unsafe journal observation')
+    limit = 16 * 1024 * 1024
+    require(before.st_size <= limit, 'control file too large')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK)
+    with os.fdopen(fd, 'rb') as stream:
+        require(journal_identity(before) == journal_identity(os.fstat(stream.fileno())), 'journal-observation-drift')
+        raw = stream.read(limit + 1)
+        require(len(raw) <= limit, 'control file too large')
+        require(journal_identity(before) == journal_identity(os.fstat(stream.fileno())) == journal_identity(path.lstat())
+                and path.resolve(strict=True) == path, 'journal-observation-drift')
+    return journal_rows(raw), mode, journal_identity(before)
+
 class EffectJournal:
     """Private hash chain; append failure poisons this process and never repairs history."""
     def __init__(self, path, *, create=False):
@@ -564,18 +605,7 @@ class EffectJournal:
 
     def read(self):
         raw = control_read(self.path, 16 * 1024 * 1024)
-        require(not raw or raw.endswith(b'\n'), 'journal-partial')
-        rows, previous = [], '0' * 64
-        for line in raw.splitlines():
-            row = json.loads(line, object_pairs_hook=reject_duplicate_keys)
-            require(isinstance(row, dict) and set(row) == {'seq', 'previous', 'kind', 'value', 'sha256'}, 'journal-fields')
-            body = {key: value for key, value in row.items() if key != 'sha256'}
-            require(type(body['seq']) is int and body['seq'] == len(rows) + 1 and body['previous'] == previous
-                    and digest(canonical(body)) == row['sha256'] and canonical(row) == line + b'\n', 'journal-chain')
-            require(len(rows) < 8192, 'journal-count-limit')
-            rows.append(row)
-            previous = row['sha256']
-        return rows
+        return journal_rows(raw)
 
     def append(self, kind, value):
         with self.mutex:

@@ -118,15 +118,15 @@ def group_absent(pid):
 
 def read_capsule(target, grant):
     """Read after expiry; never reconstruct authority from a mutable checkpoint."""
-    from .official_documents import EffectJournal
+    from .official_documents import EffectJournal, observe_journal, journal_identity, require
     root = directory(capsule_path(target, grant))
     value = load(root / 'grant.json')
     need(set(value) == {'record_type', 'schema_version', 'grant', 'spec'} and
          value['record_type'] == 'official-execution-grant' and value['schema_version'] == 1 and
          value['grant'] == grant == digest(canonical(value['spec'])), 'grant-record')
     need(value['spec']['target'] == str(Path(target)), 'grant-target')
-    journal = EffectJournal(root / 'journal.jsonl')
-    rows = journal.read()
+    journal_path = root / 'journal.jsonl'
+    rows, journal_mode, observed_identity = observe_journal(journal_path)
     need(rows and rows[0]['kind'] == 'granted' and rows[0]['value'] == {'grant': grant}, 'grant-journal')
     allowed = {'granted', 'runtime-reserved', 'runtime-started', 'runtime-spawn-failed', 'bound', 'callback-reserved',
                'worker-result', 'worker-reserved', 'runtime-child', 'rpc-reserved', 'callback-completed', 'revoked', 'refused', 'effect-unknown',
@@ -183,6 +183,15 @@ def read_capsule(target, grant):
                  item['action'] == 'record-unknown-resolution' and item['status'] == (terminal or 'incomplete') and
                  type(item['documents']) is dict and set(item['documents']) == set(value['spec']['documents']['files']), 'resolution-state')
             terminal = 'operator-resolved-unknown'
+    journal = None
+    if terminal in TERMINAL:
+        need(journal_mode in (0o600, 0o644), 'closed-journal-mode')
+    else:
+        # A historical 0644 observation never becomes live control authority.
+        require(not journal_mode & 0o077, 'aliased or nonprivate control file')
+        journal = EffectJournal(journal_path)
+        require(journal.rows == rows and journal_identity(journal_path.lstat()) == observed_identity,
+                'journal-observation-drift')
     marker = None
     if os.path.lexists(root / 'cancel.json'):
         marker = load(root / 'cancel.json')
