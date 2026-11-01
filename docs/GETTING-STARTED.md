@@ -85,7 +85,7 @@ Accepting a worker result applies exact changes on control, leaving Git HEAD, in
 
 ## Review Without Editing JSON
 
-Start with `./colvia view` and its verified adapter. The managed manual explains Harness operation; project README/context/plan/DR/brief/Work documents explain project purpose and progress. Keep the stable view command in project entry, not a release-specific adapter path.
+Start with `./colvia view` and follow its guidance to the current adapter; this release exposes verified manual/adapter paths in `./colvia view --details`. The managed manual explains Harness operation; project README/context/plan/DR/brief/Work documents explain project purpose and progress. Keep the stable view command in project entry, not a release-specific adapter path.
 
 The agent prepares machine input and explains the existing Work narrative in your language: scope, progress, results, checks, limits and the decision needed. Review intent/Work and confirmation views; full revision identities and tokens support them. Decide the exact action before apply. Disclose changed/missing references and narrative/selected-record disagreement. English diagnostic labels do not set the conversation language. Views support the existing explanation; no automatic report, second status registry or extra record is needed.
 

@@ -97,6 +97,25 @@ class ContinuationProjectionTests(unittest.TestCase):
         self.assertIn("target_observation: target-purpose-changed",screen)
         self.assertIn("source_bound_intent_current: False",screen)
 
+    def test_overview_actual_work_choice_and_source_target_progress(self):
+        from hv2ref.view import _work_overview, _work_label
+        from hv2ref.intent import workspace_intents
+        self.another()
+        self.apply_cont(self.prepare_cont({"kind":"work","target_work_id":"work-b"}))
+        def overview():
+            before=self.bytes();works=self.store._all();intents=workspace_intents(self.target)
+            shown="\n".join(_work_overview("work-a",works["work-a"],intents,works))
+            self.assertEqual(before,self.bytes())
+            return shown,works,intents
+        shown,works,intents=overview()
+        self.assertNotIn("확인 필요",shown)
+        self.assertIn(_work_label("work-b",works["work-b"],intents),shown)
+        identity=self.identity;self.identity={**identity,"work_id":"work-b"}
+        self.publish(self.proposal("checkpoint"));self.identity=identity
+        shown,_,_=overview();self.assertIn("연결된 작업의 현재 기록을 다시 확인",shown)
+        self.publish(self.proposal("checkpoint"))
+        shown,_,_=overview();self.assertIn("후속 선택 이후 이 작업의 기록이 바뀌었습니다",shown)
+
 
 class ContinuationInstalledTests(unittest.TestCase):
     setUp=fixtures.ActualWorkspaceInitTests.setUp

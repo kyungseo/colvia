@@ -68,7 +68,7 @@ def unexpected_pack_paths(root: Path) -> list[str]:
 
 
 def markdown_links_outside_fences(text: str) -> list[str]:
-    """Keep the existing inline-link pattern, excluding bounded fenced code blocks."""
+    """Keep the existing link pattern, excluding fences/code spans; not a GFM parser."""
     import re
     outside = []
     fence = None
@@ -77,13 +77,71 @@ def markdown_links_outside_fences(text: str) -> list[str]:
             marker, length = fence
             if re.fullmatch(r" {0,3}" + re.escape(marker) + "{" + str(length) + r",}[ \t]*", line):
                 fence = None
+            outside.append("")  # Preserve block boundaries and source line positions.
             continue
         opening = re.fullmatch(r" {0,3}(`{3,}|~{3,})(.*)", line)
         if opening and not (opening[1][0] == "`" and "`" in opening[2]):
             fence = (opening[1][0], len(opening[1]))
+            outside.append("")
         else:
             outside.append(line)
-    return re.findall(r"\[[^\]]+\]\(([^)]+)\)", "\n".join(outside))
+    prose = "\n".join(outside)
+    link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    ticks = re.compile(r"`+")
+    isolated = re.compile(
+        r" {0,3}(?:#{1,6}(?:[ \t]+|$)|\||"
+        r"(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,}|(?:=+|-+)[ \t]*)$)"
+    )
+    starts_block = re.compile(r" {0,3}(?:>|(?:[-+*]|[0-9]+[.)])[ \t]+)")
+    spans = []
+
+    def scan(start, end):
+        cursor = start
+        while cursor < end:
+            if prose[cursor] == "\\":
+                cursor += 2  # Only the first escaped backtick is literal.
+                continue
+            matched_link = link.match(prose, cursor, end)
+            if matched_link:
+                # Backticks inside a recognized link do not start an outer code span.
+                cursor = matched_link.end()
+                continue
+            opening = ticks.match(prose, cursor, end)
+            if not opening:
+                cursor += 1
+                continue
+            closing = next((run for run in ticks.finditer(prose, opening.end(), end)
+                            if len(run[0]) == len(opening[0])), None)
+            if closing is None:
+                cursor = opening.end()
+            else:
+                spans.append((opening.start(), closing.end()))
+                cursor = closing.end()
+
+    start = offset = 0
+    for line in prose.splitlines(keepends=True):
+        end = offset + len(line)
+        if not line.strip(" \t\r\n") or isolated.match(line):
+            scan(start, offset)
+            scan(offset, end)
+            start = end
+        elif starts_block.match(line):
+            scan(start, offset)
+            start = offset
+        offset = end
+    scan(start, len(prose))
+    result = []
+    cursor = span_index = 0
+    while matched := link.search(prose, cursor):
+        while span_index < len(spans) and spans[span_index][1] <= matched.start():
+            span_index += 1
+        if span_index < len(spans) and spans[span_index][0] <= matched.start() < spans[span_index][1]:
+            # A code '[' can consume a later real link; search again after that '['.
+            cursor = matched.start() + 1
+        else:
+            result.append(matched[1])
+            cursor = matched.end()
+    return result
 
 
 class DocumentLinkOracleTests(unittest.TestCase):
@@ -102,6 +160,49 @@ class DocumentLinkOracleTests(unittest.TestCase):
         for text, expected in cases:
             with self.subTest(text=text):
                 self.assertEqual(expected, markdown_links_outside_fences(text))
+
+    def test_inline_code_spans_keep_real_links(self):
+        cases = [
+            ("`[x](a.md)` [r](b.md)", ["b.md"]),
+            ("``[x](a.md) ` `` [r](b.md)", ["b.md"]),
+            ("`[` [r](b.md)", ["b.md"]),
+            ("`unmatched [r](b.md)", ["b.md"]),
+            (r"\`[r](b.md)`", ["b.md"]),
+            (r"\``[hidden](a.md)` [r](b.md)", ["b.md"]),
+            (r"\\`[hidden](a.md)` [r](b.md)", ["b.md"]),
+            (r"`a\` [r](b.md) `c`", ["b.md"]),
+            ("[`code`](b.md)", ["b.md"]),
+            ("[t](`b.md)`", ["`b.md"]),
+            ("[t](a`b`c.md) [r](b.md)", ["a`b`c.md", "b.md"]),
+            ("`a\n\n[r](b.md)`", ["b.md"]),
+            ("`a\n```\nhidden\n```\n[r](b.md)`", ["b.md"]),
+            ("`a\n# h\nb` [r](b.md)", ["b.md"]),
+            ("`a\n[x](c.md)\nb` [r](b.md)", ["b.md"]),
+            ("``` `[x](a.md)` ```", []),
+            ("[a\n\nb](b.md)", ["b.md"]),  # Retain the old regex coverage.
+        ]
+        cases += [('***bold*** `a\nb` [r](y.md) `c', ['y.md']), ('- `a\n  b` [r](y.md) `c', ['y.md']), ('> `a\nb` [r](y.md) `c', ['y.md'])]
+        cases += [('`a\n=-\nb` [r](y.md) `c', ['y.md']), ('`a\n\u3000\nb` [r](y.md) `c', ['y.md']), ('`a\n\xa0\nb` [r](y.md) `c', ['y.md'])]
+        for marker in ("# h", "> q", "- item", "1. item", "2) item", "| cell |", "---", "===", "***", "___"):
+            cases.append(("`a\n" + marker + "\n[r](b.md)`", ["b.md"]))
+        for text, expected in cases:
+            with self.subTest(text=text):
+                self.assertEqual(expected, markdown_links_outside_fences(text))
+
+    def test_local_link_oracle_inline_examples_and_real_failures(self):
+        with tempfile.TemporaryDirectory(prefix="document-link-inline-") as directory:
+            self._fixture(Path(directory), "`[example](missing.md)` ``[example](../outside.md)`` [good](docs/ok.md)")
+            ActualWorkspaceInitTests.test_document_port_local_links_resolve(self)
+        for content, message in [
+            ("`[x](docs/ok.md)` [bad](missing.md)", "missing.md"),
+            ("`x` [bad](../outside.md)", "outside repository"),
+            ("`[` [bad](missing.md)", "missing.md"),
+            ("`unmatched [bad](missing.md)", "missing.md"),
+        ]:
+            with self.subTest(content=content), tempfile.TemporaryDirectory(prefix="document-link-inline-") as directory:
+                self._fixture(Path(directory), content)
+                with self.assertRaisesRegex(AssertionError, message):
+                    ActualWorkspaceInitTests.test_document_port_local_links_resolve(self)
 
     def _fixture(self, root, content):
         self.source = root / "source"
@@ -696,22 +797,6 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         self.assertEqual([],hits)
 
     def test_document_port_local_links_resolve(self):
-        import re
-        def prose_links(text):
-            # Fenced examples are literal text, including retained historical quotations.
-            fence=None;prose=[]
-            for line in text.splitlines():
-                marker=re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$",line)
-                if fence is not None:
-                    if marker and marker[1][0]==fence[0] and len(marker[1])>=len(fence) and not marker[2].strip():fence=None
-                    continue
-                if marker:
-                    fence=marker[1];continue
-                prose.append(line)
-            return re.findall(r"\[[^\]]+\]\(([^)]+)\)","\n".join(prose))
-        for opening,closing in (("```text","```"),("~~~~markdown","~~~~~")):
-            sample="[live](README.md)\n"+opening+"\n[example](missing-example.md)\n"+closing+"\n[live](AGENTS.md)\n"
-            self.assertEqual(["README.md","AGENTS.md"],prose_links(sample))
         docs=[self.source/"README.md",self.source/"AGENTS.md",self.source/"CLAUDE.md",*sorted((self.source/"docs").glob("*.md"))]
         for doc in docs:
             for link in markdown_links_outside_fences(doc.read_text(encoding="utf-8")):

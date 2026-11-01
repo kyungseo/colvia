@@ -19,7 +19,7 @@ These instructions describe the `continuation-1` profile; in an installed projec
 ## Start
 
 1. When explicitly asked to develop Colvia itself in its trusted source checkout, read source-only `CONTRIBUTING.md`, then its Development Workflow and existing task record. The Workflow's unchanged-entry statement describes the earlier source-only relocation; this candidate adds the conditional route. Do not install a runtime or create typed Work to begin source development.
-2. In an installed project run `./colvia view`, follow project-owned rules and read the verified manual/adapter paths it displays. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
+2. In an installed project run `./colvia view --details`, follow project-owned rules and read the verified manual/adapter paths in its technical details. The default `./colvia view` is the concise human screen. Stable project-owned entry instructions may start there and follow its guidance to the current adapter. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
 3. For setup or broken-launcher diagnosis, use an independent trusted source with explicit `--source-checkout`; see [Getting Started](docs/GETTING-STARTED.md) and [Operations](docs/OPERATIONS.md).
 4. Propose scope and evidence. Obtain human acceptance of the exact intent and result. Keep one editing Work at a time during serial use.
 

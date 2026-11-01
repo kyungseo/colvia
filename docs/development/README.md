@@ -1,5 +1,7 @@
 # Development Index
 
+- 작업 중 안내와 View 요약 — 완료(Owner 수락, 2026-11-01): [수락 범위·한계·실사용 후속 보완](FEAT-20261031-001-guidance-and-view-summary.md).
+
 - 완료 실행 이력의 Git 권한 호환성: [Owner 결과 수락 및 source 완료](PATCH-20261030-003-completed-history-permissions.md#owner-result-acceptance-and-source-completion--2026-10-30).
 
 - 공식 링크 metadata native 검증: [실행 근거와 한계](CHORE-20261030-001-official-link-native-validation.md).
