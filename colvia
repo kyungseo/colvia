@@ -155,7 +155,7 @@ def main() -> int:
         if not observed["supported"]:
             print(json.dumps({"classification": observed["classification"], "code": "HV2-WORKSPACE-RUNTIME",
                               "message": observed["reason"], "runtime": observed}, sort_keys=True))
-            return 16 if any(arg in {"status", "doctor", "view"} for arg in sys.argv[1:2]) else 65
+            return 16 if any(arg in {"status", "doctor", "view", "help", "?"} for arg in sys.argv[1:2]) else 65
         if not sys.flags.isolated or not sys.dont_write_bytecode:
             return fail("HV2-WORKSPACE-RUNTIME", "windows-2 requires explicit allowed Python -I -B")
     root = Path(__file__).absolute().parent

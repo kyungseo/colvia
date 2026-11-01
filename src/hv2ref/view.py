@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+import shlex
 from pathlib import Path
 import stat
 import sys
@@ -669,7 +670,7 @@ def _confirmation(target, ticket, works, intents, product):
     return lines
 
 
-def render_candidates(target, *, works: dict, intents: dict) -> tuple[list[str], dict]:
+def render_candidates(target, *, works: dict, intents: dict, brief=False) -> tuple[list[str], dict]:
     from .candidates import read_candidates, check_link, _selected_revision, MAX_CANDIDATES, MAX_DECISIONS, MAX_BYTES
     from .jsonio import canonical_json_bytes
     try:
@@ -682,14 +683,20 @@ def render_candidates(target, *, works: dict, intents: dict) -> tuple[list[str],
              '- 명령: ' + code('view candidates') + '; ' + code('candidate --help'),
              '- 이 control checkout/branch의 기록만 읽습니다. 다른 branch의 기록은 포함하지 않습니다.',
              '- 후보 기록 digest: ' + code(observed['sha256'] or 'none')]
+    if brief:
+        lines = ['', '## 다음 작업 후보', '', '이 작업 공간에 기록된 계획입니다. 시작할 때 목표·범위와 실행 승인을 확인합니다.']
     if not observed['present']:
         return lines + ['- 이 checkout에는 후보 기록이 없습니다. 다른 branch일 수 있습니다.'], observed
     count = len(store['candidates']); decisions = len(store['decisions']); size = len(canonical_json_bytes(store))
-    lines += [f'- 한도: 후보 {count}/{MAX_CANDIDATES}, 결정 {decisions}/{MAX_DECISIONS}, bytes {size}/{MAX_BYTES}.']
+    if not brief: lines += [f'- 한도: 후보 {count}/{MAX_CANDIDATES}, 결정 {decisions}/{MAX_DECISIONS}, bytes {size}/{MAX_BYTES}.']
     if count >= MAX_CANDIDATES * .8 or decisions >= MAX_DECISIONS * .8 or size >= MAX_BYTES * .8:
         lines += ['- 한도 근접: 초과 쓰기는 미저장으로 거부합니다. 이력을 삭제하지 말고 지원 한도/후속 제품 판단을 요청하세요.']
     for cid, row in sorted(store['candidates'].items()):
-        lines += ['', '### ' + text(cid) + ' — ' + text(row['title']), '- 목적: ' + text(row['purpose']), '- 기대 효과: ' + text(row['expected_effect']), '- 후보 처분: ' + text(row['disposition']), '- 최근 이유: ' + text(row['reason'])]
+        if brief:
+            disposition = {'open': '검토 중', 'deferred': '보류', 'absorbed': '다른 계획에 반영', 'rejected': '채택하지 않음'}.get(row['disposition'], row['disposition'])
+            lines += ['', '### ' + text(row['title']) + ' (' + code(cid) + ')', '- 상태: ' + text(disposition), '- 목적: ' + text(row['purpose']), '- 기대 효과: ' + text(row['expected_effect']), '- 최근 이유: ' + text(row['reason'])]
+        else:
+            lines += ['', '### ' + text(cid) + ' — ' + text(row['title']), '- 목적: ' + text(row['purpose']), '- 기대 효과: ' + text(row['expected_effect']), '- 후보 처분: ' + text(row['disposition']), '- 최근 이유: ' + text(row['reason'])]
         linked_work = False; bad_link = False; linked_intent = False; intent_ids = set()
         for ref in row['links']:
             try:
@@ -724,13 +731,325 @@ def render_candidates(target, *, works: dict, intents: dict) -> tuple[list[str],
             lines += ['- 기록된 Owner 선택 (agent 기록, 인증 아님): ' + text(latest['reason']), '- 발화 근거: ' + text(latest['owner_statement'])]
             if bad_link: lines += ['- 다음 행동: 연결 확인 필요; 새 실행 승인이나 준비 완료로 해석하지 마세요.']
             elif not linked_work and not inferred_works: lines += ['- 다음 행동: ' + ('수락된 intent의 currentness와 범위를 확인하고 Work 준비.' if linked_intent else 'intent 구체화·Owner 수락 필요. 선택만으로 실행하지 않습니다.')]
-    lines += ['', '- 제품은 우선순위 점수·조건 충족·자동 재개를 판단하지 않습니다. Agent 추천과 저장된 선택, 실제 Work 권한을 구분하세요.']
+    if not brief: lines += ['', '- 제품은 우선순위 점수·조건 충족·자동 재개를 판단하지 않습니다. Agent 추천과 저장된 선택, 실제 Work 권한을 구분하세요.']
     return lines, observed
 
 
-def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None, installed=False):
+_WORK_STATE_LABELS = {"empty": "선택된 기록 없음", "planned": "계획됨",
+                      "active": "진행 중으로 기록됨", "review": "결과 검토 대기",
+                      "rework": "재작업 단계", "completed": "결과 수락 완료",
+                      "rejected": "반려 기록", "revoked": "수락 철회 기록"}
+
+
+def _work_state_label(state):
+    return _WORK_STATE_LABELS.get(state, "기타(" + text(state) + ")")
+
+
+def _work_label(wid, graph, intents, *, graph_details=True):
+    """Label verified selected data only; optional prose never masks view status."""
+    title = None
+    revision = None
+    if graph_details:
+        try:
+            selected = _resolve(graph["selections"], graph["current"]["selection_ref"])
+            revision = _resolve(graph["revisions"], selected["revision_ref"])
+            ref = revision["intent_ref"]
+            intent = intents[ref["id"]]
+            from .intent import _resolve_workspace_intent
+            observed, bound = _resolve_workspace_intent(intent, ref["id"], ref)
+            draft = _resolve(intent["drafts"], bound["revision_ref"])
+            goal = draft["facets"]["goal"]
+            if goal["status"] == "known" and isinstance(goal.get("value"), str):
+                value = " ".join(goal["value"].split())
+                if value:
+                    title = ("" if observed["is_current"] else "이전 목표: ") + text(value[:60] + ("…" if len(value) > 60 else ""))
+        except (ContractError, KeyError, ValueError, TypeError, AttributeError, IndexError):
+            pass
+        if title is None and isinstance(revision, dict):
+            scope = revision.get("scope")
+            if isinstance(scope, list) and scope and all(isinstance(path, str) and path for path in scope):
+                path = scope[0]
+                title = "범위: " + text(path[:60] + ("…" if len(path) > 60 else ""))
+                if len(scope) > 1:
+                    title += " 외 " + str(len(scope) - 1) + "개"
+    return (title or "제목 확인 필요") + " (" + code(wid) + ")"
+
+
+def _problem_explanations(blockers, works, intents, *, graph_details):
+    lines = []
+    for wid in sorted(blockers.get("continuation_unavailable", {})):
+        label = _work_label(wid, works.get(wid), intents, graph_details=graph_details)
+        lines += ["- " + label + ": 후속 계획·선택 기록을 읽을 수 없습니다."]
+    for key, label in (("pending_work", "작업 기록 처리"), ("pending_intent", "목표 기록 처리"),
+                       ("pending_continuation", "후속 계획·선택 기록 처리")):
+        if key in blockers:
+            lines += ["- " + label + (" 상태를 확인할 수 없습니다." if blockers[key] == "확인 불가" else "가 아직 끝나지 않았습니다.")]
+    if "lifecycle_ready" in blockers:
+        lines += ["- Colvia 설치·갱신·제거 전에 미해결 기록이나 충돌을 확인해야 합니다."]
+    for key in ("message", "reason"):
+        if isinstance(blockers.get(key), str):
+            lines += ["- 확인된 이유: " + text(blockers[key])]
+    explanations = {
+        "official_execution": "실행 기록을 읽을 수 없거나 아직 해결되지 않은 실행이 있습니다.",
+        "pending_lifecycle": "Colvia 설치·갱신·복구·제거 중 끝나지 않은 처리가 있습니다.",
+        "planning": "다음 작업 후보와 선택 기록을 확인할 수 없습니다.",
+        "runtime_supported": "현재 실행 환경이 Colvia의 지원 조건을 충족하지 않습니다.",
+        "pending_detach": "Colvia 제거 처리가 아직 끝나지 않았습니다.",
+        "remaining_files": "제거 처리에서 정리할 파일이 남아 있습니다.",
+        "remaining_directories": "제거 처리에서 정리할 폴더가 남아 있습니다.",
+        "record_verification": "작업·목표 기록의 검증을 완료하지 못했습니다.",
+        "paths": "확인이 필요한 파일 경로가 있습니다.",
+        "recovery": "복구 상태와 필요한 조치를 확인해야 합니다.",
+        "root_classification": "프로젝트 기록의 기본 구성을 확인해야 합니다.",
+        "product_verification": "설치된 Colvia 파일의 검증 결과를 확인해야 합니다.",
+        "retired_entry_collision": "이전 실행 진입점과 충돌하는 파일이 있습니다.",
+        "error_code": "점검 오류가 발생했습니다. 아래 진단 상세에 오류 코드가 있습니다.",
+        "error": "점검 오류가 발생했습니다. 아래 진단 상세에 오류 내용이 있습니다.",
+    }
+    explained = {"continuation_unavailable", "pending_work", "pending_intent", "pending_continuation",
+                 "lifecycle_ready", "message", "reason"}
+    for key in blockers:
+        if key not in explained:
+            lines += ["- " + explanations.get(key, "추가 확인 항목이 있습니다: " + text(key))]
+    return lines
+
+
+def _cli_command(target, installed, command, *arguments):
+    launcher = Path(target) / "colvia" if installed else Path(__file__).parents[2] / "colvia"
+    args = [str(launcher)] + ([] if installed else ["--source-checkout"])
+    args += [command] + ([] if installed else ["--target", str(target)]) + list(arguments)
+    if sys.platform == "win32":
+        args = [sys.executable, "-I", "-B", *args]
+        return "& " + " ".join("'" + arg.replace("'", "''") + "'" for arg in args)
+    return shlex.join(args)
+
+
+def _view_command(target, installed, kind, object_id):
+    return _cli_command(target, installed, "view", kind, object_id)
+
+
+def _display_command(target, installed, command, *arguments):
+    """Short POSIX examples run from the displayed project; exact commands stay separate."""
+    if installed and sys.platform != "win32":
+        return "./colvia " + shlex.join([command, *arguments])
+    return _cli_command(target, installed, command, *arguments)
+
+
+def render_help(target, *, installed=False):
+    """Static guidance: no project observation, input consumption or writer."""
+    commands = [("작업 현황", ()), ("작업 내용과 검토할 결과", ("work", "WORK_ID")),
+                ("기록된 후속 계획", ("continuation", "WORK_ID")),
+                ("다음 작업 후보", ("candidates",)), ("목표와 범위", ("intent", "INTENT_ID")),
+                ("기술 상세·전체 ID·직접 조회 명령", ("--details",)),
+                ("확인할 결정의 상세", ("confirmation", "--input", "TICKET_FILE"))]
+    lines = ["# Colvia 도움말", "", "## 말로 물어보기", "",
+             "작업 제목이나 ID에 알고 싶은 내용을 붙여 물어보세요.", "",
+             '- “작업 진행 화면 개선의 진행 상황과 후속 계획을 보여줘.”',
+             '- “다음 작업 후보를 비교하고 하나를 추천해줘.”', "",
+             "## 직접 조회하기", ""]
+    if installed and sys.platform != "win32":
+        lines += ["아래 명령은 프로젝트 폴더에서 실행하세요.", ""]
+    for label, args in commands:
+        lines += ["- " + label + ": " + code(_display_command(target, installed, "view", *args))]
+    lines += ["", "WORK_ID는 작업 제목 옆 괄호의 ID로, INTENT_ID는 기술 상세의 intent 값으로 바꾸세요.",
+              "TICKET_FILE에는 준비된 결정 티켓 파일 경로를 넣으세요.", "",
+              "짧은 별칭은 " + code(_display_command(target, installed, "?")) + "입니다. 셸에서 ?를 파일명으로 해석하지 않도록 따옴표를 붙이세요.",
+              "이 도움말은 조회 안내입니다. 프로젝트 상태는 작업 현황에서 확인하세요."]
+    return "\n".join(lines) + "\n"
+
+
+def _normal_overview(status, product):
+    """Only omit raw diagnostics for an explicitly healthy verified observation."""
+    runtime, planning = status.get("runtime"), status.get("planning")
+    execution = status.get("official_execution")
+    return (status.get("classification") == "pass" and status.get("authoritative_control") is True
+            and all(status.get(k) == [] for k in ("pending_work", "pending_intent", "pending_continuation"))
+            and status.get("lifecycle_ready") is not False and not status.get("continuation_unavailable")
+            and isinstance(runtime, dict) and runtime.get("supported") is True
+            and isinstance(planning, dict) and planning.get("available") is True
+            and (execution is None or isinstance(execution, dict) and execution.get("available") is True
+                 and execution.get("ready_for_new_grant") is True)
+            and not any(status.get(key) for key in ("error", "error_code", "message", "reason", "paths", "recovery", "product_verification", "pending_lifecycle", "retired_entry_collision", "root_classification"))
+            and status.get("record_verification") in (None, "verified")
+            and bool(product))
+
+
+def _work_overview(wid, graph, intents, works):
+    lines = ["### " + _work_label(wid, graph, intents), "",
+             "- 상태: " + _work_state_label(graph.get("state"))]
+    if graph.get("pending_decisions") or graph.get("pending_selections"):
+        lines += ["- 확인 필요: 작업 기록 처리가 끝나지 않았습니다."]
+    state = graph.get("continuation")
+    if not isinstance(state, dict):
+        return lines + ["- 후속 계획: 기록을 읽을 수 없습니다.", ""]
+    choice = state.get("effective_choice")
+    if choice is None:
+        follow = "아직 정하지 않음"
+    elif choice.get("kind") == "none":
+        follow = "후속 작업 없음으로 선택됨"
+    elif choice.get("kind") == "proposal":
+        goal = " ".join(str(choice.get("goal", "내용 확인 필요")).split())
+        follow = "제안 — " + text(goal[:80] + ("…" if len(goal) > 80 else ""))
+    elif choice.get("kind") == "work":
+        selected = choice.get("target", {})
+        target_id = selected.get("object", {}).get("id", "확인 불가")
+        other = works.get(target_id)
+        recorded = dict(other, current={"selection_ref": selected["selection_ref"]}) if other and "selection_ref" in selected else None
+        follow = "작업 연결 기록 — " + _work_label(target_id, recorded, intents)
+    else:
+        follow = "선택 내용 확인 필요"
+    lines += ["- 후속 계획: " + follow]
+    ticket = state.get("effective_ticket")
+    if ticket:
+        from .continuation import current_snapshot
+        try:
+            if current_snapshot(graph) != ticket["source"]:
+                lines += ["- 확인 필요: 후속 선택 이후 이 작업의 기록이 바뀌었습니다."]
+            if choice and choice.get("kind") == "work":
+                selected = choice["target"]
+                other = works.get(selected["object"]["id"])
+                if other is None or current_snapshot(other) != selected:
+                    lines += ["- 확인 필요: 연결된 작업의 현재 기록을 다시 확인해야 합니다."]
+        except (ContractError, KeyError, TypeError, ValueError, AttributeError):
+            lines += ["- 확인 필요: 후속 선택과 현재 작업 기록의 일치 여부를 확인할 수 없습니다."]
+    elif choice is not None:
+        lines += ["- 확인 필요: 후속 선택과 현재 작업 기록의 일치 여부를 확인할 수 없습니다."]
+    if state.get("pending"):
+        lines += ["- 확인 필요: 후속 선택 기록 처리가 끝나지 않았습니다."]
+    remaining = state.get("usage", {}).get("normal_remaining")
+    if type(remaining) is not int:
+        lines += ["- 확인 필요: 후속 선택의 남은 횟수를 확인할 수 없습니다."]
+    elif remaining == 0:
+        lines += ["- 확인 필요: 후속 선택 횟수를 모두 사용했습니다."]
+    return lines + [""]
+
+
+def _project_summary(status, works, intents, *, graph_details, target, compact=False, diagnostics_only=False):
+    """Use the existing observation, including readable retained graphs; no scan."""
+    classification = status["classification"]
+    descriptions = {
+        "pass": "설치와 작업 기록의 기본 점검을 통과했습니다.",
+        "partial": "끝나지 않은 처리나 확인할 수 없는 항목이 있습니다.",
+        "degraded": "일부 기록이 손상되었거나 읽을 수 없습니다.",
+        "uninitialized": "Colvia 설치 상태를 확인할 수 없습니다.",
+        "incompatible": "프로젝트 기록이 현재 Colvia 버전과 호환되지 않습니다.",
+        "unsupported": "현재 실행 환경은 Colvia 지원 조건을 충족하지 않습니다.",
+        "conflict": "프로젝트 상태에 충돌이 있습니다.",
+        "stale": "현재 프로젝트 상태와 저장된 기록이 일치하지 않습니다.",
+        "unstable": "확인하는 동안 프로젝트 상태가 바뀌어 결과를 확정할 수 없습니다.",
+        "detached": "Colvia가 제거된 상태입니다.",
+    }
+    work_states = status.get("work_states")
+    intent_count = status.get("intent_count")
+    # Empty fallback graphs can mean unreadable/bootstrap state, not verified zero.
+    work_count = len(work_states) if isinstance(work_states, dict) else len(works) if works else None
+    intent_count = intent_count if type(intent_count) is int else len(intents) if intents else None
+    counts = "작업 " + (str(work_count) + "개" if work_count is not None else "확인 불가")
+    counts += " / 목표 " + (str(intent_count) + "개" if intent_count is not None else "확인 불가")
+    blockers = {}
+    for key in ("error_code", "error", "reason", "message", "paths", "recovery",
+                "root_classification", "product_verification", "pending_lifecycle",
+                "retired_entry_collision", "continuation_unavailable"):
+        if status.get(key): blockers[key] = status[key]
+    if status.get("record_verification") not in (None, "verified"):
+        blockers["record_verification"] = status["record_verification"]
+    for key in ("pending_work", "pending_intent", "pending_continuation"):
+        value = status.get(key)
+        if value is None: blockers[key] = "확인 불가"
+        elif value: blockers[key] = value
+    if status.get("lifecycle_ready") is False:
+        blockers["lifecycle_ready"] = False
+    planning = status.get("planning")
+    if isinstance(planning, dict) and planning.get("available") is False:
+        blockers["planning"] = {k: v for k, v in planning.items()
+                                if k in {"available", "error_code", "message"}}
+    execution = status.get("official_execution")
+    if isinstance(execution, dict) and (execution.get("available") is False or
+                                      execution.get("ready_for_new_grant") is False):
+        blockers["official_execution"] = "확인 불가 또는 미해결 실행 있음; 아래 세부 정보의 공식 실행 항목 참조"
+    if status.get("runtime", {}).get("supported") is False:
+        blockers["runtime_supported"] = False
+    detaching = classification == "partial" and "remaining_files" in status and "remaining_directories" in status
+    if detaching:
+        descriptions["partial"] = "Colvia 제거가 진행 중입니다."
+        blockers["pending_detach"] = status["receipt"]["operation_id"]
+        for key in ("remaining_files", "remaining_directories"):
+            if status[key]: blockers[key] = status[key]
+    if diagnostics_only:
+        return (["### 진단 상세", "", "원인 확인에 필요한 기록값입니다.", ""] + fields(blockers) + [""]) if blockers else []
+    location_kind = {"primary": "기본 worktree", "linked-worktree": "연결 worktree",
+                     "non-git": "프로젝트 폴더", "subdirectory": "저장소 안의 폴더",
+                     "submodule": "서브모듈", "separate-git-dir": "worktree",
+                     "nested-repository": "중첩 저장소"}.get(status.get("topology"))
+    location = code(str(target)) + (" (" + location_kind + ")" if location_kind else "")
+    state_map = {key: graph.get("state") for key, graph in works.items()}
+    distribution_known = graph_details and work_count is not None and len(works) == work_count and all(state_map.values())
+    if distribution_known:
+        groups = {state: sum(value == state for value in state_map.values()) for state in set(state_map.values())}
+        progress = " · ".join(_work_state_label(state) + " " + str(groups[state]) + "개" for state in sorted(groups)) or "등록된 작업 없음"
+    else:
+        progress = "상태별 분포 확인 불가"
+    attention = {key for key, graph in works.items() if graph_details and
+                 (graph.get("state") in ("review", "rejected", "revoked") or graph.get("pending_decisions") or graph.get("pending_selections"))}
+    for key in ("pending_work", "pending_continuation"):
+        attention.update(status.get(key) or [])
+    attention.update(status.get("continuation_unavailable") or {})
+    attention_known = distribution_known and all(isinstance(status.get(key), list)
+                                                 for key in ("pending_work", "pending_continuation"))
+    if attention:
+        attention_text = ", ".join(_work_label(key, works.get(key), intents, graph_details=graph_details) for key in sorted(attention))
+        if not attention_known:
+            attention_text += " (전체 확인 불가)"
+    else:
+        attention_text = "해당 작업 없음" if attention_known else "확인 불가"
+    issue = classification not in ("pass", "detached") or bool(blockers)
+    if compact:
+        lines = ["## 한눈에 보기", "", "- " + counts + " · " + progress + ".",
+                 "- 프로젝트 경로: " + location]
+        if issue:
+            lines += ["- 먼저 확인: " + (descriptions.get(classification, "프로젝트 상태를 확인해야 합니다.") if classification != "pass" else "확인할 항목이 있습니다.") + " 아래 기술 상세에 원인과 기록값이 있습니다."]
+            lines += _problem_explanations(blockers, works, intents, graph_details=graph_details)
+        elif not works and work_count == 0:
+            lines += ["- " + ("등록된 목표를 바탕으로 시작할 작업을 물어보세요." if intent_count else "원하는 작업을 설명하면 목표와 범위부터 정리할 수 있습니다.")]
+        if attention:
+            lines += ["- 확인할 작업: " + str(len(attention)) + "개" + (" (전체 확인 불가)" if not attention_known else "") + ". 아래 상태와 확인 필요 항목을 보세요."]
+        elif not attention_known:
+            lines += ["- 확인할 작업: 확인 불가."]
+        missing = sorted(attention - works.keys())
+        if missing:
+            lines += ["- 추가 확인할 작업 기록: " + ", ".join(code(wid) for wid in missing)]
+        return lines + [""]
+    lines = ["## 한눈에 보기", ""]
+    if issue:
+        lines += ["- 먼저 확인: " + (descriptions.get(classification, "확인하지 못한 항목이 있습니다.") if classification != "pass" else "추가로 확인할 사항이 있습니다.") + " 문제·미확인 항목은 아래에 모두 표시합니다."]
+    lines += ["- 작업 진행(기록 기준): " + progress + ".",
+              "- 확인할 작업: " + attention_text + ".",
+              "- " + ("읽을 수 있는 기록: " if issue else "등록된 기록: ") + counts + "."]
+    if not issue:
+        lines += ["- 설치·기록 점검: " + descriptions.get(classification, "상세 참조")]
+    if issue:
+        request_hint = "현재 프로젝트에서 확인하지 못한 내용과 다음 확인 방법을 물어보세요."
+    elif work_count == 0:
+        request_hint = ("등록된 목표를 바탕으로 어떤 작업을 시작할 수 있는지 물어보세요." if intent_count
+                        else "원하는 작업을 설명하고 목표와 범위를 정리해 달라고 요청하세요.")
+    elif work_count is None:
+        request_hint = "현재 프로젝트의 작업 기록과 확인할 사항을 물어보세요."
+    else:
+        request_hint = "작업 제목이나 ID를 넣어 진행 상황과 후속 계획을 물어보세요."
+    lines += ["- 더 알아보기: " + request_hint]
+    lines += ["- 프로젝트 경로: " + location,
+              ("- 자세히 보기: 아래 목표·작업 목록" + ("과 진단 상세" if blockers else "") + "를 확인하세요. 직접 조회 명령도 별도로 제공합니다.") if graph_details and (works or intents) else "- 자세히 보기: 아래 프로젝트 세부 정보에서 확인한 내용과 추가 확인이 필요한 항목을 볼 수 있습니다.", ""]
+    if blockers:
+        lines += ["### 문제·미확인 항목 상세", ""]
+        lines += _problem_explanations(blockers, works, intents, graph_details=graph_details)
+        lines += ["", "#### 진단 상세", "", "원인 확인에 필요한 기록값입니다.", ""] + fields(blockers) + [""]
+    return lines
+
+
+def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None, installed=False, details=False):
     """Return GFM and exit status; make no filesystem changes even on degraded input."""
     try:
+        _require(not details or (kind is None and revision is None and ticket is None), "--details requires project view without selector, revision or input")
         target = safe_target(target)
         _require(kind in (None, "intent", "work", "continuation", "confirmation", "candidates"), "unknown view kind")
         _require((kind in ("intent", "work", "continuation")) == (object_id is not None), "view object ID required only for intent/work/continuation")
@@ -739,16 +1058,55 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
         for attempt in range(2):
             status, works, intents = before = _observe(target)
             classification = status["classification"]
+            readable_continuation_damage = bool(status.get("continuation_unavailable")) and kind in (None, "work", "continuation", "intent")
+            graph_details = classification not in ("degraded", "uninitialized", "incompatible", "unstable") or readable_continuation_damage
             lines = ["# Colvia — project review", "", "Read-only observation; human acceptance and exact application remain separate.", ""]
-            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "pending_continuation", "next_action", "error_code", "reason", "message", "lifecycle_ready", "retired_entry_collision", "continuation_unavailable", "official_execution"}}})
-            if "runtime" in status: lines += fields({"runtime_supported": status["runtime"].get("supported", "unavailable")})
             product = _product(target)
-            if product:
+            if kind is None:
+                normal = _normal_overview(status, product)
+                show_raw = details or not normal
+                lines = ["# 작업 현황", "", "작업 기록을 기준으로 보여드립니다.", ""]
+                lines += _project_summary(status, works, intents, graph_details=graph_details, target=target, compact=True)
+                if not installed:
+                    lines += ["- 조회 출처: 독립된 소스에서 프로젝트를 확인했습니다.", ""]
+                if not normal and status.get("classification") == "pass":
+                    lines += ["- 먼저 확인: 환경·진입 정보는 아래 기술 상세에서 확인하세요.", ""]
+                if graph_details:
+                    for wid, graph in sorted(works.items()):
+                        lines += _work_overview(wid, graph, intents, works)
+                    if not works:
+                        lines += ["등록된 작업이 없습니다." if status.get("work_states") == {} else "작업 목록을 확인할 수 없습니다.", ""]
+                    candidate_lines, observed_candidates = render_candidates(target, works=works, intents=intents, brief=not show_raw)
+                    if isinstance(observed_candidates, dict) and observed_candidates.get("present") is False and not observed_candidates.get("error_code"):
+                        lines += ["등록된 다음 작업 후보는 아직 없습니다. 필요하면 다음 할 일을 함께 정리할 수 있습니다.", ""]
+                    else:
+                        lines += candidate_lines
+                footer = "더 알아보기 · " + code(_display_command(target, installed, "help"))
+                if not show_raw:
+                    footer += " · " + ("기술 상세·안내 문서: " if product else "기술 상세: ") + code(_display_command(target, installed, "view", "--details"))
+                if installed and sys.platform != "win32":
+                    footer += " (프로젝트 폴더에서 실행)"
+                lines += ["", footer, ""]
+                if not show_raw:
+                    if before == _observe(target): return "\n".join(lines) + "\n", EXITS.get(classification, 0)
+                    continue
+                lines += ["## 프로젝트 세부 정보", "", "기술 상세와 직접 조회 명령입니다.", ""]
+                if product:
+                    from .product import WINDOW_ADAPTERS
+                    entry_root = (Path(product["release_path"]).relative_to(target) / "payload").as_posix()
+                    lines += ["### 안내 문서", "", "- manual: " + code(entry_root + "/docs/README.md"),
+                              "- natural_language_adapter: " + code(entry_root + "/" + WINDOW_ADAPTERS[product["inventory"]["inventory_id"]]), ""]
+                lines += _project_summary(status, works, intents, graph_details=graph_details, target=target, diagnostics_only=True)
+            lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "pending_continuation", "next_action", "error_code", "reason", "message", "lifecycle_ready", "retired_entry_collision", "continuation_unavailable", "official_execution"}}})
+            if kind is None:
+                extra_keys = {"error", "paths", "recovery", "root_classification", "product_verification", "pending_lifecycle", "record_verification", "planning", "remaining_files", "remaining_directories"}
+                lines += fields({k: v for k, v in status.items() if k in extra_keys})
+            if "runtime" in status: lines += fields({"runtime_supported": status["runtime"].get("supported", "unavailable")})
+            if product and kind is not None:
                 from .product import WINDOW_ADAPTERS
                 root = (Path(product["release_path"]).relative_to(target) / "payload").as_posix()
                 lines += ["", "## Next entry", ""] + fields({"manual": root + "/docs/README.md", "natural_language_adapter": root + "/" + WINDOW_ADAPTERS[product["inventory"]["inventory_id"]]})
-            readable_continuation_damage = bool(status.get("continuation_unavailable")) and kind in (None, "work", "continuation", "intent")
-            if classification not in ("degraded", "uninitialized", "incompatible", "unstable") or readable_continuation_damage:
+            if graph_details:
                 if status.get("planning", {}).get("available") is False and kind not in (None, "candidates"):
                     candidate_lines, _ = render_candidates(target, works=works, intents=intents)
                     lines += candidate_lines
@@ -764,13 +1122,16 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                     candidate_lines, _ = render_candidates(target, works=works, intents=intents)
                     lines += candidate_lines
                 else:
-                    candidate_lines, _ = render_candidates(target, works=works, intents=intents)
-                    lines += candidate_lines
                     lines += ["", "## Intents", ""]
-                    for key, g in sorted(intents.items()): lines += fields({"intent": key, "current_accepted_revision": _current_revision(g), "drafts": list(g["drafts"]), "pending": g["pending_acceptances"] + g["pending_selections"]})
-                    if not intents: lines += ["- No accepted intent or draft. Ask your agent to clarify the goal and propose an intent."]
+                    query_commands = []
+                    for key, g in sorted(intents.items()):
+                        lines += fields({"intent": key, "current_accepted_revision": _current_revision(g), "drafts": list(g["drafts"]), "pending": g["pending_acceptances"] + g["pending_selections"]})
+                        query_commands += ["- 목표 " + code(key) + ": " + code(_view_command(target, installed, "intent", key))]
+                    if not intents: lines += ["- No accepted intent or draft. Ask your agent to clarify the goal and propose an intent." if status.get("intent_count") == 0 else "- 목표 목록을 확인할 수 없습니다."]
                     lines += ["", "## Works", ""]
                     for key, g in sorted(works.items()):
+                        label = _work_label(key, g, intents)
+                        lines += ["### " + label, "", "- 작업 상태(기록 기준): " + _work_state_label(g["state"]) + "."]
                         state = g["continuation"]
                         choice = state["effective_choice"] if state is not None else None
                         lines += fields({"work": key, "stored_state": g["state"], "current_revision": _current_revision(g),
@@ -778,8 +1139,11 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                                          "continuation": ("unavailable" if state is None else choice["kind"] if choice else "undecided"),
                                          "pending_continuation": state["pending"] if state is not None else "unavailable",
                                          "continuation_usage": state["usage"] if state is not None else "unavailable"})
-                        lines += ["- 후속 선택 상세: " + code("view continuation " + key)]
-                    if not works: lines += ["- No Work. Start only after the human has accepted an intent."]
+                        query_commands += ["- 작업 조회 — " + label + ": " + code(_view_command(target, installed, "work", key)),
+                                           "- 후속 기록 조회 — " + label + ": " + code(_view_command(target, installed, "continuation", key))]
+                    if not works: lines += ["- No Work. Start only after the human has accepted an intent." if status.get("work_states") == {} else "- 작업 목록을 확인할 수 없습니다."]
+                    if query_commands:
+                        lines += ["", "## 직접 조회 명령", "", "명령을 직접 사용하는 경우 아래 내용을 사용할 수 있습니다.", ""] + query_commands
             elif kind in ("work", "continuation"):
                 lines += ["", "## 후속 선택과 사용량 — 확인 불가", "",
                           "- 손상·미확인 기록을 보존하세요. 미정, 사용량 0 또는 잔여 횟수로 추정하지 않습니다."]
@@ -793,11 +1157,16 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
 
 
 def run(args, *, installed):
+    details = getattr(args, "details", False)
+    if details and (args.kind is not None or args.revision is not None or args.input is not None):
+        return "# View unavailable\n\n--details는 선택자, --revision, --input 없이 프로젝트 전체 조회에 사용하세요.\n", 65
     try:
         ticket = None
+        details = getattr(args, "details", False)
+        _require(not details or (args.kind is None and args.revision is None and args.input is None), "--details requires project view without selector, revision or input")
         if args.input is not None:
             raw = sys.stdin.buffer.read(READ_LIMIT + 1) if args.input == "-" else bounded_bytes(Path(args.input))
             ticket = decode_json_bytes(raw, require_canonical=True)
-        return render_view(args.target, kind=args.kind, object_id=args.object_id, revision=args.revision, ticket=ticket, installed=installed)
+        return render_view(args.target, kind=args.kind, object_id=args.object_id, revision=args.revision, ticket=ticket, installed=installed, details=details)
     except (ContractError, OSError, ValueError) as exc:
         return "# Confirmation unavailable\n\n" + text(getattr(exc, "message", str(exc))) + "\n", 65

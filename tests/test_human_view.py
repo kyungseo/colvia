@@ -63,8 +63,8 @@ class HumanViewInstalledTests(unittest.TestCase):
         subprocess.run(['git','init','-q',str(self.target)], check=True)
         self.apply_init(self.preview())
         a=self.screen([]);b=self.screen([],source=True)
-        self.assertIn('No Work',a);self.assertIn('natural_language_adapter',a);self.assertNotIn('inventory:',a);self.assertNotIn('src/hv2ref/view.py',a)
-        self.assertIn('not the bound release',b)
+        self.assertIn('등록된 작업이 없습니다',a);self.assertNotIn('natural_language_adapter',a);self.assertIn('natural_language_adapter',self.screen(['--details']));self.assertNotIn('inventory:',a);self.assertNotIn('src/hv2ref/view.py',a)
+        self.assertIn('독립된 소스에서 프로젝트를 확인',b)
         self.assertEqual(fixture_window('continuation-1'),workspace_candidate(self.source)['inventory']['inventory_id'])
         self.assertEqual(30,len(workspace_candidate(self.source)['inventory']['entries']))
 
@@ -169,19 +169,47 @@ class HumanViewInstalledTests(unittest.TestCase):
         self.assertIn(unavailable[0],self.screen(['work','work-a']))
 
     def test_p_q_p_uses_current_adapter_path_and_detach_remains_readable(self):
+        from hv2ref.product import verify_workspace_product, WINDOW_ADAPTERS
+        import shlex
+        def legacy_entry():
+            # Deterministic command navigation from the stable old entry, not model behavior.
+            default=self.screen([])
+            self.assertNotIn('natural_language_adapter:',default)
+            self.assertNotIn('manual:',default)
+            match=re.search(r'기술 상세·안내 문서: (`+) (.+?) \1',default)
+            self.assertIsNotNone(match,default)
+            if sys.platform == 'win32':
+                from hv2ref.view import _cli_command
+                self.assertEqual(_cli_command(self.target,True,'view','--details'),match.group(2))
+                detail=self.screen(['--details'])
+            else:
+                command=shlex.split(match.group(2));self.assertEqual(['./colvia','view','--details'],command)
+                detail=self.screen(command[2:])
+            product=verify_workspace_product(self.target)
+            root=Path(product['release_path'])/'payload'
+            for label,relative in [('manual','docs/README.md'),('natural_language_adapter',WINDOW_ADAPTERS[product['inventory']['inventory_id']])]:
+                found=re.search(label+r': (`+) (.+?) \1',detail)
+                self.assertIsNotNone(found,detail)
+                path=self.target/found.group(2)
+                self.assertEqual(root/relative,path)
+                self.assertTrue(path.is_file());self.assertTrue(path.read_bytes())
+            self.assertIn('view --details',(root/'AGENTS.md').read_text())
+            self.assertIn('Read and follow `AGENTS.md`',(root/'CLAUDE.md').read_text())
+            self.assertIn('Run ./colvia view and follow its guidance',(root/'adapters/colvia-work/SKILL.md').read_text())
+            return detail
         self.apply_init(self.preview());self.complete_work()
-        p=self.screen([]);self.candidate=self.switch_candidate()
+        p=legacy_entry()
+        self.candidate=self.switch_candidate()
         self.switch_apply(self.switch_preview(installed=True),installed=True)
-        q=self.screen([]);self.assertNotEqual(p,q)
+        q=legacy_entry()
         self.switch_apply(self.switch_preview('rollback',operation='back',installed=True),installed=True)
-        back=self.screen([])
-        import re
+        back=legacy_entry()
         paths=lambda x:re.findall(r'natural_language_adapter: ([^\n]+)',x)
-        self.assertEqual(paths(p),paths(back));self.assertNotEqual(paths(p),paths(q))
+        self.assertTrue(paths(p));self.assertEqual(paths(p),paths(back));self.assertNotEqual(paths(p),paths(q))
         self.detach_apply(self.detach_preview())
         out=self.screen(['work','work-a'],source=True)
         self.assertIn('completed',out);self.assertIn('unavailable: no verified active product',out)
-        self.assertNotIn('natural_language_adapter',out)
+        self.assertNotIn('natural_language_adapter',out.replace('\\_', '_'))
 
     def test_git_recorded_work_live_view_is_read_only_and_paths_are_readable(self):
         subprocess.run(['git','init','-q',str(self.target)],check=True)

@@ -39,7 +39,7 @@ Source checkouts retain `docs/GENERATION-1-CONTRACT.md`, `docs/GENERATION-2-PARA
 
 If a current document and source disagree, report the difference and preserve state. Align code and docs in the same qualified change, using evidence for that candidate. Historical receipts describe their original versions. Public version and distribution remain unassigned.
 
-Human entry: run `./colvia view` in the project and read the current managed adapter it identifies. [Reference](REFERENCE.md#human-review) defines command and observation boundaries.
+Human entry: run `./colvia view` in the project. Agents use `./colvia view --details` to read the current verified manual/adapter; the default screen also points to those technical details. [Reference](REFERENCE.md#human-review) defines command and observation boundaries.
 
 ## Entry-1 Candidate
 

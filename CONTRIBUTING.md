@@ -4,7 +4,7 @@ This file locates the rules for developing Colvia itself. Start with [Source Pro
 
 Reorganization and effective-state record: [DR-0006](docs/decisions/DR-0006-source-contributor-document-structure.md). Until the Owner accepts and activates its exact amendment, the [retained source procedures](docs/DECISION-GUIDE.md#retained-source-procedures) remain effective. After that recorded activation, the identified guides own the relocated rules. This entry does not activate them.
 
-An installed project starts with `./colvia view`, its verified manual/adapter and that project's own rules. Developing Colvia from its trusted source checkout does not require installing the runtime or creating a typed Work. The source rules here do not define a public contribution or licensing policy.
+An installed-project agent starts with `./colvia view --details`, its verified manual/adapter and that project's own rules. The human overview remains `./colvia view`. Developing Colvia from its trusted source checkout does not require installing the runtime or creating a typed Work. The source rules here do not define a public contribution or licensing policy.
 
 The headings below retain historical links. Their destinations follow the effective-state boundary above.
 

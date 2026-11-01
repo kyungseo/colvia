@@ -220,12 +220,16 @@ class ViewObservationSharingTests(unittest.TestCase):
         self.corrupt(self.target/'.hrn/work/work-a/revisions/revision-2.json')
 
     def test_valid_record_transition_at_three_points(self):
-        for number,point in enumerate(self.POINTS):
+        for number, (details, point) in enumerate((details, point) for details in (False, True) for point in self.POINTS):
             draft={**self.f.draft(),'intent_id':f'intent-extra-{number}'}
             with self.injection(point,lambda:self.f.installed(['intent','draft'],draft)):
-                out,code=view.render_view(self.target)
-            self.assertEqual(0,code,out); self.assertIn(f'intent-extra-{number}',out)
-            self.assertEqual((out,code),view.render_view(self.target))
+                out,code=view.render_view(self.target, details=details)
+            self.assertEqual(0,code,out)
+            if details:
+                self.assertIn(f'intent-extra-{number}',out)
+            else:
+                self.assertIn(f'목표 {number + 2}개',out)
+            self.assertEqual((out,code),view.render_view(self.target, details=details))
 
     def test_current_change_at_three_points(self):
         self.corrupt(self.target/'.hrn/work/work-a/current.json')

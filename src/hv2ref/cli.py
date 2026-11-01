@@ -147,6 +147,10 @@ def run(args: argparse.Namespace) -> object:
 def main(workspace_target: Path | None = None) -> int:
     try:
         args = workspace_parser(workspace_target).parse_args() if workspace_target is not None else parser().parse_args()
+        if args.command in ("help", "?"):
+            from .view import render_help
+            print(render_help(args.target, installed=workspace_target is not None), end="")
+            return 0
         if args.command == "view":
             from .view import run as view_run
             rendered, code = view_run(args, installed=workspace_target is not None)
@@ -187,11 +191,14 @@ def _workspace_input(value: str) -> object:
 
 
 def _view_parser(sub, target):
+    help_parser = sub.add_parser("help", aliases=["?"], help="조회 명령과 질문 예시")
+    help_parser.add_argument("--target", type=Path, default=target)
     p = sub.add_parser("view", help="read-only human review; never applies a decision")
     p.add_argument("kind", nargs="?", choices=("intent", "work", "continuation", "confirmation", "candidates"))
     p.add_argument("object_id", nargs="?")
     p.add_argument("--target", type=Path, default=target)
     p.add_argument("--revision")
+    p.add_argument("--details", action="store_true", help="프로젝트 기술 상세와 직접 조회 명령도 표시")
     p.add_argument("--input", help="canonical ticket file or - for stdin; not the prepare envelope")
 
 

@@ -275,7 +275,7 @@ class InstalledCandidateTests(unittest.TestCase):
         self.assertEqual(before,fixtures.exact_snapshot(self.target))
         self.act('resume','b',payload={'condition_observation':'Owner 명시적 재검토 요청'})
         self.assertEqual('a',read_candidates(self.target)['store']['selected'])
-        self.assertIn('후보 계획',self.installed(['view']).stdout.decode())
+        self.assertIn('다음 작업 후보',self.installed(['view']).stdout.decode())
     def test_installed_command_mismatch_and_source_writer_are_refused(self):
         before=fixtures.exact_snapshot(self.target)
         self.installed(['candidate','select'],proposal(self.target),expected=65)
