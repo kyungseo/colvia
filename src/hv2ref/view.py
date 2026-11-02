@@ -793,6 +793,7 @@ def _problem_explanations(blockers, works, intents, *, graph_details):
         "official_execution": "실행 기록을 읽을 수 없거나 아직 해결되지 않은 실행이 있습니다.",
         "pending_lifecycle": "Colvia 설치·갱신·복구·제거 중 끝나지 않은 처리가 있습니다.",
         "planning": "다음 작업 후보와 선택 기록을 확인할 수 없습니다.",
+        "runtime_information": "실행 환경 정보를 읽을 수 없습니다.",
         "runtime_supported": "현재 실행 환경이 Colvia의 지원 조건을 충족하지 않습니다.",
         "pending_detach": "Colvia 제거 처리가 아직 끝나지 않았습니다.",
         "remaining_files": "제거 처리에서 정리할 파일이 남아 있습니다.",
@@ -1023,7 +1024,62 @@ def _work_overview(wid, graph, intents, works, *, status=None, current_files=Non
     return lines + [""]
 
 
-def _project_summary(status, works, intents, *, graph_details, target, compact=False, diagnostics_only=False):
+def _decision_lines(status, works, intents, attention, *, graph_details, ready, complete):
+    """Show at most one reason per Work; a historical run names only its recorded target."""
+    rows = {}
+    execution = status.get("official_execution") or {}
+    if execution.get("available") is True and execution.get("records"):
+        from .official_state import TERMINAL
+        for record in execution["records"]:
+            if record.get("status") in TERMINAL:
+                continue
+            wid = record.get("work_id")
+            # Unlinked executions still have distinct grant identities.
+            key = ("work", wid) if wid else ("run", record["grant"])
+            label = ("실행 당시 작업 (" + code(wid) + ")" if wid else
+                     "작업 연결을 확인할 실행 (" + code(record["grant"][:12]) + ")")
+            if record.get("process_observation") == "unconfirmed":
+                reason = (0, label + " · 실행이 끝났는지 먼저 확인해 주세요.")
+            elif record.get("document_write_effect") == "unknown":
+                reason = (1, label + " · 문서 반영 여부가 불명확합니다. 실행 기록과 현재 파일을 비교해 주세요.")
+            else:
+                reason = (2, label + " · 미해결 실행이 있습니다. 실행 기록을 확인해 주세요.")
+            if key not in rows or reason[0] < rows[key][0]:
+                rows[key] = reason
+
+    for wid in attention:
+        key = ("work", wid)
+        if key in rows:
+            continue
+        graph = works.get(wid) if graph_details else None
+        label = _work_label(wid, graph, intents, graph_details=graph_details)
+        priority = 3
+        if not graph:
+            action = "작업 기록을 읽을 수 없습니다. 기록 상태를 확인해 주세요."
+        elif wid in (status.get("continuation_unavailable") or {}) or not isinstance(graph.get("continuation"), dict):
+            action = "후속 계획을 읽을 수 없습니다. 작업 기록을 확인해 주세요."
+        elif (wid in (status.get("pending_work") or []) or wid in (status.get("pending_continuation") or [])
+              or graph.get("pending_decisions") or graph.get("pending_selections") or graph["continuation"].get("pending")):
+            action = "처리가 끝나지 않은 기록이 있습니다. 작업 상세에서 남은 처리를 확인해 주세요."
+        else:
+            priority = 4
+            state = graph.get("state")
+            if not ready:
+                action = _work_state_label(state) + " · 아래 점검 항목을 먼저 확인해 주세요."
+            else:
+                action = {"review": "제출한 변경을 검토하고 수락할지 보완을 요청할지 결정해 주세요.",
+                          "rejected": "제출 결과가 반려됐습니다. 작업 상세에서 보완 요청을 볼 수 있습니다.",
+                          "revoked": "이전 수락이 철회됐습니다. 작업 상세에서 철회 사유를 볼 수 있습니다."}[state]
+        rows[key] = (priority, label + " · " + action)
+    ordered = sorted(rows, key=lambda key: (rows[key][0], key))
+    lines = ["- " + rows[key][1] for key in ordered[:3]]
+    if len(ordered) > 3:
+        prefix = "그 밖에" if complete else "확인된 범위에서 추가로"
+        lines.append("- " + prefix + " 확인할 항목 " + str(len(ordered) - 3) + "건은 아래 상세에서 볼 수 있습니다.")
+    return lines
+
+
+def _project_summary(status, works, intents, *, graph_details, target, compact=False, diagnostics_only=False, environment_ready=True):
     """Use the existing observation, including readable retained graphs; no scan."""
     classification = status["classification"]
     descriptions = {
@@ -1066,7 +1122,10 @@ def _project_summary(status, works, intents, *, graph_details, target, compact=F
     if isinstance(execution, dict) and (execution.get("available") is False or
                                       execution.get("ready_for_new_grant") is False):
         blockers["official_execution"] = "확인 불가 또는 미해결 실행 있음; 아래 세부 정보의 공식 실행 항목 참조"
-    if status.get("runtime", {}).get("supported") is False:
+    runtime = status.get("runtime")
+    if "runtime" in status and not isinstance(runtime, dict):
+        blockers["runtime_information"] = "확인 불가"
+    elif isinstance(runtime, dict) and runtime.get("supported") is False:
         blockers["runtime_supported"] = False
     detaching = classification == "partial" and "remaining_files" in status and "remaining_directories" in status
     if detaching:
@@ -1075,7 +1134,7 @@ def _project_summary(status, works, intents, *, graph_details, target, compact=F
         for key in ("remaining_files", "remaining_directories"):
             if status[key]: blockers[key] = status[key]
     if diagnostics_only:
-        return (["### 진단 상세", "", "원인 확인에 필요한 기록값입니다.", ""] + fields(blockers) + [""]) if blockers else []
+        return (["### 진단 상세", ""] + _problem_explanations(blockers, works, intents, graph_details=graph_details) + ["", "원인 확인에 필요한 기록값입니다.", ""] + fields(blockers) + [""]) if blockers else []
     location_kind = {"primary": "기본 worktree", "linked-worktree": "연결 worktree",
                      "non-git": "프로젝트 폴더", "subdirectory": "저장소 안의 폴더",
                      "submodule": "서브모듈", "separate-git-dir": "worktree",
@@ -1095,29 +1154,39 @@ def _project_summary(status, works, intents, *, graph_details, target, compact=F
     attention.update(status.get("continuation_unavailable") or {})
     attention_known = distribution_known and all(isinstance(status.get(key), list)
                                                  for key in ("pending_work", "pending_continuation"))
+    issue = classification not in ("pass", "detached") or bool(blockers)
+    if compact:
+        lines = ["## 한눈에 보기", ""]
+        if issue:
+            if classification != "pass":
+                problem = descriptions.get(classification, "프로젝트 상태를 확인해야 합니다.")
+            elif "official_execution" in blockers:
+                problem = ("실행 기록을 읽을 수 없습니다. 아래 실행 상세에서 원인을 확인해 주세요."
+                           if execution.get("available") is not True else "새 실행을 시작할 준비가 확인되지 않았습니다. 실행 기록과 아래 진단 상세를 확인해 주세요.")
+            else:
+                causes = _problem_explanations(blockers, works, intents, graph_details=graph_details)
+                problem = causes[0].removeprefix("- ") if causes else "아래 기술 상세에서 프로젝트 점검 결과를 확인해 주세요."
+            lines += ["- 먼저 확인: " + problem]
+        complete = attention_known and not status.get("continuation_unavailable") and (
+            execution is None or execution.get("available") is True)
+        decision_lines = _decision_lines(status, works, intents, attention, graph_details=graph_details,
+                                         ready=environment_ready and not issue, complete=complete)
+        lines += decision_lines
+        if not complete:
+            lines += ["- 일부 작업 기록을 확인할 수 없어 전체 판단 대상을 집계할 수 없습니다."]
+        elif not decision_lines and not issue and environment_ready and len(works) == 1:
+            wid, graph = next(iter(works.items()))
+            if graph.get("state") == "active":
+                lines += ["- 진행 중: " + _work_label(wid, graph, intents)]
+        if not works and work_count == 0 and not issue:
+            lines += ["- " + ("등록된 목표를 바탕으로 시작할 작업을 물어보세요." if intent_count else "원하는 작업을 설명하면 목표와 범위부터 정리할 수 있습니다.")]
+        return lines + ["- " + counts + " · " + progress + ".", "- 프로젝트 경로: " + location, ""]
     if attention:
         attention_text = ", ".join(_work_label(key, works.get(key), intents, graph_details=graph_details) for key in sorted(attention))
         if not attention_known:
             attention_text += " (전체 확인 불가)"
     else:
         attention_text = "해당 작업 없음" if attention_known else "확인 불가"
-    issue = classification not in ("pass", "detached") or bool(blockers)
-    if compact:
-        lines = ["## 한눈에 보기", "", "- " + counts + " · " + progress + ".",
-                 "- 프로젝트 경로: " + location]
-        if issue:
-            lines += ["- 먼저 확인: " + (descriptions.get(classification, "프로젝트 상태를 확인해야 합니다.") if classification != "pass" else "확인할 항목이 있습니다.") + " 아래 기술 상세에 원인과 기록값이 있습니다."]
-            lines += _problem_explanations(blockers, works, intents, graph_details=graph_details)
-        elif not works and work_count == 0:
-            lines += ["- " + ("등록된 목표를 바탕으로 시작할 작업을 물어보세요." if intent_count else "원하는 작업을 설명하면 목표와 범위부터 정리할 수 있습니다.")]
-        if attention:
-            lines += ["- 확인할 작업: " + str(len(attention)) + "개" + (" (전체 확인 불가)" if not attention_known else "") + ". 아래 상태와 확인 필요 항목을 보세요."]
-        elif not attention_known:
-            lines += ["- 확인할 작업: 확인 불가."]
-        missing = sorted(attention - works.keys())
-        if missing:
-            lines += ["- 추가 확인할 작업 기록: " + ", ".join(code(wid) for wid in missing)]
-        return lines + [""]
     lines = ["## 한눈에 보기", ""]
     if issue:
         lines += ["- 먼저 확인: " + (descriptions.get(classification, "확인하지 못한 항목이 있습니다.") if classification != "pass" else "추가로 확인할 사항이 있습니다.") + " 문제·미확인 항목은 아래에 모두 표시합니다."]
@@ -1167,7 +1236,7 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                 normal = _normal_overview(status, product)
                 show_raw = details or not normal
                 lines = ["# 작업 현황", "", "작업 기록을 기준으로 보여드립니다.", ""]
-                lines += _project_summary(status, works, intents, graph_details=graph_details, target=target, compact=True)
+                lines += _project_summary(status, works, intents, graph_details=graph_details, target=target, compact=True, environment_ready=normal)
                 if works and graph_details:
                     lines += ["- 현재 파일 비교: 작업 상세 조회에서 확인할 수 있습니다.", ""]
                 if not installed:
@@ -1218,7 +1287,9 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
             if kind is None:
                 extra_keys = {"error", "paths", "recovery", "root_classification", "product_verification", "pending_lifecycle", "record_verification", "planning", "remaining_files", "remaining_directories"}
                 lines += fields({k: v for k, v in status.items() if k in extra_keys})
-            if "runtime" in status: lines += fields({"runtime_supported": status["runtime"].get("supported", "unavailable")})
+            if "runtime" in status:
+                runtime = status["runtime"]
+                lines += fields({"runtime_supported": runtime.get("supported", "unavailable") if isinstance(runtime, dict) else "unavailable"})
             if product and kind is not None:
                 from .product import WINDOW_ADAPTERS
                 root = (Path(product["release_path"]).relative_to(target) / "payload").as_posix()

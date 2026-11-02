@@ -464,6 +464,95 @@ class OverviewHelpTests(unittest.TestCase):
             self.assertEqual(2, observe.call_count)
             return result
 
+    def test_decision_precedes_counts_and_limits_the_first_screen(self):
+        status, works, intents, product = self.fixture()
+        for index in range(4):
+            works[f'work-b{index}'] = copy.deepcopy(works['work-a'])
+        status['work_states'] = dict.fromkeys(works, 'review')
+        shown, code = self.render(status, works, intents, product)
+        self.assertEqual(0, code)
+        top = shown.split('- 프로젝트 경로:', 1)[0]
+        self.assertLess(top.index('작업 진행 화면 개선 (' + view.code('work-a')), top.index('작업 5개'))
+        self.assertEqual(top.count('수락할지 보완을 요청할지'), 3)
+        self.assertIn('그 밖에 확인할 항목 2건', top)
+        self.assertNotIn(view.code('work-b3'), top)
+        self.assertIn(view.code('work-b3'), shown)
+
+    def test_partial_record_and_active_work_do_not_request_acceptance(self):
+        status, works, intents, product = self.fixture()
+        works['work-a']['state'] = status['work_states']['work-a'] = 'active'
+        shown, _ = self.render(status, works, intents, product)
+        top = shown.split('- 프로젝트 경로:', 1)[0]
+        self.assertIn('진행 중: 작업 진행 화면 개선', top)
+        self.assertNotIn('결정해 주세요', top)
+        status.update(continuation_unavailable={'work-a': {}}, pending_continuation=None)
+        works['work-a']['state'] = status['work_states']['work-a'] = 'review'
+        top = self.render(status, works, intents, product)[0].split('- 프로젝트 경로:', 1)[0]
+        self.assertIn('후속 계획을 읽을 수 없습니다', top)
+        self.assertIn('전체 판단 대상을 집계할 수 없습니다', top)
+        self.assertNotIn('수락할지', top)
+
+    def test_execution_summary_keeps_recorded_target_separate_from_current_result(self):
+        status, works, intents, product = self.fixture()
+        record = dict(schema_version=2, work_id='work-a', grant='run-1', status='unknown',
+                      document_write_effect='unknown', process_observation='closed',
+                      effect_refs=[], closure_refs=[])
+        status['official_execution'] = dict(available=True, ready_for_new_grant=False, records=[record])
+        shown, _ = self.render(status, works, intents, product)
+        top = shown.split('- 프로젝트 경로:', 1)[0]
+        self.assertIn('실행 당시 작업 (' + view.code('work-a') + ') · 문서 반영 여부가 불명확', top)
+        self.assertNotIn('수락할지', top)
+        self.assertNotIn('작업 진행 화면 개선', top)
+        record['process_observation'] = 'unconfirmed'
+        top = self.render(status, works, intents, product)[0].split('- 프로젝트 경로:', 1)[0]
+        self.assertIn('실행이 끝났는지', top)
+        record.update(status='operator-resolved-unknown', process_observation='closed')
+        status['official_execution']['ready_for_new_grant'] = True
+        top = self.render(status, works, intents, product)[0].split('- 프로젝트 경로:', 1)[0]
+        self.assertNotIn('실행 당시 작업', top)
+        self.assertIn('수락할지', top)
+        details, _ = self.render(status, works, intents, product, details=True)
+        self.assertIn('정리된 실행', details)
+        self.assertIn(view.code('run-1'), details)
+
+    def test_decision_fallback_does_not_invent_current_state(self):
+        status, works, intents, product = self.fixture()
+        status.update(pending_work=['unknown-id'], planning={'available': False})
+        first = self.render(status, works, intents, product)[0].split('- 프로젝트 경로:', 1)[0]
+        self.assertIn('제목 확인 필요 (' + view.code('unknown-id') + ') · 작업 기록을 읽을 수 없습니다', first)
+        self.assertNotIn('수락할지', first)
+        status, works, intents, product = self.fixture()
+        status['official_execution'] = dict(available=False, ready_for_new_grant=False)
+        first = self.render(status, works, intents, product)[0].split('- 프로젝트 경로:', 1)[0]
+        self.assertIn('실행 기록을 읽을 수 없습니다', first)
+        self.assertNotIn('수락할지', first)
+
+    def test_partial_counts_keep_each_unlinked_execution(self):
+        status, works, intents, product = self.fixture()
+        status.update(pending_continuation=None, official_execution=dict(available=True,
+                      ready_for_new_grant=False, records=[dict(grant=f"run-{n}", status="incomplete")
+                                                         for n in range(4)]))
+        first = self.render(status, works, intents, product)[0].split('- 프로젝트 경로:', 1)[0]
+        self.assertEqual(3, first.count('작업 연결을 확인할 실행'))
+        self.assertIn('확인된 범위에서 추가로 확인할 항목 2건', first)
+        self.assertIn('전체 판단 대상을 집계할 수 없습니다', first)
+
+    def test_incomplete_runtime_information_and_historical_goal(self):
+        status, works, intents, product = self.fixture()
+        status['runtime'] = None
+        shown, _ = self.render(status, works, intents, product)
+        self.assertIn('실행 환경 정보를 읽을 수 없습니다', shown)
+        self.assertNotIn('수락할지', shown.split('- 프로젝트 경로:', 1)[0])
+        status, works, intents, product = self.fixture()
+        graph, history = label_graph('설치 안내 정리', newer=True)
+        intents['intent-a'].update(history['intent-a'])
+        works['work-a'].update(graph)
+        status['official_execution'] = dict(available=True, ready_for_new_grant=False, records=[])
+        first = self.render(status, works, intents, product)[0].split('- 프로젝트 경로:', 1)[0]
+        self.assertIn('실행 기록과 아래 진단 상세를 확인', first)
+        self.assertIn('이전 목표: 설치 안내 정리', first)
+        self.assertNotIn('UNRELATED NEW GOAL', first)
+
     def test_clean_default_and_explicit_details_preserve_order_and_information(self):
         values=self.fixture(); shown,code=self.render(*values)
         self.assertEqual(0,code)
