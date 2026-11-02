@@ -238,6 +238,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
+- [같은 작업 재개와 중단 후 안내](same-task-resume-and-interruption-plan.md#owner-계획-요청과-시작-기준) — 선택된 범위는 2026-11-02 Owner의 제한 수락 후 Done. [완료·수락 기록](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02)을 따른다.
 - [Guardrails 통합 후보·설치 호환 확인](PATCH-20261101-002-local-payload-gates.md#owner-planning-authorization--2026-11-01) — P0, 해당 후보 설치 전. S1b 제한 수락과 통합 실행 승인 후 정확한 window·상태/View·lifecycle/old writer를 확인한다. 통합 범위는 [macOS 구현 Work](FEAT-20261101-003-macos-distribution-onboarding.md)에서 선택; 나머지 후보는 미선택.
 - [Guardrails 원천 접근·native 관측 강화](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, profile/OS/runtime·보호 주장 확대 때 재개. 실제 oracle/rlimit·준비 근거와 양성/음성 대조를 보강하며 기본 온보딩의 일괄 선행조건은 아니다.
 - [Guardrails provider 전송·독립 승인 경계](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, 실제 전송 경로 확대 또는 강한 보호 요구 때 재개. 추가 문맥/수신 관측과 Host/사람 승인 경계를 별도로 확보한다.
@@ -257,6 +258,8 @@ The original preparation recorded no candidates; the dated entry above is a late
 None created by this proposal. Allocate a plain development record ID only when a bounded task is selected and its plan approved. Before that, use [Preliminary Review Location](WORKFLOW.md#preliminary-review-location), subject to the relocation boundary above, without allocating a task ID. The selected record references the exact intake/criteria revision and owns detailed progress, reviews, result and remaining work; this index adds only navigation under the applicable Owner authorization. DR-0001 owns its contract choices. Neither editing this sentence nor accepting a contract Draft starts a development task or creates a runtime Work/intent.
 
 ## Authorized Development Records
+
+- [FEAT-20261102-001 — 같은 작업 재개와 중단 후 안내](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02): Done — 2026-11-02 Owner가 명시한 범위·한계를 전제로 수락. Git·설치·공개는 별도.
 
 - [CHORE-20261027-001 — Public History Preparation](CHORE-20261027-001-public-history-preparation.md#owner-acceptance-and-work-done--2026-10-27): Done after Owner acceptance of R1 and its remaining review limits on 2026-10-27; Git actions remain separate.
 

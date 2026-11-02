@@ -365,7 +365,7 @@ def _umbrella_lines(target, revision, graph, works, intents):
     return lines
 
 
-def _work(target, graph, rid, product, intents, works):
+def _work(target, graph, rid, product, intents, works, *, file_observation=None):
     current = _current_revision(graph)
     rid = rid or current
     lines = ["## Work " + text(graph["identity"]["work_id"]), "",
@@ -397,13 +397,13 @@ def _work(target, graph, rid, product, intents, works):
     lines += ["", "## Bound intent documents", ""] + references(target, acceptance)
     if any(ref["required"] and reference_observation(target, ref) != "matches" for ref in acceptance["document_refs"]):
         lines += ["- Required intent document changed or unavailable: related publication/acceptance is blocked. Restore it or obtain new intent acceptance, Work rebind, new submit-result and new human accept."]
-    candidate = _worker_inspection(target, manifest, product) if r["execution_context"]["mode"] == "isolated-worktree" else None
+    candidate, live = file_observation if file_observation is not None else _work_files(target, r, manifest, product)
     lines += ["", "## Work revision documents and evidence", ""] + references(target, r, candidate)
     if candidate:
         lines += _worker_observation_lines(candidate)
         if r["operation"] == "rebind": lines += _baseline_review(graph, r, manifest, works)
     else:
-        lines += ["## Current files (advisory)", "", "- " + text(_live(target, manifest, product)), ""]
+        lines += ["## Current files (advisory)", "", "- " + text(live), ""]
     # Follow exact parent references, including human decisions; never timestamps.
     chain = []; ref = graph["current"]["selection_ref"] if graph["current"] else None
     while ref:
@@ -874,9 +874,108 @@ def _normal_overview(status, product):
             and bool(product))
 
 
-def _work_overview(wid, graph, intents, works):
+def _work_files(target, revision, manifest, product):
+    if revision["execution_context"]["mode"] == "isolated-worktree":
+        candidate = _worker_inspection(target, manifest, product)
+        content = candidate.get("content") or {}
+        observation = ("isolated-unavailable" if candidate.get("source_error") or candidate.get("content_error") else
+                       "isolated-drift" if content.get("outside_drift") or content.get("policy_matches") is False else
+                       "isolated-observed")
+        return candidate, observation
+    return None, _live(target, manifest, product)
+
+
+def _resume_next(wid, graph, status, current_files=None, *, environment_ready=True):
+    if not environment_ready:
+        return "환경·진입 상태 먼저 확인"
+    continuation = graph.get("continuation")
+    if (graph.get("pending_decisions") or graph.get("pending_selections") or
+            not isinstance(continuation, dict) or continuation.get("pending")):
+        return "처리가 남은 작업·후속 기록 확인"
+    execution = status.get("official_execution", {})
+    if execution.get("available") is False:
+        return "읽을 수 없는 실행 기록 확인"
+    records = []
+    if execution.get("records"):
+        from .official_state import TERMINAL
+        records = [r for r in execution["records"] if r.get("work_id") == wid and r.get("status") not in TERMINAL]
+    if records:
+        if any(r.get("process_observation") == "unconfirmed" for r in records):
+            return "실행 종료 여부 확인"
+        return "해당 실행의 기록과 현재 파일 확인"
+    if current_files in ("isolated-unavailable", "isolated-drift"):
+        return "격리 작업 근거를 확인하지 못한 원인 확인" if current_files == "isolated-unavailable" else "격리 작업 원본과 후보의 차이 확인"
+    if current_files not in (None, "isolated-observed", "matches stored result"):
+        return (("기준 기록과 달라진 현재 파일 확인" if graph.get("state") == "active" else "제출본과 달라진 현재 파일 확인") if current_files.startswith("stale") else
+                "현재 파일을 확인하지 못한 원인 확인")
+    return {"review": "제출 내용을 검토하고 수락 또는 보완 결정",
+            "completed": "수락한 결과와 후속 계획 확인",
+            "rejected": "보완 요청과 남은 작업 확인",
+            "revoked": "수락 철회 이유와 다음 계획 확인"}.get(graph.get("state"), "현재 계획과 남은 작업 확인")
+
+
+def _execution_overview(status, *, work_id=None, details=False):
+    execution = status.get("official_execution")
+    if not isinstance(execution, dict): return []
+    if execution.get("available") is False:
+        return ["## 실행 기록", "", "- 확인 필요: 실행 기록을 읽을 수 없습니다.", "- 다음: 기록을 보존하고 읽기 오류 확인", ""]
+    all_records = execution.get("records", [])
+    if not all_records: return []  # Optional execution module is absent in legacy windows.
+    from .official_state import TERMINAL
+    records = [r for r in all_records if work_id is None or r.get("work_id") == work_id]
+    unlinked = sum(not r.get("work_id") and r.get("status") not in TERMINAL for r in all_records) if work_id is not None else 0
+    hint = ["- 작업 연결을 확인할 미해결 실행 " + str(unlinked) + "건: 프로젝트 View에서 확인", ""] if unlinked else []
+    shown = [r for r in records if details or r.get("status") not in TERMINAL or
+             r.get("document_write_effect") == "unknown" or r.get("process_observation") == "unconfirmed"]
+    if not shown: return hint
+    lines = hint + ["## 실행 기록", "", "- 미해결 실행: " + str(sum(r.get("status") not in TERMINAL for r in records)) + "건"]
+    effects = {"applied": "문서 수정이 반영된 기록입니다.", "none": "문서 쓰기가 반영되지 않은 기록입니다.",
+               "unknown": "문서 반영 여부가 불명확합니다."}
+    processes = {"closed": "종료 확인 기록 있음", "unconfirmed": "종료 여부 확인 필요",
+                 "not_started": "시작 전 실패가 확인됨", "not_requested": "시작 요청 없음"}
+    for record in sorted(shown, key=lambda r: r["grant"]):
+        terminal = record.get("status") in TERMINAL
+        lines += ["", "### 실행 기록 (" + code(record["grant"]) + ")", "",
+                  "- 상태: " + ("정리된 실행" if terminal else "확인이 남은 실행")]
+        if record.get("schema_version") == 2:
+            lines += ["- 기록된 대상: " + code(record["work_id"]),
+                      "- 문서 반영: " + effects[record["document_write_effect"]],
+                      "- 프로세스: " + processes[record["process_observation"]]]
+            if not terminal:
+                lines += ["- 현재 작업 기록과의 관계: 미확인",
+                          "- 다음: " + ("실행 종료 여부 확인" if record["process_observation"] == "unconfirmed" else "해당 실행의 기록과 현재 파일 확인")]
+            elif record["process_observation"] == "unconfirmed":
+                lines += ["- 후속 확인: 개별 프로세스 종료 근거는 실행 상세에서 확인"]
+            elif record["document_write_effect"] == "unknown":
+                lines += ["- 후속 확인: 필요하면 해당 실행의 기록과 현재 파일 대조"]
+            if details:
+                lines += ["- 실행 상태값: " + code(record["status"]), "- 연결 근거: 이 프로젝트에서 검증한 실행의 대상 작업 ID",
+                          "- 연결 범위: 실행 당시 revision·intent는 이 기록에 보존되지 않았습니다.",
+                          "- 문서 효과 근거(기록 순번): " + (", ".join(map(str, record["effect_refs"])) or "해당 기록 없음"),
+                          "- 종료 근거(기록 순번): " + (", ".join(map(str, record["closure_refs"])) or "해당 기록 없음")]
+        elif not terminal:
+            lines += ["- 다음: 기존 실행 상세에서 종료와 반영 기록 확인"]
+    hidden = len(records) - len(shown)
+    if hidden: lines += ["", "- 그 밖의 정리된 실행 " + str(hidden) + "건은 기술 상세에서 확인할 수 있습니다."]
+    return lines + [""]
+
+
+def _work_overview(wid, graph, intents, works, *, status=None, current_files=None, include_scope=False, environment_ready=True):
     lines = ["### " + _work_label(wid, graph, intents), "",
              "- 상태: " + _work_state_label(graph.get("state"))]
+    lines += ["- 다음: " + _resume_next(wid, graph, status or {}, current_files, environment_ready=environment_ready)]
+    if current_files is not None and current_files.startswith("isolated-"):
+        lines += ["- 격리 작업: 원본과 후보의 관찰 근거는 아래 상세에서 확인"]
+    elif current_files is not None:
+        basis = "기준 기록" if graph.get("state") == "active" else "제출본"
+        live_label = (basis + "과 일치" if current_files == "matches stored result" else
+                      basis + "과 다름" if current_files.startswith("stale") else "확인 불가")
+        lines += ["- 현재 파일: " + live_label]
+    if include_scope and graph.get("current"):
+        selected = _resolve(graph["selections"], graph["current"]["selection_ref"])
+        revision = _resolve(graph["revisions"], selected["revision_ref"])
+        for key, label in (("scope", "기록된 범위"), ("observed_scope", "기록된 검사"), ("unavailable_scope", "확인이 남은 범위")):
+            if revision.get(key): lines += ["- " + label + ": " + "; ".join(text(item) for item in revision[key])]
     if graph.get("pending_decisions") or graph.get("pending_selections"):
         lines += ["- 확인 필요: 작업 기록 처리가 끝나지 않았습니다."]
     state = graph.get("continuation")
@@ -1060,20 +1159,24 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
             classification = status["classification"]
             readable_continuation_damage = bool(status.get("continuation_unavailable")) and kind in (None, "work", "continuation", "intent")
             graph_details = classification not in ("degraded", "uninitialized", "incompatible", "unstable") or readable_continuation_damage
-            lines = ["# Colvia — project review", "", "Read-only observation; human acceptance and exact application remain separate.", ""]
+            concise_work = kind == "work" and graph_details and object_id in works and revision is None
+            lines = (["# 작업 진행", ""] if concise_work else
+                     ["# Colvia — project review", "", "Read-only observation; human acceptance and exact application remain separate.", ""])
             product = _product(target)
             if kind is None:
                 normal = _normal_overview(status, product)
                 show_raw = details or not normal
                 lines = ["# 작업 현황", "", "작업 기록을 기준으로 보여드립니다.", ""]
                 lines += _project_summary(status, works, intents, graph_details=graph_details, target=target, compact=True)
+                if works and graph_details:
+                    lines += ["- 현재 파일 비교: 작업 상세 조회에서 확인할 수 있습니다.", ""]
                 if not installed:
                     lines += ["- 조회 출처: 독립된 소스에서 프로젝트를 확인했습니다.", ""]
                 if not normal and status.get("classification") == "pass":
                     lines += ["- 먼저 확인: 환경·진입 정보는 아래 기술 상세에서 확인하세요.", ""]
                 if graph_details:
                     for wid, graph in sorted(works.items()):
-                        lines += _work_overview(wid, graph, intents, works)
+                        lines += _work_overview(wid, graph, intents, works, status=status, environment_ready=normal)
                     if not works:
                         lines += ["등록된 작업이 없습니다." if status.get("work_states") == {} else "작업 목록을 확인할 수 없습니다.", ""]
                     candidate_lines, observed_candidates = render_candidates(target, works=works, intents=intents, brief=not show_raw)
@@ -1081,6 +1184,7 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                         lines += ["등록된 다음 작업 후보는 아직 없습니다. 필요하면 다음 할 일을 함께 정리할 수 있습니다.", ""]
                     else:
                         lines += candidate_lines
+                lines += _execution_overview(status, details=details)
                 footer = "더 알아보기 · " + code(_display_command(target, installed, "help"))
                 if not show_raw:
                     footer += " · " + ("기술 상세·안내 문서: " if product else "기술 상세: ") + code(_display_command(target, installed, "view", "--details"))
@@ -1097,6 +1201,19 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                     lines += ["### 안내 문서", "", "- manual: " + code(entry_root + "/docs/README.md"),
                               "- natural_language_adapter: " + code(entry_root + "/" + WINDOW_ADAPTERS[product["inventory"]["inventory_id"]]), ""]
                 lines += _project_summary(status, works, intents, graph_details=graph_details, target=target, diagnostics_only=True)
+            file_observation = None
+            if kind == "work" and graph_details and object_id in works and revision is None:
+                graph = works[object_id]
+                if graph.get("current"):
+                    selected = _resolve(graph["selections"], graph["current"]["selection_ref"])
+                    r = _resolve(graph["revisions"], selected["revision_ref"])
+                    manifest = _resolve(graph["manifests"], r["result_refs"]["manifest"])
+                    file_observation = _work_files(target, r, manifest, product)
+                lines += _work_overview(object_id, graph, intents, works, status=status,
+                    current_files=file_observation[1] if file_observation is not None else None, include_scope=True,
+                    environment_ready=_normal_overview(status, product))
+                lines += _execution_overview(status, work_id=object_id, details=True)
+                lines += ["더 보기: 아래 작업 근거와 기술 상세", "", "## 기술 상세", ""]
             lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "pending_continuation", "next_action", "error_code", "reason", "message", "lifecycle_ready", "retired_entry_collision", "continuation_unavailable", "official_execution"}}})
             if kind is None:
                 extra_keys = {"error", "paths", "recovery", "root_classification", "product_verification", "pending_lifecycle", "record_verification", "planning", "remaining_files", "remaining_directories"}
@@ -1111,7 +1228,7 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                     candidate_lines, _ = render_candidates(target, works=works, intents=intents)
                     lines += candidate_lines
                 if kind == "work":
-                    _require(object_id in works, "Work not found"); lines += _work(target, works[object_id], revision, product, intents, works)
+                    _require(object_id in works, "Work not found"); lines += _work(target, works[object_id], revision, product, intents, works, file_observation=file_observation)
                 elif kind == "continuation":
                     _require(object_id in works, "Work not found")
                     lines += _continuation(target, works[object_id], works)

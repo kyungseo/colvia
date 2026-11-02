@@ -81,6 +81,11 @@ Follow the selected revision's references under [Session Handoff And Resume](../
 If a reference is absent, unreadable, stale or ambiguous, say what is missing and inspect only permitted evidence for the same task. Ask for the smallest missing fact when that cannot restore the request or authority; do not require the human to restate the whole project or invent a new handoff ledger. Respect changed conditions and pending recovery before editing. This guidance relies on context and records actually available to the agent; it does not repair or prove the platform's context transfer.
 
 
+The compact View's next line proposes a check or decision from recorded state. Explain the concrete action separately using the actual request and approval; do not present your interpretation as CLI output. Preserve the current Work even when another document offers a plausible continuation. Continue approved unfinished work after a progress report, without repeating a still-valid approval.
+
+Execution cards describe historical runs separately from the current Work. A matching Work ID identifies the recorded target, not the current revision, submission or approval. Distinguish recorded document effect, process closure, recorded checks and current file agreement. For an unresolved run, inspect permitted evidence before proposing recovery or a new execution approval; never retry a consumed grant. A terminal run with unknown historical effect retains that uncertainty without becoming a new blocker for otherwise permitted work. A terminal event with status `unknown` remains unresolved; `operator-resolved-unknown` is a distinct resolved state. Unconfirmed process evidence on an unresolved run, and pending operations, still follow their existing recovery boundaries. Missing individual closure evidence on an already resolved run is historical uncertainty, not a new lifecycle blocker. Summarize checked and unchecked scope and link the existing detailed evidence; a complete log or declared observation alone does not prove successful verification.
+
+
 ## Unavailable Observations Before Acceptance
 
 Have the human declare important criteria in the intent acceptance oracle or stable referenced brief before execution. Do not turn a free-text observation into an automatic proof, waiver, or new runtime gate.

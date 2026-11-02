@@ -257,7 +257,16 @@ def execution_truth(target, *, require_closed=True):
 def public_status(value):
     result = {key: value[key] for key in ('grant', 'head', 'status', 'completed', 'pending', 'revoked', 'sealed', 'cancel_requested')}
     if value.get('schema_version') == 2:
+        history = value['history']
+        started = history.runtime_start is not None or any(w['start'] is not None for w in history.workers.values())
+        reserved = history.runtime_intent is not None or bool(history.workers)
+        closure = ('unconfirmed' if not history.processes_closed() else
+                   'closed' if started else 'not_started' if reserved else 'not_requested')
+        # read_capsule verified this grant against the queried target. Work ID
+        # identifies the historical target only, never the current revision.
         result.update(schema_version=2, document_write_effect=value['document_write_effect'],
+                      work_id=history.scope['work_id'], process_observation=closure,
+                      effect_refs=history.effect_refs(), closure_refs=history.closure_refs(),
                       recovery_availability='not_checked', transient_presence='not_checked',
                       cleanup_marker_presence='not_checked')
     return result
