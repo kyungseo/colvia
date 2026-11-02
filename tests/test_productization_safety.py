@@ -489,10 +489,18 @@ except ContractError as exc:
         self.assertEqual(before, exact_snapshot(self.target))
 
     def test_nonisolated_python_is_refused(self):
+        before = exact_snapshot(self.target)
         result = self.run_runtime(isolated=False)
         self.assertEqual(65, result.returncode, result.stdout + result.stderr)
-        expected = "HV2-WORKSPACE-RUNTIME: windows-2 mutation requires explicit allowed Python -I -B" if sys.platform == "win32" else "isolated"
+        if sys.platform == "win32":
+            expected = "HV2-WORKSPACE-RUNTIME: windows-2 mutation requires explicit allowed Python -I -B"
+        elif sys.platform == "darwin" and sys.version_info[:3] == (3, 14, 10):
+            # This tuple is rejected before the legacy isolated-import gate.
+            expected = "HV2-WORKSPACE-RUNTIME: mutation requires final GIL-enabled CPython"
+        else:
+            expected = "isolated"
         self.assertIn(expected, result.stdout)
+        self.assertEqual(before, exact_snapshot(self.target))
 
     def test_environment_cannot_shadow_isolated_runtime(self):
         shadow = Path(self.temp.name) / "shadow";shadow.mkdir()
@@ -2756,6 +2764,20 @@ class ActualWorkspaceInitTests(unittest.TestCase):
             launcher.chmod(0o644)
             argv = [sys.executable, "-B", "-m", "hv2ref.cli"]
         env = dict(os.environ, PYTHONPATH=str(self.source / "src"))
+        if sys.platform == "darwin" and sys.version_info[:3] == (3, 14, 10):
+            # The managed tuple requires isolated entry. Preserve the refusal
+            # before checking module dispatch through explicit trusted source.
+            before = exact_snapshot(self.target)
+            refused = subprocess.run(argv + ["repair", "--target", str(self.target),
+                                     "--source", str(self.source), "--backup", str(self.base / "backup"),
+                                     "--operation-id", "repair-a", "--observed-at", self.TIME],
+                                     capture_output=True, timeout=45, env=env)
+            self.assertEqual(65, refused.returncode, refused.stdout + refused.stderr)
+            self.assertEqual("HV2-WORKSPACE-RUNTIME", json.loads(refused.stdout)["code"])
+            self.assertEqual(before, exact_snapshot(self.target))
+            argv = [sys.executable, "-I", "-B", "-c",
+                    "import runpy,sys;sys.path.insert(0,sys.argv.pop(1));runpy.run_module('hv2ref.cli',run_name='__main__')",
+                    str(self.source / "src")]
         result = subprocess.run(argv + ["repair", "--target", str(self.target), "--source", str(self.source),
                                 "--backup", str(self.base / "backup"), "--operation-id", "repair-a", "--observed-at", self.TIME],
                                 capture_output=True, timeout=45, env=env)

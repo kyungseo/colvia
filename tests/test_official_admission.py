@@ -9,7 +9,7 @@ from hv2ref.errors import ContractError
 class OfficialAdmissionTests(unittest.TestCase):
     def test_failed_descendant_scan_cannot_be_hidden_by_cleanup_return(self):
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False
+            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
             rpc.p=SimpleNamespace(pid=123,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(return_value=0))
             rpc.known_children={};rpc.sel=mock.Mock();rpc.trace=io.BytesIO()
             rpc.host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock())
@@ -32,7 +32,7 @@ class OfficialAdmissionTests(unittest.TestCase):
 
     def test_broken_stdin_flush_does_not_skip_process_cleanup(self):
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False
+            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
             stream=mock.Mock();stream.closed=False;stream.close.side_effect=BrokenPipeError('synthetic closed pipe')
             waited=mock.Mock(return_value=0)
             rpc.p=SimpleNamespace(pid=123,returncode=0,stdin=stream,stdout=io.BytesIO(),stderr=io.BytesIO(),wait=waited)
@@ -40,11 +40,11 @@ class OfficialAdmissionTests(unittest.TestCase):
             rpc.host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock())
             with mock.patch.object(state,'group_absent',return_value=True):result=rpc.close()
             waited.assert_called_once();self.assertTrue(result['observed_tree_absent'])
-            self.assertTrue((Path(name)/'termination.json').exists())
+            self.assertFalse((Path(name)/'termination.json').exists())
 
     def test_failed_child_observation_does_not_skip_remaining_children(self):
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False
+            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
             rpc.p=SimpleNamespace(pid=123,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(return_value=0))
             rpc.known_children={124:'birth-a',125:'birth-b'};rpc.sel=mock.Mock();rpc.trace=io.BytesIO();rpc.descendants=mock.Mock()
             rpc.host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock())
@@ -90,12 +90,13 @@ class OfficialAdmissionTests(unittest.TestCase):
             responses={'initialize':{'platformFamily':'unix','platformOs':'macos'},'config/read':{'config':config},
                        'account/read':{'account':{'type':'chatgpt','email':'synthetic-private@example.invalid'}},
                        'model/list':{'data':[{'model':admission.MODEL,'supportedReasoningEfforts':[{'reasoningEffort':'low'}]}]}}
-            rpc=SimpleNamespace(host=SimpleNamespace(run=Path(name).resolve()),spec={'cwd':name},send=mock.Mock(),
+            rpc=SimpleNamespace(host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock()),spec={'cwd':name,'policy_sha256':'a'*64},send=mock.Mock(),
                                 request=mock.Mock(side_effect=lambda method,params:responses[method]))
             admission.preflight(rpc)
-            raw=(Path(name)/'admission.json').read_text()
+            raw=str(rpc.host.journal.append.call_args)
             self.assertNotIn('synthetic-private',raw);self.assertNotIn('email',raw)
-            self.assertTrue(state.load(Path(name).resolve()/'admission.json')['catalog_is_not_entitlement_proof'])
+            self.assertFalse((Path(name)/'admission.json').exists())
+            rpc.host.journal.append.assert_called_once_with('admission',{'pass':True,'account_type':'chatgpt','model_id':admission.MODEL,'effort':'low','policy_digest':'a'*64})
             config['features']['shell_tool']=True
             with self.assertRaisesRegex(ContractError,'effective-feature'):admission.preflight(rpc)
 
@@ -104,7 +105,8 @@ class AdapterFlowTests(unittest.TestCase):
         import time
         host=SimpleNamespace(run=folder,deadline=time.monotonic()+120,rpc=None,turn=None,thread=None,
             revoked=False,sealed=not refused,completed=0,pending=None,spec={'request':{'prompt':'synthetic'}},terminal=False)
-        host.cancelled=mock.Mock(return_value=False);host.revoke=mock.Mock();host.fail=mock.Mock()
+        host.controller=SimpleNamespace(preflight_inputs=mock.Mock())
+        host.cancelled=mock.Mock(return_value=False);host.revoke=mock.Mock();host.fail=mock.Mock(return_value=None);host.journal=mock.Mock();host.journal.history.return_value.latch=False
         def bind(thread,turn):host.thread=thread;host.turn=turn
         host.bind=bind;host.finish=mock.Mock(side_effect=lambda status:{'status':status})
         host.dispatch=mock.Mock(return_value={'ok':False,'worker_admitted':False,'effect_status':'not_started'})
@@ -149,22 +151,24 @@ class AdapterFlowTests(unittest.TestCase):
     def test_leader_wait_timeout_keeps_absence_unconfirmed(self):
         import subprocess
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False
+            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
             rpc.p=SimpleNamespace(pid=123,returncode=None,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(side_effect=subprocess.TimeoutExpired('synthetic',2)))
             rpc.known_children={};rpc.sel=mock.Mock();rpc.trace=io.BytesIO()
             rpc.host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock());rpc.descendants=mock.Mock()
             with mock.patch.object(state,'group_absent',return_value=True),mock.patch.object(adapter,'signal_owned',return_value=False):
                 self.assertFalse(rpc.close()['observed_tree_absent'])
-            self.assertTrue((Path(name)/'termination.json').exists());rpc.host.journal.append.assert_not_called()
+            self.assertFalse((Path(name)/'termination.json').exists());rpc.host.journal.append.assert_not_called()
 
     def test_late_callback_refusal_is_journaled_before_reply(self):
         import time
-        rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.host=SimpleNamespace(thread='t',turn='u',journal=mock.Mock())
+        rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.host=SimpleNamespace(thread='t',turn='u',refuse=mock.Mock())
         rpc.deadline=time.monotonic()+30;rpc.request=mock.Mock();rpc.reply=mock.Mock();rpc.log=mock.Mock()
         rpc.event=mock.Mock(side_effect=[{'id':9,'method':'item/tool/call','params':{'callId':'late'}},{'method':'turn/completed'}])
         rpc.notification=mock.Mock(return_value={'id':'u','status':'interrupted'})
+        order=mock.Mock();order.attach_mock(rpc.host.refuse,'refuse');order.attach_mock(rpc.reply,'reply')
         rpc.interrupt()
-        rpc.host.journal.append.assert_called_once_with('refused',{'callId':'late','late':True,'effect_status':'not_started'})
+        rpc.host.refuse.assert_called_once_with(reason='cancelled')
+        self.assertEqual(['refuse','reply'],[c[0] for c in order.mock_calls])
         rpc.reply.assert_called_once()
 
     def test_signal_exit_race_is_not_a_cleanup_exception(self):

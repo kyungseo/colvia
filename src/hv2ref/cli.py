@@ -23,7 +23,7 @@ def parser() -> argparse.ArgumentParser:
     product_init.add_argument("--target", type=Path, required=True)
     product_init.add_argument("--source", type=Path, default=product_source_root())
     product_init.add_argument("--apply", action="store_true")
-    product_init.add_argument("--profile", choices=("continuation-1", "windows-2", "official-execution-1"))
+    product_init.add_argument("--profile", choices=("continuation-1", "windows-2", "official-execution-1", "official-execution-2"))
     product_init.add_argument("--authority-home-id")
     product_init.add_argument("--operation-id")
     product_init.add_argument("--observed-at")
@@ -59,7 +59,7 @@ def parser() -> argparse.ArgumentParser:
     )
 
     for p in (product_update, product_rollback):
-        p.add_argument("--profile", choices=("continuation-1", "windows-2", "official-execution-1"))
+        p.add_argument("--profile", choices=("continuation-1", "windows-2", "official-execution-1", "official-execution-2"))
         p.add_argument("--operation-id")
         p.add_argument("--observed-at")
         p.add_argument("--input")
@@ -85,7 +85,7 @@ def parser() -> argparse.ArgumentParser:
         "--inject-at", choices=("after-receipt", "after-launcher", "after-file", "after-files", "after-directory", "after-product"), help=argparse.SUPPRESS
     )
 
-    product_detach.add_argument("--profile",choices=("continuation-1", "windows-2", "official-execution-1"))
+    product_detach.add_argument("--profile",choices=("continuation-1", "windows-2", "official-execution-1", "official-execution-2"))
     product_detach.add_argument("--operation-id")
     product_detach.add_argument("--observed-at")
     product_detach.add_argument("--input")
@@ -242,7 +242,8 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
     execution.add_argument("--input", default="-", help="canonical request for prepare, exact spec for execute")
     execution.add_argument("--confirm", help="exact preview digest; trusted-local operator declaration")
     execution.add_argument("--grant", help="consumed execution grant digest")
-    execution.add_argument("--reason", default="operator cancellation")
+    execution.add_argument("--reason", default="cancelled", help="fixed cancellation reason code")
+    execution.add_argument("--host-control-root", help="explicit private store for recovery status or resolution")
     _view_parser(sub, target)
     return root
 
@@ -257,7 +258,7 @@ def workspace_run(args: argparse.Namespace) -> object:
     if args.command in ("update","rollback"): return _workspace_switch(args, installed=True)
     if args.command == "detach": return _workspace_detach(args,installed=True)
     if args.command == "run":
-        if require_workspace_runtime(args.target)["inventory_id"] != "official-execution-1":
+        if require_workspace_runtime(args.target)["inventory_id"] != "official-execution-2":
             raise ContractError("HV2-OFFICIAL-WINDOW", "explicit official installation required; no source fallback")
         from .official_entry import cli as official_cli
         if args.action == "execute" and not args.confirm:
@@ -267,10 +268,21 @@ def workspace_run(args: argparse.Namespace) -> object:
         if (args.action in ("prepare", "execute") and args.grant or
             args.action in ("prepare", "status", "cancel") and args.confirm or
             args.action in ("status", "cancel", "resolve") and args.input != "-" or
-            args.action != "cancel" and args.reason != "operator cancellation"):
+            args.action != "cancel" and args.reason != "cancelled" or
+            args.action not in ("status", "resolve") and args.host_control_root is not None):
             raise ContractError("HV2-OFFICIAL-OPTIONS", "options do not match execution action")
-        value = _workspace_input(args.input) if args.action in ("prepare", "execute") else None
-        return official_cli(args.target, args, value)
+        failure_default = "input_shape"
+        try:
+            value = _workspace_input(args.input) if args.action in ("prepare", "execute") else None
+            failure_default = "input_shape" if args.action == "prepare" else "internal_error"
+            return official_cli(args.target, args, value)
+        except (ContractError, OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
+            # Raw parser keys, OS errors, and exception strings are not CLI evidence.
+            from .official_host import reason_code
+            code = reason_code(error, failure_default)
+            if args.action == "execute":
+                code += "; inspect run status before retry"
+            raise ContractError("HV2-OFFICIAL-EXECUTION", code) from None
     value = _workspace_input(args.input)
     def exact(keys, optional=()):
         if not isinstance(value, dict) or not set(keys) <= set(value) or set(value) - set(keys) - set(optional):

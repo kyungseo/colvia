@@ -69,7 +69,7 @@ def launch_spec(host):
     bindings = dict(paths, PYROOT=str(Path(sys.executable).resolve().parent.parent), RUNTIME=str(base), SESSION=str(session))
     roots = (host.target, Path(host.spec['request']['worker_root']))
     state.need(not any(Path(p) == root or root in Path(p).parents for p in paths.values() for root in roots), 'runtime-input-project-overlap')
-    protected = [v['path'] for v in host.spec['documents']['files'].values()]
+    protected = [v['path'] for v in host.spec['documents']['files'].values()] + [host.spec['host_control']['path']]
     protected += [str(host.target / '.hrn' / name) for name in ('executions','work','intents','format.json','product/binding.json')]
     bound = prepare_launch(bindings, args, protected=protected)
     env = {k:v for k,v in os.environ.items() if k in ('HOME','USER','LOGNAME')}
@@ -97,7 +97,5 @@ def preflight(rpc):
     models = rpc.request('model/list', {'limit':100,'includeHidden':True})
     selected = next((m for m in models['data'] if m.get('model') == MODEL or m.get('id') == MODEL), None)
     state.need(selected is not None and any(e['reasoningEffort'] == 'low' for e in selected['supportedReasoningEfforts']), 'fixed-model-effort-unavailable')
-    state.publish(rpc.host.run/'admission.json', {'pass':True,'account_type':'chatgpt','model':MODEL,'effort':'low',
-                                               'catalog_is_not_entitlement_proof':True,'mcp_enabled':0,
-                                               'raw_account_config_retained':False,
-                                               'platform':{k:initialized.get(k) for k in ('platformFamily','platformOs')}})
+    rpc.host.journal.append('admission', {'pass':True, 'account_type':'chatgpt', 'model_id':MODEL,
+                                        'effort':'low', 'policy_digest':rpc.spec['policy_sha256']})

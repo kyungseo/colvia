@@ -94,3 +94,14 @@ def prepare_launch(bindings, arguments, *, protected, policy_path=None):
     return {"argv": argv, "policy_sha256": POLICY_SHA256,
             "bindings": {name: str(paths[name]) for name in sorted(PARAMETERS)},
             "protected": [str(path) for path in guarded]}
+
+
+def require_host_root_separation(root, runtime_paths, runtime_root, python_root):
+    """Prepare-time counterpart to launch's complete protected-overlap check."""
+    guard = canonical_existing(str(root), True)
+    fixed = canonical_existing(str(POLICY), False)
+    raw = fixed.read_bytes()
+    require(hashlib.sha256(raw).hexdigest() == POLICY_SHA256, 'policy-drift')
+    static = [Path(value).resolve() for value in re.findall(r'\((?:subpath|literal) "([^"\n]+)"\)', raw.decode()) if value != '/']
+    admitted = [Path(p) for p in runtime_paths.values()] + [Path(runtime_root), Path(python_root), fixed, *static]
+    require(not any(overlaps(guard, p) for p in admitted), 'host-control-protected-overlap')

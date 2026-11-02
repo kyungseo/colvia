@@ -1,5 +1,7 @@
 # Development Index
 
+- macOS 배포·관리·온보딩 — 완료(Owner 수락, 2026-11-02): [수락 범위와 남은 자격 조건](FEAT-20261101-003-macos-distribution-onboarding.md#owner-결과-수락과-source-완료--2026-11-02).
+
 - 작업 중 안내와 View 요약 — 완료(Owner 수락, 2026-11-01): [수락 범위·한계·실사용 후속 보완](FEAT-20261031-001-guidance-and-view-summary.md).
 
 - 완료 실행 이력의 Git 권한 호환성: [Owner 결과 수락 및 source 완료](PATCH-20261030-003-completed-history-permissions.md#owner-result-acceptance-and-source-completion--2026-10-30).
@@ -235,6 +237,14 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [Guardrails 통합 후보·설치 호환 확인](PATCH-20261101-002-local-payload-gates.md#owner-planning-authorization--2026-11-01) — P0, 해당 후보 설치 전. S1b 제한 수락과 통합 실행 승인 후 정확한 window·상태/View·lifecycle/old writer를 확인한다. 통합 범위는 [macOS 구현 Work](FEAT-20261101-003-macos-distribution-onboarding.md)에서 선택; 나머지 후보는 미선택.
+- [Guardrails 원천 접근·native 관측 강화](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, profile/OS/runtime·보호 주장 확대 때 재개. 실제 oracle/rlimit·준비 근거와 양성/음성 대조를 보강하며 기본 온보딩의 일괄 선행조건은 아니다.
+- [Guardrails provider 전송·독립 승인 경계](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, 실제 전송 경로 확대 또는 강한 보호 요구 때 재개. 추가 문맥/수신 관측과 Host/사람 승인 경계를 별도로 확보한다.
+- [Guardrails 종료·취소 경합·crash 복구](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 진단 혼란·경합/crash 요구 또는 재현 결함 때 재개; 안전 결함이면 P1로 재판단. 효과/종료와 실제 복원 근거를 분리한다.
+- [Guardrails 탐지·정상 입력 품질](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 정상 입력 차단·새 비밀 형식 요구 때 재개. 미탐/오탐·가짜 키/인젝션과 정상 대조를 보강하며 원천 접근 권한과 구분한다.
+- [Guardrails 기존 기록·사고 대응](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, 대상 repo·열람/전송 범위 지정 또는 사고 때 별도 승인으로 재개. 잔존과 수신·키 회수/교체를 구분하며 삭제/이력 재작성은 자동 수행하지 않는다.
+- [Guardrails 일반 개발·민감자료 경로](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 해당 작업/위협 모델을 선택할 때 재개. 원래 요구의 잔여이며 합성 근거부터 접근·전송·복원 경계를 정한다.
 
 - [Windows detach 성능 개선](windows-detach-performance-followup.md#owner-planning-authorization--2026-10-28) — 정상 완료·보존 검증과 성능을 분리한다. Windows 본 검증을 우선하고 최적화는 미선택 후속으로 보류한다. 현재 Windows 검증 결과 처분 뒤 다음 작업 선택 시 재검토하며, 사용상 지연·새 규모·안전한 완료 실패가 관측되면 앞당긴다. 본 검증의 선행 조건이 아니다.
 

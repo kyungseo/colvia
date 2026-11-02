@@ -538,7 +538,7 @@ def _continuation_confirmation(target, ticket, works, product):
     else:
         try:
             _require(product is not None, "verified active product unavailable")
-            _require(product["inventory"]["inventory_id"] in ("continuation-1", "windows-2", "official-execution-1"), "continuation-capable runtime required")
+            _require(product["inventory"]["inventory_id"] in ("continuation-1", "windows-2", "official-execution-1", "official-execution-2"), "continuation-capable runtime required")
             runtime = {key: product[key] for key in ("binding_ref", "launcher_sha256")}
             runtime["inventory_id"] = product["inventory"]["inventory_id"]
             store = ContinuationStore(target)

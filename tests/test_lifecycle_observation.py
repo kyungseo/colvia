@@ -27,7 +27,8 @@ class LifecycleObservationTests(unittest.TestCase):
         self.xdg = self.base / "xdg"
         self.home.mkdir()
         self.xdg.mkdir()
-        environment = mock.patch.dict(os.environ, {"HOME": str(self.home), "XDG_CONFIG_HOME": str(self.xdg)})
+        environment = mock.patch.dict(os.environ, {"HOME": str(self.home), "XDG_CONFIG_HOME": str(self.xdg),
+                                                   "GIT_CONFIG_GLOBAL": str(self.home / ".gitconfig")})
         environment.start()
         self.addCleanup(environment.stop)
         self.addCleanup(lambda: self.assertIsNone(work._lifecycle_visibility.get()))

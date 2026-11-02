@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import stat
+import shutil
 import sys
 import sysconfig
 import subprocess
@@ -86,6 +87,109 @@ def windows_runtime_observation() -> dict:
     return result
 
 
+# A distribution qualification is a tuple and exact normalized tree, never a
+# blanket addition to SUPPORTED_PYTHON_VERSIONS or the Windows policy.
+MACOS_RUNTIME_OBJECTS = "3e730af422bdfa77dff666ac882726ce12e87d7cceae6b39c17775b2d88e2510"
+MACOS_RUNTIME_FILES = "ed7b15de8cf79458c2d0c06713424bcc48326f1c59fe454844e1c8fa1400fe89"
+MACOS_RUNTIME_ID = "e3d42cd0b305583e46e16d5265e3b6ac24a01ef9ee32a08418e1be5965db816f"
+
+
+MANAGED_MACOS_RUNTIME_DECLARATION = {
+    "python": "3.14.10", "platform": "darwin", "machine": "arm64",
+    "process_platform": "macosx-11.0-arm64", "isolated": True,
+    "bytecode_disabled": True, "tree_identity": MACOS_RUNTIME_ID,
+    "admission": "exact normalized tree and manifests; location-independent; not authentication",
+}
+RUNTIME_SELECTION_GUIDANCE = (
+    f"use final GIL-enabled CPython {SUPPORTED_PYTHON_TEXT} before mutation; "
+    "for a managed macOS installation, preserve damaged bytes and restore the exact pinned "
+    "CPython 3.14.10 tree and manifests through the documented recovery procedure"
+)
+
+
+def runtime_admission_path(window: str | None, supported: bool) -> str:
+    """Describe an already computed gate result without re-verifying the tree."""
+    if not supported:
+        return "unsupported"
+    if window == "windows-2":
+        return "windows-window-policy"
+    if sys.platform == "darwin" and sys.version_info[:3] == (3, 14, 10):
+        return "managed-macos-exact-tree"
+    return "legacy-version"
+
+
+def managed_macos_runtime_supported() -> bool:
+    """Post-start corroboration; the pinned OS verifier owns first execution.
+
+    This also rejects direct installed entry through a different interpreter.
+    No writable verification stamp or environment-selected catalog is trusted.
+    """
+    if (sys.platform != "darwin" or sys.implementation.name != "cpython"
+            or sys.version_info[:3] != (3, 14, 10)
+            or sys.version_info.releaselevel != "final"
+            or sysconfig.get_config_var("Py_GIL_DISABLED")
+            or os.uname().machine != "arm64"
+            or sysconfig.get_platform() != "macosx-11.0-arm64"
+            or not sys.flags.isolated or not sys.dont_write_bytecode):
+        return False
+    try:
+        root = Path(sys.prefix).absolute()
+        if root != Path(sys.base_prefix).absolute():
+            return False
+        for p in (root, *root.parents):
+            if not stat.S_ISDIR(p.lstat().st_mode):
+                return False
+        executable = root / "bin/python3.14"
+        if Path(sys.executable).resolve(strict=True) != executable:
+            return False
+        def regular(p, digest=None):
+            before = p.lstat()
+            if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                    or before.st_uid != os.getuid()):
+                raise ValueError("unsafe runtime file")
+            raw = p.read_bytes()
+            after = p.lstat()
+            fields = lambda x: (x.st_dev,x.st_ino,x.st_size,x.st_mtime_ns,x.st_ctime_ns)
+            if fields(before) != fields(after) or digest and hashlib.sha256(raw).hexdigest() != digest:
+                raise ValueError("runtime drift")
+            return raw
+        objects = regular(root.parent / "objects.txt", MACOS_RUNTIME_OBJECTS)
+        checksums = regular(root.parent / "files.sha256", MACOS_RUNTIME_FILES)
+        actual = []
+        files = {}
+        pending = [(root, ".")]
+        while pending:
+            path, name = pending.pop()
+            info = path.lstat()
+            if info.st_uid != os.getuid():
+                return False
+            if stat.S_ISLNK(info.st_mode):
+                actual.append("Symbolic Link|-|" + name + "|" + os.readlink(path))
+            elif stat.S_ISDIR(info.st_mode):
+                actual.append("Directory|" + format(stat.S_IMODE(info.st_mode), "o") + "|" + name + "|")
+                pending.extend((p, "./" + p.relative_to(root).as_posix()) for p in path.iterdir())
+            elif stat.S_ISREG(info.st_mode) and info.st_nlink == 1:
+                actual.append("Regular File|" + format(stat.S_IMODE(info.st_mode), "o") + "|" + name + "|")
+                files[name.removeprefix("./")] = path
+            else:
+                return False
+        if ("\n".join(sorted(actual)) + "\n").encode() != objects:
+            return False
+        expected = {}
+        for line in checksums.decode("ascii").splitlines():
+            digest, name = line.split("  ", 1)
+            if not re.fullmatch("[0-9a-f]{64}", digest) or name in expected:
+                return False
+            expected[name] = digest
+        if files.keys() != expected.keys():
+            return False
+        for name, path in files.items():
+            regular(path, expected[name])
+        return True
+    except (OSError, ValueError, UnicodeError, RuntimeError):
+        return False
+
+
 def runtime_supported(window: str | None = None) -> bool:
     """Qualified final, GIL-enabled CPython builds; not interpreter authentication."""
     if window == "windows-2":
@@ -93,13 +197,14 @@ def runtime_supported(window: str | None = None) -> bool:
     if sys.platform == "win32":
         return False
     return (sys.implementation.name == "cpython"
-            and sys.version_info[:3] in SUPPORTED_PYTHON_VERSIONS
+            and (sys.version_info[:3] in SUPPORTED_PYTHON_VERSIONS
+                 or managed_macos_runtime_supported())
             and getattr(sys.version_info, "releaselevel", None) == "final"
             and not sysconfig.get_config_var("Py_GIL_DISABLED"))
 
 
 def require_supported_runtime(window: str | None = None) -> None:
-    if window == "official-execution-1" and sys.platform != "darwin":
+    if window in ("official-execution-1", "official-execution-2") and sys.platform != "darwin":
         raise ContractError("HV2-WORKSPACE-RUNTIME", "official execution requires macOS")
     if window == "windows-2" or sys.platform == "win32":
         if window != "windows-2":
@@ -110,7 +215,7 @@ def require_supported_runtime(window: str | None = None) -> None:
         if not sys.flags.isolated or not sys.dont_write_bytecode:
             raise ContractError("HV2-WORKSPACE-RUNTIME", "windows-2 mutation requires explicit allowed Python -I -B")
     if not runtime_supported(window):
-        raise ContractError("HV2-WORKSPACE-RUNTIME", f"mutation requires final GIL-enabled CPython {SUPPORTED_PYTHON_TEXT}; preserve bytes and use a supported runtime")
+        raise ContractError("HV2-WORKSPACE-RUNTIME", RUNTIME_SELECTION_GUIDANCE)
 
 
 def _error(detail: str) -> ContractError:
@@ -203,15 +308,50 @@ def safe_target(target: Path, *, mutation: bool = False) -> Path:
         raise ContractError("HV2-WORKSPACE-TARGET", "target unavailable") from exc
 
 
+def git_executable() -> str:
+    """Avoid Apple's installation/cache shim; never start CLT setup implicitly."""
+    if sys.platform != "darwin" or shutil.which("git") != "/usr/bin/git":
+        return "git"
+    environment = {"PATH": "/usr/bin:/bin", "LC_ALL": "C"}
+    if os.environ.get("DEVELOPER_DIR"):
+        environment["DEVELOPER_DIR"] = os.environ["DEVELOPER_DIR"]
+    try:
+        selected = subprocess.run(["/usr/bin/xcode-select", "-p"], capture_output=True,
+                                  env=environment, timeout=10)
+    except subprocess.TimeoutExpired as error:
+        raise ContractError("HV2-WORKSPACE-TARGET", "Git developer directory lookup timed out") from error
+    if selected.returncode:
+        if b"unable to get active developer directory" in selected.stderr.lower():
+            raise FileNotFoundError("Git developer tools are not installed")
+        raise ContractError("HV2-WORKSPACE-TARGET", "Git developer directory unavailable")
+    developer = Path(os.fsdecode(selected.stdout).strip())
+    candidate = developer / "usr/bin/git"
+    if not developer.is_absolute() or not candidate.is_file():
+        raise FileNotFoundError("Git binary unavailable in selected developer tools")
+    candidate = candidate.resolve(strict=True)
+    info = candidate.stat()
+    if not stat.S_ISREG(info.st_mode) or not info.st_mode & 0o111:
+        raise FileNotFoundError("Selected Git is not executable")
+    return str(candidate)
+
+
 def git_environment() -> dict[str, str]:
     env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
     env.update({"GIT_OPTIONAL_LOCKS": "0", "LC_ALL": "C"})
+    # A closed caller may disable user/system configuration, but cannot inject
+    # arbitrary GIT_* settings or configuration paths through this boundary.
+    if all(os.environ.get(k) == v for k, v in {
+            "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": "/dev/null",
+            "GIT_CONFIG_SYSTEM": "/dev/null"}.items()):
+        env.update({"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": "/dev/null",
+                    "GIT_CONFIG_SYSTEM": "/dev/null", "GIT_ATTR_NOSYSTEM": "1",
+                    "XDG_CONFIG_HOME": "/dev/null", "GIT_TERMINAL_PROMPT": "0"})
     return env
 
 
 def _topology_probe(target: Path, env: dict[str, str]) -> tuple[int, bytes, bytes]:
     result = subprocess.run(
-        ["git", "-C", str(target), "rev-parse", "--path-format=absolute", "--show-toplevel", "--absolute-git-dir", "--git-common-dir", "--show-superproject-working-tree"],
+        [git_executable(), "-C", str(target), "rev-parse", "--path-format=absolute", "--show-toplevel", "--absolute-git-dir", "--git-common-dir", "--show-superproject-working-tree"],
         capture_output=True, env=env, check=False,
     )
     return result.returncode, result.stdout, result.stderr
@@ -430,16 +570,16 @@ def inspect_root(target: Path) -> dict[str, Any]:
 
 def _validate_plan_shape(plan: Any) -> None:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6, 7) or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6, 7, 8) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not all(_id(plan[k]) for k in ("operation_id", "authority_home_id")) or not _text(plan["created_at"]) or not all(_sha(plan[k]) for k in ("target_fingerprint", "format_sha256")):
         raise _error("invalid init identity or digest")
     if plan["expected_binding_ref"] is not None or any(plan[k] != [] for k in ("truth_refs", "remove", "preserve")):
         raise _error("invalid fresh init claims")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1"}):
+    if not _sha(release["sha256"]) or release["id"] != "product-release-" + release["sha256"][:24] or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1", "official-execution-2"}):
         raise _error("invalid init release")
-    if plan["schema_version"] != (7 if release["inventory_id"] == "official-execution-1" else 6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
+    if plan["schema_version"] != (8 if release["inventory_id"] == "official-execution-2" else 7 if release["inventory_id"] == "official-execution-1" else 6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
         raise _error("init schema/window pair")
 
 
@@ -484,7 +624,7 @@ def _write_exact(path: Path, data: bytes) -> None:
 
 def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[str, Any]:
     plan = _exact(plan, PLAN_KEYS)
-    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6, 7) or plan["action"] != "init":
+    if plan["record_type"] != "lifecycle-plan" or type(plan["schema_version"]) is not int or plan["schema_version"] not in (1, 4, 5, 6, 7, 8) or plan["action"] != "init":
         raise _error("not a supported init plan")
     if not _id(plan["operation_id"]) or plan["authority_home_id"] != value["authority_home_id"] or not _text(plan["created_at"]):
         raise _error("init plan identity")
@@ -493,9 +633,9 @@ def _validate_init_plan(plan: Any, value: dict[str, Any], target: Path) -> dict[
     if plan["expected_binding_ref"] is not None or plan["truth_refs"] != [] or plan["remove"] != [] or plan["preserve"] != []:
         raise _error("fresh init plan cannot claim existing truth")
     release = _exact(plan["candidate_release"], {"id", "sha256", "inventory_id"})
-    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1"}):
+    if not _id(release["id"]) or not _sha(release["sha256"]) or (not isinstance(release["inventory_id"], str) or release["inventory_id"] not in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1", "official-execution-2"}):
         raise _error("init plan candidate")
-    if plan["schema_version"] != (7 if release["inventory_id"] == "official-execution-1" else 6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
+    if plan["schema_version"] != (8 if release["inventory_id"] == "official-execution-2" else 7 if release["inventory_id"] == "official-execution-1" else 6 if release["inventory_id"] == "windows-2" else 5 if release["inventory_id"] == "continuation-1" else 4 if release["inventory_id"] == "delegation-1" else 1):
         raise _error("init schema/window pair")
     if release["id"] != "product-release-" + release["sha256"][:24]:
         raise _error("init plan release identity")
@@ -585,12 +725,12 @@ Init policy is stable within windows-2; its cross-window transitions are forbidd
     detached = target / ROOT_NAME / "detached.json"
     if _exists(detached):
         receipt = _file_json(detached)
-        if receipt.get("schema_version") in (6, 7):
+        if receipt.get("schema_version") in (6, 7, 8):
             from .product import _detach_plan_shape, _detach_receipt
             plan = _detach_plan_shape(receipt.get("plan"), _file_json(target / ROOT_NAME / "format.json"))
             if receipt != _detach_receipt(plan):
                 raise _error("detach policy receipt mismatch")
-            return "official-execution-1" if receipt["schema_version"] == 7 else "windows-2"
+            return "official-execution-2" if receipt["schema_version"] == 8 else "official-execution-1" if receipt["schema_version"] == 7 else "windows-2"
     initial = target / ROOT_NAME / "product/init-plan.json"
     if _exists(initial):
         plan = _file_json(initial)
@@ -603,10 +743,10 @@ Init policy is stable within windows-2; its cross-window transitions are forbidd
         # All legacy POSIX histories need the same stricter official barrier;
         # this hint still cannot authorize a write or a cross-OS transition.
         if window in {"human-1", "worker-1", "umbrella-1", "planning-1", "checkout-1",
-                      "entry-1", "delegation-1", "continuation-1"} and _exists(binding_path):
+                      "entry-1", "delegation-1", "continuation-1", "official-execution-1"} and _exists(binding_path):
             binding = _file_json(binding_path)
-            if isinstance(binding, dict) and isinstance(binding.get("active_release"), dict) and binding["active_release"].get("inventory_id") == "official-execution-1":
-                window = "official-execution-1"
+            if isinstance(binding, dict) and isinstance(binding.get("active_release"), dict) and binding["active_release"].get("inventory_id") in ("official-execution-1", "official-execution-2"):
+                window = binding["active_release"]["inventory_id"]
         return window
     return None
 
@@ -642,7 +782,7 @@ The caller verifies the receipt and complete operation under the same guard.
             if inspect_root(target)["classification"] not in allowed[purpose]:
                 raise _error("workspace changed while acquiring guard")
             if _exists(root / "executions"):
-                if window != "official-execution-1":
+                if window not in ("official-execution-1", "official-execution-2"):
                     raise _error("execution records require the official window")
                 from .official_state import require_no_open
                 if purpose != "official-resolution":

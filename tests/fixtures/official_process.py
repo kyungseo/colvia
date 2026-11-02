@@ -13,12 +13,11 @@ from hv2ref.errors import ContractError
 def signal(name,value):state.publish(FOLDER/(name+'.json'),value)
 
 def offline(host):
-    host.bind('offline-thread','offline-turn')
     signal('ready',{'pid':os.getpid(),'grant':host.grant,'actual_model_calls':0,'transport':'offline-test-seam'})
     deadline=time.monotonic()+30
     while time.monotonic()<deadline and not host.cancelled():time.sleep(.01)
     state.need(host.cancelled(),'test-cancel-not-observed')
-    host.revoke('separate-cli-cancel')
+    host.revoke('cancelled')
     def envelope(call):return {'threadId':'offline-thread','turnId':'offline-turn','callId':call,
                                'tool':'u2_read_file','arguments':{'file_ids':['Editable','Reference']}}
     with mock.patch.object(host.controller,'dispatch',side_effect=RuntimeError('late worker forbidden')):

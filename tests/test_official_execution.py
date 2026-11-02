@@ -40,18 +40,35 @@ class OfficialExecutionTests(unittest.TestCase):
         self.input_patch=mock.patch.object(entry,'runtime_input',return_value={})
         self.input_patch.start();self.addCleanup(self.input_patch.stop)
         runtime=self.folder/'runtime';runtime.mkdir(mode=0o700)
+        control=self.folder/'host-control';control.mkdir(mode=0o700)
+        state.publish(control/'store.json',{'schema_version':1,'store_id':'b'*32})
         self.request={'work_id':'official-work','worker_root':str(self.target),'documents':{
             'files':{'Editable':{'path':str(self.target/'a'),'view':{'kind':'replace-range','ranges':[[len(PREFIX),len(PREFIX+BEFORE)]]}},
                      'Reference':{'path':str(self.target/'b'),'view':{'kind':'full'}}},
             'output':'Editable','claims':{'Editable':{'required':['Approved fact.'],'forbidden':['Unapproved'],
                 'evidence':[{'file_id':'Reference','quote':'Approved fact.'}]}},'approved_external_links':[]},
             'read_ids':['Editable','Reference'],'prompt':'Read, replace with Approved fact., then verify.',
-            'owner_statement':'Synthetic bounded execution authorization','runtime':{},'runtime_root':str(runtime),
+            'owner_statement':'Synthetic bounded execution authorization','runtime':{'sha256':{'BIN':'a'*64}},'runtime_root':str(runtime),'host_control_root':str(control),
             'expires_wall_ns':time.time_ns()+600*10**9,'seconds':90,'worker_limit':5}
 
     def prepare(self,request=None):return entry.prepare(self.target,request or self.request)
-    def new_host(self,request=None):
-        value=self.prepare(request);h=hostmod.Host(value['spec'],value['confirm_token']);h.bind('thread','turn');self.addCleanup(h.close);return h
+    def new_host(self,request=None,*,bind=True):
+        value=self.prepare(request);h=hostmod.Host(value['spec'],value['confirm_token']);self.addCleanup(h.close)
+        if bind:
+            # Pure Host state seam. Actual OS closure has separate adapter tests.
+            birth='Sat Oct 31 12:00:00 2026'
+            h.journal.append('runtime-reserved',{'ordinal':1,'host_pid':2147000000,'host_birth':birth})
+            h.journal.append('runtime-started',{'ordinal':1,'pid':2147000001,'birth':birth})
+            for method in ('initialize','config/read','account/read','model/list'):h.journal.append('rpc-reserved',{'method':method})
+            h.journal.append('admission',{'pass':True,'account_type':'chatgpt','model_id':'gpt-6.1-sol','effort':'low','policy_digest':'a'*64})
+            for method in ('thread/start','turn/start'):h.journal.append('rpc-reserved',{'method':method})
+            h.bind('thread','turn')
+        return h
+    def close_host(self,h,status='interrupted'):
+        history=h.journal.history()
+        if history.runtime_start is not None and history.runtime_close is None:
+            h.journal.append('processes-closed',{'runtime_ref':history.runtime_start['seq'],'group_absent':True,'final_scan_confirmed':True,'children':[]})
+        return h.finish(status)
     def envelope(self,call='read',tool='u2_read_file',args=None):
         return {'threadId':'thread','turnId':'turn','callId':call,'tool':tool,'arguments':args or {'file_ids':['Editable','Reference']}}
     def truth(self):
@@ -93,14 +110,14 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertFalse((self.target/'.hrn/executions').exists())
 
     def test_consumed_grant_and_open_capsule_block_new_prepare(self):
-        h=self.new_host()
+        h=self.new_host(bind=False)
         with self.assertRaisesRegex(ContractError,'unresolved-execution'):self.prepare()
-        h.finish('revoked-before-launch')
+        h.revoke('cancelled');h.finish('revoked-before-launch')
         with self.assertRaisesRegex(ContractError,'grant-already-consumed'):self.prepare()
 
     def test_cancel_request_is_not_stopped_and_callback_refused(self):
         h=self.new_host();before=(self.target/'a').read_bytes()
-        result=state.cancel(self.target,h.grant,'stop')
+        result=state.cancel(self.target,h.grant,'cancelled')
         self.assertTrue(result['cancel_requested']);self.assertFalse(result['effects_stopped'])
         with mock.patch.object(h.controller,'dispatch',side_effect=AssertionError('worker must not run')):
             answer=h.dispatch(self.envelope())
@@ -109,8 +126,8 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertEqual(state.read_capsule(self.target,h.grant)['status'],'incomplete')
 
     def test_cancel_marker_immutable_and_malformed_fail_closed(self):
-        h=self.new_host();state.cancel(self.target,h.grant,'stop')
-        with self.assertRaisesRegex(ContractError,'cancel-request-differs'):state.cancel(self.target,h.grant,'different')
+        h=self.new_host();state.cancel(self.target,h.grant,'cancelled')
+        with self.assertRaisesRegex(ContractError,'v2-enum'):state.cancel(self.target,h.grant,'different')
         (h.run/'cancel.json').write_text('{')
         with self.assertRaises(ContractError):state.read_capsule(self.target,h.grant)
 
@@ -121,18 +138,20 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertFalse(h.dispatch(self.envelope('new'))['worker_admitted'])
 
     def test_duplicate_callback_refused(self):
-        h=self.new_host()
-        with mock.patch.object(h.controller,'dispatch',return_value={'files':[]}):self.assertTrue(h.dispatch(self.envelope())['ok'])
-        result=h.dispatch(self.envelope())
+        h=self.new_host();h.seen.add('read')
+        with mock.patch.object(h.controller,'dispatch',side_effect=AssertionError('duplicate may not spawn')):
+            result=h.dispatch(self.envelope())
         self.assertFalse(result['ok']);self.assertFalse(result['worker_admitted'])
+        self.assertEqual(0,h.workers);self.assertEqual('caller_mismatch',result['reason'])
 
-    def test_admitted_baseexception_preserves_unknown(self):
+    def test_admitted_baseexception_before_intent_closes_reservation(self):
         h=self.new_host()
         with mock.patch.object(h.controller,'dispatch',side_effect=KeyboardInterrupt),self.assertRaises(KeyboardInterrupt):
             h.dispatch(self.envelope())
         value=state.read_capsule(self.target,h.grant)
-        self.assertEqual(value['pending'],'read');self.assertTrue(value['revoked'])
-        with self.assertRaisesRegex(ContractError,'terminal-pending-effect'):h.finish('interrupted')
+        self.assertIsNone(value['pending']);self.assertTrue(value['revoked'])
+        self.assertEqual('none',value['document_write_effect'])
+        self.assertEqual('interrupted',self.close_host(h)['status'])
 
     def test_pending_and_unknown_block_writer(self):
         from hv2ref.workspace import writer_guard
@@ -145,6 +164,9 @@ class OfficialExecutionTests(unittest.TestCase):
     def test_resolution_preserves_grant_documents_and_closes_only_unknown(self):
         h=self.new_host();h.fail(RuntimeError('synthetic'))
         before=(h.run/'grant.json').read_bytes(),(self.target/'a').read_bytes()
+        # This pure Host fixture has synthetic PIDs; actual absence is tested separately.
+        self.enterContext(mock.patch.object(state,'process_birth',return_value=''))
+        self.enterContext(mock.patch.object(state,'group_absent',return_value=True))
         p=state.resolution_preview(self.target,h.grant)
         result=state.resolve(self.target,h.grant,p['confirm_token'])
         self.assertEqual(result['status'],'operator-resolved-unknown')
@@ -153,20 +175,25 @@ class OfficialExecutionTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractError,'resolution-requires'):state.resolution_preview(self.target,h.grant)
 
     def test_resolution_stale_digest_refused(self):
-        h=self.new_host();h.fail(RuntimeError('synthetic'));p=state.resolution_preview(self.target,h.grant)
+        h=self.new_host();h.fail(RuntimeError('synthetic'))
+        self.enterContext(mock.patch.object(state,'process_birth',return_value=''))
+        self.enterContext(mock.patch.object(state,'group_absent',return_value=True))
+        p=state.resolution_preview(self.target,h.grant)
         (self.target/'a').write_text('changed current bytes\n')
         with self.assertRaisesRegex(ContractError,'stale-resolution'):state.resolve(self.target,h.grant,p['confirm_token'])
 
     def test_unknown_spawn_gap_cannot_resolve(self):
-        h=self.new_host();h.journal.append('runtime-reserved',{'app_server':1});h.fail(RuntimeError('spawn gap'))
-        with self.assertRaisesRegex(ContractError,'process-identity-unavailable'):state.resolution_preview(self.target,h.grant)
+        h=self.new_host(bind=False)
+        h.journal.append('runtime-reserved',{'ordinal':1,'host_pid':2147000000,'host_birth':'Sat Oct 31 12:00:00 2026'})
+        h.fail(RuntimeError('spawn gap'))
+        with self.assertRaisesRegex(ContractError,'identity-unavailable'):state.resolution_preview(self.target,h.grant)
 
     def test_expired_status_still_readable(self):
         request=copy.deepcopy(self.request);request['expires_wall_ns']=time.time_ns()+10**9
         h=self.new_host(request)
         with mock.patch.object(time,'time_ns',return_value=request['expires_wall_ns']+1):
             self.assertEqual(state.read_capsule(self.target,h.grant)['status'],'incomplete')
-            with self.assertRaisesRegex(ContractError,'authority-expired'):h.authority()
+            with self.assertRaisesRegex(ContractError,'deadline'):h.authority()
 
     def test_project_and_reference_drift_refused(self):
         h=self.new_host();(self.target/'sentinel').write_text('changed\n')
@@ -177,7 +204,7 @@ class OfficialExecutionTests(unittest.TestCase):
         result=self.installed('run','status','--grant',h.grant)
         self.assertEqual(result.returncode,0,result.stderr.decode()+result.stdout.decode())
         self.assertEqual(json.loads(result.stdout)['status'],'incomplete')
-        result=self.installed('run','cancel','--grant',h.grant,'--reason','separate CLI')
+        result=self.installed('run','cancel','--grant',h.grant,'--reason','cancelled')
         self.assertEqual(result.returncode,0,result.stderr.decode()+result.stdout.decode())
         self.assertTrue(h.cancelled())
         self.assertIn(b'execute',self.installed('run','--help').stdout)
@@ -197,14 +224,14 @@ class OfficialExecutionTests(unittest.TestCase):
         def inspect(source,destination):
             observed.append(not destination.exists() and state.load(source)['grant']==h.grant)
             return native(source,destination)
-        with mock.patch.object(state,'rename_exclusive',side_effect=inspect):state.cancel(self.target,h.grant,'atomic')
+        with mock.patch.object(state,'rename_exclusive',side_effect=inspect):state.cancel(self.target,h.grant,'cancelled')
         self.assertEqual([True],observed);self.assertTrue(h.cancelled())
         self.assertEqual([],list((self.target/'.hrn/locks').glob('cancel-*.json')))
 
     def test_cancel_publication_failure_does_not_expose_partial_marker(self):
         h=self.new_host()
         with mock.patch.object(state,'rename_exclusive',side_effect=OSError('synthetic rename failure')),self.assertRaises(OSError):
-            state.cancel(self.target,h.grant,'cancel')
+            state.cancel(self.target,h.grant,'cancelled')
         self.assertFalse(h.cancelled());self.assertEqual('incomplete',state.read_capsule(self.target,h.grant)['status'])
         self.assertEqual([],list((self.target/'.hrn/locks').glob('cancel-*.json')))
 
@@ -225,58 +252,59 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertEqual('revoked-before-launch',result['status'])
         self.assertFalse(state.read_capsule(self.target,h.grant)['runtime_reserved']);spawn.assert_not_called()
 
-    def test_spawn_failure_is_readable_and_explicitly_resolvable(self):
+    def test_spawn_failure_is_readable_and_automatically_closed(self):
         from hv2ref import official_adapter as adapter
-        h=self.new_host();spec={'argv':['nonexistent'],'cwd':str(self.folder),'env':{}}
-        with mock.patch.object(h,'authority'),mock.patch.object(state,'process_birth',return_value='synthetic-host'),mock.patch.object(adapter.subprocess,'Popen',side_effect=OSError('synthetic exec failure')),self.assertRaises(OSError):adapter.Rpc(spec,h)
+        h=self.new_host(bind=False);spec={'argv':['nonexistent'],'cwd':str(self.folder),'env':{}}
+        with mock.patch.object(h,'authority'),mock.patch.object(state,'process_birth',return_value='Sat Oct 31 12:00:00 2026'),mock.patch.object(adapter.subprocess,'Popen',side_effect=OSError('synthetic exec failure')),self.assertRaises(OSError):adapter.Rpc(spec,h)
         closed=h.rpc.close();self.assertTrue(closed['observed_tree_absent']);self.assertEqual(closed,h.rpc.close())
-        h.fail(RuntimeError('failed runtime'))
-        value=state.read_capsule(self.target,h.grant);self.assertTrue(value['spawn_failed']);self.assertEqual('unknown',value['status'])
-        p=state.resolution_preview(self.target,h.grant);self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,p['confirm_token'])['status'])
+        result=h.fail(RuntimeError('failed runtime'))
+        self.assertEqual('revoked-before-launch',result['status']);self.assertEqual('none',result['document_write_effect'])
+        state.require_no_open(self.target)
 
-    def test_unavailable_birth_with_confirmed_close_can_resolve(self):
+    def test_unavailable_birth_cannot_resolve_despite_confirmed_group_absence(self):
         import io
         from types import SimpleNamespace
         from hv2ref import official_adapter as adapter
-        h=self.new_host();p=SimpleNamespace(pid=23456,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(return_value=0))
-        with mock.patch.object(h,'authority'),mock.patch.object(adapter.subprocess,'Popen',return_value=p),mock.patch.object(state,'process_birth',return_value=''),self.assertRaisesRegex(ContractError,'runtime-birth-unavailable'):
+        h=self.new_host(bind=False)
+        p=SimpleNamespace(pid=23456,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(return_value=0))
+        with mock.patch.object(h,'authority'),mock.patch.object(adapter.subprocess,'Popen',return_value=p),mock.patch.object(state,'process_birth',side_effect=['Sat Oct 31 12:00:00 2026','']),self.assertRaisesRegex(ContractError,'runtime-birth-unavailable'):
             adapter.Rpc({'argv':[],'cwd':str(self.folder),'env':{}},h)
-        with mock.patch.object(h.rpc,'descendants'),mock.patch.object(state,'group_absent',return_value=True):self.assertTrue(h.rpc.close()['observed_tree_absent'])
+        with mock.patch.object(h.rpc,'descendants'),mock.patch.object(state,'group_absent',return_value=True),self.assertRaises(ContractError):h.rpc.close()
         h.fail(RuntimeError('unavailable birth'))
-        with mock.patch.object(state,'process_birth',return_value=''),mock.patch.object(state,'group_absent',return_value=True):
-            p=state.resolution_preview(self.target,h.grant);self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,p['confirm_token'])['status'])
+        with mock.patch.object(state,'process_birth',return_value=''),mock.patch.object(state,'group_absent',return_value=True),self.assertRaisesRegex(ContractError,'identity-unavailable'):
+            state.resolution_preview(self.target,h.grant)
 
-    def test_worker_sync_spawn_failure_resolves_but_interrupted_spawn_stays_unknown(self):
-        from hv2ref import official_documents as docs
+    def test_worker_sync_spawn_failure_closes_but_interrupted_spawn_stays_unknown(self):
+        from hv2ref import official_controller as controller
         for index,error in enumerate((OSError('synthetic spawn'),subprocess.SubprocessError('synthetic preexec'),KeyboardInterrupt())):
             with self.subTest(error=type(error).__name__):
                 request=copy.deepcopy(self.request);request['owner_statement']+=' '+str(index)
                 h=self.new_host(request)
-                with mock.patch.object(h,'authority'),mock.patch.object(docs.subprocess,'Popen',side_effect=error),self.assertRaises(type(error)):
-                    h.dispatch(self.envelope())
-                h.fail(error)
-                value=state.read_capsule(self.target,h.grant);self.assertEqual('unknown',value['status'])
+                with mock.patch.object(h,'authority'),mock.patch.object(controller.subprocess,'Popen',side_effect=error):
+                    if isinstance(error,Exception):
+                        result=h.dispatch(self.envelope());self.assertFalse(result['ok']);self.assertIsNone(h.pending)
+                    else:
+                        with self.assertRaises(KeyboardInterrupt):h.dispatch(self.envelope())
                 if isinstance(error,Exception):
-                    preview=state.resolution_preview(self.target,h.grant)
-                    self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,preview['confirm_token'])['status'])
+                    result=self.close_host(h);self.assertEqual('interrupted',result['status']);self.assertEqual('none',result['document_write_effect'])
                 else:
-                    with self.assertRaisesRegex(ContractError,'worker-spawn-identity-unavailable'):
-                        state.resolution_preview(self.target,h.grant)
+                    h.fail(error)
+                    with self.assertRaisesRegex(ContractError,'identity-unavailable'):state.resolution_preview(self.target,h.grant)
 
-    def test_worker_birth_failure_with_confirmed_group_close_is_resolvable(self):
+    def test_worker_birth_failure_cannot_resolve_despite_group_close(self):
         import io
         from types import SimpleNamespace
-        from hv2ref import official_documents as docs
+        from hv2ref import official_controller as controller
         h=self.new_host()
-        worker=SimpleNamespace(pid=23456,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO())
-        with mock.patch.object(h,'authority'),mock.patch.object(docs.subprocess,'Popen',return_value=worker),mock.patch.object(state,'process_birth',side_effect=OSError('synthetic observer failure')),mock.patch.object(docs,'end_process',return_value={'exit_code':0,'process_group_absent':True}),self.assertRaises(OSError):
-            h.dispatch(self.envelope())
+        worker=SimpleNamespace(pid=23456,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO())
+        with mock.patch.object(h,'authority'),mock.patch.object(controller.subprocess,'Popen',return_value=worker),mock.patch.object(state,'process_birth',side_effect=OSError('synthetic observer failure')),mock.patch.object(controller,'end_process',return_value={'exit_code':0,'process_group_absent':True}):
+            result=h.dispatch(self.envelope());self.assertFalse(result['ok'])
+        h.controller.active=None # Synthetic process: no live child exists in this unit seam.
         h.fail(RuntimeError('observed worker exit'))
-        preview=state.resolution_preview(self.target,h.grant)
-        self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,preview['confirm_token'])['status'])
+        with self.assertRaisesRegex(ContractError,'identity-unavailable'):state.resolution_preview(self.target,h.grant)
 
     def test_history_headroom_refuses_next_grant_without_blocking_readers(self):
-        h=self.new_host();h.finish('revoked-before-launch')
+        h=self.new_host(bind=False);h.revoke('cancelled');h.finish('revoked-before-launch')
         request=copy.deepcopy(self.request);request['owner_statement']+=' fresh'
         with mock.patch.object(state,'HISTORY_FILES',state.MAX_CAPSULE_FILES):
             with self.assertRaisesRegex(ContractError,'execution-history-capacity'):self.prepare(request)
@@ -284,10 +312,17 @@ class OfficialExecutionTests(unittest.TestCase):
             self.assertTrue(product.workspace_detach_preview(self.target,operation_id='capacity-detach',created_at=TIME))
 
     def test_resolution_journal_head_is_validated(self):
+        # Pure Host fixture: synthetic PIDs are not native process observations.
+        self.enterContext(mock.patch.object(state,'process_birth',return_value=''))
+        self.enterContext(mock.patch.object(state,'group_absent',return_value=True))
         h=self.new_host();h.fail(RuntimeError('synthetic'))
         p=state.resolution_preview(self.target,h.grant);bad=p['observation'];bad['journal_head']='0'*64
-        h.journal.append('operator-resolved-unknown',bad)
-        with self.assertRaisesRegex(ContractError,'resolution-state'):state.read_capsule(self.target,h.grant)
+        before=(h.run/'journal.jsonl').read_bytes()
+        with self.assertRaises(ContractError):h.journal.append('operator-resolved-unknown',bad)
+        self.assertEqual(before,(h.run/'journal.jsonl').read_bytes())
+        # A forged durable event must also be rejected by the read-only reducer.
+        h.journal.base.append('operator-resolved-unknown',bad)
+        with self.assertRaises(ContractError):state.read_capsule(self.target,h.grant)
 
     def exercise_actual_installed_payload_workers_read_write_verify_and_seal(self):
         # Explicit native Host runner only: macOS disallows nesting sandbox-exec.
@@ -314,16 +349,16 @@ class OfficialExecutionTests(unittest.TestCase):
             raise
 
     def test_closed_host_reconstruction_refuses_same_and_new_calls_without_effects(self):
-        h=self.new_host();h.revoke('test');h.finish('interrupted');before=self.truth()
+        h=self.new_host();h.revoke('cancelled');self.close_host(h);before=self.truth()
         restored=hostmod.Host.restore_closed(self.target,h.grant)
-        with mock.patch.object(hostmod,'DocumentController',side_effect=AssertionError('no restored worker')):
+        with mock.patch.object(hostmod,'Controller',side_effect=AssertionError('no restored worker')):
             for call in ('same','new'):
                 result=restored.dispatch(self.envelope(call))
                 self.assertFalse(result['ok']);self.assertFalse(result['worker_admitted'])
         self.assertEqual('interrupted',restored.status()['status']);self.assertEqual(before,self.truth())
 
     def test_payload_integrity_and_default_window(self):
-        self.assertEqual(len(product.workspace_candidate(self.candidate)['payload']),44)
+        self.assertEqual(len(product.workspace_candidate(self.candidate)['payload']),48)
         self.assertEqual(len(product.workspace_candidate(SOURCE)['payload']),30)
         self.assertEqual(product.workspace_candidate(SOURCE)['release_ref']['inventory_id'],'continuation-1')
         p=Path(self.runtime['release_path'])/'payload/runtime/official/worker.sb.in';p.write_bytes(p.read_bytes()+b'\n')
@@ -360,7 +395,7 @@ class OfficialExecutionTests(unittest.TestCase):
         self.wait_record(writer,other,'attempt');time.sleep(.1)
         self.assertFalse((other/'acquired.json').exists())
         before=(self.target/'a').read_bytes()
-        result=self.installed('run','cancel','--grant',ready['grant'],'--reason','actual separate process')
+        result=self.installed('run','cancel','--grant',ready['grant'],'--reason','cancelled')
         self.assertEqual(result.returncode,0,result.stdout.decode()+result.stderr.decode())
         self.assertEqual(child.wait(timeout=15),0,(folder/'stdout.log').read_text()+(folder/'stderr.log').read_text())
         self.assertEqual(writer.wait(timeout=15),0,(other/'stderr.log').read_text())
@@ -382,7 +417,7 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertEqual(json.loads(resolved.stdout)['status'],'operator-resolved-unknown')
 
     def test_detach_preserves_execution_capsule(self):
-        h=self.new_host();h.finish('revoked-before-launch');h.close()
+        h=self.new_host(bind=False);h.revoke('cancelled');h.finish('revoked-before-launch');h.close()
         raw={p.relative_to(h.run).as_posix():p.read_bytes() for p in h.run.rglob('*') if p.is_file()}
         packet=product.workspace_detach_preview(self.target,operation_id='detach-a',created_at=TIME)
         product.workspace_detach_apply(self.target,packet['request'],confirm_token=packet['confirm_token'])
@@ -541,14 +576,17 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertFalse((self.target/'.hrn/executions').exists())
 
     def test_metadata_drift_blocks_worker_but_status_cancel_resolve_restore_survive(self):
+        # Pure Host fixture: synthetic PIDs are not native process observations.
+        self.enterContext(mock.patch.object(state,'process_birth',return_value=''))
+        self.enterContext(mock.patch.object(state,'group_absent',return_value=True))
         from hv2ref.official_documents import HostRefusal
         request=self.linked_request();h=self.new_host(request);path=Path(request['documents']['link_targets'][0]['path'])
         path.unlink()
-        slots=list((h.run/'workers').iterdir());result=h.dispatch(self.envelope())
+        slots=list(Path(h.spec['host_control']['path']).glob('transient/*/worker-*'));result=h.dispatch(self.envelope())
         self.assertFalse(result['worker_admitted']);self.assertEqual('not_started',result['effect_status'])
-        self.assertEqual(slots,list((h.run/'workers').iterdir()));self.assertEqual(0,h.workers)
+        self.assertEqual(slots,list(Path(h.spec['host_control']['path']).glob('transient/*/worker-*')));self.assertEqual(0,h.workers)
         self.assertEqual('incomplete',state.read_capsule(self.target,h.grant)['status'])
-        self.assertTrue(state.cancel(self.target,h.grant,'metadata removed')['cancel_requested'])
+        self.assertTrue(state.cancel(self.target,h.grant,'cancelled')['cancel_requested'])
         h.fail(RuntimeError('synthetic metadata drift'));p=state.resolution_preview(self.target,h.grant)
         result=state.resolve(self.target,h.grant,p['confirm_token']);self.assertEqual('operator-resolved-unknown',result['status'])
         restored=hostmod.Host.restore_closed(self.target,h.grant)
@@ -560,14 +598,10 @@ class OfficialExecutionTests(unittest.TestCase):
         request['documents']['link_targets'][1]['anchors']=['linked-heading']
         (self.target/'a').write_bytes(PREFIX+BEFORE+SUFFIX+b'[opaque](linked-0.md) [anchor](linked-1.md#linked-heading)')
         h=self.new_host(request)
-        # Profile-generation seam only: patch global subprocess.Popen within this block;
-        # bypass the budget callback so Host's preceding Git observer is not intercepted.
-        with mock.patch.object(h.worker_budget,'check_worker_result',return_value=30), \
-             mock.patch.object(documents.subprocess,'Popen',side_effect=OSError('synthetic no child')) as spawn, \
-             self.assertRaisesRegex(OSError,'synthetic no child'):
-            h.controller.dispatch('u2_read_file',{'file_ids':request['read_ids']})
-        spawn.assert_called_once()
-        profile=(h.run/'workers/worker-001/worker.sb').read_text()
+        # Materialize only; no worker intent or process execution in this profile check.
+        slot,_,_=h.controller.materialize('u2_read_file',{'file_ids':request['read_ids']},1)
+        self.assertEqual(0,h.workers)
+        profile=(slot/'worker.sb').read_text()
         opaque=request['documents']['link_targets'][0]['path']
         self.assertFalse(Path(opaque).is_relative_to(Path(h.spec['documents']['python']).parent.parent),'PYROOT must not cover metadata target')
         metadata=next(line for line in profile.splitlines() if line.startswith('(allow file-read-metadata ') and opaque in line)
@@ -579,7 +613,7 @@ class OfficialExecutionTests(unittest.TestCase):
                 self.assertNotIn(documents.sb_literal(opaque),line)
             for root in re.findall(r'\(subpath "([^"\n]+)"\)',line):
                 self.assertFalse(Path(opaque).is_relative_to(root),'broad subpath covers opaque target')
-        spec=json.loads((h.run/'workers/worker-001/spec.json').read_text())
+        spec=json.loads((slot/'spec.json').read_text())
         self.assertEqual(h.spec['documents']['link_metadata'],spec['link_metadata'])
         # Exercise the exact generated worker verifier contract in-process; no native process claim.
         from hv2ref.official_worker import verify
@@ -651,23 +685,70 @@ class OfficialExecutionTests(unittest.TestCase):
         self.assertTrue(verify(spec,'DOC-LINKS')['pass'])
 
     def test_host_refuses_unclassified_missing_file_before_worker_and_can_resolve(self):
-        h=self.new_host(self.linked_request());slots=list((h.run/'workers').iterdir())
+        # Pure Host fixture: synthetic PIDs are not native process observations.
+        self.enterContext(mock.patch.object(state,'process_birth',return_value=''))
+        self.enterContext(mock.patch.object(state,'group_absent',return_value=True))
+        h=self.new_host(self.linked_request());slots=list(Path(h.spec['host_control']['path']).glob('transient/*/worker-*'))
         # Inject the existing metadata stat exception after the independent Work observation.
         with mock.patch.object(h.controller,'check_files',side_effect=FileNotFoundError('synthetic metadata stat')):
             result=h.dispatch(self.envelope())
-        self.assertEqual('FileNotFoundError',result['reason']);self.assertFalse(result['worker_admitted'])
-        self.assertEqual('not_started',result['effect_status']);self.assertEqual(slots,list((h.run/'workers').iterdir()))
+        self.assertEqual('internal_error',result['reason']);self.assertFalse(result['worker_admitted'])
+        self.assertEqual('not_started',result['effect_status']);self.assertEqual(slots,list(Path(h.spec['host_control']['path']).glob('transient/*/worker-*')))
         self.assertEqual('incomplete',state.read_capsule(self.target,h.grant)['status'])
         h.fail(FileNotFoundError('synthetic metadata stat'));p=state.resolution_preview(self.target,h.grant)
         self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,p['confirm_token'])['status'])
 
     def test_anchor_drift_after_capsule_refuses_host_before_worker(self):
+        # Pure Host fixture: synthetic PIDs are not native process observations.
+        self.enterContext(mock.patch.object(state,'process_birth',return_value=''))
+        self.enterContext(mock.patch.object(state,'group_absent',return_value=True))
         request=self.linked_request(anchored=True);h=self.new_host(request);target=Path(request['documents']['link_targets'][0]['path'])
         info=target.stat();target.write_bytes(target.read_bytes().replace(b'METADATA',b'CHANGED!'));os.utime(target,ns=(info.st_atime_ns,info.st_mtime_ns))
         result=h.dispatch(self.envelope());self.assertFalse(result['worker_admitted']);self.assertEqual('not_started',result['effect_status'])
-        self.assertEqual([],list((h.run/'workers').glob('worker-*')));self.assertEqual(0,h.workers)
+        self.assertEqual([],list(Path(h.spec['host_control']['path']).glob('transient/*/worker-*')));self.assertEqual(0,h.workers)
         h.fail(RuntimeError('synthetic anchored drift'));p=state.resolution_preview(self.target,h.grant)
         self.assertEqual('operator-resolved-unknown',state.resolve(self.target,h.grant,p['confirm_token'])['status'])
+
+
+    def test_cli_error_phase_preserves_fixed_codes_and_status_guidance(self):
+        from argparse import Namespace
+        from hv2ref import cli
+        for action in ('prepare','execute','status','cancel','resolve'):
+            args=Namespace(command='run',action=action,target=self.target,input='-',reason='cancelled',host_control_root=None,
+                           confirm='a'*64 if action=='execute' else None,grant='a'*64 if action in ('status','cancel','resolve') else None)
+            with self.subTest(action=action),mock.patch.object(cli,'_workspace_input',return_value={}), \
+                 mock.patch.object(entry,'cli',side_effect=RuntimeError('SYNTHETIC_PRIVATE_FAILURE_MARKER')):
+                with self.assertRaises(ContractError) as caught:cli.workspace_run(args)
+                message=str(caught.exception)
+                self.assertIn('input_shape' if action=='prepare' else 'internal_error',message)
+                self.assertNotIn('SYNTHETIC_PRIVATE_FAILURE_MARKER',message)
+                if action=='execute':self.assertIn('run status',message)
+        for message in ('worker closure unavailable','process-present-or-unconfirmed','observed-child-present'):
+            with self.subTest(message=message):self.assertEqual('closure_unconfirmed',hostmod.reason_code(ContractError('HV2-OFFICIAL-EXECUTION',message)))
+
+    def test_late_refusal_preserves_original_stop_reason(self):
+        h=self.new_host();h.revoke('worker_budget_consumed')
+        h.refuse(reason='cancelled')
+        self.close_host(h)
+        value=state.read_capsule(self.target,h.grant)
+        self.assertEqual('worker_budget_consumed',value['rows'][-1]['value']['stop_reason'])
+
+    def test_repeated_revoke_preserves_first_reason(self):
+        h=self.new_host();h.revoke('worker_budget_consumed');h.revoke('cancelled')
+        self.close_host(h)
+        value=state.read_capsule(self.target,h.grant)
+        self.assertEqual('worker_budget_consumed',value['rows'][-1]['value']['stop_reason'])
+        self.assertEqual(1,sum(row['kind']=='revoked' for row in value['rows']))
+
+    def test_error_path_cannot_choose_reason_code(self):
+        from hv2ref.official_documents import HostRefusal
+        for word in ('cancel','recovery','drift','timeout','closure unavailable'):
+            for error in (OSError(2,'missing','/synthetic/'+word),RuntimeError(word)):
+                with self.subTest(kind=type(error).__name__,word=word):
+                    self.assertEqual('internal_error',hostmod.reason_code(error))
+                    self.assertEqual('worker_failed',hostmod.reason_code(error,'worker_failed'))
+        self.assertEqual('deadline',hostmod.reason_code(TimeoutError('/synthetic/cancel')))
+        self.assertEqual('content_rejected',hostmod.reason_code(HostRefusal('credential-like document content')))
 
 
 if __name__=='__main__':unittest.main()

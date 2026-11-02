@@ -241,7 +241,7 @@ class CandidateStore:
         classify_target(self.target, mutation=True)
         with writer_guard(self.target):
             runtime = self.runtime(self.target)
-            require(runtime.get('inventory_id') in ('delegation-1', 'continuation-1', 'windows-2', 'official-execution-1'), 'candidate writing requires an explicitly installed delegation-1 or current Windows release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
+            require(runtime.get('inventory_id') in ('delegation-1', 'continuation-1', 'windows-2', 'official-execution-1', 'official-execution-2'), 'candidate writing requires an explicitly installed delegation-1 or current Windows release; this request does not authorize update', 'HV2-CANDIDATE-WINDOW')
             observed = read_candidates(self.target); store = observed['store']
             require(store['authority_home_id'] == request['authority_home_id'], 'request authority differs')
             works, intents = _graphs(self.target)

@@ -1,5 +1,7 @@
 # Colvia로 첫 프로젝트 진행하기
 
+현재 macOS 배포·첫 Work·재개는 [여기서 시작하세요](getting-started.md). 이 후보는 최종 검증과 공개를 앞두고 있으며, 아래의 이전 관측은 당시 기록으로 유지합니다.
+
 이 진입 안내는 continuation-1을 기준으로 합니다. 정확한 설치본의 검증과 설치 승인이 필요합니다. 연결된 단계별 실습에는 entry-1 예제가 남아 있으므로 명령은 현재 운영 문서를 따르세요. 아래의 과거 checkout-1 실습은 이 설치본의 검증 근거가 아닙니다.
 
 [실습 시작](getting-started.md) · [핵심 개념](concepts.md)
@@ -10,9 +12,11 @@ AI와 진행하던 프로젝트를 다시 열면, 지난 대화만으로는 어�
 
 이 안내는 작은 프로젝트 하나를 준비해 첫 작업(Work)을 완료한 뒤, 이전 대화 없이 파일과 기록으로 재개하는 과정을 다룹니다. 예제는 할 일을 추가하고 순서대로 조회하는 Python CLI입니다. 사용자가 Colvia JSON을 직접 작성할 필요는 없습니다.
 
+관리형 macOS arm64 배포 후보는 정확히 고정한 CPython 3.14.10 트리·명세와 격리 진입을 별도로 확인합니다. 기존 3.14.6·3.14.7 버전 허용 목록과 Windows 정책은 유지합니다. 상태의 admission_path는 현재 허용 경로를, supported_versions는 기존 버전 목록을 나타냅니다. 손상된 전용 Python은 원본을 보존하고 [복구 절차](../../docs/OPERATIONS.md#onboarding-update-recovery-and-removal)를 확인하세요.
+
 ## 시작하기 전에
 
-지속적으로 보관할 수 있는 디렉터리에 새 실습 프로젝트를 준비합니다. 실습 내용은 버려도 되지만, 작업 중인 프로젝트를 임시 디렉터리에 두지는 않습니다. Git과 정식 GIL 활성화 빌드의 **CPython 3.14.6 또는 3.14.7이** 필요합니다. launcher가 사용하는 `python3` 명령도 해당 runtime을 가리켜야 합니다. 이후 patch 버전, prerelease, free-threaded 빌드는 거부됩니다.
+지속적으로 보관할 수 있는 디렉터리에 새 실습 프로젝트를 준비합니다. 실습 내용은 버려도 되지만, 작업 중인 프로젝트를 임시 디렉터리에 두지는 않습니다. 이 수동 소스 실습에는 Git과 정식 GIL 활성화 빌드의 **CPython 3.14.6 또는 3.14.7이** 필요합니다. launcher가 사용하는 `python3` 명령도 해당 runtime을 가리켜야 합니다. 이 소스 실습 경로에서는 이후 patch 버전, prerelease, free-threaded 빌드가 거부됩니다. 관리형 macOS 배포는 위의 별도 진입 조건을 따릅니다.
 
 `continuation-1` profile에 맞는, 신뢰할 수 있고 검증된 별도 Colvia source checkout도 필요합니다. 이 private 개발판에는 공개 installer나 다운로드 경로가 없습니다. 시작하기 전에 maintainer에게 source checkout과 정확한 continuation-1 artifact를 식별하는 별도 qualification receipt를 받으세요. Preview는 아래의 과거 checkout-1 digest가 아니라 그 receipt와 일치해야 합니다. 이 문서 후보는 새로운 qualification receipt를 제공하지 않습니다. 사용할 환경이 그 기록의 검증 범위에 들어가는지도 확인합니다. 이 안내의 합성 실습은 해당 qualification을 대신하지 않습니다. agent는 로컬 파일을 읽고 승인된 명령을 실행할 수 있어야 합니다.
 
@@ -72,4 +76,4 @@ view에는 Work별 일반 연산 256회 중 사용량과 잔여 횟수가 나옵
 
 [실습 시작](getting-started.md) · [핵심 개념](concepts.md)
 
-<!-- en_content_sha256: f44639152212ea1c33541d7f33f8ea0983420025aac518cccdabc14ed48d164a -->
+<!-- en_content_sha256: e6b02cca8cb0ddb810b231e41ada4f11823c7ee59aeec69169e1ca89fb99558a -->

@@ -4,6 +4,8 @@ Continuation-1 profile; see [authorization and qualification](README.md#continua
 
 Document authority and currentness: [Documentation Index](README.md).
 
+The managed macOS arm64 distribution separately admits its exact pinned CPython 3.14.10 tree and manifests with isolated entry. `supported_versions` remains the legacy allowlist; `admission_path` reports the current gate. Windows policy is unchanged. Preserve a damaged managed runtime and follow [its recovery procedure](OPERATIONS.md#onboarding-update-recovery-and-removal). Tree identity admits an exact relocated copy and does not authenticate installation provenance.
+
 ## Single-Home Development Commands
 
 The current development candidate profile is `continuation-1` with one `.hrn/` home. It exposes a machine interface plus a read-only human view and manual natural-language adapter. An installed project uses `./colvia`. An independent contribution source uses `./colvia --source-checkout` explicitly.
@@ -31,8 +33,7 @@ detached, degraded, or unrecognized state does not invent an active document roo
 it or accepted project-authored documents must be established separately. Before detach, retain a trusted independent source/manual if needed.
 For a pending Work publication without a decision, preserve and retry the exact original publish request after restoring its prerequisites.
 For a pending Work decision or intent acceptance, preserve the original ticket and confirmation token, restore the required runtime/content/document
-preconditions, then retry the same apply. Do not invent a replacement decision to bypass pending records. The narrowly supported local or all-pre worker cancellation of a pending Work acceptance follows [General Work](GENERAL-WORK.md); this advice does not remove that contract. An unsupported runtime must be
-replaced with final, GIL-enabled CPython 3.14.6 or 3.14.7 before mutation. Single-home mutation entries, root creation, and the shared writer guard enforce implementation, explicit version membership, final release level and GIL-enabled build before writing. This is a trusted-local support check, not interpreter authentication. Status reports these actions without modifying records or manufacturing recovery input.
+preconditions, then retry the same apply. Do not invent a replacement decision to bypass pending records. The narrowly supported local or all-pre worker cancellation of a pending Work acceptance follows [General Work](GENERAL-WORK.md); this advice does not remove that contract. Before mutation, use final, GIL-enabled CPython 3.14.6 or 3.14.7 for the legacy path; for managed macOS entry, preserve damaged bytes and restore its exact pinned CPython 3.14.10 tree through the recovery procedure. Single-home mutation entries, root creation, and the shared writer guard enforce implementation, explicit version membership, final release level and GIL-enabled build before writing. This is a trusted-local support check, not interpreter authentication. Status reports these actions without modifying records or manufacturing recovery input.
 
 ## Single-Home Paths And Outcomes
 
@@ -60,7 +61,7 @@ If the launcher is unavailable, inspect from an independent trusted source. Runt
 | Codes | Meaning and next action |
 | --- | --- |
 | `HV2-WORKSPACE-TARGET`, `HV2-WORKSPACE-UNAVAILABLE` | Unsupported target topology, unsafe path, or unavailable observation. Confirm the intended primary/non-Git control root and preserve inaccessible bytes. |
-| `HV2-WORKSPACE-RUNTIME` | Mutation requires final, GIL-enabled CPython 3.14.6 or 3.14.7. Preserve the target and use that runtime; read-only diagnostics remain available. |
+| `HV2-WORKSPACE-RUNTIME` | Use final, GIL-enabled CPython 3.14.6/3.14.7, or the exact managed macOS 3.14.10 tree with isolated entry. Preserve damaged bytes and follow managed recovery when applicable; read-only diagnostics remain available. |
 | `HV2-WORKSPACE-CONTRACT`, `HV2-WORKSPACE-VERSION`, `HV2-WORKSPACE-UNKNOWN` | Invalid root/prefix, unsupported format, or unknown authoritative member. Preserve the folder and inspect the exact format; do not initialize over it. |
 | `HV2-WORKSPACE-INVENTORY`, `HV2-WORKSPACE-RELEASE`, `HV2-WORKSPACE-PRODUCT`, `HV2-WORKSPACE-LAUNCHER` | Product inventory, binding, loaded release, or launcher cannot be verified. Use matching trusted source and read-only diagnostics; exact active repair is only for its supported damage boundary. |
 | `HV2-WORKSPACE-PLAN`, `HV2-WORKSPACE-RECEIPT`, `HV2-WORKSPACE-TRUTH` | Lifecycle plan, publication chain, or preserved truth contradicts the requested operation. Preserve all records and original input; recover only the exact valid pending prefix. |
@@ -394,4 +395,4 @@ An existing read-only replacement/removal target or an existing file requiring a
 
 ## Official Execution Candidate
 
-Only an explicitly verified `official-execution-1` installation exposes the bounded execution path. `colvia run` previews by default; `run execute --input SPEC --confirm DIGEST` consumes one grant. `run status --grant DIGEST`, `run cancel --grant DIGEST --reason TEXT`, and `run resolve --grant DIGEST [--confirm DIGEST]` inspect, request cancellation, or record an operator resolution. Read `docs/OFFICIAL-EXECUTION.md` from that verified release for input and effect boundaries. Other windows refuse before importing the optional modules.
+Current source exposes bounded execution only in an explicitly verified `official-execution-2` installation. `colvia run` previews by default; `run execute --input SPEC --confirm DIGEST` consumes one grant. `run status --grant DIGEST`, `run cancel --grant DIGEST --reason CODE`, and `run resolve --grant DIGEST [--confirm DIGEST]` inspect, request cancellation, or record an operator resolution. Status and resolution accept optional `--host-control-root PATH` for explicit recovery availability checks. V2 cancellation uses fixed reason codes, with `cancelled` as the default. Read the verified release's `docs/OFFICIAL-EXECUTION.md` for exact input, effect and storage boundaries; retained v1 releases keep their own command contract.

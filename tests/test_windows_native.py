@@ -774,6 +774,9 @@ class PortableNativeTests(unittest.TestCase):
         import ctypes as C
         from ctypes import wintypes as W
         from types import SimpleNamespace
+        from collections import namedtuple
+        version_type = namedtuple("version_info", "major minor micro releaselevel serial")
+        cpython_identity = SimpleNamespace(**{**vars(sys.implementation), "name": "cpython"})
         original_sizeof = C.sizeof
         cases = (
             ('native-arm64', 0, 0xAA64, 64, 10, 26100, 1, 0, 'supported'),
@@ -805,8 +808,13 @@ class PortableNativeTests(unittest.TestCase):
                 def sizeof(value):
                     return bits // 8 if value is C.c_void_p else original_sizeof(value)
                 process_platform = 'win-amd64' if 'x64' in label or native_code == 0x8664 else 'win-arm64'
-                with mock.patch.object(workspace.sys, 'platform', 'win32'), mock.patch.object(C, 'WinDLL', side_effect=lambda name, **kw: libraries[name], create=True), mock.patch.object(C, 'sizeof', side_effect=sizeof), mock.patch('sysconfig.get_platform', return_value=process_platform), mock.patch('sysconfig.get_config_var', return_value=0):
+                with mock.patch.object(workspace.sys, 'platform', 'win32'), mock.patch.object(workspace.sys, 'version_info', version_type(3, 14, 7, 'final', 0)), mock.patch.object(workspace.sys, 'implementation', cpython_identity), mock.patch.object(C, 'WinDLL', side_effect=lambda name, **kw: libraries[name], create=True), mock.patch.object(C, 'sizeof', side_effect=sizeof), mock.patch('sysconfig.get_platform', return_value=process_platform), mock.patch('sysconfig.get_config_var', return_value=0):
                     result = workspace.windows_runtime_observation()
+                    if expected == 'supported':
+                        with mock.patch.object(workspace.sys, 'version_info', version_type(3, 14, 10, 'final', 0)):
+                            newer = workspace.windows_runtime_observation()
+                        self.assertFalse(newer['supported'])
+                        self.assertEqual('unsupported', newer['classification'])
                 self.assertEqual(expected, result['classification'], result)
                 self.assertEqual(expected == 'supported', result['supported'])
                 if status:

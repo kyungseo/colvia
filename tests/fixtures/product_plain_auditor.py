@@ -14,6 +14,8 @@ CONTINUATION_PATHS = ('.gitignore', 'AGENTS.md', 'CLAUDE.md', 'PRODUCT-CAPABILIT
 
 OFFICIAL_PATHS = tuple(sorted(CONTINUATION_PATHS + ('docs/OFFICIAL-EXECUTION.md', 'src/hv2ref/official_adapter.py', 'src/hv2ref/official_admission.py', 'src/hv2ref/official_documents.py', 'src/hv2ref/official_entry.py', 'src/hv2ref/official_host.py', 'src/hv2ref/official_os.py', 'src/hv2ref/official_policy.py', 'src/hv2ref/official_state.py', 'src/hv2ref/official_worker.py', 'runtime/official/marked-LICENSE.md', 'runtime/official/marked.umd.js', 'runtime/official/official-codex-macos.sb', 'runtime/official/worker.sb.in')))
 
+OFFICIAL_V2_PATHS = tuple(sorted(OFFICIAL_PATHS + ('src/hv2ref/official_schema.py', 'src/hv2ref/official_v2.py', 'src/hv2ref/official_recovery.py', 'src/hv2ref/official_controller.py')))
+
 # Independent stdlib receipt/byte auditor. This intentionally does not import or
 # duplicate the full Work/intent state-machine implementation.
 import os
@@ -42,7 +44,7 @@ def safe_directory(path):
 
 
 def remaining_window(version,remove,remaining):
-    if version not in (6,7):
+    if version not in (6,7,8):
         # Independent literal detection; do not add new validation to old pairs.
         import ast
         for name, data in remaining.items():
@@ -62,10 +64,10 @@ def remaining_window(version,remove,remaining):
                 for node in tree.body:
                     if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "WORKSPACE_INVENTORY_ID" for t in node.targets):
                         if isinstance(node.value, ast.Constant): seen.append(node.value.value)
-            require(not any(isinstance(w, str) and w in ("windows-1", "windows-2", "official-execution-1") for w in seen), "legacy-pair-versus-Windows-witness")
+            require(not any(isinstance(w, str) and w in ("windows-1", "windows-2", "official-execution-1", "official-execution-2") for w in seen), "legacy-pair-versus-Windows-witness")
         return
-    expected_window="official-execution-1" if version==7 else "windows-2"
-    allowed={"continuation-1","official-execution-1"} if version==7 else {"windows-2"}
+    expected_window="official-execution-2" if version==8 else "official-execution-1" if version==7 else "windows-2"
+    allowed={"continuation-1","official-execution-1","official-execution-2"} if version==8 else {"continuation-1","official-execution-1"} if version==7 else {"windows-2"}
     def admitted(window):return isinstance(window,str) and window in allowed
     for name,data in remaining.items():
         if name.endswith("/inventory.json"):
@@ -73,7 +75,7 @@ def remaining_window(version,remove,remaining):
             require(inv["record_type"]=="release-inventory" and type(inv["schema_version"]) is int and inv["schema_version"]==1,"remaining-inventory-schema")
             window=inv["inventory_id"];require(admitted(window),"pair-versus-remaining-inventory")
             actual=entries(inv["entries"])
-            expected=set(OFFICIAL_PATHS) if window=="official-execution-1" else set(CONTINUATION_PATHS) if window in ("continuation-1","windows-2") else set(DELEGATION_PATHS) if window=="delegation-1" else set(ENTRY_PATHS) if window=="entry-1" else set(SERIAL_PATHS)
+            expected=set(OFFICIAL_V2_PATHS) if window=="official-execution-2" else set(OFFICIAL_PATHS) if window=="official-execution-1" else set(CONTINUATION_PATHS) if window in ("continuation-1","windows-2") else set(DELEGATION_PATHS) if window=="delegation-1" else set(ENTRY_PATHS) if window=="entry-1" else set(SERIAL_PATHS)
             if window in ("umbrella-1","planning-1","checkout-1"):expected.add("src/hv2ref/umbrella.py")
             if window in ("planning-1","checkout-1"):expected.add("src/hv2ref/candidates.py")
             require(set(actual)==expected,"remaining-inventory-membership")
@@ -240,13 +242,13 @@ def audit_once(target):
     receipt_raw=raw_file(home/"detached.json");receipt=strict_json(receipt_raw)
     keys(receipt,{"record_type","schema_version","operation_id","plan","prior_binding_ref","result_binding_ref"})
     plan=keys(receipt["plan"],{"record_type","schema_version","operation_id","action","target_fingerprint","authority_home_id","expected_binding_ref","candidate_release","format_sha256","truth_refs","remove","preserve","created_at"})
-    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4, 5, 6, 7)
+    require(receipt["record_type"]=="lifecycle-receipt" and type(receipt["schema_version"]) is int and receipt["schema_version"] in (1, 2, 3, 4, 5, 6, 7, 8)
             and plan["record_type"]=="lifecycle-plan" and type(plan["schema_version"]) is int and plan["schema_version"]==receipt["schema_version"] and plan["action"]=="detach","detach-record-type")
     require(valid_id(plan["operation_id"]) and receipt["operation_id"]==plan["operation_id"] and isinstance(plan["created_at"],str) and plan["created_at"].strip(),"detach-operation")
     require(plan["authority_home_id"]==fmt["authority_home_id"] and plan["format_sha256"]==sha(fmt_raw) and valid_sha(plan["target_fingerprint"]),"detach-identity")
     require(receipt["prior_binding_ref"]==ref(plan["expected_binding_ref"]) and receipt["result_binding_ref"] is None and plan["candidate_release"] is None,"detach-binding")
     remove=entries(plan["remove"]);preserve=entries(plan["preserve"])
-    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia",5:"colvia",6:"colvia",7:"colvia"}[plan["schema_version"]]
+    launcher={1:"hv2",2:"hv2",3:"colvia",4:"colvia",5:"colvia",6:"colvia",7:"colvia",8:"colvia"}[plan["schema_version"]]
     expected={launcher,".hrn/product/init-plan.json",".hrn/product/binding.json"};releases=set();receipt_ids=set()
     for name in set(remove)-expected:
         parts=name.split("/")
@@ -262,14 +264,17 @@ def audit_once(target):
         paths = set(SERIAL_PATHS) | {"src/hv2ref/umbrella.py"} if prefix+"payload/src/hv2ref/umbrella.py" in remove else SERIAL_PATHS
         if prefix+"payload/src/hv2ref/candidates.py" in remove:paths=set(paths)|{"src/hv2ref/candidates.py"}
         if prefix+"payload/colvia" in remove:
-            require(plan["schema_version"] in (3,4,5,6,7),"old-schema-entry-membership")
+            require(plan["schema_version"] in (3,4,5,6,7,8),"old-schema-entry-membership")
             paths=ENTRY_PATHS if plan["schema_version"]==3 else DELEGATION_PATHS
             if prefix+"payload/src/hv2ref/continuation.py" in remove:
-                require(plan["schema_version"]in (5,6,7),"old-schema-continuation-membership")
+                require(plan["schema_version"]in (5,6,7,8),"old-schema-continuation-membership")
                 paths=CONTINUATION_PATHS
         if prefix+"payload/src/hv2ref/official_entry.py" in remove:
-            require(plan["schema_version"]==7,"official-detach-schema")
+            require(plan["schema_version"] in (7,8),"official-detach-schema")
             paths=OFFICIAL_PATHS
+        if prefix+"payload/src/hv2ref/official_v2.py" in remove:
+            require(plan["schema_version"]==8,"official-v2-detach-schema")
+            paths=OFFICIAL_V2_PATHS
         expected|={prefix+"inventory.json"}|{prefix+"payload/"+p for p in paths}
         require(prefix+"inventory.json" in remove and rid=="product-release-"+remove[prefix+"inventory.json"]["sha256"][:24],"release-inventory")
     require(set(remove)==expected and remove[".hrn/product/binding.json"]["sha256"]==plan["expected_binding_ref"]["sha256"],"remove-completeness")
@@ -304,7 +309,7 @@ def audit_once(target):
         if name in truth:
             require(sha(data)==truth[name],"truth-ref-mismatch")
             if not name.startswith(".hrn/executions/"):strict_json(data)
-            else:require(plan["schema_version"]==7,"execution-truth-in-old-detach")
+            else:require(plan["schema_version"] in (7,8),"execution-truth-in-old-detach")
     files_order=[launcher]+[n for n in remove if n!=launcher]
     dirs={p.as_posix() for n in files_order if n!=launcher for p in Path(n).parents if p.as_posix().startswith(".hrn/product")}
     dir_order=sorted(dirs,key=lambda n:(-len(n.split("/")),n.encode()))
@@ -318,7 +323,7 @@ def audit_once(target):
     require(remaining_names==files_order[len(files_order)-len(remaining_names):],"invalid-file-prefix")
     if remaining_names:require(present_dirs==dirs,"early-directory-removal")
     else:require([n for n in dir_order if n in present_dirs]==dir_order[len(dir_order)-len(present_dirs):],"invalid-directory-prefix")
-    if plan["schema_version"] in (3,4,5,6,7):
+    if plan["schema_version"] in (3,4,5,6,7,8):
         import unicodedata
         require(not any(unicodedata.normalize("NFC",p.name).casefold()=="hv2" for p in target.iterdir()),"retired-entry-collision-preserved")
     capsule_prefixes={"/".join(n.split("/")[:3]) for n in saved if n.startswith(".hrn/executions/")}
@@ -326,10 +331,26 @@ def audit_once(target):
     execution_summaries={}
     for name,data in saved.items():
         if not name.startswith(".hrn/executions/") or not name.endswith("/grant.json"):continue
-        value=keys(strict_json(data),{"record_type","schema_version","grant","spec"})
+        value=strict_json(data);require(type(value) is dict,"execution-grant-shape")
         base=name.rsplit("/",1)[0];grant=base.split("/")[-1]
-        require(value["record_type"]=="official-execution-grant" and type(value["schema_version"]) is int and value["schema_version"]==1
-                and value["grant"]==grant==sha((json.dumps(value["spec"],ensure_ascii=False,sort_keys=True,indent=2)+"\n").encode()),"execution-grant-binding")
+        version=value.get("schema_version")
+        require(value.get("record_type")=="official-execution-grant" and type(version) is int and version in (1,2)
+                and value.get("grant")==grant and valid_sha(grant),"execution-grant-binding")
+        pretty=lambda x:(json.dumps(x,ensure_ascii=False,sort_keys=True,indent=2)+"\n").encode()
+        if version==1:
+            keys(value,{"record_type","schema_version","grant","spec"})
+            require(grant==sha(pretty(value["spec"])),"execution-v1-spec-binding")
+            first={"grant":grant}
+        else:
+            require(plan["schema_version"]==8,"v2-grant-in-old-window")
+            keys(value,{"record_type","schema_version","grant","policy_version","target","scope","recovery_locator"})
+            require(value["policy_version"]=="payload-minimal-1" and value["target"]==str(target),"execution-v2-policy-target")
+            keys(value["scope"],{"work_id","documents","read_ids","output_id","limits","installation","resources","recovery_store_id"})
+            locator=keys(value["recovery_locator"],{"store_id","grant","recovery_ordinal"})
+            require(locator["grant"]==grant and locator["store_id"]==value["scope"]["recovery_store_id"]
+                    and type(locator["recovery_ordinal"]) is int and locator["recovery_ordinal"]==1,"execution-v2-locator")
+            require({n[len(base)+1:] for n in saved if n.startswith(base+"/")} <= {"grant.json","journal.jsonl","cancel.json","receipt.json"},"execution-v2-files")
+            first={"grant":grant,"scope_sha256":sha(pretty(value["scope"])),"recovery_locator_sha256":sha(pretty(locator))}
         journal=saved.get(base+"/journal.jsonl");require(journal is not None and journal.endswith(b"\n"),"execution-journal")
         previous="0"*64;last=None
         for index,line in enumerate(journal.splitlines(),1):
@@ -337,7 +358,7 @@ def audit_once(target):
             body={k:v for k,v in row.items() if k!="sha256"}
             compact=lambda x:(json.dumps(x,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\n").encode()
             require(type(row["seq"]) is int and row["seq"]==index and row["previous"]==previous and row["sha256"]==sha(compact(body)) and compact(row)==line+b"\n","execution-journal-chain")
-            if index==1:require(row["kind"]=="granted" and row["value"]=={"grant":grant},"execution-first-row")
+            if index==1:require(row["kind"]=="granted" and row["value"]==first,"execution-first-row")
             previous=row["sha256"];last=row
         require(last is not None and (last["kind"]=="operator-resolved-unknown" or
                 last["kind"]=="terminal" and last["value"]["status"] in ("completed","interrupted","revoked-before-launch")),"execution-not-closed")
@@ -347,7 +368,7 @@ def audit_once(target):
         if not name.endswith("/current.json"):continue
         current=strict_json(data);base=name.rsplit("/",1)[0]
         if base.endswith("/continuation"):
-            require(plan["schema_version"] in (5,6,7),"continuation-truth-in-old-detach")
+            require(plan["schema_version"] in (5,6,7,8),"continuation-truth-in-old-detach")
             keys(current,{"record_type","schema_version","authority_home_id","work_id","selection_ref"})
             wid=base.split("/")[-2]
             require(current["record_type"]=="continuation-current" and type(current["schema_version"]) is int

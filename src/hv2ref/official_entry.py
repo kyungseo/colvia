@@ -7,7 +7,7 @@ import sys
 import time
 import tomllib
 from . import official_state as state
-from .official_documents import file_record, initial_view_contracts, pack_reads, wire_bytes
+from .official_documents import file_record, document_record, initial_view_contracts, pack_reads, wire_bytes
 from .official_policy import canonical_existing, PARAMETERS
 
 CLI_SHA256 = 'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a'
@@ -152,7 +152,7 @@ def link_inputs(docs, records, worker_root, parser_path, parser_sha256):
 def prepare(target, request):
     target = canonical_existing(str(Path(target)), True)
     exact(request, {'work_id', 'worker_root', 'documents', 'read_ids', 'prompt', 'owner_statement',
-                    'runtime', 'runtime_root', 'expires_wall_ns', 'seconds', 'worker_limit'}, 'request-fields')
+                    'runtime', 'runtime_root', 'host_control_root', 'expires_wall_ns', 'seconds', 'worker_limit'}, 'request-fields')
     state.need(type(request['work_id']) is str and type(request['owner_statement']) is str and
                0 < len(request['owner_statement']) <= 4096 and type(request['prompt']) is str and
                0 < len(request['prompt'].encode()) <= 32768, 'owner-task-input')
@@ -193,8 +193,9 @@ def prepare(target, request):
             state.need(item['view'] == {'kind': 'full'}, 'reference-view')
     state.need(len({p['path'] for p in records.values()}) == len(records) and
                len({tuple(p['identity']) for p in records.values()}) == len(records), 'document-path-alias')
-    from .official_documents import document_view, safe_text
-    safe_text(request['prompt'])
+    from .official_documents import document_view
+    from .official_controller import checked_payload, checked_preserved_output
+    checked_payload(request['prompt'])
     exact(docs['claims'], {docs['output']}, 'claims-output-coverage')
     rule = docs['claims'][docs['output']]
     exact(rule, {'required', 'forbidden', 'evidence'}, 'claims-fields')
@@ -210,8 +211,12 @@ def prepare(target, request):
         state.need(evidence['quote'] in document_view(record, state.regular(record['path'])).decode(), 'claim-evidence-missing')
     state.need(type(docs['approved_external_links']) is list and len(docs['approved_external_links']) <= 32 and
                all(type(x) is str and len(x) <= 2048 and x.startswith(('https://', 'mailto:')) for x in docs['approved_external_links']), 'external-links')
-    for record in records.values():
-        safe_text(document_view(record, state.regular(record['path'])).decode())
+    for key, record in records.items():
+        observed, raw = document_record(record)
+        state.need(observed == record, 'document-admission-drift')
+        checked_payload(document_view(record, raw).decode(), limit=131072)
+        if key == docs['output']:
+            checked_preserved_output(observed, raw)
     payload = Path(work['release_path']) / 'payload'
     resources = {'python': str(Path(sys.executable).resolve()), 'worker': str(payload / 'src/hv2ref/official_worker.py'),
                  'parser': str(payload / 'runtime/official/marked.umd.js'), 'profile_template': str(payload / 'runtime/official/worker.sb.in')}
@@ -235,7 +240,18 @@ def prepare(target, request):
     # the unchanged full post-write verifier must reject any remaining active HTML.
     state.need(all(item['code'] == 'active-html' for item in findings), 'initial-document-links-failed')
     state.need(pack_reads(records, origin={'sources': documents['source_digests'], 'approval': 'owner-official-' + '0' * 64}) == [ids], 'single-ordered-read-pack')
-    spec = {'version': 1, 'target': str(target), 'request': request, 'work': work, 'documents': documents,
+    from .official_recovery import root_record, document_observation
+    host_control = root_record(request['host_control_root'], target=target, worker_root=worker_root,
+                               runtime_root=runtime_root, output=records[docs['output']]['path'])
+    from .official_policy import require_host_root_separation
+    require_host_root_separation(host_control['path'], paths, runtime_root, Path(sys.executable).resolve().parent.parent)
+    identities = {}
+    for key, record in records.items():
+        identity, _ = document_observation(record['path'])
+        state.need([identity['dev'], identity['ino']] == record['identity'] and identity['mode'] == record['mode'] and
+                   identity['sha256'] == record['sha256'], 'document-admission-drift')
+        identities[key] = identity
+    spec = {'version': 2, 'host_control': host_control, 'document_identities': identities, 'target': str(target), 'request': request, 'work': work, 'documents': documents,
             'runtime_paths': paths, 'runtime_root': str(runtime_root), 'policy': 'official-cli-0.165.0-macos'}
     state.need(len(state.canonical(spec)) <= 1024 * 1024, 'execution-spec-size')
     grant = state.digest(state.canonical(spec))
@@ -268,9 +284,15 @@ def cli(target, args, value=None):
     if args.action == 'execute':
         return execute(target, value, args.confirm)
     if args.action == 'status':
-        return state.public_status(state.read_capsule(target, args.grant))
+        observed = state.read_capsule(target, args.grant); result = state.public_status(observed)
+        if getattr(args, 'host_control_root', None) is not None:
+            state.need(observed.get('schema_version') == 2, 'v1-external-recovery-not-supported')
+            from .official_recovery import inspect, inspect_transient
+            result['recovery_availability'] = inspect(observed, args.host_control_root)
+            result.update(inspect_transient(observed, args.host_control_root))
+        return result
     if args.action == 'cancel':
         return state.cancel(target, args.grant, args.reason)
     if args.action == 'resolve':
-        return state.resolve(target, args.grant, args.confirm) if args.confirm else state.resolution_preview(target, args.grant)
+        return state.resolve(target, args.grant, args.confirm, host_control_root=getattr(args, 'host_control_root', None)) if args.confirm else state.resolution_preview(target, args.grant, host_control_root=getattr(args, 'host_control_root', None))
     state.need(False, 'unsupported-execution-action')

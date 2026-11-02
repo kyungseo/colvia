@@ -91,7 +91,18 @@
     "supported_versions": [
       "3.14.6",
       "3.14.7"
-    ]
+    ],
+    "supported_versions_scope": "legacy-version-allowlist",
+    "managed_macos_candidate": {
+      "python": "3.14.10",
+      "platform": "darwin",
+      "machine": "arm64",
+      "process_platform": "macosx-11.0-arm64",
+      "isolated": true,
+      "bytecode_disabled": true,
+      "tree_identity": "e3d42cd0b305583e46e16d5265e3b6ac24a01ef9ee32a08418e1be5965db816f",
+      "admission": "exact normalized tree and manifests; location-independent; not authentication"
+    }
   },
   "schema_version": 1,
   "trust_boundary": "trusted-local-os-account-logical-actor-declarations"

@@ -1,5 +1,7 @@
 # Your First Project With Colvia
 
+Current macOS distribution, first Work and resume: [start here](getting-started.md). This candidate awaits final qualification and public release; the older observations below remain historical.
+
 This entry describes continuation-1. Use the exact qualified release and obtain installation authorization. The linked step-by-step tutorial retains entry-1 examples; use the current operating documents for commands. The historical checkout-1 exercise below does not qualify this release.
 
 [Start the tutorial](getting-started.md) · [Key concepts](concepts.md)
