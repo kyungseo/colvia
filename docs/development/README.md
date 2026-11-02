@@ -1,6 +1,8 @@
 # Development Index
 
-- [단일 Work 맡기기와 로컬 결과 통지](FEAT-20261103-001-single-work-local-delivery.md) — 완료(Owner 수락, 2026-11-03). macOS·지정 Windows ARM64의 단일 Work 수신함과 로컬 알림 호출.
+- [단일 Work 맡기기 설치본 안내 정비](CHORE-20261103-002-single-work-installed-guidance.md) — 완료(Owner 수락, 2026-11-03).
+
+- [단일 Work 맡기기와 로컬 결과 통지](FEAT-20261103-001-single-work-local-delivery.md) — 완료(Owner 수락, 2026-11-03). macOS·지정 Windows ARM64의 단일 Work 수신함과 로컬 알림 호출. [선행 계획](PATCH-20261102-005-view-decision-summary.md#단일-work-사용자-흐름과-재검토-조건)
 
 - [Windows 기본 지원과 단일 Work 온보딩](FEAT-20261102-006-windows-basic-distribution.md#owner-수락과-완료-2026-11-03) — 완료(Owner 수락, 2026-11-03). 지정 ARM64 비공개 기본 흐름과 최종 후보의 요청 저장 경로 8단계.
 
@@ -249,8 +251,6 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
-
-- [단일 Work 맡기기와 결과 통지](PATCH-20261102-005-view-decision-summary.md#단일-work-사용자-흐름과-재검토-조건) — Windows 기본 지원 확인 뒤 구현을 재검토한다. 첫 공개 약속이 무인 수행까지 확대되면 macOS 단일 Work를 먼저 검증한다.
 
 - [공식 실행 보정의 제품 소스 반영](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — 2026-11-02 제품 소스 반영과 오프라인 검증 수락·완료. [수락 범위와 커밋 순서](PATCH-20261102-004-official-runtime-source-port.md#owner-판단과-보존).
 
