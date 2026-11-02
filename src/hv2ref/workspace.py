@@ -792,3 +792,15 @@ The caller verifies the receipt and complete operation under the same guard.
             yield
     finally:
         _guard_state.held = held
+
+def delivery_folder(target: Path) -> Path:
+    """Use the physical directory identity so case aliases share one inbox."""
+    info = target.stat()
+    key = hashlib.sha256(f"{info.st_dev}:{info.st_ino}".encode("ascii")).hexdigest()
+    return target.parent / (".colvia-inbox-" + key)
+
+
+def guard_delivery_transition(target: Path) -> None:
+    if os.path.lexists(delivery_folder(target)):
+        from .continuation import require_delivery_idle
+        require_delivery_idle(target)

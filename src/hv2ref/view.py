@@ -848,6 +848,8 @@ def render_help(target, *, installed=False):
              '- “작업 진행 화면 개선의 진행 상황과 후속 계획을 보여줘.”',
              '- “다음 작업 후보를 비교하고 하나를 추천해줘.”', "",
              "## 직접 조회하기", ""]
+    if installed:
+        commands.insert(2, ("맡긴 작업의 질문과 결과", ("inbox",)))
     if installed and sys.platform != "win32":
         lines += ["아래 명령은 프로젝트 폴더에서 실행하세요.", ""]
     for label, args in commands:
@@ -1219,6 +1221,31 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
     try:
         _require(not details or (kind is None and revision is None and ticket is None), "--details requires project view without selector, revision or input")
         target = safe_target(target)
+        if kind == "inbox":
+            _require(installed and not details and revision is None and ticket is None, "설치된 프로젝트의 수신함에서 확인해 주세요.")
+            from .continuation import delivery_inbox
+            try:
+                rows = delivery_inbox(target, object_id)
+            except (ContractError, OSError, ValueError):
+                return "# 맡긴 작업\n\n수신함 기록을 확인해 주세요. 프로젝트 작업 현황은 기본 View에서 볼 수 있습니다.\n", 10
+            lines = ["# 맡긴 작업", ""]
+            if not rows:
+                lines.append("아직 맡긴 작업이 없습니다.")
+            for row in rows:
+                lines.append(f"- {row['label']} · {row['message']}")
+                if row["result"]:
+                    lines.append(row["result"].get("message", ""))
+                    if row["result"].get("view"):
+                        lines.append(row["result"]["view"])
+                if row["status"] == "question":
+                    lines.append("이 작업을 계속할지, 여기서 중단할지 알려 주세요.")
+                if row["status"] in ("reconcile","expired"):
+                    lines.append("“맡긴 작업이 어디까지 반영됐는지 확인해 줘”라고 요청하세요.")
+                if row["notification"] == "attempted":
+                    lines.append("기기 알림을 시도했습니다. 전달 여부는 확인되지 않았습니다.")
+                if row["notification"] == "unavailable":
+                    lines.append("기기 알림을 보낼 수 없어 여기에 남겼습니다.")
+            return "\n".join(lines) + "\n", 0
         _require(kind in (None, "intent", "work", "continuation", "confirmation", "candidates"), "unknown view kind")
         _require((kind in ("intent", "work", "continuation")) == (object_id is not None), "view object ID required only for intent/work/continuation")
         _require(revision is None or kind in ("intent", "work"), "revision requires intent/work")
@@ -1254,6 +1281,18 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                     else:
                         lines += candidate_lines
                 lines += _execution_overview(status, details=details)
+                if installed and normal:
+                    from .continuation import delivery_inbox
+                    try:
+                        deliveries = delivery_inbox(target)
+                    except (OSError, ValueError, ContractError):
+                        deliveries = None
+                    if deliveries:
+                        lines += [deliveries[0]["label"] + " · " + deliveries[0]["message"] + " " + code(_display_command(target, installed, "view", "inbox")), ""]
+                        if deliveries[0]["notification"] == "unavailable":
+                            lines += ["기기 알림을 보낼 수 없어 수신함에 남겼습니다.", ""]
+                    elif deliveries is None:
+                        lines += ["맡긴 작업 수신함의 위치와 접근 상태를 확인해 주세요.", ""]
                 footer = "더 알아보기 · " + code(_display_command(target, installed, "help"))
                 if not show_raw:
                     footer += " · " + ("기술 상세·안내 문서: " if product else "기술 상세: ") + code(_display_command(target, installed, "view", "--details"))
