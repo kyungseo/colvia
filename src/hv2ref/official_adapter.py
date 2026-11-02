@@ -7,12 +7,24 @@ import signal
 import subprocess
 import time
 from . import official_state as state
+from .errors import ContractError
 from .official_documents import reject_duplicate_keys
 from .official_admission import MODEL, PROFILE, DIRECT_FALLBACK, launch_spec, preflight
 from .official_host import reason_code
 from .official_controller import checked_payload
 
 LIMIT = 1048576
+# The pinned CLI's known startup warning, including its LF. Match bytes as received.
+_PATH_WARNING = (
+    b"WARNING: proceeding, even though we could not create PATH aliases: "
+    b"Operation not permitted (os error 1)\n"
+)
+
+# This startup exception must not follow a future runtime pin change.
+_PATH_WARNING_0165_PINS = (
+    'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
+    'e723d01c65aba4b81451d486d57318232b2738889de67c35051734be917d96ba',
+)
 
 def signal_owned(pid, sig, *, group=False):
     try:
@@ -23,12 +35,22 @@ def signal_owned(pid, sig, *, group=False):
     except PermissionError:
         return False
 
-class CancelRequested(Exception):
-    """Wake the turn loop to interrupt; not an execution success."""
+class CancelRequested(ContractError):
+    """Wake the turn loop while preserving the cancellation reason before binding."""
+
+    def __init__(self):
+        super().__init__('HV2-OFFICIAL-EXECUTION', 'cancelled')
 
 class Rpc:
     def __init__(self, spec, host):
         self.spec, self.host = spec, host
+        self.in_initialize = False
+        self.initialize_failure = None
+        self.cancel_seen_after_read = False
+        self.interrupt_confirmed = False
+        self.path_warning_mode = None
+        self.stderr_refused = False
+        self.stderr_eof = False
         self.seq = self.trace_bytes = self.err_bytes = 0
         self.outgoing_bytes = self.outgoing_frames = 0
         self.outgoing_partial = False
@@ -67,16 +89,114 @@ class Rpc:
         if kind in ('rpc-error', 'runtime-diagnostic'):
             self.host.diagnostic('runtime', 'worker', 'protocol_refused', size)
 
-    def err(self, raw):
-        self.err_bytes += len(raw)
-        self.host.diagnostic('runtime', 'worker', 'protocol_refused', len(raw))
+    def _init_failure(self, source, code=None, byte_count=None):
+        # Only callers at a known refusal site supply these closed values.
+        if self.in_initialize and self.initialize_failure is None:
+            self.initialize_failure = {'phase': 'initialize', 'source': source, 'code': code,
+                                       'byte_count': byte_count}
+
+    def _finish_path_warning(self, end, rpc_deadline):
+        """Consume at most three matching bytes. Wait only on the stderr fd."""
+        pos = 101
+        expires = self.host.spec['request']['expires_wall_ns']
+
+        def remaining():
+            if self.host.cancelled():
+                raise CancelRequested()
+            ttl = (expires - time.time_ns()) / 1e9
+            now = time.monotonic()
+            execution_left = min(rpc_deadline - now, self.deadline - now, ttl)
+            if execution_left <= 0:
+                raise TimeoutError('deadline')
+            return min(end - now, execution_left)
+
+        with selectors.DefaultSelector() as tail:
+            tail.register(self.p.stderr, selectors.EVENT_READ)
+            while pos < len(_PATH_WARNING):
+                left = remaining()
+                if left <= 0:
+                    return 'path_suffix_timeout'
+                if not tail.select(min(left, .005)):
+                    continue
+                if remaining() <= 0:
+                    return 'path_suffix_timeout'
+                try:
+                    part = os.read(self.p.stderr.fileno(), 65536)
+                except BlockingIOError:
+                    continue
+                self.err_bytes += len(part)
+                if not part:
+                    return 'path_suffix_eof'
+                if len(part) > len(_PATH_WARNING) - pos:
+                    return 'path_suffix_extra'
+                if part != _PATH_WARNING[pos:pos + len(part)]:
+                    return 'path_suffix_mismatch'
+                pos += len(part)
+            if remaining() <= 0:
+                return 'path_suffix_timeout'
+        return None
+
+    def err(self, raw, *, rpc_deadline=None):
+        if not raw:
+            return
+        received = time.monotonic()
+        first = self.err_bytes == 0
+        size = len(raw)
+        refused_bytes = size
+        self.err_bytes += size
+        if self.in_initialize and self.initialize_failure is None and not self.stderr_refused:
+            pins = self.host.spec['request']['runtime']['sha256']
+            eligible = (first and self.path_warning_mode is None and self.err_bytes <= LIMIT
+                        and (pins.get('BIN'), pins.get('CODE_MODE_HOST')) == _PATH_WARNING_0165_PINS)
+            if raw == _PATH_WARNING:
+                if eligible:
+                    self.path_warning_mode = 'single_read'
+                    return
+                code = 'path_warning_exact'
+            elif eligible and size == 101 and raw == _PATH_WARNING[:101]:
+                try:
+                    code = self._finish_path_warning(received + .050, self.deadline if rpc_deadline is None else rpc_deadline)
+                except (CancelRequested, TimeoutError):
+                    # This incomplete warning can never be accepted by a later read.
+                    self.stderr_refused = True
+                    raise
+                if code is None:
+                    self.path_warning_mode = 'joined_101'
+                    return
+                # Execute reports the first read size; the journal counts all refused bytes.
+                refused_bytes = self.err_bytes
+            else:
+                code = 'path_warning_prefix' if _PATH_WARNING.startswith(raw) else 'unclassified'
+            self._init_failure('stderr', code, size)
+        self.stderr_refused = True
+        self.host.diagnostic('runtime', 'worker', 'protocol_refused', refused_bytes)
         state.need(self.err_bytes <= LIMIT, 'stderr-limit')
-        state.need(not raw, 'protocol_refused')
+        state.need(False, 'protocol_refused')
+
+    def check_stderr(self, *, require_eof=False, rpc_deadline=None):
+        # Only the exact 101-byte prefix can start the single bounded suffix wait.
+        state.need(not self.stderr_refused, 'protocol_refused')
+        while not self.stderr_eof:
+            try:
+                raw = os.read(self.p.stderr.fileno(), 65536)
+            except BlockingIOError:
+                state.need(not require_eof, 'closure_unconfirmed')
+                return
+            if raw:
+                self.err(raw, rpc_deadline=rpc_deadline)
+            else:
+                self.stderr_eof = True
+                try:
+                    self.sel.unregister(self.p.stderr)
+                except KeyError:
+                    pass  # Setup may have stopped before selector registration.
 
     def send(self, value):
         # Serialize once, then inspect that same immutable frame before its first
         # byte can enter the CLI. Nested tool-result JSON is checked decoded too.
         # A failed partial frame cannot be completed by a later interrupt/reply.
+        if not self.in_initialize:
+            self.check_stderr()
         state.need(not self.outgoing_partial, 'protocol_refused')
         raw = checked_payload(value, limit=LIMIT - 1, deadline=self.deadline, protocol=True) + b'\n'
         frame = json.loads(raw, object_pairs_hook=reject_duplicate_keys)
@@ -146,27 +266,38 @@ class Rpc:
             if allow_cancel and self.host.cancelled():
                 raise CancelRequested()
             if self.messages:
+                self.check_stderr(rpc_deadline=until)
                 return self.messages.pop(0)
             if time.monotonic() - self.last_scan >= 1:
                 self.descendants(); self.last_scan = time.monotonic()
-            for key, _ in self.sel.select(min(.1, max(0, until - time.monotonic()))):
+            ready = self.sel.select(min(.1, max(0, until - time.monotonic())))
+            self.check_stderr(rpc_deadline=until)
+            for key, _ in ready:
+                if key.data == 'err':
+                    continue
                 raw = os.read(key.fileobj.fileno(), 65536)
                 if not raw:
                     self.sel.unregister(key.fileobj); continue
-                if key.data == 'err':
-                    self.err(raw); continue
                 self.buf += raw; state.need(len(self.buf) <= LIMIT, 'protocol-frame-limit')
                 while b'\n' in self.buf:
                     line, self.buf = self.buf.split(b'\n', 1)
                     if line:
-                        self.messages.append(json.loads(line, object_pairs_hook=reject_duplicate_keys))
+                        try:
+                            self.messages.append(json.loads(line, object_pairs_hook=reject_duplicate_keys))
+                        except Exception:
+                            self._init_failure('stdout_parse')
+                            raise
                     state.need(len(self.messages) <= 1024, 'protocol-queue-limit')
             if self.p.poll() is not None and not self.messages:
+                self._init_failure('runtime_exit')
                 raise RuntimeError('App Server exited')
         raise TimeoutError('bounded RPC wait')
 
     def event(self, seconds=30, *, allow_cancel=True):
-        return self.held.pop(0) if self.held else self.next(seconds, allow_cancel=allow_cancel)
+        if self.held:
+            self.check_stderr()
+            return self.held.pop(0)
+        return self.next(seconds, allow_cancel=allow_cancel)
 
     def notification(self, message, *, preflight_only=False):
         state.need(type(message) is dict and 'id' not in message, 'unexpected-server-request')
@@ -179,6 +310,7 @@ class Rpc:
             self.log('direct-tool-fallback', {'exact_warning':True,'permissions_changed':False})
             return None
         if method in ('warning','configWarning','error'):
+            self._init_failure('runtime_notification', method)
             self.log('runtime-diagnostic', value); state.need(False, 'runtime-diagnostic-refusal')
         state.need(method != 'remoteControl/status/changed' or value.get('status') == 'disabled', 'remote-control-active')
         state.need(method != 'item/started' or value.get('item',{}).get('type') in
@@ -189,18 +321,41 @@ class Rpc:
         return value.get('turn') if method == 'turn/completed' else None
 
     def request(self, method, params, seconds=30):
+        if method != 'initialize':
+            return self._request(method, params, seconds)
+        self.in_initialize = True
+        try:
+            return self._request(method, params, seconds)
+        except CancelRequested:
+            raise
+        except Exception:
+            self._init_failure('other')
+            raise
+        finally:
+            self.in_initialize = False
+
+    def _request(self, method, params, seconds):
         if method in ('initialize','config/read','account/read','model/list','thread/start','turn/start','turn/interrupt'):
             state.need(method not in self.consumed, 'RPC-attempt-already-consumed')
             self.host.journal.append('rpc-reserved', {'method':method})
             self.consumed.add(method)
         self.seq += 1; ident = self.seq
-        self.send({'id':ident,'method':method,'params':params}); self.log('request', {'id':ident,'method':method})
+        try:
+            self.send({'id':ident,'method':method,'params':params})
+        except OSError:
+            self._init_failure('send_failed')
+            raise
+        self.log('request', {'id':ident,'method':method})
         until = time.monotonic() + seconds
         while True:
             message = self.next(max(.001, until - time.monotonic()), allow_cancel=method != 'turn/interrupt')
             if message.get('id') == ident and 'method' not in message:
                 if 'error' in message:
-                    self.log('rpc-error', message['error']); state.need(False, 'RPC-refused')
+                    err = message['error']
+                    code = err.get('code') if type(err) is dict else None
+                    self._init_failure('rpc_error', code if type(code) is int and code in
+                                       (-32700, -32600, -32601, -32602, -32603) else 'other')
+                    self.log('rpc-error', err); state.need(False, 'RPC-refused')
                 self.log('response', {'id':ident,'method':method}); return message.get('result')
             if method == 'turn/interrupt' or (method == 'turn/start' and message.get('method') == 'item/tool/call'):
                 self.held.append(message); state.need(len(self.held) <= 32, 'held-callback-limit')
@@ -211,6 +366,24 @@ class Rpc:
         text = checked_payload(result, deadline=self.deadline).decode('utf-8')
         self.send({'id':message['id'],'result':{'contentItems':[{'type':'inputText','text':text}],'success':success}})
         self.log('tool-response', {'id':message['id'],'success':success,'completed':self.host.completed})
+
+    def read_limit_reason(self):
+        """Hold the completed read callback without dispatching any more work."""
+        end = time.monotonic() + 5.0
+        expires = self.host.spec['request']['expires_wall_ns']
+        while True:
+            self.check_stderr()
+            state.need(self.p.poll() is None, 'protocol_refused')
+            seen = self.host.cancelled()  # validates marker shape, reason and this grant
+            now = time.monotonic()
+            remaining = min(self.deadline - now, (expires - time.time_ns()) / 1e9)
+            state.need(remaining > 0, 'deadline')
+            if now >= end:
+                return 'worker_budget_consumed'
+            if seen:
+                self.cancel_seen_after_read = True
+                return 'cancelled'
+            time.sleep(min(.02, end - now, remaining))
 
     def interrupt(self):
         state.need(self.host.turn is not None, 'turn-identity-unavailable')
@@ -228,6 +401,7 @@ class Rpc:
                 turn = self.notification(message)
                 if turn is not None:
                     state.need(turn['id'] == self.host.turn and turn['status'] == 'interrupted', 'interrupt-unconfirmed')
+                    self.interrupt_confirmed = True
                     self.log('interrupted', {'turnId':turn['id']}); return
         raise TimeoutError('interrupt completion unavailable')
 
@@ -290,6 +464,10 @@ class Rpc:
             if absence:
                 self.host.journal.append('processes-closed', {'runtime_ref':self.runtime_ref, 'group_absent':True,
                     'final_scan_confirmed':True, 'children':children})
+            if absence and not self.stderr_refused and not self.stderr_eof:
+                # After process cleanup the pipe must reach EOF before success.
+                os.set_blocking(self.p.stderr.fileno(), False)
+                self.check_stderr(require_eof=True)
             self.close_result = result
             return result
         finally:
@@ -362,9 +540,9 @@ def run(host):
         error = caught
         if not host.revoked:
             host.revoke(reason_code(caught, 'protocol_refused'))
-        if host.pending is None and host.cancelled():
+        if host.pending is None and host.cancelled() and not getattr(host.rpc, 'stderr_refused', False):
             rpc = rpc or host.rpc
-            if rpc is not None and host.turn is not None:
+            if rpc is not None and host.turn is not None and not rpc.interrupted:
                 try:
                     rpc.interrupt(); status = 'interrupted'; error = None
                 except BaseException as interrupt_error:
@@ -396,4 +574,13 @@ def run(host):
                 host.fail(error)
     if error is not None:
         raise error
+    if rpc is not None and getattr(rpc, 'initialize_failure', None) is not None:
+        result['runtime_first_failure'] = rpc.initialize_failure
+    if rpc is not None and getattr(rpc, 'path_warning_mode', None) is not None:
+        result['initialize_path_warning_allowed'] = True
+        result['initialize_path_warning_mode'] = rpc.path_warning_mode
+    if rpc is not None and getattr(rpc, 'cancel_seen_after_read', False):
+        result['cancel_seen_after_read'] = True
+    if rpc is not None and getattr(rpc, 'interrupt_confirmed', False):
+        result['runtime_interrupt_confirmed'] = True
     return result

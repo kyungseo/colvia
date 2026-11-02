@@ -90,7 +90,7 @@ class PayloadV2Tests(unittest.TestCase):
 
     def test_runtime_stderr_positive_control_and_no_storage(self):
         observed=[];native=adapter.Rpc.err
-        def capture(bound,raw):observed.append(raw);return native(bound,raw)
+        def capture(bound,raw,**kwargs):observed.append(raw);return native(bound,raw,**kwargs)
         h=self.execute(mode='stderr',patches=[mock.patch.object(adapter.Rpc,'err',new=capture)])
         self.oracle(h,'interrupted','none',True)
         self.assertEqual(b'RUNTIME_STDERR_MARKER\n',b''.join(observed));self.scan(h,['RUNTIME_STDERR_MARKER'])

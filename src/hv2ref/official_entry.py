@@ -39,6 +39,106 @@ def runtime_input(value):
     state.need(not any(os.environ.get(k) for k in ('OPENAI_API_KEY', 'CODEX_API_KEY', 'OPENAI_BASE_URL', 'CODEX_API_BASE', 'CHATGPT_BASE_URL', 'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'CODEX_HOME')), 'api-auth-override-not-admitted')
     return {key: str(path) for key, path in paths.items()}
 
+def _diagnostic_input(path):
+    """Bounded, explicit local input; never open known credential contents."""
+    from .jsonio import decode_json_bytes
+    state.need(not os.environ.get("CODEX_HOME"), "api-auth-override-not-admitted")
+    path = canonical_existing(str(path.absolute()), False)
+    home = Path.home().resolve()
+    protected = (home / ".codex/auth.json", home / ".codex/installation_id")
+    state.need(path not in protected, "credential-input")
+    # No directory enumeration or credential content reads.
+    protected_ids = set()
+    for member in protected:
+        try:
+            info = member.stat()
+        except FileNotFoundError:
+            continue
+        protected_ids.add((info.st_dev, info.st_ino))
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as stream:
+        before = os.fstat(stream.fileno())
+        state.need(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and before.st_size <= 65536,
+                   "diagnostic-input-kind-size")
+        state.need((before.st_dev, before.st_ino) not in protected_ids, "credential-input")
+        raw = stream.read(65537)
+        after = os.fstat(stream.fileno())
+        state.need(len(raw) <= 65536 and
+                   (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) ==
+                   (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns), "diagnostic-input-changed")
+    value = decode_json_bytes(raw, require_canonical=True)
+    exact(value, {"paths", "sha256"}, "runtime-fields")
+    exact(value["paths"], PATH_KEYS, "runtime-path-set")
+    exact(value["sha256"], PINNED_INPUTS, "runtime-pin-set")
+    state.need(all(type(v) is str for v in value["paths"].values()) and
+               all(type(v) is str and len(v) == 64 and all(c in "0123456789abcdef" for c in v)
+                   for v in value["sha256"].values()), "diagnostic-input-values")
+    for value_path in value["paths"].values():
+        value_path.encode("utf-8")
+    # An instructions/rules path must not redirect a pinned content read to credentials.
+    for key in PINNED_INPUTS:
+        member = canonical_existing(value["paths"][key], False)
+        info = member.stat()
+        state.need(member not in protected and
+                   (info.st_dev, info.st_ino) not in protected_ids, "credential-input")
+    return value
+
+
+def diagnose_runtime_input(path):
+    """Observation only. No admission, network, writer or credential content."""
+    from .errors import ContractError
+    from .official_policy import PolicyRefusal
+    reason = "input-invalid"
+    try:
+        try:
+            value = _diagnostic_input(path)
+        except UnicodeError:
+            raise ValueError("input") from None
+        runtime_input(value)  # Returned local paths are intentionally discarded.
+    except ContractError as error:
+        known = {"unqualified-cli-helper": "unqualified-cli-helper",
+                 "default-auth-home-required": "input-location",
+                 "rules-home": "input-location", "helper-location": "input-location",
+                 "custom-provider-not-admitted": "config-not-admitted",
+                 "configured-instructions-not-admitted": "config-not-admitted",
+                 "api-auth-override-not-admitted": "environment-not-admitted",
+                 "credential-input": "credential-input", "record-changed": "input-changed",
+                 "diagnostic-input-changed": "input-changed"}
+        if error.code == "HV2-OFFICIAL-EXECUTION":
+            reason = known.get(error.message, "input-invalid")
+            if error.message in {"runtime-input-drift:" + key for key in PINNED_INPUTS}:
+                reason = "input-drift"
+    except PolicyRefusal:
+        reason = "input-location"
+    except (UnicodeError, tomllib.TOMLDecodeError):
+        reason = "config-invalid"
+    except OSError:
+        reason = "file-unavailable"
+    except (ValueError, TypeError, KeyError, RecursionError):
+        reason = "input-invalid"
+    except Exception:
+        reason = "check-failed"
+    else:
+        return {"local_check": "passed", "reason": "local-input-matches",
+                "message": "이번 명령에서 확인한 실행 도구와 입력이 검증 기준에 맞습니다.",
+                "next_action": "실행을 진행하려면 현재 Work의 승인·한도와 실행 미리보기를 확인하세요. 계정·모델 연결은 실제 실행 준비 단계에서 확인합니다."}
+    guidance = {
+        "unqualified-cli-helper": ("지정한 실행 도구가 기존 검증 조합과 다릅니다.", "기존에 검증된 CLI와 헬퍼 조합을 확인하세요."),
+        "input-drift": ("현재 파일과 보존된 실행 입력이 다릅니다.", "입력의 원래 출처와 파일 변경 내용을 함께 확인하세요."),
+        "input-location": ("실행 입력의 파일 위치를 확인해야 합니다.", "입력을 준비한 에이전트나 운영자에게 원래 파일 위치 확인을 요청하세요."),
+        "config-not-admitted": ("현재 설정에 검증 범위 밖의 항목이 있습니다.", "실행 입력을 준비한 에이전트와 해당 설정의 사용 목적을 확인하세요."),
+        "environment-not-admitted": ("이번 명령의 실행 환경에 허용 범위 밖의 설정이 있습니다.", "이번 명령에 전달된 환경 설정을 에이전트와 확인하세요."),
+        "credential-input": ("인증 자료가 내용 검사 대상으로 지정돼 있습니다.", "입력을 준비한 에이전트에게 검사 대상 지정을 확인해 달라고 요청하세요."),
+        "input-changed": ("확인하는 동안 입력 파일이 바뀌었습니다.", "변경 중인 작업과 입력의 원래 출처부터 확인하세요."),
+        "file-unavailable": ("지정한 입력 파일을 읽지 못했습니다.", "입력을 준비한 에이전트나 운영자에게 파일 위치와 접근 상태 확인을 요청하세요."),
+        "config-invalid": ("입력 설정을 해석하지 못했습니다.", "입력을 준비한 에이전트와 파일 형식을 확인하세요."),
+        "input-invalid": ("제공된 실행 입력을 확인하지 못했습니다.", "입력을 준비한 에이전트에게 기존 입력의 형식과 출처 확인을 요청하세요."),
+        "check-failed": ("로컬 입력 확인을 마치지 못했습니다.", "현재 입력을 보존하고 실행 환경을 확인하세요."),
+    }
+    message, next_action = guidance[reason]
+    return {"local_check": "failed", "reason": reason, "message": message, "next_action": next_action}
+
+
 def observe_work(target, request, *, after_effect=False):
     from .product import require_workspace_runtime, verify_workspace_product
     from .work import WorkStore, snapshot, _git

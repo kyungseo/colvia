@@ -278,7 +278,7 @@ def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: s
             path.write_bytes(raw); path.chmod(0o500 if name == "colvia" else 0o400)
         candidate = workspace_candidate(prepared)
         ref = candidate["release_ref"]
-        profile_info[profile] = {"release": ref, "files": {name: digest(raw) for name, raw in candidate["payload"].items()}}
+        profile_info[profile] = {"release": ref, "runtime_input_diagnostic": True, "files": {name: digest(raw) for name, raw in candidate["payload"].items()}}
         packaged.update({ref["id"] + "/" + name: raw for name, raw in candidate["payload"].items()})
         executable.add(ref["id"] + "/colvia")
     product = tar_bytes(packaged, executable)

@@ -15,6 +15,47 @@ def _print(value: object) -> None:
     print(json.dumps(value, allow_nan=False, ensure_ascii=False, indent=2, sort_keys=True))
 
 
+def _doctor_argument(parser):
+    parser.add_argument("--runtime-input", type=Path,
+                        help="공식 실행 입력 파일의 로컬 검사; 계정·모델 연결은 미확인. 종료코드는 프로젝트 상태 기준")
+
+
+def _doctor_status(args):
+    from .product import workspace_status
+    result = workspace_status(args.target)
+    supplied = getattr(args, "runtime_input", None)
+    if args.command != "doctor" or supplied is None:
+        return result
+    product = result.get("product")
+    inventory = product.get("inventory") if isinstance(product, dict) else None
+    profile = inventory.get("inventory_id") if isinstance(inventory, dict) else None
+    observation = {"profile": profile if profile in ("continuation-1", "windows-2", "official-execution-1", "official-execution-2") else "unavailable",
+                   "local_check": "unavailable", "reason": "project-check-required",
+                   "message": "프로젝트 상태를 먼저 확인해야 합니다.",
+                   "next_action": "위 프로젝트 상태에 안내된 확인부터 진행하세요.",
+                   "account_connection": "unobserved", "model_connection": "unobserved",
+                   "environment_scope": "current-command-process"}
+    if result.get("classification") == "pass":
+        if profile != "official-execution-2":
+            observation.update(reason="official-profile-required",
+                               message="이 프로젝트는 공식 실행 입력 진단 대상이 아닙니다.",
+                               next_action="현재 연결된 배포본의 기능 범위를 확인하세요.")
+        elif sys.platform != "darwin":
+            observation.update(reason="platform-unavailable",
+                               message="공식 실행 입력 진단은 검증된 macOS 환경에서 제공합니다.",
+                               next_action="현재 환경의 지원 범위를 확인하세요.")
+        else:
+            try:
+                from .official_entry import diagnose_runtime_input
+            except ImportError:
+                observation.update(reason="official-install-inconsistent",
+                                   message="공식 실행 진단 모듈을 읽지 못했습니다.",
+                                   next_action="현재 배포본의 파일과 설치 무결성을 확인하세요.")
+            else:
+                observation.update(diagnose_runtime_input(supplied))
+    return {**result, "official_runtime_input": observation}
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(prog="hv2ref", description="Colvia private Public Core candidate CLI", epilog='Windows-2 integration candidate: use an absolute allowed Python path with -I -B and the verified launcher in native Windows PowerShell. Explicit source profile windows-2 must match prepared source. Native OS/process and local NTFS checks apply; worker mode changes and new untracked 100755 results are unsupported. Qualification and activation remain pending. See the verified manual.')
     sub = root.add_subparsers(dest="command", required=True)
@@ -41,6 +82,7 @@ def parser() -> argparse.ArgumentParser:
 
     product_doctor = sub.add_parser("doctor", help="run read-only runtime and binding diagnostics")
     product_doctor.add_argument("--target", type=Path, default=Path.cwd())
+    _doctor_argument(product_doctor)
 
     product_update = sub.add_parser("update", help="preview or apply a digest-bound product release update")
     product_update.add_argument("--target", type=Path, default=Path.cwd())
@@ -105,7 +147,7 @@ def parser() -> argparse.ArgumentParser:
 def run(args: argparse.Namespace) -> object:
     from .product import workspace_status
     if args.command in ("status", "doctor"):
-        return workspace_status(args.target)
+        return _doctor_status(args)
     if args.command == "repair":
         return _workspace_repair(args)
     if args.command in ("init", "update", "rollback", "detach"):
@@ -207,6 +249,7 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
     sub = root.add_subparsers(dest="command", required=True)
     for name in ("status", "doctor"):
         p = sub.add_parser(name);p.add_argument("--target", type=Path, default=target)
+        if name == "doctor": _doctor_argument(p)
     for command in ("update","rollback","detach"):
         p = sub.add_parser(command);p.add_argument("--target", type=Path, default=target)
         if command == "update": p.add_argument("--source",type=Path,required=True)
@@ -252,7 +295,7 @@ def workspace_run(args: argparse.Namespace) -> object:
     from .product import workspace_status, require_workspace_runtime
     from .work import WorkStore
     from .intent import WorkspaceIntentStore
-    if args.command in {"status", "doctor"}: return workspace_status(args.target)
+    if args.command in {"status", "doctor"}: return _doctor_status(args)
     # Reject source/worker/foreign-target entry before reading or publishing records.
     require_workspace_runtime(args.target)
     if args.command in ("update","rollback"): return _workspace_switch(args, installed=True)

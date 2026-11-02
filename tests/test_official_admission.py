@@ -3,13 +3,14 @@ from pathlib import Path
 import io, tempfile, unittest
 from types import SimpleNamespace
 from unittest import mock
+from fixtures.official_rpc_fixture import quiet_rpc
 from hv2ref import official_adapter as adapter, official_admission as admission, official_state as state
 from hv2ref.errors import ContractError
 
 class OfficialAdmissionTests(unittest.TestCase):
     def test_failed_descendant_scan_cannot_be_hidden_by_cleanup_return(self):
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
+            rpc=quiet_rpc();rpc.closed=False;rpc.runtime_ref=2
             rpc.p=SimpleNamespace(pid=123,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(return_value=0))
             rpc.known_children={};rpc.sel=mock.Mock();rpc.trace=io.BytesIO()
             rpc.host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock())
@@ -32,7 +33,7 @@ class OfficialAdmissionTests(unittest.TestCase):
 
     def test_broken_stdin_flush_does_not_skip_process_cleanup(self):
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
+            rpc=quiet_rpc();rpc.closed=False;rpc.runtime_ref=2
             stream=mock.Mock();stream.closed=False;stream.close.side_effect=BrokenPipeError('synthetic closed pipe')
             waited=mock.Mock(return_value=0)
             rpc.p=SimpleNamespace(pid=123,returncode=0,stdin=stream,stdout=io.BytesIO(),stderr=io.BytesIO(),wait=waited)
@@ -44,7 +45,7 @@ class OfficialAdmissionTests(unittest.TestCase):
 
     def test_failed_child_observation_does_not_skip_remaining_children(self):
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
+            rpc=quiet_rpc();rpc.closed=False;rpc.runtime_ref=2
             rpc.p=SimpleNamespace(pid=123,returncode=0,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(return_value=0))
             rpc.known_children={124:'birth-a',125:'birth-b'};rpc.sel=mock.Mock();rpc.trace=io.BytesIO();rpc.descendants=mock.Mock()
             rpc.host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock())
@@ -60,7 +61,7 @@ class OfficialAdmissionTests(unittest.TestCase):
         self.assertEqual([mock.call(docs.resource.RLIMIT_FSIZE,(1048576,1048576)),mock.call(docs.resource.RLIMIT_CORE,(0,0))],limit.call_args_list)
 
     def test_single_use_rpc_reservation(self):
-        rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.consumed=set();rpc.seq=0
+        rpc=quiet_rpc();rpc.consumed=set();rpc.seq=0
         rpc.host=SimpleNamespace(journal=mock.Mock());rpc.send=mock.Mock();rpc.log=mock.Mock()
         rpc.next=mock.Mock(return_value={'id':1,'result':{'account':{'type':'chatgpt'}}})
         rpc.request('account/read',{'refreshToken':False})
@@ -68,7 +69,7 @@ class OfficialAdmissionTests(unittest.TestCase):
         self.assertEqual(rpc.send.call_count,1);self.assertEqual(rpc.host.journal.append.call_count,1)
 
     def test_warning_allowlist_is_exact_and_single_use(self):
-        rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.log=mock.Mock();rpc.direct_fallback_seen=False
+        rpc=quiet_rpc();rpc.log=mock.Mock();rpc.direct_fallback_seen=False
         exact={'method':'warning','params':{'message':admission.DIRECT_FALLBACK,'threadId':'thread'}}
         self.assertIsNone(rpc.notification(exact))
         with self.assertRaisesRegex(ContractError,'duplicate-fallback'):rpc.notification(exact)
@@ -77,7 +78,7 @@ class OfficialAdmissionTests(unittest.TestCase):
             with self.assertRaisesRegex(ContractError,'runtime-diagnostic'):rpc.notification({'method':'warning','params':{'message':value,'threadId':'thread'}})
 
     def test_native_item_and_remote_control_refused(self):
-        rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.log=mock.Mock()
+        rpc=quiet_rpc();rpc.log=mock.Mock()
         for message in ({'method':'item/started','params':{'item':{'type':'commandExecution'}}},
                         {'method':'remoteControl/status/changed','params':{'status':'enabled'}},
                         {'id':77,'method':'arbitrary/tool','params':{}}):
@@ -110,7 +111,7 @@ class AdapterFlowTests(unittest.TestCase):
         def bind(thread,turn):host.thread=thread;host.turn=turn
         host.bind=bind;host.finish=mock.Mock(side_effect=lambda status:{'status':status})
         host.dispatch=mock.Mock(return_value={'ok':False,'worker_admitted':False,'effect_status':'not_started'})
-        rpc=SimpleNamespace(consumed=set(),request=mock.Mock(side_effect=[{'model':admission.MODEL,'thread':{'id':'t'}},{'turn':{'id':'u'}}]),
+        rpc=SimpleNamespace(consumed=set(),interrupted=False,request=mock.Mock(side_effect=[{'model':admission.MODEL,'thread':{'id':'t'}},{'turn':{'id':'u'}}]),
             next=mock.Mock(side_effect=TimeoutError),event=mock.Mock(side_effect=events),notification=mock.Mock(return_value={'id':'u','status':'completed'}),
             reply=mock.Mock(),interrupt=mock.Mock(),close=mock.Mock(return_value={'observed_tree_absent':True}))
         return host,rpc
@@ -151,7 +152,7 @@ class AdapterFlowTests(unittest.TestCase):
     def test_leader_wait_timeout_keeps_absence_unconfirmed(self):
         import subprocess
         with tempfile.TemporaryDirectory() as name:
-            rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.closed=False;rpc.runtime_ref=2
+            rpc=quiet_rpc();rpc.closed=False;rpc.runtime_ref=2
             rpc.p=SimpleNamespace(pid=123,returncode=None,stdin=io.BytesIO(),stdout=io.BytesIO(),stderr=io.BytesIO(),wait=mock.Mock(side_effect=subprocess.TimeoutExpired('synthetic',2)))
             rpc.known_children={};rpc.sel=mock.Mock();rpc.trace=io.BytesIO()
             rpc.host=SimpleNamespace(run=Path(name).resolve(),journal=mock.Mock());rpc.descendants=mock.Mock()
@@ -161,7 +162,7 @@ class AdapterFlowTests(unittest.TestCase):
 
     def test_late_callback_refusal_is_journaled_before_reply(self):
         import time
-        rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.host=SimpleNamespace(thread='t',turn='u',refuse=mock.Mock())
+        rpc=quiet_rpc();rpc.host=SimpleNamespace(thread='t',turn='u',refuse=mock.Mock())
         rpc.deadline=time.monotonic()+30;rpc.request=mock.Mock();rpc.reply=mock.Mock();rpc.log=mock.Mock()
         rpc.event=mock.Mock(side_effect=[{'id':9,'method':'item/tool/call','params':{'callId':'late'}},{'method':'turn/completed'}])
         rpc.notification=mock.Mock(return_value={'id':'u','status':'interrupted'})

@@ -10,6 +10,7 @@ import unittest
 from unittest import mock
 
 import test_official_v2 as fixture
+from fixtures.official_rpc_fixture import quiet_rpc
 from hv2ref import official_state as state, official_adapter as adapter
 from hv2ref.errors import ContractError
 from hv2ref.official_documents import canonical
@@ -110,7 +111,7 @@ class ProcessV2Tests(unittest.TestCase):
         # Validate once before the transport clock. Scanner latency cannot make
         # this backpressure-only oracle pass before any pipe bytes are written.
         raw=adapter.checked_payload(frame,limit=adapter.LIMIT-1,protocol=True)
-        p,_=self.child();rpc=adapter.Rpc.__new__(adapter.Rpc);rpc.p=p;rpc.deadline=time.monotonic()+.15
+        p,_=self.child();rpc=quiet_rpc();rpc.p=p;rpc.deadline=time.monotonic()+.15
         rpc.outgoing_bytes=rpc.outgoing_frames=0;rpc.outgoing_partial=False
         done=threading.Event();errors=[]
         def send():
@@ -129,7 +130,7 @@ class ProcessV2Tests(unittest.TestCase):
         self.assertGreater(rpc.outgoing_bytes,0);self.assertTrue(rpc.outgoing_partial)
 
     def test_real_surviving_runtime_cannot_emit_closed_evidence(self):
-        p,birth=self.child();rpc=adapter.Rpc.__new__(adapter.Rpc)
+        p,birth=self.child();rpc=quiet_rpc()
         rpc.p=p;rpc.closed=False;rpc.runtime_ref=3;rpc.known_children={};rpc.sel=selectors.DefaultSelector()
         rpc.host=SimpleNamespace(journal=mock.Mock())
         # Inject denied signalling only; process/group/descendant observers are real.
