@@ -1,5 +1,9 @@
 # Development Index
 
+- 공식 실행기 조합 확인 — 완료(Owner 수락, 2026-11-02). [두 격리 후보의 수락 범위](CHORE-20261102-003-official-runtime-confirmation.md#owner-acceptance-and-work-completion).
+
+- 공통 실행·운영 진단과 후속 연결 — 완료(Owner 수락, 2026-11-02): [승인 범위·검증·리뷰](FEAT-20261102-002-common-execution-operations.md).
+
 - macOS 배포·관리·온보딩 — 완료(Owner 수락, 2026-11-02): [수락 범위와 남은 자격 조건](FEAT-20261101-003-macos-distribution-onboarding.md#owner-결과-수락과-source-완료--2026-11-02).
 
 - 작업 중 안내와 View 요약 — 완료(Owner 수락, 2026-11-01): [수락 범위·한계·실사용 후속 보완](FEAT-20261031-001-guidance-and-view-summary.md).
@@ -237,6 +241,8 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [공식 실행 보정의 제품 소스 반영](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — 격리 후보에서 검증한 경고 처리와 읽기 후 취소를 제품 계약으로 반영할 때 선택한다.
 
 - [같은 작업 재개와 중단 후 안내](same-task-resume-and-interruption-plan.md#owner-계획-요청과-시작-기준) — 선택된 범위는 2026-11-02 Owner의 제한 수락 후 Done. [완료·수락 기록](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02)을 따른다.
 - [Guardrails 통합 후보·설치 호환 확인](PATCH-20261101-002-local-payload-gates.md#owner-planning-authorization--2026-11-01) — P0, 해당 후보 설치 전. S1b 제한 수락과 통합 실행 승인 후 정확한 window·상태/View·lifecycle/old writer를 확인한다. 통합 범위는 [macOS 구현 Work](FEAT-20261101-003-macos-distribution-onboarding.md)에서 선택; 나머지 후보는 미선택.

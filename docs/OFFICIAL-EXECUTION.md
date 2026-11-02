@@ -18,6 +18,14 @@
 
 `run execute`는 지정 문서의 한 구간을 즉시 변경할 수 있다. Core의 accept/apply를 호출하지 않으며, 실행 완료가 Work 완료나 Owner 수락을 뜻하지 않는다. 호출자는 한 로컬 OS 계정 안에서 협력하는 trusted operator다. `owner_statement`와 확인 digest는 승인 선언을 기록하지만 인간 신원을 인증하지 않는다.
 
+## 실행 도구 구성 확인
+
+에이전트에게 “실행 도구 구성을 확인해줘”라고 요청할 수 있다. 에이전트가 기존 실행 입력을 갖고 있다면 `./colvia doctor --runtime-input FILE`로 파일과 설정을 읽기 전용으로 확인한다. 프로젝트에 검증된 `official-execution-2`가 연결되어 있을 때 제공하며, 기본 `doctor`는 기존 프로젝트 상태 조회를 유지한다.
+
+화면은 프로젝트 상태와 실행 입력 상태를 따로 설명한다. 예를 들어 입력이 달라졌다면 “현재 파일과 보존된 실행 입력이 다릅니다. 입력의 원래 출처와 파일 변경 내용을 함께 확인하세요.”라고 안내한다. 검사는 이번 명령의 프로세스 환경을 기준으로 하며, 계정·모델 연결은 실제 실행 준비 단계에서 확인한다.
+
+새 CLI 버전이나 다른 헬퍼는 별도의 자격 확인이 필요하다. 기존 입력의 해시를 바꾸는 것으로 검증 조합이 늘어나지 않는다. 사용자에게 JSON 작성을 요구하는 기본 사용 흐름은 추가하지 않는다. 입력 크기·응답 필드·종료코드의 의미는 [선택형 로컬 진단](REFERENCE.md#optional-local-execution-input-check)에 있다.
+
 ## 준비와 실행
 
 설치된 프로젝트에서 `./colvia run --input request.json` 또는 `./colvia run prepare --input request.json`으로 preview를 만든다. 입력은 canonical JSON이며 외부 전용 `host_control_root`, 실제 Work ID, worker root, 읽을 문서 ID 순서, 단일 출력 문서와 UTF-8 byte 편집구간, 근거 문구, 요청 prompt, Owner 승인 문구, 실행시간과 만료, 고정 runtime 입력을 포함한다.

@@ -339,14 +339,19 @@ def lifecycle(args, store):
         raise ValueError("--backup은 복구 미리보기에서 사용합니다.")
     if args.to is not None and args.command != "rollback":
         raise ValueError("--to는 프로젝트 rollback에서 사용합니다.")
+    runtime_input = getattr(args, "runtime_input", None)
+    if runtime_input is not None and args.command != "doctor":
+        raise ValueError("--runtime-input은 doctor에서 사용합니다.")
     profile = selected_profile(args)
+    diagnostic_supported = CONFIG["profiles"][profile].get("runtime_input_diagnostic") is True
     source = store / "releases" / CONFIG["profiles"][profile]["release"]["id"]
     validate_payload(source, profile)
     command = {"install": "init", "remove": "detach"}.get(args.command, args.command)
     argv = [str(runtime_path(store) / "python/bin/python3.14"), "-I", "-B", str(source / "colvia"),
             "--source-checkout", command, "--target", str(args.target.absolute())]
     if command in ("status", "doctor"):
-        pass
+        if runtime_input is not None and diagnostic_supported:
+            argv += ["--runtime-input", str(runtime_input.absolute())]
     elif command in ("init", "update", "repair"):
         argv += ["--source", str(source)]
     if command not in ("status", "doctor", "repair"):
@@ -376,6 +381,18 @@ def lifecycle(args, store):
         if not isinstance(value, dict): raise ValueError("object required")
     except (ValueError, UnicodeError):
         raise ValueError("명령 응답을 확인하지 못했습니다. 요청과 현재 파일을 보존하고 재시도 전에 status로 상태를 확인해 주세요.") from None
+    diagnostic = value.get("official_runtime_input")
+    diagnostic_present = (isinstance(diagnostic, dict) and
+                          diagnostic.get("local_check") in ("passed", "failed", "unavailable") and
+                          all(isinstance(diagnostic.get(k), str) for k in ("message", "next_action")))
+    if runtime_input is not None and (not diagnostic_supported or not diagnostic_present):
+        value["official_runtime_input"] = {
+            "profile": "unavailable", "local_check": "unavailable",
+            "reason": "diagnostic-not-supported" if not diagnostic_supported else "diagnostic-response-missing",
+            "message": "이 관리 배포본에는 공식 실행 입력 진단이 없습니다." if not diagnostic_supported else "실행 입력 진단 결과를 받지 못했습니다.",
+            "next_action": "현재 배포본의 지원 기능과 보존된 실행 근거를 확인하세요.",
+            "account_connection": "unobserved", "model_connection": "unobserved",
+            "environment_scope": "current-command-process"}
     if result.returncode == 0 and value.get("classification") == "preview" and "request" in value:
         path = args.save.absolute() if args.save is not None else store / "requests" / ("manage-" + uuid.uuid4().hex + ".json")
         if path.is_relative_to(args.target.absolute()) or any(p.name == ".hrn" for p in (path, *path.parents)):
@@ -395,8 +412,15 @@ def lifecycle(args, store):
         labels = {"preview": "적용 전 확인", "pass": "정상", "detached": "프로젝트 연결 해제됨",
                   "uninitialized": "프로젝트 연결 전", "partial": "중단된 적용 확인 필요",
                   "unsupported": "현재 실행 환경 확인 필요", "fail": "진행을 멈췄습니다"}
-        print("현재 상태: " + labels.get(state, str(state)))
+        print(("프로젝트 상태: " if runtime_input is not None else "현재 상태: ") + labels.get(state, str(state)))
         print("프로젝트: " + str(args.target.absolute()))
+        diagnostic = value.get("official_runtime_input")
+        if isinstance(diagnostic, dict):
+            print("실행 입력: " + diagnostic["message"])
+            print("다음 확인: " + diagnostic["next_action"])
+            if diagnostic["local_check"] != "unavailable":
+                print("진단 환경: 관리 명령에 전달된 환경")
+            print("계정·모델 연결: 미확인")
         if result.returncode:
             for field in ("message", "next_action"):
                 if value.get(field): print(str(value[field]))
@@ -438,6 +462,7 @@ def main():
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--recover", action="store_true")
     parser.add_argument("--input", type=Path)
+    parser.add_argument("--runtime-input", type=Path, help="doctor 전용 로컬 입력 확인; 연결 확인은 별도")
     parser.add_argument("--confirm")
     parser.add_argument("--save", type=Path)
     parser.add_argument("--backup", type=Path)
@@ -445,6 +470,8 @@ def main():
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--details", action="store_true")
     args = parser.parse_args()
+    if args.runtime_input is not None and args.command != "doctor":
+        parser.error("--runtime-input은 doctor에서 사용합니다.")
     store = store_root()
     verify_runtime(runtime_path(store), store)
     if args.command == "remove-runtime":
