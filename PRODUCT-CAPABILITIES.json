@@ -37,7 +37,7 @@
     },
     {
       "boundary": "One active ordinary local Work, one explicitly confirmed step per handoff and one outstanding handoff per project. When a pre-step question is requested, answer it in the same Work. Questions and results stay in the local project inbox. If requested, the worker attempts a generic device alert after recording a question or step outcome. The optional official macOS execute action requires separate approval. Result acceptance is a separate user decision.",
-      "evidence": "Isolated macOS projects and a standard account on a designated Windows 11 ARM64 VM exercised Work summaries, submission of already prepared results, question/answer, interruption handling and local notification API calls. Separate probes observed the worker continue after its submitting process exited. Actual banner display, user reads, user installations and adopter use remain unverified. The optional, separately approved macOS official-execution-2 document action has no end-to-end live-model observation through this handoff.",
+      "evidence": "Isolated macOS projects and a standard account on a designated Windows 11 ARM64 VM exercised Work summaries, submission of already prepared results, question/answer, interruption handling and local notification API calls. Separate probes observed the worker continue after its submitting process exited. Actual banner display, user reads and handoff use in an adopter project remain unverified. A private PR #46 installation was observed on one arm64 Mac. The optional, separately approved macOS official-execution-2 document action has no end-to-end live-model observation through this handoff.",
       "evidence_as_of": "2026-11-03",
       "examples": {
         "handoff": "‘설치 안내 정리’ 작업에서 준비한 변경을 검토용으로 제출하고, 결과가 나오면 이 기기에서 알려줘.",
@@ -78,7 +78,7 @@
     },
     {
       "boundary": "explicit prepared windows-2 source; 30 paths including continuation; lifecycle schema6; fresh and same-window only; admitted native Windows/CPython architecture pair and local NTFS; unchanged Windows content and read-only policy; no predecessor or cross-OS migration",
-      "evidence": "Integration portable checks are scoped development evidence. Prior Windows-1 native results do not qualify this Windows-2 candidate; native Win32, lifecycle and final matrix evidence remain required.",
+      "evidence": "A designated Windows 11 ARM64 standard account exercised private setup, first Work, View, fresh-process resume, update, rollback, repair and project detach on an earlier candidate. The final manager received eight targeted request-path checks. Native Windows 11 x64 and public distribution remain unverified.",
       "fallback": "preserve original requests and exact matching recovery source; independent compatible read-only inspection",
       "id": "windows-native-runtime",
       "status": "development-in-progress"
@@ -86,8 +86,8 @@
     {
       "id": "official-document-execution",
       "status": "development-in-progress",
-      "boundary": "explicit macOS official-execution-1 installation; fixed official CLI/helper and ChatGPT path; one bounded document range, five sequential workers; trusted-local approval declarations; no automatic Core acceptance or retry; durable cancellation and unresolved-effect barriers",
-      "evidence": "Implementation candidate; source-only synthetic runtime evidence does not qualify this installed payload. Exact installed lifecycle, normal/optimized regression and live result remain separately identified requirements.",
+      "boundary": "explicit macOS official-execution-2 installation for current source; historical official-execution-1 retains its own contract; fixed official CLI/helper, one bounded document range, trusted-local approval, durable cancellation and unresolved-effect barriers; separate Work acceptance",
+      "evidence": "The same pinned PR #42 official-execution-2 package completed a bounded edit and verification in one synthetic project; in another, an external cancellation after read interrupted the turn, preserved the documents and closed the processes. PR #46 private install and default-project status/View were observed on one arm64 Mac; official execution of its own package remains unverified.",
       "fallback": "preserve execution capsules and original outputs; inspect explicit status/resolve; use existing manual Work acceptance separately"
     }
   ],
