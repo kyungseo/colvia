@@ -6,6 +6,8 @@ Start with [the work cycle and five requests](CONCEPTS.md#the-work-cycle) to und
 
 Verified active status exposes a derived, read-only `documentation_root`. Follow that release's index rather than guessing a newer document path. Project-authored DR, brief and Work documents remain project-owned Markdown referenced by path and digest; the product does not impose their repository layout.
 
+To hand off a prepared result and ask for it later, see [Hand off one Work item · 작업 맡기기와 결과 확인](GETTING-STARTED.md#hand-off-one-work-item).
+
 ## Installed Guidance And Execution Hosts
 
 | What you are reading or using | What it provides |

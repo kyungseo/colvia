@@ -111,6 +111,22 @@ Current source updates only the exact admitted delegation-1 predecessor or a con
 
 All new lifecycle plans/receipts use paired schema5. Historical action/version pairs retain their meaning; old pending operations need their matching retained source. The older checkout-1 to entry-1 admission and schema2/schema3 recovery remain documented in [Workspace Contract](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication) and [Transition To Entry-1](GETTING-STARTED.md#transition-to-entry-1). Retained source is not a downgrade path after a one-way receipt.
 
+## Single Work handoff and inbox
+
+In an installed project, the agent maps “‘설치 안내 정리’ 작업에서 준비한 변경을 검토용으로 제출하고, 결과가 나오면 이 기기에서 알려줘.” to a preview and a confirmed start. “‘설치 안내 정리’에 질문이나 결과가 있어?” opens that Work’s inbox. A project can have one outstanding handoff for an active ordinary local Work. Choose a future deadline no more than 24 hours from the request.
+
+The commands below are arguments to the installed project launcher. On macOS run `./colvia` in the project directory. For Windows use the [Windows launcher invocation](#windows-2-command-and-failure-boundary).
+
+| Action | Launcher arguments |
+| --- | --- |
+| Preview the action, scope, deadline and destination | `handoff prepare --input REQUEST` |
+| Start after explicit confirmation | `handoff start TOKEN --input PLAN`. Use the preview’s `confirm_token` and its exact `plan` object. Submitting the same plan and token again returns its receipt. |
+| Read questions and results | `view inbox` for the project or `view inbox WORK_ID` for one Work. Use `handoff show TOKEN` for a specific receipt. |
+| Answer the current question or request a stop | `handoff answer TOKEN --question QUESTION_ID` with the receipt’s current `question_id`, or `handoff stop TOKEN`. Act on the user’s choice: continue maps to `answer` and stop to `stop`. After a stop request, check the recorded effect. |
+| Reconcile an interruption | `handoff inspect TOKEN`. When the deadline has passed, the worker is inactive and the effect is still uncertain, the user may explicitly choose `handoff close-unknown TOKEN --confirm CLOSE_TOKEN` with the latest `close_token`. The spent step and receipt remain in the inbox. |
+
+`summary` and `submit` (an already prepared result) were exercised in isolated projects on macOS and under a standard account on a designated Windows 11 ARM64 VM, including question/answer and interruption handling. With notifications enabled, the worker attempts a generic device alert after recording a question or step outcome. Check the inbox directly after expiry or an interrupted worker. OS notification calls succeeded in tests. Actual banner display and user reads remain unobserved. The optional `execute` action requires its own approved document execution on macOS `official-execution-2`; the live model path through this handoff remains unverified. User installations and adopter use remain unverified.
+
 ## Human Review
 
 `./colvia view` shows the recorded Work overview. Use `./colvia view --details` for verified manual/adapter paths, the Intent list and raw record fields. Use `view intent ID [--revision ID]`, `view work ID [--revision ID]`, or `view confirmation --input FILE|-`. Independent source: `colvia --source-checkout view --target PATH ...`. These commands write GFM to stdout without publishing files, locks, on-disk caches or decisions. Imported view errors are GFM with a nonzero exit; bootstrap failures remain JSON/65. Status/doctor and machine commands remain JSON. The additive v2 status metadata below preserves every existing field and its meaning; consumers must not interpret extra observation fields as execution authority.

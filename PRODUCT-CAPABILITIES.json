@@ -36,6 +36,18 @@
       "status": "development-bounded-local"
     },
     {
+      "boundary": "One active ordinary local Work, one explicitly confirmed step per handoff and one outstanding handoff per project. When a pre-step question is requested, answer it in the same Work. Questions and results stay in the local project inbox. If requested, the worker attempts a generic device alert after recording a question or step outcome. The optional official macOS execute action requires separate approval. Result acceptance is a separate user decision.",
+      "evidence": "Isolated macOS projects and a standard account on a designated Windows 11 ARM64 VM exercised Work summaries, submission of already prepared results, question/answer, interruption handling and local notification API calls. Separate probes observed the worker continue after its submitting process exited. Actual banner display, user reads, user installations and adopter use remain unverified. The optional, separately approved macOS official-execution-2 document action has no end-to-end live-model observation through this handoff.",
+      "evidence_as_of": "2026-11-03",
+      "examples": {
+        "handoff": "‘설치 안내 정리’ 작업에서 준비한 변경을 검토용으로 제출하고, 결과가 나오면 이 기기에서 알려줘.",
+        "check_inbox": "‘설치 안내 정리’에 질문이나 결과가 있어?"
+      },
+      "fallback": "Read the same Work's questions and results with view inbox WORK_ID. Inspect the receipt after interruption. If the deadline passes, the worker is inactive and the effect remains uncertain, the user may explicitly close it with its history preserved.",
+      "id": "single-work-local-delivery",
+      "status": "development-bounded-local"
+    },
+    {
       "boundary": "direct same-home children; human parent acceptance; no nested umbrella, scheduler, automatic completion or cross-home support",
       "evidence": "source contains schema2 writer/local recovery and installed same-window lifecycle fixtures; fixture presence does not establish full qualification or actual adoption",
       "fallback": "retain exact history and review the parent plan and child evidence without automatic acceptance",
@@ -79,7 +91,7 @@
       "fallback": "preserve execution capsules and original outputs; inspect explicit status/resolve; use existing manual Work acceptance separately"
     }
   ],
-  "evidence_as_of": "2026-10-19",
+  "evidence_as_of": "2026-11-03",
   "internal_lineage": "Harness v2",
   "public_version": null,
   "record_type": "product-capability-declaration",
