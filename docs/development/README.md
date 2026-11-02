@@ -1,5 +1,7 @@
 # Development Index
 
+- [첫 화면의 판단 안내와 단일 Work 후속 순서](PATCH-20261102-005-view-decision-summary.md) — 완료(Owner 수락, 2026-11-02).
+
 - [공식 실행 경고 처리와 읽기 후 취소의 제품 소스 반영](PATCH-20261102-004-official-runtime-source-port.md) — 완료(Owner 수락, 2026-11-02). 최종 패키지의 공식 재실행은 미검증.
 
 - 공식 실행기 조합 확인 — 완료(Owner 수락, 2026-11-02). [두 격리 후보의 수락 범위](CHORE-20261102-003-official-runtime-confirmation.md#owner-acceptance-and-work-completion).
@@ -243,6 +245,8 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [단일 Work 맡기기와 결과 통지](PATCH-20261102-005-view-decision-summary.md#단일-work-사용자-흐름과-재검토-조건) — Windows 기본 지원 확인 뒤 구현을 재검토한다. 첫 공개 약속이 무인 수행까지 확대되면 macOS 단일 Work를 먼저 검증한다.
 
 - [공식 실행 보정의 제품 소스 반영](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — 2026-11-02 제품 소스 반영과 오프라인 검증 수락·완료. [수락 범위와 커밋 순서](PATCH-20261102-004-official-runtime-source-port.md#owner-판단과-보존).
 
