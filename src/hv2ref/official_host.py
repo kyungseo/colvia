@@ -222,7 +222,14 @@ class Host:
                 state.need(self.pending is None, 'closure_unconfirmed')
                 return {'ok': False, 'reason': self.stop_reason, 'worker_admitted': True, 'effect_status': 'none'}
             if self.completed == self.spec['request']['worker_limit'] and self.completed < 5:
-                self.revoke('worker_budget_consumed')
+                reason = 'worker_budget_consumed'
+                # The successful, closed read has already consumed the sole worker.
+                if role == 'read' and self.completed == 1 and self.rpc is not None:
+                    reason = self.rpc.read_limit_reason()
+                self.revoke(reason)
+                if reason == 'cancelled':
+                    # The completed read is recorded, but its contents are still held here.
+                    return {'ok': False, 'reason': reason, 'worker_admitted': True, 'effect_status': 'none'}
             return {'ok': True, 'result': result}
         except BaseException as error:
             reason = reason_code(error, 'recovery_unavailable' if phase == 'recovery' else 'worker_failed' if reserved else 'internal_error')

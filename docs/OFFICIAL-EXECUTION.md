@@ -66,6 +66,12 @@ host control root의 `store.json`은 소유자만 읽고 쓸 수 있는 `0600` �
 
 예를 들어 `Editable`의 byte `[9, 17)`만 바꾸고 `Reference`를 근거로 사용하면 `read_ids`는 `["Editable", "Reference"]`, output은 `"Editable"`이다. preview에서 결속된 실제 경로·구간·근거와 digest를 확인한 뒤 spec을 승인한다. `--grant`는 status/cancel/resolve, `--confirm`은 execute 또는 resolve에만 사용한다.
 
+### 초기화 중 경고 처리
+
+고정된 macOS CLI 0.165.0과 대응 helper 조합에서는 초기화 응답 대기 중 알려진 PATH 보조 명령 생성 경고를 한 번 허용한다. 첫 stderr 읽기가 줄바꿈까지 104바이트 전부와 일치하거나, 정확한 앞 101바이트에 이어 남은 3바이트가 첫 읽기부터 50ms 안에 완성돼야 한다. 분할 대기 중에는 stderr만 읽는다. 취소, 기존 실행 마감, grant 만료가 먼저 오면 대기를 끝낸다. 첫 읽기가 101바이트보다 짧거나 초기화 응답을 처리한 뒤 경고가 도착하면 거부한다. 그 밖의 내용, 불완전한 줄, 여분 또는 두 번째 stderr도 거부한다. 이 처리는 파일·네트워크 권한을 추가하지 않는다.
+
+허용을 사용한 `run execute` 결과에는 `initialize_path_warning_allowed=true`와 수신 방식 `initialize_path_warning_mode`가 표시된다. 값은 한 번에 읽은 `single_read` 또는 101바이트 뒤 완성한 `joined_101`이다. 초기화 실패에서 실행 결과를 반환할 수 있으면 `runtime_first_failure`에 첫 관측의 단계·출처·고정 코드와 해당되는 바이트 수만 표시한다. stderr 진단의 바이트 수는 첫 읽기의 크기이며 journal의 거부 바이트 합계와 다를 수 있다. 원문·발췌·원문 해시는 기록하지 않는다. 이 필드들은 실행 결과에만 있고 이전 기록의 조회 형식은 그대로다.
+
 ## 취소와 상태
 
 `./colvia run status --grant DIGEST`는 만료 뒤에도 기록을 읽는다. `./colvia run cancel --grant DIGEST --reason cancelled`는 다른 CLI에서 immutable 취소 marker를 게시한다. v2의 reason은 고정 코드이며 자유문구를 저장하지 않는다. 기본값은 `cancelled`다. 요청 접수는 효과 중단 확인과 다르며, 이미 허용된 worker는 완료될 수 있다. Host는 이후 worker를 거절하고 공식 turn interrupt와 관측된 프로세스 종료를 확인한다. 이미 반영된 문서를 자동으로 되돌리지 않는다. turn 시작 전 취소는 runtime 종료 확인 후 `revoked-before-launch`로 남는다. `turn/start`를 보냈지만 turn ID를 받지 못했어도 모든 알려진 효과와 실제 프로세스 종료를 확인하면 `interrupted`로 닫을 수 있다. 종료나 효과를 확인하지 못하면 `unknown`으로 보존한다.
@@ -73,6 +79,10 @@ host control root의 `store.json`은 소유자만 읽고 쓸 수 있는 `0600` �
 `.hrn/executions/DIGEST/`의 v2 기록은 `grant.json`, `journal.jsonl`, 선택적인 `cancel.json`·`receipt.json`만 허용한다. 승인 scope·문서 identity·고정 상태 코드·로컬 순번·효과 및 종료 근거를 저장한다. prompt, Owner 선언 원문, claim·quote·링크·anchor, 거절한 내용, 외부 callback ID, stderr·RPC·예외 원문은 capsule에 저장하지 않는다. 문서 경로와 원문 digest 등 승인 metadata는 남으며 같은 계정의 파일 변조를 방어하는 경계는 아니다. hash chain은 기록의 일관성을 검사하며 서명이나 인간 신원 인증이 아니다.
 
 Host는 공통 writer lock을 실행과 자식 종료까지 보유한다. 취소 marker 게시만 lock 없이 허용되는 별도 쓰기다. 미종결·unknown 기록은 새 실행, Work·intent·candidate·continuation의 일반 쓰기와 lifecycle 변경을 막는다. 관측되지 않은 detached daemon의 부재까지 보장하지 않는다.
+
+읽기 worker 한도가 1회이면 첫 읽기가 성공하고 해당 worker 종료와 callback 완료가 기록된 뒤 최대 5초 동안 취소를 받는다. 이때 다음 worker를 시작하거나 stdout 콜백을 처리하지 않으며, 전체 실행 마감과 grant 만료가 우선한다. 해당 grant의 유효한 표식을 기한 안에 확인하면 `cancelled`로, 없으면 `worker_budget_consumed`로 권한을 철회한다. Host가 이 구간에서 취소를 확인하면 읽기 완료 기록은 남기고, 런타임에는 문서 내용 없이 취소 사유만 응답한 뒤 턴 중단을 요청한다. 5초에 도달하면 접수 구간이 끝난다. 그때까지 취소를 확인하지 못했다면 완료한 읽기 결과를 전달하고 worker 한도 소진으로 중단을 요청한다. 대기 중 stderr에도 같은 거부 규칙이 적용된다.
+
+취소 명령의 `cancel_requested=true`는 요청 접수다. `run execute`의 `cancel_seen_after_read=true`는 Host가 그 표식을 읽기 후 접수 구간에서 확인했다는 뜻이다. `runtime_interrupt_confirmed=true`는 런타임에서 같은 턴의 `interrupted` 응답을 확인했을 때만 표시된다. 이 값들을 철회 사유, 최종 상태, 문서 효과 및 프로세스 종료와 함께 확인한다. 필드가 없는 과거 실행에는 이 관측을 소급하지 않는다.
 
 ## 효과와 종료 상태
 

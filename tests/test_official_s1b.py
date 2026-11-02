@@ -7,6 +7,7 @@ import time
 import unittest
 from unittest import mock
 
+from fixtures.official_rpc_fixture import quiet_rpc
 from hv2ref import official_adapter as adapter, official_controller as controller
 from hv2ref import official_host as hostmod, official_state as state
 from hv2ref.official_documents import HostRefusal
@@ -85,7 +86,7 @@ class PipeGateTests(unittest.TestCase):
         self.read_fd, write_fd = os.pipe(); os.set_blocking(self.read_fd, False)
         self.addCleanup(os.close, self.read_fd)
         self.stream = os.fdopen(write_fd, 'wb', buffering=0); self.addCleanup(self.stream.close)
-        self.rpc = adapter.Rpc.__new__(adapter.Rpc)
+        self.rpc = quiet_rpc()
         self.rpc.p = SimpleNamespace(stdin=self.stream); self.rpc.deadline = time.monotonic() + 5
         self.rpc.outgoing_bytes = self.rpc.outgoing_frames = 0; self.rpc.outgoing_partial = False
         self.rpc.log = mock.Mock(); self.rpc.host = SimpleNamespace(completed=0)

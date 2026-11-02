@@ -1,7 +1,9 @@
 """Offline stdio fixture; drives the real adapter, never contacts a provider."""
 from pathlib import Path
 import json
+import os
 import sys
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 from hv2ref.official_admission import DISABLED_FEATURES, MODEL, PROFILE
@@ -40,6 +42,11 @@ for line in sys.stdin:
         if scenario.get('mode') == 'rpc-error' and method == 'model/list':
             send({'id': value['id'], 'error': {'code': -1, 'message': 'RPC_ERROR_MARKER'}}); continue
         if method == 'initialize':
+            if scenario.get('mode') == 'bad-startup':
+                os.write(2, b'UNEXPECTED_STARTUP_DIAGNOSTIC')
+            if scenario.get('startup_warning'):
+                os.write(2, b'WARNING: proceeding, even though we could not create PATH aliases: '
+                            b'Operation not permitted (os error 1)\n')
             result = {'platformFamily': 'fixture', 'platformOs': 'offline'}
         elif method == 'config/read':
             result = {'config': {'features': {**dict.fromkeys(DISABLED_FEATURES, False), 'code_mode_host': True, 'skip_host_skill_discovery': True},
@@ -53,9 +60,18 @@ for line in sys.stdin:
         send({'id': value['id'], 'result': result})
         if method == 'turn/start':
             if scenario.get('mode') == 'stderr': print('RUNTIME_STDERR_MARKER', file=sys.stderr, flush=True)
-            else: callback()
+            else:
+                callback()
+                if scenario.get('mode') == 'stderr-in-read-window':
+                    ready = Path(sys.argv[1]).with_name('read-finished')
+                    until = time.monotonic() + 10
+                    while not ready.exists() and time.monotonic() < until:
+                        time.sleep(.005)
+                    if ready.exists():
+                        os.write(2, b'READ_WINDOW_DIAGNOSTIC')
         elif method == 'turn/interrupt':
-            send({'method': 'turn/completed', 'params': {'turn': {'id': turn, 'status': 'interrupted'}}})
+            confirmed_id = 'different-turn' if scenario.get('mode') == 'wrong-interrupt' else turn
+            send({'method': 'turn/completed', 'params': {'turn': {'id': confirmed_id, 'status': 'interrupted'}}})
     elif 'result' in value:
         reply = value['result']
         if not reply['success']: continue
@@ -63,3 +79,6 @@ for line in sys.stdin:
         if step == 1: expected = result['files'][0]['file_sha256']
         if step < 5: callback()
         else: send({'method': 'turn/completed', 'params': {'turn': {'id': turn, 'status': 'completed'}}})
+
+if scenario.get('mode') == 'stderr-on-close':
+    os.write(2, b'LATE_STDERR_MARKER')
