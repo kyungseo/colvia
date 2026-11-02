@@ -9,7 +9,7 @@ import subprocess
 from .errors import ContractError
 from .jsonio import canonical_json_bytes, sync_directory
 
-WINDOW = 'official-execution-1'
+WINDOW = 'official-execution-2'
 MAX_CAPSULE_FILES = 64
 MAX_CAPSULE_BYTES = 64 * 1024 * 1024
 HISTORY_FILES = 4096
@@ -89,6 +89,18 @@ def publish_cancel(target, path, value):
         if os.path.lexists(staged):
             staged.unlink(); sync_directory(locks)
 
+def publish_receipt(target, path, value):
+    """Keep incomplete receipt bytes outside the readable capsule."""
+    import uuid
+    locks = directory(Path(target) / '.hrn/locks')
+    staged = locks / ('receipt-' + uuid.uuid4().hex + '.json')
+    try:
+        publish(staged, value)
+        rename_exclusive(staged, path)
+    finally:
+        if os.path.lexists(staged):
+            staged.unlink(); sync_directory(locks)
+
 def require_capacity(target):
     values = capsules(target)
     need(len(values) < 256, 'execution-history-capacity')
@@ -103,9 +115,16 @@ def capsule_path(target, grant):
 
 def process_birth(pid):
     need(type(pid) is int and pid > 1, 'process-id')
-    result = subprocess.run(['/bin/ps', '-p', str(pid), '-o', 'lstart='], capture_output=True, text=True, timeout=3)
-    need(result.returncode in (0, 1), 'process-observation-unavailable')
-    return result.stdout.strip()
+    # Stable UTC formatting independent of caller locale and host time zone.
+    result = subprocess.run(['/bin/ps', '-p', str(pid), '-o', 'lstart='], env={'LC_ALL': 'C', 'TZ': 'UTC0'},
+                            capture_output=True, text=True, timeout=3)
+    observed = result.stdout.strip()
+    need(not result.stderr and ((result.returncode == 0 and bool(observed)) or
+                                (result.returncode == 1 and not observed)), 'process-observation-unavailable')
+    if observed:
+        from .official_schema import birth
+        birth(observed)
+    return observed
 
 def group_absent(pid):
     try:
@@ -121,6 +140,10 @@ def read_capsule(target, grant):
     from .official_documents import EffectJournal, observe_journal, journal_identity, require
     root = directory(capsule_path(target, grant))
     value = load(root / 'grant.json')
+    need(type(value) is dict and type(value.get('schema_version')) is int, 'grant-record-version')
+    if value['schema_version'] == 2:
+        from .official_v2 import read_capsule as read_v2
+        return read_v2(target, grant, root, value)
     need(set(value) == {'record_type', 'schema_version', 'grant', 'spec'} and
          value['record_type'] == 'official-execution-grant' and value['schema_version'] == 1 and
          value['grant'] == grant == digest(canonical(value['spec'])), 'grant-record')
@@ -232,12 +255,30 @@ def execution_truth(target, *, require_closed=True):
     return result
 
 def public_status(value):
-    return {key: value[key] for key in ('grant', 'head', 'status', 'completed', 'pending', 'revoked', 'sealed', 'cancel_requested')}
+    result = {key: value[key] for key in ('grant', 'head', 'status', 'completed', 'pending', 'revoked', 'sealed', 'cancel_requested')}
+    if value.get('schema_version') == 2:
+        history = value['history']
+        started = history.runtime_start is not None or any(w['start'] is not None for w in history.workers.values())
+        reserved = history.runtime_intent is not None or bool(history.workers)
+        closure = ('unconfirmed' if not history.processes_closed() else
+                   'closed' if started else 'not_started' if reserved else 'not_requested')
+        # read_capsule verified this grant against the queried target. Work ID
+        # identifies the historical target only, never the current revision.
+        result.update(schema_version=2, document_write_effect=value['document_write_effect'],
+                      work_id=history.scope['work_id'], process_observation=closure,
+                      effect_refs=history.effect_refs(), closure_refs=history.closure_refs(),
+                      recovery_availability='not_checked', transient_presence='not_checked',
+                      cleanup_marker_presence='not_checked')
+    return result
 
 def cancel(target, grant, reason):
     value = read_capsule(target, grant)
     need(value['status'] not in TERMINAL, 'execution-already-terminal')
-    need(type(reason) is str and 0 < len(reason) <= 512, 'cancel-reason')
+    if value.get('schema_version') == 2:
+        from .official_schema import choice, REASONS
+        choice(reason, REASONS)
+    else:
+        need(type(reason) is str and 0 < len(reason) <= 512, 'cancel-reason')
     marker = {'grant': grant, 'reason': reason}
     path = value['root'] / 'cancel.json'
     if os.path.lexists(path):
@@ -247,9 +288,13 @@ def cancel(target, grant, reason):
     return {'grant': grant, 'cancel_requested': True, 'effects_stopped': False,
             'meaning': 'request recorded; already admitted effects may finish; inspect terminal status'}
 
-def resolution_preview(target, grant):
+def resolution_preview(target, grant, *, host_control_root=None):
     from .official_documents import file_record
     value = read_capsule(target, grant)
+    if value.get('schema_version') == 2:
+        from .official_v2 import resolution_preview as preview_v2
+        return preview_v2(value, host_control_root=host_control_root)
+    need(host_control_root is None, 'v1-external-recovery-not-supported')
     need(value['status'] not in TERMINAL, 'resolution-requires-unresolved-state')
     process = value['runtime_started']
     if value['runtime_reserved'] and not value['spawn_failed']:
@@ -257,7 +302,9 @@ def resolution_preview(target, grant):
         need((process['birth'] is not None or value['processes_closed'] is not None) and
              process_birth(process['pid']) != process['birth'] and group_absent(process['pid']), 'runtime-still-present-or-unknown')
         for child in value['children']:
-            need(process_birth(child['pid']) != child['birth'], 'observed-child-present')
+            # Legacy birth strings can be localized. A present PID is ambiguous
+            # even after reuse; representation differences cannot prove absence.
+            need(not process_birth(child['pid']), 'observed-child-present')
     # A Host crash can leave a document worker alive independently of App Server.
     for slot in sorted((value['root'] / 'workers').glob('worker-*')):
         if (slot / 'worker-admission.json').exists():
@@ -276,10 +323,10 @@ def resolution_preview(target, grant):
               'documents': observation, 'process_absence': True, 'action': 'record-unknown-resolution'}
     return {'observation': result, 'confirm_token': digest(canonical(result))}
 
-def resolve(target, grant, confirm):
+def resolve(target, grant, confirm, *, host_control_root=None):
     from .workspace import writer_guard
     with writer_guard(Path(target), purpose='official-resolution'):
-        observed = resolution_preview(target, grant)
+        observed = resolution_preview(target, grant, host_control_root=host_control_root)
         need(confirm == observed['confirm_token'], 'stale-resolution-confirmation')
         value = read_capsule(target, grant)
         value['journal'].append('operator-resolved-unknown', observed['observation'])

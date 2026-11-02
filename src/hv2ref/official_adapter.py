@@ -8,7 +8,9 @@ import subprocess
 import time
 from . import official_state as state
 from .official_documents import reject_duplicate_keys
-from .official_admission import MODEL, PROFILE, DIRECT_FALLBACK, diagnostic, launch_spec, preflight
+from .official_admission import MODEL, PROFILE, DIRECT_FALLBACK, launch_spec, preflight
+from .official_host import reason_code
+from .official_controller import checked_payload
 
 LIMIT = 1048576
 
@@ -28,49 +30,97 @@ class Rpc:
     def __init__(self, spec, host):
         self.spec, self.host = spec, host
         self.seq = self.trace_bytes = self.err_bytes = 0
+        self.outgoing_bytes = self.outgoing_frames = 0
+        self.outgoing_partial = False
         self.buf = b''; self.messages = []; self.held = []; self.known_children = {}
         self.consumed = set(); self.interrupted = False; self.direct_fallback_seen = False
         self.started = time.monotonic(); self.deadline = host.deadline
         self.last_scan = 0; self.p = None; self.closed = False
         self.reserved = self.spawn_failed = False
         self.sel = selectors.DefaultSelector()
-        self.trace = (host.run / 'protocol.jsonl').open('xb'); os.fchmod(self.trace.fileno(), 0o600)
         host.rpc = self  # Visible to finally even if spawn/identity publication fails.
         host.authority()
         self.reserved = True
-        host.journal.append('runtime-reserved', {'app_server':1,'helper':1,'host_pid':os.getpid(),
+        host.journal.append('runtime-reserved', {'ordinal':1,'host_pid':os.getpid(),
                                                'host_birth':state.process_birth(os.getpid())})
         try:
             self.p = subprocess.Popen(spec['argv'], cwd=spec['cwd'], env=spec['env'], stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True, close_fds=True)
-        except OSError as error:
-            host.journal.append('runtime-spawn-failed', {'error_type':type(error).__name__})
+        except (OSError, subprocess.SubprocessError):
+            host.journal.append('runtime-spawn-failed', {'ordinal':1,'reason':'spawn_failed','reaped':True})
             self.spawn_failed = True
             raise
         try:
             birth = state.process_birth(self.p.pid)
         except BaseException:
-            host.journal.append('runtime-started', {'pid':self.p.pid,'birth':None})
+            host.journal.append('runtime-started', {'ordinal':1,'pid':self.p.pid,'birth':None})
             raise
-        host.journal.append('runtime-started', {'pid':self.p.pid,'birth':birth or None})
+        self.runtime_ref = host.journal.append('runtime-started', {'ordinal':1,'pid':self.p.pid,'birth':birth or None})['seq']
         state.need(bool(birth), 'runtime-birth-unavailable')
-        state.publish(host.run / 'process.json', {'pid':self.p.pid,'birth':birth,'host_pid':os.getpid()})
         for stream, label in ((self.p.stdout,'out'), (self.p.stderr,'err')):
             os.set_blocking(stream.fileno(), False); self.sel.register(stream, selectors.EVENT_READ, label)
 
     def log(self, kind, value):
-        raw = (json.dumps({'at':time.monotonic_ns(),'kind':kind,'data':value}, ensure_ascii=False) + '\n').encode()
-        self.trace_bytes += len(raw); state.need(self.trace_bytes <= LIMIT, 'protocol-storage-limit')
-        self.trace.write(raw); self.trace.flush(); os.fsync(self.trace.fileno())
+        # External method names/IDs/keys and exception content stay in memory.
+        size = len(json.dumps(value, ensure_ascii=False).encode())
+        self.trace_bytes += size; state.need(self.trace_bytes <= LIMIT, 'protocol-storage-limit')
+        if kind in ('rpc-error', 'runtime-diagnostic'):
+            self.host.diagnostic('runtime', 'worker', 'protocol_refused', size)
 
     def err(self, raw):
-        self.err_bytes += len(raw); state.need(self.err_bytes <= LIMIT, 'stderr-limit')
-        self.log('stderr', diagnostic(raw.decode(errors='replace')))
+        self.err_bytes += len(raw)
+        self.host.diagnostic('runtime', 'worker', 'protocol_refused', len(raw))
+        state.need(self.err_bytes <= LIMIT, 'stderr-limit')
+        state.need(not raw, 'protocol_refused')
 
     def send(self, value):
-        raw = (json.dumps(value, ensure_ascii=False) + '\n').encode()
-        state.need(len(raw) <= LIMIT, 'outgoing-frame-limit')
-        self.p.stdin.write(raw); self.p.stdin.flush()
+        # Serialize once, then inspect that same immutable frame before its first
+        # byte can enter the CLI. Nested tool-result JSON is checked decoded too.
+        # A failed partial frame cannot be completed by a later interrupt/reply.
+        state.need(not self.outgoing_partial, 'protocol_refused')
+        raw = checked_payload(value, limit=LIMIT - 1, deadline=self.deadline, protocol=True) + b'\n'
+        frame = json.loads(raw, object_pairs_hook=reject_duplicate_keys)
+        state.need(type(frame) is dict, 'content_rejected')
+        if 'method' in frame:
+            method = frame['method']
+            state.need(type(method) is str, 'content_rejected')
+            if method == 'initialized':
+                state.need(set(frame) == {'method'}, 'content_rejected')
+            else:
+                state.need(set(frame) == {'id', 'method', 'params'} and type(frame['id']) is int and
+                           type(frame['params']) is dict and method in
+                           ('initialize', 'config/read', 'account/read', 'model/list', 'thread/start', 'turn/start', 'turn/interrupt'),
+                           'content_rejected')
+                if method == 'turn/start':
+                    checked_payload(frame['params']['input'], deadline=self.deadline)
+        else:
+            state.need(set(frame) == {'id', 'result'} and type(frame['id']) in (int, str), 'content_rejected')
+            checked_payload(frame['id'], deadline=self.deadline)
+            result = frame['result']
+            state.need(type(result) is dict and set(result) == {'contentItems', 'success'} and
+                       type(result['success']) is bool, 'content_rejected')
+            items = result['contentItems']
+            state.need(type(items) is list and len(items) == 1 and type(items[0]) is dict and
+                       set(items[0]) == {'type', 'text'} and items[0]['type'] == 'inputText' and
+                       type(items[0]['text']) is str, 'content_rejected')
+            checked_payload(json.loads(items[0]['text'], object_pairs_hook=reject_duplicate_keys), deadline=self.deadline)
+        state.need(time.monotonic() < self.deadline, 'deadline')
+        # A runtime that stops reading must not trap the Host before closure.
+        fd = self.p.stdin.fileno(); os.set_blocking(fd, False); offset = 0
+        with selectors.DefaultSelector() as writable:
+            writable.register(fd, selectors.EVENT_WRITE)
+            while offset < len(raw):
+                remaining = self.deadline - time.monotonic()
+                if remaining <= 0: raise TimeoutError('deadline')
+                if not writable.select(min(.1, remaining)): continue
+                try: sent = os.write(fd, raw[offset:offset + 16384])
+                except BlockingIOError: continue
+                state.need(sent > 0, 'protocol_refused')
+                offset += sent
+                self.outgoing_bytes += sent
+                self.outgoing_partial = True
+        self.outgoing_frames += 1
+        self.outgoing_partial = False
 
     def descendants(self):
         if self.p is None:
@@ -129,7 +179,7 @@ class Rpc:
             self.log('direct-tool-fallback', {'exact_warning':True,'permissions_changed':False})
             return None
         if method in ('warning','configWarning','error'):
-            self.log('runtime-diagnostic', diagnostic(value)); state.need(False, 'runtime-diagnostic-refusal')
+            self.log('runtime-diagnostic', value); state.need(False, 'runtime-diagnostic-refusal')
         state.need(method != 'remoteControl/status/changed' or value.get('status') == 'disabled', 'remote-control-active')
         state.need(method != 'item/started' or value.get('item',{}).get('type') in
                    ('dynamicToolCall','reasoning','agentMessage','userMessage'), 'unexpected-native-item')
@@ -139,7 +189,7 @@ class Rpc:
         return value.get('turn') if method == 'turn/completed' else None
 
     def request(self, method, params, seconds=30):
-        if method in ('account/read','model/list','thread/start','turn/start','turn/interrupt'):
+        if method in ('initialize','config/read','account/read','model/list','thread/start','turn/start','turn/interrupt'):
             state.need(method not in self.consumed, 'RPC-attempt-already-consumed')
             self.host.journal.append('rpc-reserved', {'method':method})
             self.consumed.add(method)
@@ -150,7 +200,7 @@ class Rpc:
             message = self.next(max(.001, until - time.monotonic()), allow_cancel=method != 'turn/interrupt')
             if message.get('id') == ident and 'method' not in message:
                 if 'error' in message:
-                    self.log('rpc-error', diagnostic(message['error'])); state.need(False, 'RPC-refused')
+                    self.log('rpc-error', message['error']); state.need(False, 'RPC-refused')
                 self.log('response', {'id':ident,'method':method}); return message.get('result')
             if method == 'turn/interrupt' or (method == 'turn/start' and message.get('method') == 'item/tool/call'):
                 self.held.append(message); state.need(len(self.held) <= 32, 'held-callback-limit')
@@ -158,7 +208,7 @@ class Rpc:
                 self.notification(message, preflight_only=True)
 
     def reply(self, message, result, success=True):
-        text = json.dumps(result, ensure_ascii=False); state.need(len(text.encode()) <= 65536, 'tool-response-limit')
+        text = checked_payload(result, deadline=self.deadline).decode('utf-8')
         self.send({'id':message['id'],'result':{'contentItems':[{'type':'inputText','text':text}],'success':success}})
         self.log('tool-response', {'id':message['id'],'success':success,'completed':self.host.completed})
 
@@ -172,8 +222,7 @@ class Rpc:
             message = self.event(max(.001, until - time.monotonic()), allow_cancel=False)
             if message.get('method') == 'item/tool/call':
                 callbacks += 1; state.need(callbacks <= 8, 'late-callback-limit')
-                call = message.get('params', {}).get('callId')
-                self.host.journal.append('refused', {'callId':call if type(call) is str and len(call)<256 else None, 'late':True, 'effect_status':'not_started'})
+                self.host.refuse(reason='cancelled')
                 self.reply(message, {'ok':False,'effect_status':'not_started','reason':'authority-revoked'}, False)
             else:
                 turn = self.notification(message)
@@ -230,34 +279,35 @@ class Rpc:
                         until = time.monotonic() + 2
                         while state.process_birth(pid) == birth and time.monotonic() < until:
                             time.sleep(.05)
-                    children.append({'pid':pid,'absent':state.process_birth(pid) != birth})
+                    children.append({'pid':pid,'birth':birth,'absent':state.process_birth(pid) != birth})
                 except Exception:
                     scan_confirmed = False
-                    children.append({'pid':pid,'absent':False,'observation_unavailable':True})
+                    children.append({'pid':pid,'birth':birth,'absent':False})
             absence = scan_confirmed and state.group_absent(self.p.pid) and all(x['absent'] for x in children)
             result = {'returncode':self.p.returncode,'observed_tree_absent':absence,'children':children,
                       'final_descendant_scan_confirmed':scan_confirmed,
                       'limitation':'owned descendant sampling does not prove absence of unseen detached daemons'}
-            state.publish(self.host.run / 'termination.json', result)
             if absence:
-                self.host.journal.append('processes-closed', result)
+                self.host.journal.append('processes-closed', {'runtime_ref':self.runtime_ref, 'group_absent':True,
+                    'final_scan_confirmed':True, 'children':children})
             self.close_result = result
             return result
         finally:
             if self.p is not None:
                 for stream in (self.p.stdout,self.p.stderr):
                     stream.close()
-            self.sel.close(); self.trace.close()
+            self.sel.close()
 
 
 def run(host):
     rpc = None; status = 'unknown'; error = None
     try:
         if host.cancelled():
-            host.revoke('cancel-before-launch')
+            host.revoke('cancelled')
             return host.finish('revoked-before-launch')
+        checked_payload(host.spec['request']['prompt'], deadline=host.deadline)
+        host.controller.preflight_inputs()
         spec = launch_spec(host)
-        state.publish(host.run / 'launch-spec.json', spec)
         rpc = Rpc(spec, host)
         preflight(rpc)
         response = rpc.request('thread/start', {'model':MODEL,'modelProvider':'openai','cwd':spec['cwd'],
@@ -280,23 +330,24 @@ def run(host):
         host.bind(thread, turn)
         while time.monotonic() < host.deadline:
             if host.revoked or host.cancelled():
-                host.revoke('cancel-requested' if host.cancelled() else 'worker-budget-consumed')
+                host.revoke('cancelled' if host.cancelled() else 'worker_budget_consumed')
                 rpc.interrupt(); status = 'interrupted'; break
             try:
                 message = rpc.event(min(30,host.deadline-time.monotonic()))
             except TimeoutError:
                 continue
             except CancelRequested:
-                host.revoke('cancel-requested'); rpc.interrupt(); status = 'interrupted'; break
+                host.revoke('cancelled'); rpc.interrupt(); status = 'interrupted'; break
             if message.get('method') == 'item/tool/call' and 'id' in message:
                 result = host.dispatch(message['params'])
                 if not result['ok']:
                     rpc.reply(message, result, False)
-                    state.need(result.get('worker_admitted') is False, 'callback-effect-unknown')
-                    rpc.interrupt(); status = 'interrupted'; break
+                    rpc.interrupt()
+                    status = 'unknown' if host.pending is not None or host.journal.history().latch else 'interrupted'
+                    break
                 if host.completed == 5:
                     if host.cancelled():
-                        host.revoke('cancel-before-seal'); rpc.reply(message, result['result'])
+                        host.revoke('cancelled'); rpc.reply(message, result['result'])
                         rpc.interrupt(); status = 'interrupted'; break
                     host.seal()
                 rpc.reply(message, result['result'])
@@ -305,11 +356,12 @@ def run(host):
                 if completed is not None:
                     state.need(completed['id'] == host.turn and completed['status'] == 'completed' and host.sealed, 'premature-completion')
                     status = 'completed'; break
-        state.need(status in ('completed','interrupted'), 'execution-deadline')
+        else:
+            raise TimeoutError('deadline')
     except BaseException as caught:
         error = caught
         if not host.revoked:
-            host.revoke(type(caught).__name__)
+            host.revoke(reason_code(caught, 'protocol_refused'))
         if host.pending is None and host.cancelled():
             rpc = rpc or host.rpc
             if rpc is not None and host.turn is not None:
@@ -319,7 +371,7 @@ def run(host):
                     error = interrupt_error
             elif rpc is None or 'turn/start' not in rpc.consumed:
                 status = 'revoked-before-launch'; error = None
-            # A sent turn/start without a returned turn ID remains unknown.
+            # Final effect/process evidence decides closure even without a turn ID.
     finally:
         rpc = rpc or host.rpc
         try:
@@ -333,7 +385,9 @@ def run(host):
             error = error or close_error
             status = 'unknown'
         if error is not None:
-            host.fail(error)
+            result = host.fail(error)
+            if result is not None and result['status'] in state.TERMINAL:
+                error = None
         elif not host.terminal:
             try:
                 result = host.finish(status)

@@ -37,7 +37,8 @@ class ContentContractTests(unittest.TestCase):
         self.target.mkdir()
         self.home = root / "home"
         self.home.mkdir()
-        self.env = patch.dict(os.environ, {"HOME": str(self.home), "XDG_CONFIG_HOME": str(self.home / ".config")})
+        self.env = patch.dict(os.environ, {"HOME": str(self.home), "XDG_CONFIG_HOME": str(self.home / ".config"),
+                                         "GIT_CONFIG_GLOBAL": str(self.home / ".gitconfig")})
         self.env.start()
         self.addCleanup(self.env.stop)
 
@@ -145,6 +146,25 @@ class ContentContractTests(unittest.TestCase):
         alternate.write_bytes(default.read_bytes())
         self.git("config", "core.excludesFile", str(alternate))
         self.assertEqual(after, fixture_snapshot(self.target))
+
+    @unittest.skipUnless(sys.platform == "darwin", "managed macOS configuration tuple")
+    def test_closed_git_settings_use_effective_ignore_fingerprint(self):
+        self.init()
+        self.write("a.tmp")
+        closed = {"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
+                  "GIT_CONFIG_SYSTEM": os.devnull}
+        with patch.dict(os.environ, closed):
+            before = fixture_snapshot(self.target)
+            default = self.home / ".config/git/ignore"
+            default.parent.mkdir(parents=True)
+            default.write_text("*.tmp\n")
+            after = fixture_snapshot(self.target)
+            self.assertEqual([entry["path"] for entry in after["entries"]], ["a.tmp"])
+            self.assertEqual(before["ignore_fingerprint"], after["ignore_fingerprint"])
+            self.git("config", "core.excludesFile", str(default))
+            explicit = fixture_snapshot(self.target)
+            self.assertEqual(explicit["entries"], [])
+            self.assertNotEqual(after["ignore_fingerprint"], explicit["ignore_fingerprint"])
 
     def test_ignore_source_paths_are_not_recorded(self):
         self.init()

@@ -230,13 +230,15 @@ class InstalledHistoryCheckoutTests(unittest.TestCase):
         self.input_patch=mock.patch.object(existing.entry,'runtime_input',return_value={})
         self.input_patch.start();self.addCleanup(self.input_patch.stop)
         runtime=self.folder/'runtime';runtime.mkdir(mode=0o700)
+        control=self.folder/'host-control';control.mkdir(mode=0o700)
+        state.publish(control/'store.json',{'schema_version':1,'store_id':'b'*32})
         self.request={'work_id':'official-work','worker_root':str(self.target),'documents':{
             'files':{'Editable':{'path':str(self.target/'a'),'view':{'kind':'replace-range','ranges':[[len(existing.PREFIX),len(existing.PREFIX+existing.BEFORE)]]}},
                      'Reference':{'path':str(self.target/'b'),'view':{'kind':'full'}}},
             'output':'Editable','claims':{'Editable':{'required':['Approved fact.'],'forbidden':['Unapproved'],
                 'evidence':[{'file_id':'Reference','quote':'Approved fact.'}]}},'approved_external_links':[]},
             'read_ids':['Editable','Reference'],'prompt':'Read, replace with Approved fact., then verify.',
-            'owner_statement':'Synthetic bounded execution authorization','runtime':{},'runtime_root':str(runtime),
+            'owner_statement':'Synthetic bounded execution authorization','runtime':{'sha256':{'BIN':'a'*64}},'runtime_root':str(runtime),'host_control_root':str(control),
             'expires_wall_ns':time.time_ns()+600*10**9,'seconds':90,'worker_limit':5}
 
     prepare = existing.OfficialExecutionTests.prepare
@@ -305,11 +307,22 @@ class InstalledHistoryCheckoutTests(unittest.TestCase):
         baseline = self.git('rev-parse', 'HEAD')
         self.git('checkout', '-qb', 'history')
         h = self.new_host()
-        # Durable synthetic terminal state; no model, RPC or worker execution.
-        for i in range(5):
-            h.journal.append('callback-reserved', {'callId': str(i)})
-            h.journal.append('callback-completed', {'callId': str(i)})
-        h.journal.append('seal', {}); h.journal.append('terminal', {'status': 'completed'}); h.close()
+        # Durable synthetic v2 state; actual effects/closure use separate offline tests.
+        identity=h.storage['scope']['documents']['Editable']['original_identity']
+        for i in range(1,6):
+            role='read' if i==1 else 'write' if i==2 else 'verify'
+            verifier=None if i<3 else ('DOC-LINKS','DOC-GFM','DOC-CLAIMS')[i-3]
+            if i==2:h.journal.append('recovery-ready',{'output_id':'Editable','recovery_ordinal':1,'original_identity':identity,'original_sha256':identity['sha256'],'byte_count':identity['size']})
+            h.journal.append('callback-reserved',{'callback_id':i,'ordinal':i,'tool':role,'file_ids':['Editable','Reference'] if i==1 else ['Editable'] if i==2 else [],'verifier_id':verifier,'expected_identity':identity if i==2 else None})
+            h.journal.append('worker-spawn-intent',{'callback_id':i,'worker_ordinal':i,'role':role,'code_identity':h.storage['scope']['resources']['worker_digest']})
+            h.journal.append('worker-started',{'worker_ordinal':i,'pid':2147000100+i,'birth':'Sat Oct 31 12:00:00 2026'})
+            result=h.journal.append('worker-result',{'worker_ordinal':i,'success':True,'effect':'applied' if i==2 else 'none','before':identity if i==2 else None,'after':identity if i==2 else None,'verifier_id':verifier,'verifier_pass':True if i>=3 else None,'reason':None})
+            closed=h.journal.append('worker-closed',{'worker_ordinal':i,'returncode':0,'group_absent':True,'birth_absent':True})
+            h.journal.append('callback-completed',{'callback_id':i,'success':True,'result_ref':result['seq'],'closure_ref':closed['seq'],'failure_code':None})
+        history=h.journal.history()
+        h.journal.append('seal',{'result_identity':identity,'completed_refs':history.completed_refs})
+        h.journal.append('processes-closed',{'runtime_ref':history.runtime_start['seq'],'group_absent':True,'final_scan_confirmed':True,'children':[]})
+        h.finish('completed');h.close()
         self.complete_work(); self.assert_readable(h.grant)
         self.git('add', '.'); self.git('commit', '-qm', 'synthetic completed history')
         original = {k: v[0] for k, v in self.observed_files().items()}
@@ -333,19 +346,14 @@ class InstalledHistoryCheckoutTests(unittest.TestCase):
     def test_same_target_checkout_and_ff_umask022(self): self.roundtrip(0o022)
     def test_same_target_checkout_and_ff_umask077(self): self.roundtrip(0o077)
 
-    def test_exact_previous_reader_keeps_0600_and_refuses_0644_new_history(self):
-        previous = Path(os.environ['COLVIA_PREVIOUS_OFFICIAL_SOURCE'])
-        h = self.new_host(); h.finish('revoked-before-launch'); h.close()
-        path = h.run / 'journal.jsonl'
-        for mode in (0o600, 0o644):
-            path.chmod(mode); before = self.observed_files()
-            result = subprocess.run([sys.executable, '-I', '-S', '-B',
-                                     str(existing.SOURCE / 'tests/fixtures/delegation_process.py'),
-                                     str(previous), str(self.target)],
-                                    input=b'{"action":"status"}', capture_output=True, timeout=30)
-            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-            old_status = json.loads(result.stdout)['official_execution']
-            self.assertEqual(mode == 0o600, old_status['available'])
-            self.assertEqual(mode == 0o600, old_status['ready_for_new_grant'])
-            self.assertEqual('revoked-before-launch', state.read_capsule(self.target, h.grant)['status'])
-            self.assertEqual(before, self.observed_files())
+    def test_exact_previous_reader_refuses_v2_at_both_checkout_modes(self):
+        previous=Path(os.environ['COLVIA_PREVIOUS_OFFICIAL_SOURCE'])
+        h=self.new_host(bind=False);h.revoke('cancelled');h.finish('revoked-before-launch');h.close()
+        path=h.run/'journal.jsonl'
+        for mode in (0o600,0o644):
+            path.chmod(mode);before=self.observed_files()
+            result=subprocess.run([sys.executable,'-I','-S','-B',str(existing.SOURCE/'tests/fixtures/official_reader_compat.py'),
+                str(previous),str(self.target),'status'],input=json.dumps({'grant':h.grant}).encode(),capture_output=True,timeout=30)
+            self.assertNotEqual(0,result.returncode);self.assertIn(b'grant-record',result.stderr)
+            self.assertEqual('revoked-before-launch',state.read_capsule(self.target,h.grant)['status'])
+            self.assertEqual(before,self.observed_files())

@@ -1,59 +1,28 @@
-# Resume Without The Old Conversation
+# Resume From The Project Records
 
-This page describes the unactivated `entry-1` candidate. Use requires separate exact-artifact qualification and installation approval; the historical checkout-1 exercise below does not qualify these commands.
+[Previous: first Work](first-work.md) · [Contents](README.md) · [한국어](../ko/resume.md)
 
-[Previous: first Work](first-work.md) · [Contents](README.md)
+Open a new conversation with access to the same project. Ask:
 
-[한국어](../ko/resume.md)
+> Read this project's instructions and current Colvia Work. Explain what was accepted, what remains, any pending operation and the recommended next step with its reason. Check the existing authorization and limits before changing files.
 
-Keep the project and its records, then begin a new Codex conversation with access to the same project root. You should be able to understand the completed task without past chat messages. Starting a fresh conversation does not authorize another Work or reset an unfinished operation.
+The agent starts with project rules and `./colvia view --details`, reads the verified adapter, then compares the selected Work, referenced plan, continuation and current files. Human-facing `./colvia view` remains the compact overview. `./colvia help` shows query commands and prompt examples when needed.
 
-## Read Before Writing
+## Recover The Current Situation
 
-Give the new conversation this request:
+Expect a concise explanation of the accepted result, unfinished scope, current file agreement or drift, consumed time/attempts and valid remaining authority. A completed Work remains a historical acceptance even if files later change. Resolve differences between narrative and records before proposing a write.
 
-> Read this project's AGENTS.md, README.md and docs/plan.md. Run ./colvia view and follow the current adapter it identifies. Read docs/first-work.md and compare its claims with the relevant intent and Work views. Explain what was accepted, what changed, what is unverified, whether anything is pending, and the next decision I need to make. Do not edit files, publish records or start another Work.
+If the previously approved task still has work remaining and its conditions hold, the agent continues it. If you asked only for a status check or recommendation, it stays read-only. A pending or unknown operation uses its recovery path; a new chat does not reset the operation or its budget. Keep the exact request and source needed for recovery.
 
-The agent reads the actual IDs from `view` and then inspects:
 
-```sh
-./colvia view
-./colvia view intent INTENT_ID
-./colvia view work WORK_ID
-./colvia status
-```
+The View puts the Work title, ID, recorded state and next check together. `view work ID` adds the recorded scope and submitted observations before technical details. The agent explains any interpretation separately from that output.
 
-`INTENT_ID` and `WORK_ID` are placeholders. For this exercise the expected observation is a completed first Work, a current accepted-intent binding, no pending operation and current files matching the stored result. These commands observe state; they do not resume writes by themselves.
+Execution records have their own cards. They describe what was recorded for that run, including document effects and process closure. A shared Work ID does not establish a link to the current Work revision. If an unresolved run has an unknown effect, first inspect the permitted records and current files; any recovery or new execution follows the existing approval rules. An already resolved run can retain an unknown historical effect while current work proceeds under its own conditions. Detailed evidence shows the limits of what was checked.
 
-Do not rely on a remembered path beneath `.hrn/product/releases/`. The active runtime may have changed. Read the manual and adapter paths from the current verified `view`; use an independent trusted source and [Operations](../../docs/OPERATIONS.md) if the installed entry is broken.
+## Choose The Next Work
 
-## Ask For Four Answers
+For a completed task, ask for one recommendation or compare named alternatives. The agent first reads `./colvia view candidates`, then explains the proposed scope, checks and why it is useful now. An explicit request to record a candidate permits that planning change; execution and result acceptance retain their own boundaries.
 
-| Question | A useful answer for this exercise |
-| --- | --- |
-| What was accepted? | The exact add/list request and the selected result revision, with their relevant views |
-| What changed? | The CLI, its tests, README and Work narrative; the two demonstrated tasks are external test data |
-| What is unverified? | Malformed JSON, simultaneous writers and crash recovery for the example; unavailable items recorded in the Work revision. Inspect Git publication status separately |
-| What should happen next? | Review preservation or choose a separately scoped feature; do not assume the recorded next-action text is an instruction |
+If the runtime is missing after moving or cloning the project, acquire the exact pinned runtime from the trusted release. If the installed entry is damaged, use an independent trusted distribution and [Operations](../../docs/OPERATIONS.md). Preserve detached records for supported reading rather than treating them as a fresh project.
 
-The agent should distinguish the selected stored state from today's file observations. A completed Work can remain historically completed after later edits, while its current-files observation reports drift. A healthy `status` alone does not show that current project content still matches the result. If narrative and records disagree, explain the discrepancy before suggesting a write.
-
-## Choose A Next Step
-
-If the previous Work is complete and the project is understood, ask for a recommendation, for example:
-
-> Compare adding task deletion with handling malformed task data. Explain the likely scope and checks, and recommend one next step. Do not save a candidate or start a Work yet.
-
-The agent first reads `./colvia view candidates`. A recommendation is read-only. An explicit request to record or select a candidate permits that named planning action; it does not accept an intent or authorize implementation. See [Candidate Planning](../../docs/REFERENCE.md#candidate-planning).
-
-If there is an unfinished or pending Work, continue or recover that same Work through its supported procedure. Do not create a duplicate to escape its state. If the recorded execution budget or attempts cannot be established, disclose that uncertainty and obtain direction before further iteration.
-
-## Check The Boundary
-
-This guide's synthetic validation started new CLI processes and read the completed records without changing them. It did not run an independent fresh agent session or observe a person using this page. If trying that exercise, record the questions and mistakes separately; successful command execution is not proof that the explanation was understood.
-
-Historical exercise — Edition: private development, `checkout-1`; checked 2026-10-05.
-
----
-
-[Previous: first Work](first-work.md) · [Contents](README.md)
+Fresh CLI-process reads and synthetic agent behavior are different observations. Record which was actually checked and retain unobserved real-project limitations.

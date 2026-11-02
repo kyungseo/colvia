@@ -132,4 +132,187 @@ Do not infer from a failed apply that no bytes were published. Use the original 
 
 ## Official Execution Records
 
-The optional macOS `official-execution-1` window preserves project-owned execution capsules under `.hrn/executions/`. Cancellation receipt is not effect cessation. Unresolved effects block new runs and lifecycle mutation; explicit resolution records current document/process observations without deleting evidence or restoring documents. Detach preserves capsules and original outputs. Use the verified release's `docs/OFFICIAL-EXECUTION.md`; no automatic retry or Core acceptance is added.
+The optional macOS official-execution windows preserve project-owned execution capsules under `.hrn/executions/`. V2 stores allowlisted metadata there and keeps original document recovery copies and worker transient material in an explicit private host control root outside Git. Existing v1 payload records are preserved without automatic migration or deletion. Cancellation receipt is not effect cessation. Unresolved effects block new runs and lifecycle mutation; explicit resolution records current document/process observations without deleting evidence or restoring documents. Detach preserves capsules and original outputs. Use the verified release's `docs/OFFICIAL-EXECUTION.md`; no automatic retry or Core acceptance is added.
+
+## Setup And Onboarding Details
+
+Read the relevant section when preparing setup, a lifecycle change or recovery. For ordinary work, use [Getting Started](GETTING-STARTED.md) and the current installed adapter.
+
+Continuation-1 profile; see [authorization and qualification](README.md#continuation-1). Start with [the work cycle and example requests](CONCEPTS.md#the-work-cycle), then use the setup and first-Work steps below.
+
+For trusted source setup, use a fresh project and final, GIL-enabled CPython 3.14.6 or 3.14.7. The managed macOS candidate below supplies its separately pinned runtime. Installation needs explicit operator authorization; a successful local test does not authorize installing into another repository.
+
+### Onboarding: macOS Managed Distribution Candidate
+
+The macOS arm64 distribution candidate prepares its own pinned CPython 3.14.10. It uses a versioned bootstrap and external SHA-256 digest supplied with that release; a source clone, Homebrew setup and shell configuration edits are not part of this path. Public URLs and final qualification are pending. Use an authorized, qualified release before applying it to a real project. Windows qualification remains required before public release.
+
+The sequence is **prepare Colvia → connect a project → agree on the first task → review the result**. Download the named bootstrap to a durable directory, compare its SHA-256 with the separately supplied release value, then run it without arguments to see its storage and preservation plan. Apply only that reviewed plan with the exact confirmation value it displays. The bootstrap prepares the tool and Python under `~/Library/Application Support/Colvia`; it leaves project files and shell settings in place.
+
+From the chosen fresh project, ask your agent:
+
+> Prepare Colvia for this project using the verified release. Show the target, proposed changes and what will be preserved. Keep project setup separate from the first task; wait for my installation decision.
+
+The management command lives at `"$HOME/Library/Application Support/Colvia/bin/colvia-manage"`. Its `install --target PROJECT` command previews project connection. A successful preview saves its exact request under the tool’s `requests` directory and displays its path and confirmation value. The agent can choose an external path with `--json --save REQUEST_FILE`, explains that same request and applies it after your decision using `--apply --input REQUEST_FILE --confirm TOKEN`. Keep the request outside the project. `official-execution-2` is a separate explicit profile with its [execution limits](OFFICIAL-EXECUTION.md); existing continuation projects have no direct switch to that profile.
+
+After connection, `./colvia view` shows the current project and work. The agent uses `./colvia view --details` to find its verified instructions. For the first task, give the intended result and the files or scope that may change. For example: “Improve the installation section in this README. Keep the rest of the document, show the proposed scope and checks, then wait for my decision.” The agent prepares the plan and exact intent, uses an existing applicable approval, and explains results, remaining limits and one useful next step with its reason. You decide acceptance. Git commits and publication remain separate choices.
+
+For a fresh conversation, ask: “Read this project's instructions and current Colvia Work. Explain what was accepted, what remains and the recommended next step before changing files.” The agent compares current records, referenced plans and current files, carries forward consumed time and attempts, and continues the same authorized scope when its conditions still hold. A new conversation does not reset pending operations or create a new Work.
+
+#### Onboarding: 한국어: 설치 후 첫 작업과 재개
+
+macOS arm64 배포 후보는 필요한 Python을 전용 위치에 함께 준비합니다. 공개 배포 주소와 최종 검증 결과는 공개 단계에서 제공됩니다. 실제 프로젝트에는 승인한 검증 배포본을 사용하세요. Windows 전체 기능·설치 검증도 공개 전에 완료해야 합니다.
+
+먼저 배포본에 명시된 bootstrap 파일을 지속 보관할 위치에 내려받고, 별도로 제공된 SHA-256과 대조합니다. 인수 없이 실행하면 저장 위치와 보존 범위가 나옵니다. 내용을 확인한 뒤 표시된 확인값으로 적용하면 Colvia 도구와 Python이 준비됩니다. 저장소 clone, Homebrew 설치, shell 설정 편집은 이 설치 경로의 준비 사항이 아닙니다.
+
+다음으로 에이전트에게 “검증된 배포본으로 이 프로젝트에 Colvia를 연결할 범위와 보존할 내용을 보여줘. 실제 적용은 내 결정을 기다려줘”라고 요청하세요. 성공한 미리보기는 정확한 요청을 관리 도구의 requests 폴더에 저장하고 경로·확인값을 보여줍니다. 에이전트가 그 요청을 설명하고 승인한 내용 그대로 적용합니다. 연결이 끝나면 프로젝트의 `./colvia view`에서 현재 상태를 볼 수 있습니다.
+
+첫 작업은 원하는 결과와 바꿔도 되는 범위를 알려주는 것으로 시작합니다. 예를 들어 “이 README의 설치 안내를 보강하고 싶어. 나머지 내용은 보존하고, 수정 범위와 검사 방법부터 보여줘”라고 요청할 수 있습니다. 에이전트가 계획·작업 요청을 준비하고, 유효한 승인이 있으면 그 범위에서 진행합니다. 결과를 검토할 때는 완료한 내용, 남은 한계, 다음 추천과 이유를 함께 보여줍니다. 결과 수락과 Git commit·게시는 각각 결정합니다.
+
+새 대화에서는 “이 프로젝트의 지침과 현재 Work를 읽고, 수락한 내용과 남은 일, 다음 추천을 정리해줘”라고 요청하세요. 에이전트가 현재 기록·참조 계획·파일을 대조하고 기존 승인, 소비 시간과 시도 횟수를 이어받습니다. 미완료 동작은 같은 Work에서 확인·복구합니다.
+
+#### Onboarding: Update, Recovery And Removal
+
+Use a named new version and its external bootstrap digest to prepare an update. Project `update`, `rollback`, `repair` and `remove` preview first and use the same exact-request apply flow. `rollback` targets the project's recorded prior release, not a Python downgrade. `repair` requires a new external backup location. Keep the exact release and request for interrupted operations and use the supported `--recover` flow; inspect unknown effects before another attempt.
+
+Project `remove` detaches managed product files while retaining Work, intent, result and recovery records. Completed detach supports retained-record reading; it is not a fresh installation target. `remove-tool` separately removes the management entry and keeps its recovery copy, requests, shared Python and projects. This version does not support shared Python removal through `remove-runtime`; it retains Python, releases and recovery material. Moving a project or cloning its records does not copy the user-level Python store; acquire the exact pinned runtime on the destination machine before using its launcher.
+
+갱신할 때는 명시한 새 버전과 외부에서 확인한 bootstrap 해시를 사용합니다. 프로젝트 `update`, `rollback`, `repair`, `remove`는 먼저 범위를 보여주고 승인한 요청을 적용합니다. `rollback`은 기록된 이전 프로젝트 배포본으로 돌아가며, `repair`는 새 외부 백업 위치를 요구합니다. 중단되면 정확한 배포본·요청·부분 상태를 보존하고 지원되는 복구 경로를 확인하세요.
+
+프로젝트 `remove`는 Colvia 연결을 해제하고 작업·승인·결과 기록을 남깁니다. 연결 해제 뒤에는 보존한 기록을 조회할 수 있으며, 새 설치 대상으로 다시 연결하는 흐름은 지원하지 않습니다. `remove-tool`은 관리 명령만 제거하고 복구 사본·요청·공유 Python·프로젝트를 보존합니다. 현재 버전의 remove-runtime은 공유 Python 제거를 지원하지 않으며 Python·배포본·복구 자료를 보존합니다. 다른 기기로 프로젝트를 옮길 때는 그곳에도 정확한 전용 Python을 준비해야 합니다.
+
+To restore a removed management command, verify and apply the same named bootstrap again. This restores the management entry; it does not reconnect a detached project. If a runtime is damaged or an activation lock remains, preserve that state and ask the agent to inspect it before recovery. The current bootstrap preserves an existing mismatched runtime, release or management entry. Automatic repair of these stored components is unavailable. Keep the damaged bytes and required old versions; before any manual relocation, check active consumers and agree on the exact preserved path and version to restore. Project `repair` is a separate, supported operation. The retained matching manager under `tools/<digest>/colvia-manage` can recover its own exact interrupted project request with `--recover`; a newer manager does not replace that identity.
+
+제거한 관리 명령은 같은 버전의 bootstrap을 다시 검증·적용해 복구합니다. 프로젝트 연결 해제와 관리 도구 복구는 별개입니다. 전용 Python이 손상됐거나 설치 잠금이 남았다면 원본을 보존하고 에이전트에게 현재 상태와 복구 경로 확인을 요청하세요. 현재 bootstrap은 손상된 전용 Python·배포본·관리 명령을 보존합니다. 이 저장 구성요소의 자동 복구는 아직 지원하지 않습니다. 손상 원본과 필요한 구 버전을 남기고, 수동 이동 전 사용 중인 프로세스·프로젝트와 보존 위치·복원할 정확한 버전을 확인해야 합니다. 프로젝트 파일의 repair는 별도 지원 흐름입니다. 중단된 프로젝트 요청은 tools/<digest>/colvia-manage의 해당 버전 도구로 정확한 요청에 --recover를 적용합니다. 새 관리 도구로 원 요청의 배포본 identity를 대체하지 않습니다.
+
+Existing projects retain their recorded profile; the exact supported official-execution-1 predecessor selects official-execution-2 for its one-way transition. Only a fresh `install` defaults to continuation-1. Use an explicit profile after inspecting damaged or incomplete binding information. Run `status --details` with the same manager and target to inspect partial states before recovery. Preview writes only its saved request outside the project.
+
+기존 프로젝트는 연결 기록의 프로필을 이어받습니다. 정확히 지원하는 official-execution-1 이전 배포본은 단방향 전환을 위해 official-execution-2를 선택합니다. 새 install만 continuation-1을 기본값으로 사용합니다. 연결 기록이 손상됐거나 불완전하면 상태를 확인한 뒤 정확한 프로필을 지정하세요. 중단 상태는 같은 관리 도구의 status --details와 대상 경로로 확인합니다. 미리보기는 프로젝트 밖에 요청 파일만 저장합니다.
+
+A forced SIGKILL or power loss can leave an operation or child process unconfirmed. Preserve the exact request and files; verify process termination and project status before recovery. Atomic publication covers ordinary process interruption, not a guarantee against power or storage failure.
+
+강제 SIGKILL이나 전원 손실 뒤에는 적용 결과와 자식 프로세스 종료 여부가 미확인일 수 있습니다. 정확한 요청과 파일을 보존하고, 프로세스 종료 및 프로젝트 상태를 확인한 뒤 복구하세요. 원자적 게시는 일반적인 프로세스 중단을 다루며 전원·저장 장치 장애까지 보장하지 않습니다.
+
+#### Onboarding: Technical Details
+
+- The release pins the runtime archive, normalized file tree, verifier and product payload. Hashes identify the supplied bytes; the current unsigned distribution does not independently authenticate its publisher.
+- Launch checks cover interpreter, stdlib, native libraries, modes, links and exact tree membership before executing Python. Source operators keep the explicit `<trusted-python> -I -B colvia --source-checkout ...` entry. There is no system-Python fallback for a prepared managed launcher.
+- Managed entry uses project Git configuration and ignore rules with user/system Git configuration disabled. Before the first Work, review the effective project rules and any intended shared ignores. It selects an available actual Git binary on macOS without triggering developer-tools installation. A primary Git repository needs Git; the basic non-Git flow can operate without it.
+- Managed entry uses fixed executable paths and a closed environment; inherited API credentials, custom PATH, SSH agent and proxy settings are not forwarded. The official path separately checks its pinned CLI and subscription inputs. Proxy-dependent download and user-level Git filters/attributes require separate qualification. Each download keeps a 120-second limit and does not retry automatically.
+- The initial source remains `continuation-1`; optional `official-execution-2`, unknown/partial state, exact predecessors and retained detach follow their existing contracts. View success does not establish native execution eligibility.
+- The local fixture changes only fixed storage/asset locations. Public-origin download, clean-Mac user experience, Gatekeeper/notarization and Windows remain separately qualified conditions. Preserve first-attempt failures when comparing later corrections.
+
+### Onboarding: Prepare Project Ignore Rules
+
+During authorized adoption, the agent/operator prepares project-owned root `.gitignore` before `init` and the first Work baseline. If absent, use the defaults below; otherwise preserve contents, comments and intentional exceptions, adding only missing applicable rules after review. Never overwrite it or copy the Harness source’s development `.gitignore`.
+
+```gitignore
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IntelliJ IDEA: local project settings
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Visual Studio Code: local settings and workspaces
+.vscode/
+*.code-workspace
+
+# Project-root scratch space (not durable deliverables)
+/temp/
+
+# Editor temporary files
+*.swp
+*.swo
+```
+
+These defaults exclude personal IDE files; retain deliberate shared-configuration exceptions. Add build, dependency, environment and generated-output rules only after confirming actual project tools and artifact policy. Never blanket-ignore binaries or customer deliverables by extension.
+
+Create root `temp/` for scratch during setup or when needed; clones do not restore empty ignored directories. Before pausing or cleaning up, preserve important ignored results durably outside scratch.
+
+Never ignore the entire `.hrn/` tree: its records and managed runtime remain eligible for version control. Harness manages its own `.hrn/.gitignore` for `staging/` and `locks/`. Check representative IDE/temp paths with `git check-ignore`, and check that `.hrn/format.json`, `.hrn/intents/`, `.hrn/work/`, `.hrn/planning/`, `.hrn/product/`, `colvia` and project Markdown are not hidden by the effective rules. Git ignore rules do not untrack files already committed; do not remove tracked files as part of this setup without authorization.
+
+The agent/operator performs this adoption procedure outside Core `init`. Root `.gitignore` and `temp/` stay project-owned; update, rollback and detach do not replace them. Once Work starts, ignore-rule changes must follow its scope and content-validation rules.
+
+### Onboarding: Prepare Project Agent Entry
+
+For new projects, put shared instructions, purpose/context/plan pointers and stable `./colvia view` entry in project-owned root `AGENTS.md`; never pin a managed release path. With Claude Code, add a thin root `CLAUDE.md` directing it to read and follow `AGENTS.md`, without duplicating instructions.
+
+For existing projects, preserve entry files and tool-specific instructions. Reconcile shared instructions before replacing duplicates with pointers; preserve unique Claude rules and keep tool-specific additions in their entries. Do not copy this repository’s development entry. A pointer directs agents to read and follow `AGENTS.md`; it does not prove they did.
+
+For project-specific adapter additions and their maintenance boundaries, use [Project-Owned Adapter Additions](REFERENCE.md#project-owned-adapter-additions). Runtime updates leave these additions unchanged; a later detach needs a separate review of obsolete project-entry instructions.
+
+The agent/operator prepares these project-owned files within approved adoption scope. Core init/update/rollback/detach neither generate nor overwrite them. Managed payload entries describe Harness source, not the project.
+
+Use [Repository-Owned Rules](REFERENCE.md#repository-owned-rules) to connect applicable documentation, validation and domain procedures. Include the project language default when one exists; [Document Language](REFERENCE.md#document-language) distinguishes it from an explicit artifact request and conversation explanations. For a new project, select a small set and connect its canonical location. For an existing project, compare affected rules and preserve local instructions before applying an authorized diff. Record the adopted source and any local choice in the existing rule or maintainer document. A runtime update does not update these rules automatically; compare relevant changes explicitly, including their verification and removal impact.
+
+### Onboarding: Initialize A Fresh Project
+
+From a trusted source, use [PowerShell for Windows-2](OPERATIONS.md#windows-init) or entry-1 below:
+
+```sh
+./colvia --source-checkout init --profile continuation-1 --target /path/to/project \
+  --source /path/to/source --authority-home-id project-home \
+  --operation-id init-1 --observed-at 2026-01-01T00:00:00Z
+```
+
+This previews the candidate and returns a `request` and `confirm_token`. Review the target and source; save only the `request` object as canonical JSON outside the target. Then apply that exact request:
+
+```sh
+./colvia --source-checkout init --profile continuation-1 --target /path/to/project \
+  --source /path/to/source --apply --input /path/to/init-request.json --confirm TOKEN
+```
+
+Run `/path/to/project/colvia status` after installation. A verified active product exposes its `documentation_root`. No initial intent or Work is created. A preexisting launcher, old-generation home, unsupported Git topology, or ambiguous partial install is preserved and refused. Any immediate-root `hv2` occupant (NFC/casefold, file/directory/symlink) found at first admission is refused before the first target write; a late collision preserves earlier permitted writes and stops further publication. See [Entry-1 admission](WORKSPACE-CONTRACT.md#entry-1-admission-and-publication) for the tracked-but-absent distinction and exact limits.
+
+### Onboarding: First Serial Work
+
+1. An agent prepares a typed intent draft with goal, scope, expected outcome, acceptance oracle, destination, forbidden scope, and unresolved gaps. `colvia intent draft` publishes the proposed record; it does not accept it.
+2. `colvia intent prepare` returns a ticket for the human to review. `colvia intent apply --confirm TOKEN` consumes the exact accepted ticket. Material gaps must be resolved first.
+3. The agent publishes a Work baseline referencing the accepted intent, edits within the declared scope, and submits the full result manifest for review using `colvia work publish`.
+4. `colvia work prepare` binds the exact result and current prerequisites. The human decides acceptance; `colvia work apply --confirm TOKEN` records that decision and selection. A selected accepted result derives completed state. The optional exact ordinary-worker grant is described in [Delegation-1](GETTING-STARTED.md#delegation-1-implementation-candidate); it does not authorize intent or parent acceptance.
+
+Use [General Work](GENERAL-WORK.md) for input fields and [Guided Intent](GUIDED-INTENT-FORMATION.md) for acceptance. The agent prepares canonical JSON via `--input FILE` or stdin; review without editing JSON below. General onboarding and installed use need [separate evidence](SECURITY-AND-SUPPORT.md). Keep one editing Work during serial use; the tool cannot stop arbitrary ordinary-file editors.
+
+Do not use a pending proposal, a successful command, a review verdict, or an agent's statement as human acceptance. Use [Operations](OPERATIONS.md) when an exact operation is interrupted.
+
+Accepting a worker result applies exact changes on control, leaving Git HEAD, index and refs unchanged. Before the next worker, follow project Git policy and [Git Integration And Candidate Reuse](GENERAL-WORK.md#git-integration-and-candidate-reuse). Its baseline needs a control commit matching the observed product and verified launcher; an existing candidate may suffice. Report Work acceptance and Git integration separately. The linked example covers reuse and stop conditions.
+
+### Onboarding: Review Without Editing JSON
+
+Start with `./colvia view` and follow its guidance to the current adapter; this release exposes verified manual/adapter paths in `./colvia view --details`. The managed manual explains Harness operation; project README/context/plan/DR/brief/Work documents explain project purpose and progress. Keep the stable view command in project entry, not a release-specific adapter path.
+
+The agent prepares machine input and explains the existing Work narrative in your language: scope, progress, results, checks, limits and the decision needed. Review intent/Work and confirmation views; full revision identities and tokens support them. Decide the exact action before apply. Disclose changed/missing references and narrative/selected-record disagreement. English diagnostic labels do not set the conversation language. Views support the existing explanation; no automatic report, second status registry or extra record is needed.
+
+For briefs, decision records or unresolved questions, use [Project Document Assistance](REFERENCE.md#project-document-assistance) with existing project documents.
+
+
+### Onboarding: Transition To Checkout-1
+
+Historical procedure for a retained qualified checkout-1 source only. The current candidate cannot perform this earlier transition. Use its exact retained manual and source; do not substitute a new profile. The first durable checkout-1 switch receipt is one-way even before new records, and loss of the original source/request can leave no supported recovery. Preserve restoration-verified recovery material before an authorized transition.
+
+### Onboarding: Transition To Entry-1
+
+Historical procedure for a retained qualified entry-1 source only. Read [Entry-1 transition](OPERATIONS.md#entry-1-transition) for its exact checkout-1 predecessor, one-way schema-2 boundary, original-request recovery, unsupported prefixes and separate worker rebind. These instructions do not authorize applying the current continuation-1 candidate with an old profile.
+
+### Onboarding: Delegation-1 Implementation Candidate
+
+Continuation-1 inherits the [optional schema-3 ordinary-worker grant](GUIDED-INTENT-FORMATION.md#delegation-1-implementation-candidate). Only an explicit Owner decision grants that exact scope; an agent role or broad instruction to continue does not. No-grant use keeps human acceptance. Intent and parent acceptance, Git integration and source-development acceptance remain separate. Host caller enforcement and general first-session usability are unverified.
+
+Historical locator: entry-1→delegation-1 used the exact entry-1 inventory `2216a2634eb3fa5d6a8bfa7c7d4847b29fb2443ba7b367156c15b15ddb5a17e0`, matching retained source and original input. Old pending operations still need their own source/request. This is not the current transition path.
+
+### Onboarding: Continuation-1 Setup And Resume
+
+Fresh setup uses the continuation-1 command above. The exact release needs qualification, accepted source-contract scope and separate Owner installation authorization; source-only decision files are not installed prerequisites. For an existing installation, [Operations](OPERATIONS.md#continuation-1) admits only the exact delegation-1 predecessor or a compatible continuation-1 release. Do not apply the historical entry-1 transition instructions with current source.
+
+Before starting work, name the existing project plan and the item it covers. After a result is actually accepted, report what that item achieved, what remains and whether the human selected a follow-up. Read `./colvia view continuation WORK_ID` in a new session. A proposal still needs intent approval; an existing Work follows its own current state; explicit none ends this follow-up path; undecided requires a choice only when the next action depends on it. The adapter explains plan updates and reference/content checks without adding another tracker.
+
+### Onboarding: Windows-2 Entry
+
+For a qualified windows-2 target, invoke the verified colvia file with an absolute allowed Python path and -I -B from native Windows PowerShell. This replaces only the generic ./colvia prefix; preserve arguments, human authorization and verified view/manual routing. Independent source lifecycle requires the explicit windows-2 profile, matching candidate and admitted native runtime. A POSIX shell, executable bit, entry-1 fallback or unverified interpreter alias is not a substitute. Fresh and same-window operations only; no old-window/cross-OS migration or detached-authority reinitialization. Report the exact qualified tuple and unavailable observations. These instructions grant no intent/result acceptance, writer authorization or environment qualification.
+
+### Onboarding: Optional Official Execution Candidate
+
+The shared source still declares `continuation-1`. Preparing `scripts/prepare-official.py --output NEW_DIRECTORY` creates the explicit macOS `official-execution-2` payload without installation or execution. Install only with separate authorization and the existing lifecycle preview/apply procedure. The verified release includes `docs/OFFICIAL-EXECUTION.md`. The candidate does not authorize updating an existing adopter or qualify Windows.

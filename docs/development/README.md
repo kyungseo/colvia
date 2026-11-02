@@ -1,5 +1,7 @@
 # Development Index
 
+- macOS 배포·관리·온보딩 — 완료(Owner 수락, 2026-11-02): [수락 범위와 남은 자격 조건](FEAT-20261101-003-macos-distribution-onboarding.md#owner-결과-수락과-source-완료--2026-11-02).
+
 - 작업 중 안내와 View 요약 — 완료(Owner 수락, 2026-11-01): [수락 범위·한계·실사용 후속 보완](FEAT-20261031-001-guidance-and-view-summary.md).
 
 - 완료 실행 이력의 Git 권한 호환성: [Owner 결과 수락 및 source 완료](PATCH-20261030-003-completed-history-permissions.md#owner-result-acceptance-and-source-completion--2026-10-30).
@@ -236,6 +238,15 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
+- [같은 작업 재개와 중단 후 안내](same-task-resume-and-interruption-plan.md#owner-계획-요청과-시작-기준) — 선택된 범위는 2026-11-02 Owner의 제한 수락 후 Done. [완료·수락 기록](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02)을 따른다.
+- [Guardrails 통합 후보·설치 호환 확인](PATCH-20261101-002-local-payload-gates.md#owner-planning-authorization--2026-11-01) — P0, 해당 후보 설치 전. S1b 제한 수락과 통합 실행 승인 후 정확한 window·상태/View·lifecycle/old writer를 확인한다. 통합 범위는 [macOS 구현 Work](FEAT-20261101-003-macos-distribution-onboarding.md)에서 선택; 나머지 후보는 미선택.
+- [Guardrails 원천 접근·native 관측 강화](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, profile/OS/runtime·보호 주장 확대 때 재개. 실제 oracle/rlimit·준비 근거와 양성/음성 대조를 보강하며 기본 온보딩의 일괄 선행조건은 아니다.
+- [Guardrails provider 전송·독립 승인 경계](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, 실제 전송 경로 확대 또는 강한 보호 요구 때 재개. 추가 문맥/수신 관측과 Host/사람 승인 경계를 별도로 확보한다.
+- [Guardrails 종료·취소 경합·crash 복구](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 진단 혼란·경합/crash 요구 또는 재현 결함 때 재개; 안전 결함이면 P1로 재판단. 효과/종료와 실제 복원 근거를 분리한다.
+- [Guardrails 탐지·정상 입력 품질](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 정상 입력 차단·새 비밀 형식 요구 때 재개. 미탐/오탐·가짜 키/인젝션과 정상 대조를 보강하며 원천 접근 권한과 구분한다.
+- [Guardrails 기존 기록·사고 대응](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, 대상 repo·열람/전송 범위 지정 또는 사고 때 별도 승인으로 재개. 잔존과 수신·키 회수/교체를 구분하며 삭제/이력 재작성은 자동 수행하지 않는다.
+- [Guardrails 일반 개발·민감자료 경로](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 해당 작업/위협 모델을 선택할 때 재개. 원래 요구의 잔여이며 합성 근거부터 접근·전송·복원 경계를 정한다.
+
 - [Windows detach 성능 개선](windows-detach-performance-followup.md#owner-planning-authorization--2026-10-28) — 정상 완료·보존 검증과 성능을 분리한다. Windows 본 검증을 우선하고 최적화는 미선택 후속으로 보류한다. 현재 Windows 검증 결과 처분 뒤 다음 작업 선택 시 재검토하며, 사용상 지연·새 규모·안전한 완료 실패가 관측되면 앞당긴다. 본 검증의 선행 조건이 아니다.
 
 - [Delegation activation labels and local-link oracle](delegation-activation-label-and-link-oracle-plan.md#owner-planning-authorization--2026-10-18) — prepare installed delegation-1 instructions that remain accurate after separately authorized activation, and correct fenced-code false positives without weakening local-link checks. Owner requested a combined follow-up plan on 2026-10-18. Closed after [Owner result acceptance](PATCH-20261018-002-delegation-label-and-link-oracle.md#owner-result-acceptance-and-source-contract-activation--2026-10-18) and the separately authorized [exact source activation](../decisions/DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation) on 2026-10-18. Git, release and adopter application remain on hold.
@@ -247,6 +258,8 @@ The original preparation recorded no candidates; the dated entry above is a late
 None created by this proposal. Allocate a plain development record ID only when a bounded task is selected and its plan approved. Before that, use [Preliminary Review Location](WORKFLOW.md#preliminary-review-location), subject to the relocation boundary above, without allocating a task ID. The selected record references the exact intake/criteria revision and owns detailed progress, reviews, result and remaining work; this index adds only navigation under the applicable Owner authorization. DR-0001 owns its contract choices. Neither editing this sentence nor accepting a contract Draft starts a development task or creates a runtime Work/intent.
 
 ## Authorized Development Records
+
+- [FEAT-20261102-001 — 같은 작업 재개와 중단 후 안내](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02): Done — 2026-11-02 Owner가 명시한 범위·한계를 전제로 수락. Git·설치·공개는 별도.
 
 - [CHORE-20261027-001 — Public History Preparation](CHORE-20261027-001-public-history-preparation.md#owner-acceptance-and-work-done--2026-10-27): Done after Owner acceptance of R1 and its remaining review limits on 2026-10-27; Git actions remain separate.
 

@@ -20,7 +20,7 @@ from typing import Any
 
 from .errors import ContractError
 from .jsonio import canonical_json_bytes
-from .workspace import classify_target, git_environment, safe_target
+from .workspace import classify_target, git_environment, git_executable, safe_target
 
 _SHA = re.compile(r"[0-9a-f]{64}\Z")
 _OID = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})\Z")
@@ -90,7 +90,7 @@ def _parents(path: str) -> list[str]:
 
 def _git(target: Path, *args: str, allowed: tuple[int, ...] = (0,), input_data: bytes | None = None, isolated_attributes: bool = False) -> subprocess.CompletedProcess[bytes]:
     try:
-        result = subprocess.run(["git", "--no-replace-objects", "-c", "core.fsmonitor=false", "-C", str(target), *args], capture_output=True, input=input_data, env={**git_environment(), "GIT_NO_LAZY_FETCH": "1", **({"GIT_ATTR_NOSYSTEM": "1"} if isolated_attributes else {})}, check=False)
+        result = subprocess.run([git_executable(), "--no-replace-objects", "-c", "core.fsmonitor=false", "-C", str(target), *args], capture_output=True, input=input_data, env={**git_environment(), "GIT_NO_LAZY_FETCH": "1", **({"GIT_ATTR_NOSYSTEM": "1"} if isolated_attributes else {})}, check=False)
     except OSError as exc:
         raise _fail("Git unavailable for content evidence") from exc
     if result.returncode not in allowed:
@@ -209,7 +209,7 @@ def _regular_files(target: Path) -> list[str]:
 
 
 def _default_git_ignore_path(target: Path) -> Path:
-    xdg = os.environ.get("XDG_CONFIG_HOME")
+    xdg = git_environment().get("XDG_CONFIG_HOME")
     if xdg:
         return Path(xdg) / "git" / "ignore"
     # Git resolves HOME itself; Windows Path.home() follows different variables.
@@ -271,7 +271,7 @@ def _verified_launcher_path(sha: str | None, window: str | None) -> str | None:
     if sha is None:
         return None
     paths = {"human-1": "hv2", "worker-1": "hv2", "umbrella-1": "hv2",
-             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia", "delegation-1": "colvia", "continuation-1": "colvia", "windows-2": "colvia", "official-execution-1": "colvia"}
+             "planning-1": "hv2", "checkout-1": "hv2", "entry-1": "colvia", "delegation-1": "colvia", "continuation-1": "colvia", "windows-2": "colvia", "official-execution-1": "colvia", "official-execution-2": "colvia"}
     if not _sha(sha) or not isinstance(window, str) or window not in paths:
         raise _fail("managed launcher proof requires a supported verified inventory window")
     return paths[window]
@@ -619,7 +619,7 @@ immediately before each write and before publication; outside actors are trusted
 
 def _allows_unchanged_crlf(verified_inventory_id: str | None) -> bool:
     """A verified active window, never a caller-facing conversion option."""
-    return verified_inventory_id in ("checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1")
+    return verified_inventory_id in ("checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1", "official-execution-2")
 
 
 def _unchanged_crlf_matches(target: Path, manifest: dict[str, Any],
@@ -1660,7 +1660,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         result = self.runtime_check(self.target)
         _keys(result, {"binding_ref", "launcher_sha256"} | ({"inventory_id"} if "inventory_id" in result else set()))
         if "inventory_id" in result:
-            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1"), "unsupported writer inventory window")
+            _require(isinstance(result["inventory_id"], str) and result["inventory_id"] in ("worker-1", "umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1", "official-execution-2"), "unsupported writer inventory window")
         validate_ref(result["binding_ref"])
         _require(result["launcher_sha256"] is None or _sha(result["launcher_sha256"]), "invalid verified launcher digest")
         _verified_launcher_path(result["launcher_sha256"], result.get("inventory_id"))
@@ -1671,7 +1671,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     @staticmethod
     def _delegation_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("delegation-1", "continuation-1", "windows-2", "official-execution-1"), "delegation history requires a delegation-capable writer")
+        _require(runtime.get("inventory_id") in ("delegation-1", "continuation-1", "windows-2", "official-execution-1", "official-execution-2"), "delegation history requires a delegation-capable writer")
 
     def _graph(self, identity, revisions, decisions, selections, manifests, current):
         from .intent import workspace_intents
@@ -1680,7 +1680,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     @staticmethod
     def _umbrella_runtime(runtime: dict[str, Any]) -> None:
-        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1"), "umbrella writer requires an installed umbrella-capable runtime")
+        _require(runtime.get("inventory_id") in ("umbrella-1", "planning-1", "checkout-1", "entry-1", "delegation-1", "continuation-1", "windows-2", "official-execution-1", "official-execution-2"), "umbrella writer requires an installed umbrella-capable runtime")
 
     def _all(self, *, _intent_graph_reader=None, _topology_observation=None,
              _continuation_errors=None) -> dict[str, Any]:

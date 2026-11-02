@@ -53,4 +53,4 @@ At Harness source closeout, follow [Adopter Impact At Development Closeout](docs
 
 ## Official Execution Candidate
 
-An explicitly installed `official-execution-1` release adds bounded document execution. Read `docs/OFFICIAL-EXECUTION.md` in that release only when that verified window is active. The default source declaration remains `continuation-1`; installation, execution, and Owner result acceptance are separate.
+An explicitly installed `official-execution-2` release adds bounded document execution. Read `docs/OFFICIAL-EXECUTION.md` in that release only when that verified window is active. The default source declaration remains `continuation-1`; installation, execution, and Owner result acceptance are separate.

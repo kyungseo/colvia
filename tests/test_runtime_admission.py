@@ -47,6 +47,7 @@ class RuntimeAdmissionTests(unittest.TestCase):
                 result=self.installed(t,mode,["status"]);self.assertEqual(16,result.returncode,result.stdout+result.stderr)
                 value=json.loads(result.stdout);self.assertEqual("unsupported",value["classification"])
                 self.assertFalse(value["runtime"]["supported"])
+                if sys.platform != "win32":self.assertEqual("unsupported",value["runtime"]["admission_path"])
                 self.assertEqual("pypy" if mode=="implementation-double" else "cpython",value["runtime"]["implementation"])
                 if sys.platform == "win32":
                     # The Windows launcher refuses before importing product readers.
@@ -141,14 +142,36 @@ class RuntimeAdmissionTests(unittest.TestCase):
         self.assertEqual(list(SUPPORTED_PYTHON_STRINGS),declaration["supported_versions"])
         self.assertEqual("final",declaration["required_releaselevel"])
         self.assertFalse(declaration["free_threaded_supported"])
+        from hv2ref.workspace import MANAGED_MACOS_RUNTIME_DECLARATION
+        self.assertEqual(MANAGED_MACOS_RUNTIME_DECLARATION,declaration["managed_macos_candidate"])
+        self.assertEqual("legacy-version-allowlist",declaration["supported_versions_scope"])
 
     def test_actual_installed_child_matches_parent_qualified_version(self):
         t=self.fixture();t.apply_init(t.preview())
         value=json.loads(t.installed(["status"]).stdout)["runtime"]
         self.assertEqual(".".join(map(str,sys.version_info[:3])),value["python"])
-        self.assertIn(value["python"],["3.14.6","3.14.7"])
+        if sys.platform == "darwin" and sys.version_info[:3] == (3, 14, 10):
+            from hv2ref.workspace import managed_macos_runtime_supported
+            self.assertTrue(managed_macos_runtime_supported())
+        else:
+            self.assertIn(value["python"],["3.14.6","3.14.7"])
         self.assertTrue(value["supported"])
+        self.assertEqual("legacy-version-allowlist",value["supported_versions_scope"])
+        expected_path = "windows-window-policy" if sys.platform == "win32" else "managed-macos-exact-tree" if sys.platform == "darwin" and sys.version_info[:3] == (3,14,10) else "legacy-version"
+        self.assertEqual(expected_path,value["admission_path"])
+        self.assertEqual("3.14.10",value["managed_macos_candidate"]["python"])
         self.assertEqual(["3.14.6","3.14.7"],value["supported_versions"])
         self.assertEqual("3.14.6",value["supported_baseline"])
         self.assertEqual("final",value["required_releaselevel"])
         self.assertFalse(value["free_threaded_supported"])
+
+    def test_admission_path_describes_each_gate_without_rechecking(self):
+        from hv2ref import workspace
+        with mock.patch.object(workspace, "managed_macos_runtime_supported", side_effect=AssertionError("second verification")):
+            self.assertEqual("unsupported",workspace.runtime_admission_path("windows-2",False))
+            self.assertEqual("windows-window-policy",workspace.runtime_admission_path("windows-2",True))
+            with mock.patch.object(sys,"platform","darwin"), mock.patch.object(sys,"version_info",(3,14,10)):
+                self.assertEqual("managed-macos-exact-tree",workspace.runtime_admission_path(None,True))
+                self.assertEqual("unsupported",workspace.runtime_admission_path(None,False))
+            with mock.patch.object(sys,"version_info",(3,14,7)):
+                self.assertEqual("legacy-version",workspace.runtime_admission_path(None,True))

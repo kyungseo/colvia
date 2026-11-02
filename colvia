@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 WORKSPACE_INVENTORY_ID = "continuation-1"
+MANAGED_MACOS_RUNTIME = False  # Set only in the separately prepared platform artifact.
 
 import hashlib
 import json
@@ -72,8 +73,10 @@ def workspace_source(root: Path) -> Path:
     # Validate every importable module before any package code executes. Full
     # product/record verification still belongs to the imported readers/guards.
     modules = ("__init__", "candidates", "cli", "continuation", "errors", "intent", "jsonio", "product", "umbrella", "view", "work", "workspace")
-    if WORKSPACE_INVENTORY_ID == "official-execution-1":
+    if WORKSPACE_INVENTORY_ID in ("official-execution-1", "official-execution-2"):
         modules += ('official_adapter', 'official_admission', 'official_documents', 'official_entry', 'official_host', 'official_os', 'official_policy', 'official_state', 'official_worker')
+    if WORKSPACE_INVENTORY_ID == "official-execution-2":
+        modules += ("official_schema", "official_v2", "official_recovery", "official_controller")
     expected = {"src/hv2ref/" + name + ".py" for name in modules}
     package = release / "payload/src/hv2ref"
     for directory in reversed((package, *package.parents)):
@@ -164,6 +167,10 @@ def main() -> int:
         if workspace.exists() or workspace.is_symlink():
             source = workspace_source(root)
             sys.path.insert(0, str(source))
+            if MANAGED_MACOS_RUNTIME:
+                from hv2ref.workspace import managed_macos_runtime_supported
+                if not managed_macos_runtime_supported():
+                    return fail("HV2-WORKSPACE-RUNTIME", "Restore the exact managed macOS runtime before opening this project.")
             from hv2ref.cli import main as cli_main
             return cli_main(workspace_target=root)
         # Source entry is an explicit trusted operator mode.
