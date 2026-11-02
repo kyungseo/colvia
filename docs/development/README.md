@@ -1,5 +1,7 @@
 # Development Index
 
+- [Windows 기본 지원과 단일 Work 온보딩](FEAT-20261102-006-windows-basic-distribution.md#owner-수락과-완료-2026-11-03) — 완료(Owner 수락, 2026-11-03). 지정 ARM64 비공개 기본 흐름과 최종 후보의 요청 저장 경로 8단계.
+
 - [첫 화면의 판단 안내와 단일 Work 후속 순서](PATCH-20261102-005-view-decision-summary.md) — 완료(Owner 수락, 2026-11-02).
 
 - [공식 실행 경고 처리와 읽기 후 취소의 제품 소스 반영](PATCH-20261102-004-official-runtime-source-port.md) — 완료(Owner 수락, 2026-11-02). 최종 패키지의 공식 재실행은 미검증.

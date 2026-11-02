@@ -4,7 +4,19 @@
 
 프로젝트에서 얻고 싶은 결과부터 정하세요. macOS arm64 배포 후보는 Colvia와 전용 Python을 준비한 뒤, 별도의 미리보기와 결정으로 프로젝트에 연결합니다. 공개 배포와 최종 검증은 진행 전입니다. 실제 프로젝트에는 승인한 검증 배포본을 사용하세요. Windows 검증도 공개 전에 완료해야 합니다.
 
-## 도구 준비하기
+## Windows 11 ARM64 비공개 검증 후보
+
+지정된 표준 계정·로컬 NTFS 시험 환경에서 검증한 경로입니다. 공급 담당자가 제공한 관리 실행 파일을 보관하고, PowerShell의 `Get-FileHash -Algorithm SHA256`으로 별도 전달받은 값과 대조하세요. 관리 도구는 PATH에 등록하지 않으므로 보관한 실행 파일의 전체 경로를 사용합니다. 일반 배포 후보는 사용자 로컬 앱 데이터의 Colvia 폴더를 사용하고, 격리 시험 후보는 빌드할 때 정한 시험 폴더만 사용합니다.
+
+```powershell
+$Manage = 'C:\Tools\Colvia\colvia-manage.exe'  # 제공받은 실행 파일의 실제 경로
+& $Manage prepare --runtime-zip 'C:\Downloads\python-3.14.7-embed-arm64.zip'
+& $Manage install --target (Get-Location).Path --json
+```
+
+첫 명령은 공식 원본 ZIP을 대조한 뒤 전용 Python과 관리 파일을 준비합니다. 관리 도구의 온라인 원본 다운로드 경로는 이번 오프라인 VM 시험과 별도로 검증해야 합니다. 두 번째 명령은 현재 프로젝트를 연결할 범위와 요청 파일, 확인값을 보여줍니다. 내용을 확인한 뒤 에이전트에게 “저장한 요청대로 이 프로젝트에 연결해줘”라고 말하세요. 연결한 프로젝트에서는 같은 관리 도구의 `start`, `view`, `resume`으로 첫 작업이나 이어갈 작업을 확인할 수 있습니다. 갱신·롤백·복구·프로젝트 연결 해제에도 각각의 미리보기가 있습니다. `remove`는 프로젝트의 작업·승인 기록과 전용 Python을 보존합니다.
+
+## macOS 도구 준비하기
 
 배포본에 명시된 버전과 bootstrap 해시를 사용합니다. bootstrap을 지속 보관할 위치에 내려받고 별도로 제공된 SHA-256과 대조한 뒤, 인수 없이 실행하세요. 저장 위치와 보존 범위를 검토하고 표시된 정확한 확인값으로 적용합니다. 도구와 Python은 `~/Library/Application Support/Colvia`에 준비됩니다. 이 경로는 저장소 clone, Homebrew 설치, shell 설정 편집을 요구하지 않습니다.
 
