@@ -1,5 +1,7 @@
 # Development Index
 
+- [단일 Work 맡기기와 로컬 결과 통지](FEAT-20261103-001-single-work-local-delivery.md) — 완료(Owner 수락, 2026-11-03). macOS·지정 Windows ARM64의 단일 Work 수신함과 로컬 알림 호출.
+
 - [Windows 기본 지원과 단일 Work 온보딩](FEAT-20261102-006-windows-basic-distribution.md#owner-수락과-완료-2026-11-03) — 완료(Owner 수락, 2026-11-03). 지정 ARM64 비공개 기본 흐름과 최종 후보의 요청 저장 경로 8단계.
 
 - [첫 화면의 판단 안내와 단일 Work 후속 순서](PATCH-20261102-005-view-decision-summary.md) — 완료(Owner 수락, 2026-11-02).

@@ -1760,6 +1760,8 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
         if not plan["remove"] and plan["schema_version"] not in (4, 5, 6, 7, 8):
             return _entry_replay_result(target, plan, classification="replayed")
         with writer_guard(target):
+            from .workspace import guard_delivery_transition
+            guard_delivery_transition(target)
             if installed:
                 with _switch_read_scope(target):
                     require_workspace_runtime(target)
@@ -1785,6 +1787,8 @@ def workspace_switch_apply(target: Path, plan: dict[str, Any], *, confirm_token:
         windows_preflight_files(paths)
     native_preflight()
     with writer_guard(target):
+        from .workspace import guard_delivery_transition
+        guard_delivery_transition(target)
         if installed:
             with _switch_read_scope(target):
                 require_workspace_runtime(target)
@@ -2080,6 +2084,8 @@ def workspace_repair_apply(source: Path, target: Path, request: dict[str, Any], 
     receipt={"record_type":"lifecycle-receipt", "schema_version":plan["schema_version"], "operation_id":plan["operation_id"], "plan":plan,
              "prior_binding_ref":plan["expected_binding_ref"], "result_binding_ref":plan["expected_binding_ref"]}
     with writer_guard(target):
+        from .workspace import guard_delivery_transition
+        guard_delivery_transition(target)
         _serial_require(candidate == workspace_candidate(source), "repair source changed")
         _repair_preflight(target,request,candidate,recover=recover)
         _visible_truth(target,[f["path"] for f in request["files"]])
@@ -2482,6 +2488,8 @@ def workspace_detach_apply(target: Path, plan: dict[str, Any], *, confirm_token:
     if previous and previous["classification"]=="detached":return {**previous,"replayed":True}
     _visible_truth(target,[".hrn/detached.json"]+[e["path"] for e in plan["preserve"]])
     with writer_guard(target,purpose="detach-recovery" if previous else "work"):
+        from .workspace import guard_delivery_transition
+        guard_delivery_transition(target)
         if installed:_detach_initial_read(target, require_workspace_runtime)
         previous=preflight()
         _visible_truth(target,[".hrn/detached.json"]+[e["path"] for e in plan["preserve"]])

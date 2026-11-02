@@ -236,7 +236,7 @@ def _view_parser(sub, target):
     help_parser = sub.add_parser("help", aliases=["?"], help="조회 명령과 질문 예시")
     help_parser.add_argument("--target", type=Path, default=target)
     p = sub.add_parser("view", help="read-only human review; never applies a decision")
-    p.add_argument("kind", nargs="?", choices=("intent", "work", "continuation", "confirmation", "candidates"))
+    p.add_argument("kind", nargs="?", choices=("intent", "work", "continuation", "confirmation", "candidates", "inbox"))
     p.add_argument("object_id", nargs="?")
     p.add_argument("--target", type=Path, default=target)
     p.add_argument("--revision")
@@ -279,6 +279,21 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
     candidate.add_argument("--target", type=Path, default=target)
     candidate.add_argument("--input", default="-", help="canonical candidate-request JSON; agent prepares input")
     candidate.add_argument("--inject-at", choices=("after-temporary", "after-directory", "before-replace", "after-replace"), help=argparse.SUPPRESS)
+    handoff = sub.add_parser("handoff", help="작업 하나를 맡기고 로컬 수신함에서 답변과 결과 확인")
+    actions = handoff.add_subparsers(dest="action", required=True)
+    for name in ("prepare", "start", "answer", "stop", "inspect", "close-unknown", "show", "_step"):
+        command = actions.add_parser(name)
+        command.set_defaults(target=target)
+        if name != "prepare":
+            command.add_argument("key", help="접수 확인값")
+        if name in ("prepare", "start"):
+            command.add_argument("--input", default="-")
+        if name == "answer":
+            command.add_argument("--question", required=True)
+        if name == "close-unknown":
+            command.add_argument("--confirm", required=True)
+        if name == "_step":
+            command.add_argument("--epoch", type=int, required=True)
     execution = sub.add_parser("run", help="preview a bounded official document execution; installed official window only")
     execution.add_argument("action", nargs="?", default="prepare", choices=("prepare", "execute", "status", "cancel", "resolve"))
     execution.add_argument("--target", type=Path, default=target)
@@ -298,6 +313,10 @@ def workspace_run(args: argparse.Namespace) -> object:
     if args.command in {"status", "doctor"}: return _doctor_status(args)
     # Reject source/worker/foreign-target entry before reading or publishing records.
     require_workspace_runtime(args.target)
+    if args.command == "handoff":
+        from .continuation import delivery_command
+        value = _workspace_input(args.input) if args.action in ("prepare","start") else None
+        return delivery_command(args.target,args,value)
     if args.command in ("update","rollback"): return _workspace_switch(args, installed=True)
     if args.command == "detach": return _workspace_detach(args,installed=True)
     if args.command == "run":

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+from contextlib import contextmanager
 from datetime import datetime
 import os
 import re
@@ -597,3 +598,451 @@ class ContinuationStore:
             if inject_at == "after-current":
                 raise InjectedCrash(inject_at)
             return read_continuation(self.target, wid)
+
+
+# Delivery uses the existing verified continuation module so old release
+# inventories, rollback manifests and launchers keep their exact path sets.
+def _delivery_require(condition, message):
+    if not condition:
+        raise ContractError("COLVIA-DELIVERY", message)
+
+
+def _delivery_observe(target, wid):
+    from .product import require_workspace_runtime
+    from .intent import require_no_pending_intents
+    identifier(wid)
+    runtime = require_workspace_runtime(target)
+    _delivery_require(runtime["inventory_id"] in ("continuation-1", "windows-2", "official-execution-2"),
+                      "이 배포본에서는 작업을 맡길 수 없습니다.")
+    store = work.WorkStore(target)
+    graphs = store._all()
+    require_no_pending_intents(target)
+    require_no_pending(target, works=graphs)
+    _delivery_require(wid in graphs, "지정한 Work를 찾을 수 없습니다.")
+    graph = graphs[wid]
+    _delivery_require(graph["state"] == "active" and graph["current"]
+                      and not any(g["pending_decisions"] or g["pending_selections"] for g in graphs.values()),
+                      "활성 작업과 미처리 결정을 확인해 주세요.")
+    ref = graph["current"]["selection_ref"]
+    revision = graph["revisions"][graph["selections"][ref["id"]]["revision_ref"]["id"]]
+    store._intent(revision, graph["identity"])
+    _delivery_require(revision["schema_version"] == 1 and revision["execution_context"]["mode"] == "local",
+                      "이 기능은 로컬 일반 Work에서 사용할 수 있습니다.")
+    from .intent import read_workspace_intent_graph
+    from .view import _work_label
+    iid = revision["intent_ref"]["id"]
+    label = _work_label(wid, graph, {iid: read_workspace_intent_graph(target, iid)})
+    return {"project": str(target), "work_id": wid, "label":label, "binding": runtime["binding_ref"],
+            "home": graph["identity"]["authority_home_id"], "selection": ref,
+            "intent": revision["intent_ref"], "scope": revision["scope"]}, graph
+
+
+def _delivery_validate(target, request):
+    from time import time
+    exact(request, {"work_id", "action", "payload", "expires", "ask", "notify"})
+    wid, action, payload = request["work_id"], request["action"], request["payload"]
+    _delivery_require(type(request["expires"]) is int and time() < request["expires"] <= time()+86400,
+                      "24시간 이내의 유효 기한을 지정해 주세요.")
+    _delivery_require(type(request["ask"]) is bool and type(request["notify"]) is bool, "안내 옵션을 확인해 주세요.")
+    observed, graph = _delivery_observe(target, wid)
+    if action == "summary":
+        _delivery_require(payload is None, "작업 요약에는 추가 입력이 필요하지 않습니다.")
+    elif action == "submit":
+        exact(payload, {"identity","revision","manifest","selection_id","operation_id"})
+        revision = work.validate_work_record(payload["revision"])
+        work.validate_manifest(payload["manifest"], scope=revision["scope"])
+        for field in ("selection_id","operation_id"):
+            identifier(payload[field])
+        _delivery_require(payload["identity"] == graph["identity"] and revision["work_id"] == wid
+                          and revision["schema_version"] == 1 and revision["operation"] == "submit-result"
+                          and revision["expected_prior_selection"] == observed["selection"]
+                          and revision["intent_ref"] == observed["intent"] and revision["scope"] == observed["scope"]
+                          and revision["execution_context"]["mode"] == "local",
+                          "현재 Work의 승인된 범위와 제출 결과를 대조해 주세요.")
+    elif action == "execute":
+        from .product import require_workspace_runtime
+        _delivery_require(require_workspace_runtime(target)["inventory_id"] == "official-execution-2",
+                          "공식 문서 실행은 해당 macOS 배포본에서 사용할 수 있습니다.")
+        from .official_entry import prepare
+        exact(payload, {"spec","confirm_token"})
+        spec = payload["spec"]
+        _delivery_require(isinstance(spec, dict) and isinstance(spec.get("request"), dict) and isinstance(payload["confirm_token"],str), "공식 실행 미리보기를 확인해 주세요.")
+        _delivery_require(spec["request"].get("work_id") == wid and spec.get("target") == str(target)
+                          and type(spec["request"].get("expires_wall_ns")) is int
+                          and spec["request"]["expires_wall_ns"] <= request["expires"] * 10**9,
+                          "공식 실행의 Work·프로젝트·기한을 확인해 주세요.")
+        checked = prepare(target, spec["request"])
+        _delivery_require(checked["spec"] == spec and checked["confirm_token"] == payload["confirm_token"],
+                          "공식 실행 미리보기가 달라졌습니다.")
+    else:
+        _delivery_require(False, "선택할 수 있는 단계는 요약, 준비한 결과 제출, 공식 문서 실행입니다.")
+    plan = {"version": 1, "route": "local-work-inbox", "source": observed, "request": request}
+    _delivery_require(len(canonical_json_bytes(plan)) <= 1024*1024, "맡길 요청이 너무 큽니다.")
+    return plan
+
+
+def _delivery_db(target, *, create=False, read=False):
+    from .workspace import delivery_folder
+    import sqlite3
+    # Keep the local mailbox outside all project snapshots and rollback inventories.
+    folder = delivery_folder(target)
+    if not os.path.lexists(folder) and not create:
+        return None
+    if create:
+        folder.mkdir(mode=0o700, exist_ok=True)
+    def plain(p, is_dir):
+        info = p.lstat()
+        return ((stat.S_ISDIR(info.st_mode) if is_dir else stat.S_ISREG(info.st_mode) and info.st_nlink == 1)
+                and not (getattr(info, "st_file_attributes", 0) & 0x400)
+                and (os.name == "nt" or (info.st_uid == os.getuid() and info.st_mode & 0o077 == 0)))
+    _delivery_require(plain(folder, True) and folder.resolve() == folder, "수신함 위치와 접근 권한을 확인해 주세요.")
+    p = folder / "inbox.db"
+    if create:
+        try: fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError: pass
+        else: os.close(fd)
+    if not os.path.lexists(p):
+        return None
+    _delivery_require(plain(p, False), "수신함 파일을 확인해 주세요.")
+    for extra in folder.iterdir():
+        _delivery_require(extra.name in ("inbox.db","inbox.db-journal","effect.lock") and plain(extra, False),
+                          "수신함에 확인이 필요한 파일이 있습니다.")
+    db = sqlite3.connect(p.as_uri() + ("?mode=ro" if read else "?mode=rw"), uri=True, timeout=5)
+    db.row_factory = sqlite3.Row
+    db.execute("PRAGMA trusted_schema=OFF")
+    if create:
+        with db:
+            db.execute("""CREATE TABLE IF NOT EXISTS delivery
+                (id TEXT PRIMARY KEY, wid TEXT NOT NULL, plan TEXT NOT NULL, phase TEXT NOT NULL,
+                 epoch INTEGER NOT NULL, used INTEGER NOT NULL, expires INTEGER NOT NULL,
+                 result TEXT, notice TEXT NOT NULL, changed INTEGER NOT NULL)""")
+            db.execute("""CREATE UNIQUE INDEX IF NOT EXISTS one_active ON delivery ((1))
+                WHERE phase IN ('queued','question','running','reconcile')""")
+    return db
+
+
+@contextmanager
+def _delivery_fence(target):
+    """Exclude a live effect while explicitly closing an uncertain receipt."""
+    from .workspace import delivery_folder
+    anchor = delivery_folder(target) / "effect.lock"
+    fd = os.open(anchor, os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0), 0o600)
+    try:
+        opened = os.fstat(fd)
+        linked = anchor.lstat()
+        _delivery_require(stat.S_ISREG(linked.st_mode) and os.path.samestat(opened, linked)
+                          and opened.st_nlink == 1 and not (getattr(linked, "st_file_attributes", 0) & 0x400)
+                          and (os.name == "nt" or (opened.st_uid == os.getuid() and opened.st_mode & 0o077 == 0)),
+                          "실행 잠금 파일을 확인해 주세요.")
+        try:
+            if os.name == "nt":
+                import msvcrt
+                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as error:
+            raise ContractError("COLVIA-DELIVERY", "실행 작업자가 사용 중입니다. 기존 결과를 확인해 주세요.") from error
+        yield
+    finally:
+        os.close(fd)
+
+
+def _delivery_close_token(row, now):
+    if row["used"] == 1 and row["phase"] in ("running", "reconcile") and row["expires"] <= now:
+        return work._digest(["close-unknown", row["id"], row["epoch"], row["phase"], row["expires"]])
+    return None
+
+
+def _delivery_effect_ids(request):
+    payload = request["payload"]
+    if request["action"] == "submit":
+        return {("operation", payload["operation_id"]), ("selection", payload["selection_id"]),
+                ("revision", payload["revision"]["record_id"])}
+    if request["action"] == "execute":
+        return {("grant", payload["confirm_token"])}
+    return set()
+
+
+def _delivery_command(target, key, epoch):
+    import subprocess
+    # Launcher rechecks the installed modules; the child receives no inherited terminal.
+    launcher = str(target / "colvia")
+    with open(launcher, "rb") as stream:
+        use_shell_launcher = sys.platform == "darwin" and stream.readline(32) == b"#!/bin/sh\n"
+    prefix = [launcher] if use_shell_launcher else [sys.executable, "-I", "-B", launcher]
+    options = {"creationflags": subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP} if os.name == "nt" else {"start_new_session": True}
+    return subprocess.Popen(prefix + ["handoff", "_step", key, "--epoch", str(epoch)], cwd=target,
+                            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                            close_fds=True, **options)
+
+
+def _delivery_notify():
+    import subprocess
+    if sys.platform == "darwin":
+        args = ["/usr/bin/osascript", "-e", 'display notification "Colvia에서 작업을 확인하세요." with title "Colvia"']
+    elif os.name == "nt":
+        # Fixed local UI only. No registration, script file, policy bypass or input interpolation.
+        import ctypes
+        buf = ctypes.create_unicode_buffer(32768)
+        size = ctypes.windll.kernel32.GetSystemDirectoryW(buf, len(buf))
+        if not 0 < size < len(buf): return "unavailable"
+        shell = Path(buf.value) / "WindowsPowerShell/v1.0/powershell.exe"
+        code = ("$ErrorActionPreference='Stop';Add-Type -AssemblyName System.Windows.Forms;"
+                "Add-Type -AssemblyName System.Drawing;$n=New-Object System.Windows.Forms.NotifyIcon;"
+                "try {$n.Icon=[Drawing.SystemIcons]::Information;$n.Visible=$true;"
+                "$n.ShowBalloonTip(3500,'Colvia','Open Colvia to see your work.',[Windows.Forms.ToolTipIcon]::Info);"
+                "Start-Sleep -Milliseconds 3800} finally {$n.Dispose()}")
+        args = [str(shell), "-NoProfile", "-NonInteractive", "-Command", code]
+    else: return "unavailable"
+    try:
+        result = subprocess.run(args, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                timeout=12, creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+    except (OSError, subprocess.TimeoutExpired):
+        return "unavailable"
+    return "api_returned" if result.returncode == 0 else "unavailable"
+
+
+def _delivery_report(target, plan):
+    action = plan["request"]["action"]
+    payload = plan["request"]["payload"]
+    if action == "summary":
+        from .view import render_view
+        view, code = render_view(target, kind="work", object_id=plan["source"]["work_id"], installed=True)
+        _delivery_require(code == 0, "작업을 조회할 수 없습니다.")
+        if len(view) > 32768:
+            view = view[:32700].rpartition("\n")[0] + "\n상세는 현재 Work에서 이어서 확인하세요."
+        return {"message":"작업 현황을 정리했습니다.", "view":view}
+    if action == "submit":
+        graph = work.WorkStore(target).publish(payload["identity"],payload["revision"],payload["manifest"],
+                    selection_id=payload["selection_id"],operation_id=payload["operation_id"])
+        _delivery_require(graph["state"] == "review", "제출된 결과 기록을 확인해 주세요.")
+        return {"message":"결과를 제출했습니다. 검토해 주세요.", "selection":graph["current"]["selection_ref"]}
+    from .official_entry import execute
+    observed = execute(target,payload["spec"],payload["confirm_token"])
+    from .official_state import public_status, read_capsule
+    receipt = public_status(read_capsule(target, payload["confirm_token"]))
+    _delivery_require(observed.get("head") == receipt["head"] and receipt.get("status") == "completed" and receipt.get("process_observation") == "closed",
+                      "실행 기록과 문서 반영 상태를 확인해 주세요.")
+    return {"message":"문서 실행 결과가 준비됐습니다.", "head":observed["head"], "effect":observed["document_write_effect"]}
+
+
+def _delivery_public(row):
+    import json,time
+    state = row["phase"]
+    if state in ("queued","question","running") and row["expires"] <= time.time():
+        state = "expired" if row["used"] == 0 else "reconcile"
+    plan = json.loads(row["plan"])
+    _delivery_require(work._digest(plan)==row["id"] and plan["source"]["work_id"]==row["wid"]
+                      and row["used"] in (0,1) and type(row["epoch"]) is int,
+                      "수신함과 접수 원본을 대조해 주세요.")
+    messages = {"queued":"맡긴 작업의 시작을 기다립니다.", "question":"이 단계를 이어갈까요? 계속 또는 중단을 선택하세요.",
+                "running":"승인한 단계에 진입했습니다. 결과가 늦으면 기존 실행 기록을 확인하세요.",
+                "expired":"기한이 끝났습니다. 접수 기록을 확인해 마무리하세요.", "done":"결과가 준비됐습니다.", "stopped":"작업을 중단했습니다.",
+                "unresolved":"실제 반영 여부를 확인할 수 없어 접수를 닫았습니다. 이력은 수신함에 보관했습니다.",
+                "reconcile":"기존 작업 기록과 문서 반영 상태를 확인해 주세요."}
+    return {"id":row["id"],"work_id":row["wid"],"status":state,"message":messages[state],
+            "result":json.loads(row["result"]) if row["result"] else None,"notification":row["notice"],
+            "reserved_steps":row["used"],"step_limit":1,"expires":row["expires"],
+            "close_token":_delivery_close_token(row, time.time()),
+            "action":plan["request"]["action"],"scope":plan["source"]["scope"],
+            "label":plan["source"]["label"], "question_id":(row["id"]+".1") if state=="question" else None}
+
+
+def require_delivery_idle(target):
+    from contextlib import closing
+    db = _delivery_db(target, read=True)
+    if db is not None:
+        with closing(db):
+            active = db.execute("SELECT id FROM delivery WHERE phase IN ('queued','question','running','reconcile') LIMIT 1").fetchone()
+        _delivery_require(active is None, "먼저 맡긴 Work를 마무리한 뒤 프로젝트 연결을 변경해 주세요.")
+
+
+def delivery_inbox(target, wid=None):
+    import sqlite3
+    try:
+        return _delivery_rows(target, wid)
+    except (sqlite3.Error, KeyError, TypeError, ValueError, OSError) as error:
+        raise ContractError("COLVIA-INBOX", "수신함 기록을 확인해 주세요. 기존 기록을 보존했습니다.") from error
+
+
+def _delivery_rows(target, wid=None):
+    from contextlib import closing
+    db = _delivery_db(safe_target(target),read=True)
+    if db is None: return []
+    with closing(db):
+        if wid is None:
+            rows=db.execute("SELECT * FROM delivery ORDER BY changed DESC, rowid DESC LIMIT 20")
+        else:
+            identifier(wid)
+            rows=db.execute("SELECT * FROM delivery WHERE wid=? ORDER BY changed DESC, rowid DESC LIMIT 20",(wid,))
+        return [_delivery_public(row) for row in rows]
+
+
+def _delivery_recover(target, row, plan):
+    """Only positive evidence can turn an interrupted receipt into a result."""
+    req = plan["request"]
+    if req["action"] == "submit":
+        data = req["payload"]
+        graph = work.read_work(target, row["wid"])
+        selection = graph["selections"].get(data["selection_id"])
+        if (selection and data["selection_id"] not in graph["pending_selections"]
+                and selection["operation_id"] == data["operation_id"]
+                and selection["revision_ref"] == work.record_ref(data["revision"])
+                and graph["revisions"].get(data["revision"]["record_id"]) == data["revision"]):
+            return {"message":"기존 기록에서 결과 제출을 확인했습니다.", "selection":work.record_ref(selection)}
+    if req["action"] == "execute":
+        from .official_state import public_status, read_capsule
+        receipt = public_status(read_capsule(target, req["payload"]["confirm_token"]))
+        if receipt["status"] == "completed" and receipt.get("process_observation") == "closed":
+            return {"message":"기존 기록에서 공식 실행 완료를 확인했습니다.", "head":receipt["head"],
+                    "effect":receipt["document_write_effect"]}
+    return None
+
+
+def delivery_command(target, args, value=None):
+    if args.action == "show" or args.action == "start":
+        from contextlib import closing
+        key = args.key
+        _delivery_require(type(key) is str and re.fullmatch(r"[a-f0-9]{64}",key), "접수 확인값을 확인해 주세요.")
+        if args.action == "start":
+            _delivery_require(type(value) is dict and work._digest(value)==key and value.get("source",{}).get("project")==str(target),
+                              "이 프로젝트의 정확한 미리보기를 지정해 주세요.")
+        db = _delivery_db(target,read=True)
+        if db is not None:
+            with closing(db):
+                row = db.execute("SELECT * FROM delivery WHERE id=?", (key,)).fetchone()
+            if row is not None:
+                return _delivery_public(row)
+        _delivery_require(args.action != "show", "접수된 Work를 찾을 수 없습니다.")
+        with writer_guard(target):
+            return _delivery_dispatch(target, args, value)
+    if args.action == "close-unknown":
+        from contextlib import closing
+        db = _delivery_db(target, read=True)
+        _delivery_require(db is not None, "해당 작업의 수신함을 찾을 수 없습니다.")
+        with closing(db), _delivery_fence(target), writer_guard(target):
+            return _delivery_dispatch(target, args, value)
+    return _delivery_dispatch(target, args, value)
+
+
+def _delivery_dispatch(target, args, value):
+    import json, sqlite3, time
+    from contextlib import closing
+    now=lambda: int(time.time())
+    target=safe_target(target)
+    if args.action=="prepare":
+        plan=_delivery_validate(target,value)
+        preview = {"label":plan["source"]["label"],"action":value["action"],"scope":plan["source"]["scope"],
+                   "expires":value["expires"],"step_limit":1,"question_before_step":value["ask"],"device_notice":value["notify"]}
+        return {"preview":preview,"plan":plan,"confirm_token":work._digest(plan),"steps":1,"recipient":"이 Work의 로컬 수신함",
+                "meaning":"확인한 작업과 범위만 맡깁니다."}
+    key=args.key
+    _delivery_require(type(key) is str and re.fullmatch(r"[a-f0-9]{64}",key), "접수 확인값을 확인해 주세요.")
+    if args.action == "start":
+        _delivery_require(value == _delivery_validate(target,value["request"]), "미리보기가 달라졌습니다.")
+    db=_delivery_db(target,create=args.action=="start")
+    _delivery_require(db is not None, "해당 작업의 수신함을 찾을 수 없습니다.")
+    with closing(db):
+        db.execute("BEGIN IMMEDIATE")
+        row=db.execute("SELECT * FROM delivery WHERE id=?",(key,)).fetchone()
+        if args.action=="start":
+            _delivery_require(type(value) is dict and work._digest(value)==key and value.get("source",{}).get("project")==str(target),
+                              "이 프로젝트의 정확한 접수 미리보기가 필요합니다.")
+            if row is not None:
+                return _delivery_public(row)
+            _delivery_require(value==_delivery_validate(target,value["request"]), "미리보기가 달라졌습니다.")
+            req=value["request"]
+            effect_ids = _delivery_effect_ids(req)
+            if effect_ids:
+                for prior in db.execute("SELECT plan FROM delivery WHERE wid=? AND phase='unresolved'", (req["work_id"],)):
+                    _delivery_require(effect_ids.isdisjoint(_delivery_effect_ids(json.loads(prior["plan"])["request"])),
+                                      "같은 실행이 미확인 상태로 종결됐습니다. 기존 Work 기록을 확인해 주세요.")
+            try:
+                db.execute("INSERT INTO delivery VALUES (?,?,?,'queued',1,0,?,NULL,'none',?)",
+                           (key,req["work_id"],canonical_json_bytes(value).decode(),req["expires"],now()))
+            except sqlite3.IntegrityError:
+                raise ContractError("COLVIA-DELIVERY","먼저 맡긴 작업의 상태를 확인해 주세요.") from None
+            epoch=1
+        else:
+            _delivery_require(row is not None, "접수된 Work를 찾을 수 없습니다.")
+            plan=json.loads(row["plan"]); request=plan["request"];epoch=row["epoch"]
+            _delivery_require(work._digest(plan)==key and row["wid"]==plan["source"]["work_id"], "접수 기록을 확인해 주세요.")
+            if args.action in ("inspect", "close-unknown"):
+                if args.action == "close-unknown":
+                    _delivery_require(bool(args.confirm) and args.confirm == _delivery_close_token(row, now()),
+                                      "기한이 지난 접수의 최신 확인값이 필요합니다.")
+                if row["used"] == 0 and row["phase"] in ("queued","question","reconcile") and row["expires"] <= now():
+                    db.execute("UPDATE delivery SET phase='stopped',epoch=epoch+1,changed=? WHERE id=?",(now(),key))
+                elif row["phase"] in ("reconcile","running","unresolved") and row["used"] == 1:
+                    try:
+                        result = _delivery_recover(target,row,plan)
+                    except (OSError, ValueError, ContractError):
+                        result = None
+                    if result is not None:
+                        db.execute("UPDATE delivery SET phase='done',epoch=epoch+1,result=?,changed=? WHERE id=?",
+                                   (json.dumps(result,ensure_ascii=False),now(),key))
+                    elif args.action == "close-unknown":
+                        db.execute("UPDATE delivery SET phase='unresolved',epoch=epoch+1,changed=? WHERE id=?", (now(),key))
+                    elif plan["request"]["action"]=="summary" and row["expires"]<=now():
+                        db.execute("UPDATE delivery SET phase='stopped',epoch=epoch+1,changed=? WHERE id=?",(now(),key))
+                db.commit()
+                return _delivery_public(db.execute("SELECT * FROM delivery WHERE id=?",(key,)).fetchone())
+            if args.action=="stop":
+                if row["phase"] in ("queued","question"):
+                    db.execute("UPDATE delivery SET phase='stopped',epoch=epoch+1,changed=? WHERE id=?",(now(),key))
+                elif row["phase"]=="running":
+                    db.execute("UPDATE delivery SET phase='reconcile',epoch=epoch+1,changed=? WHERE id=?",(now(),key))
+                db.commit()
+                return _delivery_public(db.execute("SELECT * FROM delivery WHERE id=?",(key,)).fetchone())
+            if args.action=="answer":
+                _delivery_require(row["phase"]=="question" and args.question==key+".1" and row["expires"]>now(),
+                                  "현재 질문과 유효 기한을 확인해 주세요.")
+                _delivery_require(plan==_delivery_validate(target,request),"작업이나 승인 범위가 바뀌었습니다.")
+                epoch+=1
+                db.execute("UPDATE delivery SET phase='queued',epoch=?,notice='none',changed=? WHERE id=?",(epoch,now(),key))
+            elif args.action=="_step":
+                if row["phase"]!="queued" or args.epoch!=epoch: return {"status":"already-handled"}
+                if row["expires"]<=now():
+                    db.execute("UPDATE delivery SET phase='stopped',changed=? WHERE id=?",(now(),key));db.commit()
+                    return {"status":"expired"}
+                question=request["ask"] and epoch==1
+                if question:
+                    db.execute("UPDATE delivery SET phase='question',notice=?,changed=? WHERE id=?",
+                               ("attempted" if request["notify"] else "off",now(),key))
+                else:
+                    reserved = db.execute("UPDATE delivery SET phase='running',used=1,changed=? WHERE id=? AND used=0 AND phase='queued' AND epoch=?",(now(),key,epoch))
+                    _delivery_require(reserved.rowcount == 1, "이미 예약한 단계입니다.")
+                db.commit()
+                if not question:
+                    entered_effect = False
+                    try:
+                        with _delivery_fence(target):
+                            _delivery_require(_delivery_validate(target,request)==plan,"작업·범위 변경")
+                            # Fence cancellation before effect; after this point preserve uncertain effects.
+                            latest=db.execute("SELECT phase,epoch FROM delivery WHERE id=?",(key,)).fetchone()
+                            if tuple(latest) != ("running",epoch):
+                                with db:
+                                    db.execute("UPDATE delivery SET phase='stopped',changed=? WHERE id=? AND phase='reconcile' AND epoch=?",(now(),key,epoch+1))
+                                return {"status":"stopped-before-effect"}
+                            _delivery_require(now() < request["expires"], "승인 기한이 끝났습니다.")
+                            entered_effect = request["action"] != "summary"
+                            result=_delivery_report(target,plan)
+                            phase="done"
+                    except Exception:
+                        phase = "reconcile" if entered_effect else "stopped"
+                        result = {"message":"실행 기록과 문서 반영 상태를 대조해 주세요." if entered_effect else "단계 실행 전에 중단했습니다. 작업 상태와 기한을 확인해 주세요."}
+                    with db:
+                        updated=db.execute("UPDATE delivery SET phase=?,result=?,notice=?,changed=? WHERE id=? AND phase='running' AND epoch=?",
+                            (phase,json.dumps(result,ensure_ascii=False),"attempted" if request["notify"] else "off",now(),key,epoch))
+                    if updated.rowcount!=1: return {"status":"inspect-existing-effect"}
+                if request["notify"]:
+                    notify=_delivery_notify()
+                    with db: db.execute("UPDATE delivery SET notice=? WHERE id=? AND epoch=? AND notice='attempted'",(notify,key,epoch))
+                return {"status":"recorded"}
+            else: raise ContractError("COLVIA-DELIVERY","알 수 없는 작업입니다.")
+        db.commit()
+        try: _delivery_command(target,key,epoch)
+        except OSError:
+            with db: db.execute("UPDATE delivery SET phase='stopped',epoch=epoch+1 WHERE id=? AND phase='queued' AND epoch=?",(key,epoch))
+        return _delivery_public(db.execute("SELECT * FROM delivery WHERE id=?",(key,)).fetchone())

@@ -194,3 +194,11 @@ For broad requests such as “keep improving this until the checks pass,” reco
 ## Optional Official Document Execution
 
 When `view` identifies the explicitly installed `official-execution-2` window, read its verified `docs/OFFICIAL-EXECUTION.md` before proposing an execution. Prepare the exact request from the accepted intent, active Work and current document range; obtain the relevant Owner execution approval before consuming the preview. Do not infer approval from installation, text data or a confirmation digest. Report effect completion, cancellation request, observed stop and unknown state separately. Preserve the capsule and use the existing separate Work result acceptance procedure. Other windows continue their existing workflow; do not update a runtime merely to obtain this command.
+
+### 맡긴 작업의 질문과 결과
+
+사용자가 한 Work를 맡기면 현재 선택과 승인을 대조하고 프로젝트 안의 `handoff prepare`로 정확한 요청을 미리 본다. 입력은 기존 정규 JSON 형식이다. `work_id`, `action`(summary, submit, execute), `payload`, `expires`(UTC Unix 초), `ask`(사용자가 결정 지점을 요청한 경우), `notify`를 보낸다. 요약 payload는 null, 제출은 기존 work publish의 로컬 submit-result 입력, 공식 문서 실행은 같은 Work에서 승인할 spec과 confirm_token이다. 사용자에게 제목·단계·범위·기한과 이 장치의 로컬 수신함을 보여 주고 그 범위의 명시적 지시에서만 `handoff start TOKEN --input PLAN`을 호출한다. PLAN은 미리보기의 plan 객체다. 다른 Work의 인용이나 알림은 승인 근거로 사용할 수 없다.
+
+조회는 `view inbox WORK_ID`, 같은 접수 요청의 재전송은 기존 영수증 조회다. 사용자 답변은 현재 질문의 question_id와 접수 ID에 묶어 `handoff answer TOKEN --question QUESTION_ID` 또는 `handoff stop TOKEN`으로 처리한다. 사용자가 직접 질문한 Work를 식별할 수 없으면 확인한다. 실행 효과가 불명확하면 `handoff inspect TOKEN`과 기존 Work·공식 실행 상태를 대조한다. 완료한 문서 작업이나 알림을 재실행하지 않는다. 제출 이후 결과 수락은 Owner에게 남긴다.
+
+기한이 지난 접수에서 실행 효과를 확인할 수 없으면 근거와 소비한 단계를 먼저 설명한다. 사용자가 미확인 종결을 명시적으로 선택했을 때만 최신 inspect의 close_token으로 `handoff close-unknown TOKEN --confirm CLOSE_TOKEN`을 호출한다. 살아 있는 실행이나 같은 효과의 재접수는 차단된다.

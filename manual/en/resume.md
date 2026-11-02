@@ -26,3 +26,11 @@ For a completed task, ask for one recommendation or compare named alternatives. 
 If the runtime is missing after moving or cloning the project, acquire the exact pinned runtime from the trusted release. If the installed entry is damaged, use an independent trusted distribution and [Operations](../../docs/OPERATIONS.md). Preserve detached records for supported reading rather than treating them as a fresh project.
 
 Fresh CLI-process reads and synthetic agent behavior are different observations. Record which was actually checked and retain unobserved real-project limitations.
+
+## Hand off one Work item
+
+Ask the agent to continue an approved Work item and tell you when its result is ready. Review the title, action, scope, deadline and local inbox before confirming. A one-shot process continues after the submitting client exits while the device and user session are available. The supported actions are summarizing one active Work, submitting an already prepared result for review, and running a previously prepared document execution on the official macOS profile.
+
+Ask whether the Work has a question or result, or open `colvia view inbox` from the project. Answer a question in that Work or stop the request. Device notifications use generic text. The local inbox retains the result even if delivery fails. After an interruption, inspect the existing Work and its recorded effects before submitting anything again.
+
+If the deadline passes and the effect remains uncertain, ask what the Work records show. Once the worker is inactive, you may explicitly close that receipt with the outcome marked unknown. Its history and consumed step stay in the inbox. You can then hand off a different action.
