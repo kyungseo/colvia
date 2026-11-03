@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import ast
+import base64
+import ctypes
 import hashlib
 import errno
 import io
@@ -221,6 +224,88 @@ def run_lifecycle(argv):
         for sig, handler in previous.items(): signal.signal(sig, handler)
 
 
+NOTICE_BINARY = "Contents/MacOS/ColviaWork"
+NOTICE_MEMBERS = {"Contents/Info.plist", NOTICE_BINARY, "Contents/_CodeSignature/CodeResources"}
+
+
+def notice_members(encoded):
+    if set(encoded) != NOTICE_MEMBERS:
+        raise ValueError("알림 앱 구성 목록을 확인해 주세요.")
+    return {name:base64.b64decode(value, validate=True) for name,value in encoded.items()}
+
+
+def notice_matches(app, files):
+    allowed_dirs = {".", "Contents", "Contents/MacOS", "Contents/_CodeSignature"}
+    dirs, members = set(), set()
+    for p in (app, *app.rglob("*")):
+        name = p.relative_to(app).as_posix()
+        st = p.lstat()
+        if st.st_uid != os.getuid() or st.st_mode & 0o022:
+            return False
+        if stat.S_ISDIR(st.st_mode) and name in allowed_dirs:
+            dirs.add(name)
+        elif (name in files and stat.S_ISREG(st.st_mode) and st.st_nlink == 1
+              and stat.S_IMODE(st.st_mode) == (0o500 if name == NOTICE_BINARY else 0o400)
+              and regular(p) == files[name]):
+            members.add(name)
+        else:
+            return False
+    return dirs == allowed_dirs and members == set(files)
+
+
+def install_notice_app(store, stage, old):
+    app = store / "bin/ColviaWork.app"
+    files = notice_members(CONFIG["notice_app"])
+    exists = os.path.lexists(app)
+    if exists:
+        if notice_matches(app, files):
+            return
+        # The caller checked the previous manager against its retained copy.
+        # Extract only its literal configuration; never execute an older manager.
+        nodes = ast.parse(old).body if old else ()
+        prior = [n for n in nodes if isinstance(n, ast.AnnAssign)
+                 and isinstance(n.target, ast.Name) and n.target.id == "CONFIG"]
+        conf = ast.literal_eval(prior[0].value) if len(prior) == 1 else {}
+        if "notice_app" not in conf or not notice_matches(app, notice_members(conf["notice_app"])):
+            raise ValueError("기존 알림 앱의 출처를 확인해 주세요.")
+    pending = stage / "ColviaWork.app"
+    pending.mkdir(mode=0o700)
+    for name, raw in files.items():
+        dest = pending / name
+        dest.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        write_new(dest, raw, 0o500 if name == NOTICE_BINARY else 0o400)
+    if not notice_matches(pending, files):
+        raise ValueError("준비된 알림 앱을 확인해 주세요.")
+    rename = ctypes.CDLL(None, use_errno=True).renamex_np
+    rename.argtypes = [ctypes.c_char_p,ctypes.c_char_p,ctypes.c_uint]
+    if rename(os.fsencode(pending), os.fsencode(app), 0x00000002 if exists else 0x00000004):
+        raise OSError(ctypes.get_errno(), "알림 앱을 게시하지 못했습니다.")
+    sync_directory(app.parent)
+
+
+def notice_command(store, action, event):
+    import sqlite3
+    if not isinstance(event,str) or len(event)!=32 or any(c not in "0123456789abcdef" for c in event):
+        return 65
+    profile = "continuation-1"
+    source = store / "releases" / CONFIG["profiles"][profile]["release"]["id"]
+    validate_payload(source,profile)
+    sys.path.insert(0,str(source/"src"))
+    from hv2ref.continuation import notification_detail
+    from hv2ref.errors import ContractError
+    try:
+        text = notification_detail(store,event)
+        if action == "notice-detail":
+            print(text if len(text) <= 30000 else text[:29900] + "\n상세 내용은 프로젝트 수신함에서 이어서 확인하세요."); return 0
+        app = store / "bin/ColviaWork.app"
+        if not notice_matches(app, notice_members(CONFIG["notice_app"])):
+            return 65
+        return subprocess.run([str(app/NOTICE_BINARY),"--post",event],stdin=subprocess.DEVNULL,
+                              stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30).returncode
+    except (ContractError,OSError,KeyError,TypeError,ValueError,sqlite3.Error):
+        return 65
+
+
 def activate(stage):
     """Called only after bootstrap's OS-only hash/tree verification.
 
@@ -317,10 +402,12 @@ def activate(stage):
     else:
         write_new(retained, manager, 0o500)
     active = store / "bin/colvia-manage"
+    old = None
     if active.exists() or active.is_symlink():
         old = regular(active)
         if regular(store / "tools" / sha(old) / "colvia-manage") != old:
             raise ValueError("현재 도구의 복구 가능한 원본을 확인할 수 없습니다.")
+    install_notice_app(store, stage, old)
     staged = store / "bin" / (".activate-" + uuid.uuid4().hex)
     write_new(staged, manager, 0o500)
     os.replace(staged, active); sync_directory(active.parent)
@@ -456,8 +543,9 @@ def lifecycle(args, store):
 
 def main():
     parser = argparse.ArgumentParser(description="Colvia 설치·갱신·제거: 먼저 적용 범위를 확인합니다.")
-    parser.add_argument("command", choices=("install", "update", "rollback", "repair", "remove", "status", "doctor", "start", "resume", "remove-tool", "remove-runtime"))
+    parser.add_argument("command", choices=("install", "update", "rollback", "repair", "remove", "status", "doctor", "start", "resume", "remove-tool", "remove-runtime", "notice-post", "notice-detail", "notice-enable"))
     parser.add_argument("--target", type=Path, default=Path.cwd())
+    parser.add_argument("--event")
     parser.add_argument("--profile", choices=("continuation-1", "official-execution-2"), default=None)
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--recover", action="store_true")
@@ -474,6 +562,15 @@ def main():
         parser.error("--runtime-input은 doctor에서 사용합니다.")
     store = store_root()
     verify_runtime(runtime_path(store), store)
+    if args.command == "notice-enable":
+        app = store / "bin/ColviaWork.app"
+        if args.event or not notice_matches(app, notice_members(CONFIG["notice_app"])):
+            return 65
+        return subprocess.run([str(app/NOTICE_BINARY),"--authorize"],timeout=35).returncode
+    if args.command in ("notice-post","notice-detail"):
+        return notice_command(store,args.command,args.event)
+    if args.event is not None:
+        parser.error("--event requires a notification command")
     if args.command == "remove-runtime":
         print("현재 버전의 remove-runtime은 공유 Python 제거를 지원하지 않습니다. 이동·복제된 프로젝트의 사용 가능성을 고려해 Python·배포본·복구 자료를 보존합니다.")
         return 65
@@ -481,7 +578,7 @@ def main():
         path = store / "bin/colvia-manage"
         if not args.apply:
             identity = sha(regular(path))
-            print("제거 대상: " + str(path))
+            print("제거 대상: " + str(path) + " 및 이 도구의 알림 앱")
             print("보존: 프로젝트·전용 Python·요청·복구 복사본")
             print("확인값: " + identity)
             return 0
@@ -495,6 +592,11 @@ def main():
             identity = sha(raw)
             if args.confirm != identity or regular(store / "tools" / identity / "colvia-manage") != raw:
                 raise ValueError("표시한 도구 identity와 복구 복사본을 확인해 주세요.")
+            app = store / "bin/ColviaWork.app"
+            if os.path.lexists(app):
+                if not notice_matches(app, notice_members(CONFIG["notice_app"])):
+                    raise ValueError("제거할 알림 앱의 내용을 확인해 주세요.")
+                os.rename(app, store / "staging" / ("removed-notice-" + uuid.uuid4().hex))
             path.unlink(); sync_directory(path.parent)
         finally:
             lock.rmdir()

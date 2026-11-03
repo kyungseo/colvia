@@ -2,7 +2,11 @@
 
 - [macOS 도입 프로젝트의 준비된 결과 제출과 조회](CHORE-20261103-004-macos-prepared-result-observation.md) — 수신함·Work 상세의 사용자 조회와 개별 알림을 연결할 수 있는 범위를 구분한다.
 
-- [패키지별 검증 현황과 Windows 11 x64 공개 준비](CHORE-20261103-003-qualification-alignment.md) — 완료(Owner 수락, 2026-11-03). PR #42 고정 패키지의 공식 정상 완료·읽기 후 외부 취소, PR #46의 macOS arm64 비공개 설치를 확인했다. PR #46 자체 공식 실행과 Windows x64는 미검증이다.
+- [알림에서 해당 Work 상세 열기](FEAT-20261103-007-notification-work-detail.md#owner-수락과-완료) — 개발 범위 수락·완료(2026-11-03). 격리 macOS·Windows 11 ARM64에서 해당 제출 열기와 Windows 등록 복구를 확인했다. 공개 전에는 네이티브 x64와 Codex·Claude Code별 실제 클릭을 확인한다.
+
+- [Windows 11 x64 개발 후보 제작과 ARM64 대조](FEAT-20261103-006-windows-x64-development-candidate.md) — 개발 측 제작·검사 완료(Owner 수락). 다음 단계는 네이티브 x64 확인이다.
+
+- [패키지별 검증 현황과 Windows 11 x64 공개 준비](CHORE-20261103-003-qualification-alignment.md) — 완료(Owner 수락, 2026-11-03). macOS arm64에서 PR #46의 비공개 설치를 확인했다. 고정 패키지 #42와 #46 각각에서 [공식 직접 실행의 정상 완료와 읽기 후 외부 취소](../OFFICIAL-EXECUTION.md)를 확인했다. Windows 11 x64 네이티브 검증은 공개 준비 단계에 남아 있다.
 
 - [단일 Work 맡기기 설치본 안내 정비](CHORE-20261103-002-single-work-installed-guidance.md) — 완료(Owner 수락, 2026-11-03).
 
@@ -255,6 +259,8 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [공개 전 필수 · 알림의 보기에서 해당 Work 결과 상세 열기](CHORE-20261103-005-notification-guidance.md#공개-전-필수-조건) — macOS와 공개 지원 대상 Windows에서 Codex·Claude Code로 각각 맡긴 작업의 알림을 실제 클릭해 해당 결과를 확인한다. 현재 후보에서는 먼저 채팅 조회 방법을 안내한다.
 
 - [공식 실행 보정의 제품 소스 반영](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — 2026-11-02 제품 소스 반영과 오프라인 검증 수락·완료. [수락 범위와 커밋 순서](PATCH-20261102-004-official-runtime-source-port.md#owner-판단과-보존).
 

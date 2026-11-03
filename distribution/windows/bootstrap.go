@@ -1,4 +1,4 @@
-// Windows ARM64 user bootstrap. The release builder embeds only the product payload
+// Native Windows user bootstrap. The release builder embeds only the product payload
 // and its manifest. Python comes from the pinned upstream ZIP or an identical cache.
 package main
 
@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -27,10 +28,6 @@ var catalog []byte
 
 //go:embed core.zip
 var payload []byte
-
-const pythonSHA = "f6773983c8959d4281e48c4540cb0bdd23e42391e4e951ce17e7ceb52658f21c"
-const pythonSize = 11980260
-const upstream = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-arm64.zip"
 
 type manifest struct {
 	Release, Fixture string
@@ -243,8 +240,8 @@ func storeRoot(m manifest) (string, error) {
 	if ok == 0 {
 		return "", e
 	}
-	if processMachine != 0 || nativeMachine != 0xaa64 {
-		return "", errors.New("native Windows ARM64 required")
+	if runtime.GOARCH != pythonArch || processMachine != 0 || nativeMachine != pythonMachine {
+		return "", fmt.Errorf("native Windows %s required", pythonArch)
 	}
 	token, e := syscall.OpenCurrentProcessToken()
 	if e != nil {
@@ -297,7 +294,7 @@ func run(args []string) error {
 		return e
 	}
 	if len(args) == 0 || args[0] == "--help" {
-		fmt.Println("colvia-manage prepare [--runtime-zip FILE] | install | update | rollback | repair | remove | status | start | view | resume | project")
+		fmt.Println("colvia-manage prepare [--runtime-zip FILE] | install | update | rollback | repair | remove | status | start | view | resume | project | notice-enable | notice-disable")
 		return nil
 	}
 	root, e := storeRoot(m)
@@ -350,7 +347,17 @@ func run(args []string) error {
 	if e = verify(slot, m.Payload); e != nil {
 		return fmt.Errorf("check the prepared release before continuing: %w", e)
 	}
-	cmd := exec.Command(filepath.Join(runtimePath, "python.exe"), append([]string{"-I", "-B", filepath.Join(slot, "manage.py"), root}, args...)...)
+	self, e := os.Executable()
+	if e != nil {
+		return e
+	}
+	if args[0] == "notice-activate" {
+		return noticeWindow(self)
+	}
+	cmd := exec.Command(filepath.Join(runtimePath, "python.exe"), append([]string{"-I", "-B", filepath.Join(slot, "manage.py"), root, self}, args...)...)
+	if strings.HasPrefix(args[0], "notice-") {
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x08000000}
+	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
