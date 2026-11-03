@@ -20,13 +20,13 @@ In isolated tests on macOS and a designated Windows 11 ARM64 VM under a standard
 
 ## macOS Managed Distribution Candidate
 
-The macOS arm64 candidate prepares Colvia and its pinned CPython 3.14.10 in a dedicated location. The path is **prepare Colvia → connect a project → agree on a task → review its result**. A repository clone, Homebrew and shell edits are unnecessary for this path. PR #46 was privately installed on one arm64 Mac. The default project's status and View were checked. Its own official model execution remains unverified. Public distribution and Windows release qualification remain pending.
+The macOS arm64 candidate prepares Colvia and its pinned CPython 3.14.10 in a dedicated location. The path is **prepare Colvia → connect a project → agree on a task → review its result**. A repository clone, Homebrew and shell edits are unnecessary for this path. PR #46 was privately installed on one arm64 Mac. The default project's status and View were checked. On the same Mac, its pinned official package completed a bounded edit in one synthetic project. In a second, an external cancellation after the read stopped the turn and preserved the documents. Public distribution and Windows release qualification remain pending.
 
 When preparing installation, follow the [bootstrap and project connection procedure](OPERATIONS.md#onboarding-macos-managed-distribution-candidate): verify the named bootstrap and its external SHA-256, preview storage and preservation, then apply the exact reviewed request with your installation decision. Installation and first-task approval are separate.
 
 ### 한국어: 설치 후 첫 작업과 재개
 
-macOS arm64 배포 후보는 Colvia와 필요한 Python을 전용 위치에 함께 준비합니다. 저장소를 clone할 필요는 없습니다. PR #46은 arm64 Mac 한 대에서 비공개 배포 경로로 설치해 기본 프로젝트 상태와 View를 확인했습니다. PR #46 자체의 공식 실행은 미검증입니다. PR #42의 한 고정 패키지에서 확인한 정상 완료와 읽기 후 외부 취소는 [공식 실행 안내](OFFICIAL-EXECUTION.md)에 정리했습니다. 설치할 때는 [설치·연결 상세](OPERATIONS.md#onboarding-macos-managed-distribution-candidate)에 따라 배포본을 확인하고 적용 범위부터 검토합니다.
+macOS arm64 배포 후보는 Colvia와 필요한 Python을 전용 위치에 함께 준비합니다. 저장소를 clone할 필요는 없습니다. PR #46은 arm64 Mac 한 대에서 비공개 배포 경로로 설치해 기본 프로젝트 상태와 View를 확인했습니다. 같은 Mac에서 PR #46 고정 패키지로 합성 문서 편집과 검사를 마쳤습니다. 두 번째 합성 프로젝트에서는 문서를 읽은 뒤 보낸 취소 요청으로 실행이 멈췄고 문서는 그대로였습니다. PR #42와 #46의 패키지별 결과는 [공식 실행 안내](OFFICIAL-EXECUTION.md)에 정리했습니다. 설치할 때는 [설치·연결 상세](OPERATIONS.md#onboarding-macos-managed-distribution-candidate)에 따라 배포본을 확인하고 적용 범위부터 검토합니다.
 
 연결 후 `./colvia view`에서 현재 작업을 확인하세요. 첫 요청에는 원하는 결과와 바꿔도 되는 범위를 알려주면 됩니다. 예: “이 README의 설치 안내를 보강해줘. 나머지는 보존하고, 수정 범위와 검사 방법부터 보여줘.” 에이전트가 계획과 작업 요청을 준비하고, 유효한 승인 범위에서 진행합니다. 결과를 보고 수락할지는 사용자가 결정합니다.
 

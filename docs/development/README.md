@@ -4,7 +4,7 @@
 
 - [알림에서 해당 Work 상세 열기](FEAT-20261103-007-notification-work-detail.md#owner-수락과-완료) — 개발 범위 수락·완료(2026-11-03). 격리 macOS·Windows 11 ARM64에서 해당 제출 열기와 Windows 등록 복구를 확인했다. 공개 전에는 네이티브 x64와 Codex·Claude Code별 실제 클릭을 확인한다.
 
-- [패키지별 검증 현황과 Windows 11 x64 공개 준비](CHORE-20261103-003-qualification-alignment.md) — 완료(Owner 수락, 2026-11-03). PR #42 고정 패키지의 공식 정상 완료·읽기 후 외부 취소, PR #46의 macOS arm64 비공개 설치를 확인했다. PR #46 자체 공식 실행과 Windows x64는 미검증이다.
+- [패키지별 검증 현황과 Windows 11 x64 공개 준비](CHORE-20261103-003-qualification-alignment.md) — 완료(Owner 수락, 2026-11-03). macOS arm64에서 PR #46의 비공개 설치를 확인했다. 고정 패키지 #42와 #46 각각에서 [공식 직접 실행의 정상 완료와 읽기 후 외부 취소](../OFFICIAL-EXECUTION.md)를 확인했다. Windows 11 x64 네이티브 검증은 공개 준비 단계에 남아 있다.
 
 - [단일 Work 맡기기 설치본 안내 정비](CHORE-20261103-002-single-work-installed-guidance.md) — 완료(Owner 수락, 2026-11-03).
 
