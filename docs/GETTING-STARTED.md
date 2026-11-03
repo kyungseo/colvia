@@ -4,7 +4,7 @@ Colvia connects an agreed task, its result and the next decision. In an installe
 
 ## Hand off one Work item
 
-Ask your agent to submit the prepared changes for your Work for review and notify you on this device. Check the Work title, action, scope, deadline and local inbox in the preview. If they match, say “Start as shown.” With the notification detail candidate enabled, select **View** to open the Work title, submitted result and next action. Later, ask whether that Work has a question or result.
+Ask your agent to submit the prepared changes for your Work for review and notify you on this device. Check the Work title, action, scope, deadline and local inbox in the preview. If they match, say “Start as shown.” With the notification detail candidate enabled, select **View** to open the Work title, submitted result and next action. If you miss an alert, ask in the same project chat, “Any questions or results on the work I handed off?”
 
 > “‘설치 안내 정리’ 작업에서 준비한 변경을 검토용으로 제출하고, 결과가 나오면 이 기기에서 알려줘.”
 >
@@ -12,7 +12,7 @@ Ask your agent to submit the prepared changes for your Work for review and notif
 
 한 프로젝트에서 진행 중인 작업 하나의 한 단계를 맡길 수 있습니다. macOS와 지정 Windows 11 ARM64 격리 환경에서 확인한 단계는 작업 현황 요약과 준비된 변경의 검토용 제출입니다. 미리보기에서 작업 제목, 맡길 단계와 범위, 기한(최대 24시간), 결과를 받을 로컬 수신함을 확인하세요. 맞으면 “그대로 맡겨”라고 답하세요.
 
-알림을 켜면 실행 담당자가 질문이나 단계 결과를 수신함에 기록한 뒤 운영체제에 짧은 알림 표시를 요청합니다. 상세 창을 지원하는 후보에서 알림을 처음 쓸 때는 에이전트에게 “이 기기에서 Work 알림을 켜줘”라고 요청하세요. 알림의 ‘보기’를 누르면 해당 작업에 제출된 내용, 현재 상태, 이어서 할 일을 읽을 수 있습니다. 배너를 놓치거나 보지 못해도 질문과 결과는 수신함에서 읽을 수 있습니다. 실행 전 확인을 선택했다면 질문에 “계속해” 또는 “중단해”라고 답하세요. 기한이 지났거나 중단 후 반영 여부가 불분명하면 수신함에서 기존 작업 기록 대조를 요청하세요. 제출된 변경을 수락할지는 결과를 읽은 뒤 결정합니다.
+알림을 켜면 실행 담당자가 질문이나 단계 결과를 수신함에 기록한 뒤 운영체제에 짧은 알림 표시를 요청합니다. 상세 창을 지원하는 후보에서 알림을 처음 쓸 때는 에이전트에게 “이 기기에서 Work 알림을 켜줘”라고 요청하세요. 알림의 ‘보기’를 누르면 해당 작업에 제출된 내용, 현재 상태, 이어서 할 일을 읽을 수 있습니다. 알림을 놓쳤거나 이전 설치본을 사용한다면 같은 프로젝트 채팅에서 “맡긴 작업에 질문이나 결과가 있어?”라고 물어보세요. 실행 전 확인을 선택했다면 질문에 “계속해” 또는 “중단해”라고 답하세요. 기한이 지났거나 중단 후 반영 여부가 불분명하면 수신함에서 기존 작업 기록 대조를 요청하세요. 제출된 변경을 수락할지는 결과를 읽은 뒤 결정합니다.
 
 In isolated tests on macOS and a designated Windows 11 ARM64 VM under a standard account, a one-shot worker could continue after the submitting process exited. Tests covered Work summaries, prepared-result submission, answering a question and interruption handling. Device notification calls returned successfully. In one macOS adopter project, a user found a prepared submission in the inbox and used Work detail to read its location and recorded checks. A generic Colvia notice appeared in Notification Center. Its text did not identify the Work. See [commands and verification limits](REFERENCE.md#single-work-handoff-and-inbox).
 

@@ -1030,7 +1030,7 @@ def _notify_recorded(target, db, key, epoch, phase):
 def _delivery_notify():
     import subprocess
     if sys.platform == "darwin":
-        args = ["/usr/bin/osascript", "-e", 'display notification "Colvia에서 작업을 확인하세요." with title "Colvia"']
+        args = ["/usr/bin/osascript", "-e", 'display notification "프로젝트 채팅에서 물어보세요: “맡긴 작업에 질문이나 결과가 있어?”" with title "Colvia · 맡긴 작업 소식"']
     elif os.name == "nt":
         # Fixed local UI only. No registration, script file, policy bypass or input interpolation.
         import ctypes
@@ -1041,7 +1041,7 @@ def _delivery_notify():
         code = ("$ErrorActionPreference='Stop';Add-Type -AssemblyName System.Windows.Forms;"
                 "Add-Type -AssemblyName System.Drawing;$n=New-Object System.Windows.Forms.NotifyIcon;"
                 "try {$n.Icon=[Drawing.SystemIcons]::Information;$n.Visible=$true;"
-                "$n.ShowBalloonTip(3500,'Colvia','Open Colvia to see your work.',[Windows.Forms.ToolTipIcon]::Info);"
+                "$n.ShowBalloonTip(3500,'Colvia: Work update','Ask in your project chat: \"Any questions or results on the work I handed off?\"',[Windows.Forms.ToolTipIcon]::Info);"
                 "Start-Sleep -Milliseconds 3800} finally {$n.Dispose()}")
         args = [str(shell), "-NoProfile", "-NonInteractive", "-Command", code]
     else: return "unavailable"

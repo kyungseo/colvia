@@ -258,6 +258,8 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
+- [공개 전 필수 · 알림의 보기에서 해당 Work 결과 상세 열기](CHORE-20261103-005-notification-guidance.md#공개-전-필수-조건) — macOS와 공개 지원 대상 Windows에서 Codex·Claude Code로 각각 맡긴 작업의 알림을 실제 클릭해 해당 결과를 확인한다. 현재 후보에서는 먼저 채팅 조회 방법을 안내한다.
+
 - [공식 실행 보정의 제품 소스 반영](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — 2026-11-02 제품 소스 반영과 오프라인 검증 수락·완료. [수락 범위와 커밋 순서](PATCH-20261102-004-official-runtime-source-port.md#owner-판단과-보존).
 
 - [같은 작업 재개와 중단 후 안내](same-task-resume-and-interruption-plan.md#owner-계획-요청과-시작-기준) — 선택된 범위는 2026-11-02 Owner의 제한 수락 후 Done. [완료·수락 기록](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02)을 따른다.
