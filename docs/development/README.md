@@ -1,5 +1,7 @@
 # Development Index
 
+- [macOS 도입 프로젝트의 준비된 결과 제출과 조회](CHORE-20261103-004-macos-prepared-result-observation.md) — 수신함·Work 상세의 사용자 조회와 개별 알림을 연결할 수 있는 범위를 구분한다.
+
 - [패키지별 검증 현황과 Windows 11 x64 공개 준비](CHORE-20261103-003-qualification-alignment.md) — 완료(Owner 수락, 2026-11-03). PR #42 고정 패키지의 공식 정상 완료·읽기 후 외부 취소, PR #46의 macOS arm64 비공개 설치를 확인했다. PR #46 자체 공식 실행과 Windows x64는 미검증이다.
 
 - [단일 Work 맡기기 설치본 안내 정비](CHORE-20261103-002-single-work-installed-guidance.md) — 완료(Owner 수락, 2026-11-03).

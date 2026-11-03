@@ -14,7 +14,9 @@ Ask your agent to submit the prepared changes for your Work for review and notif
 
 알림을 켜면 실행 담당자가 질문이나 단계 결과를 수신함에 기록한 뒤 운영체제에 짧은 알림 표시를 요청합니다. 배너를 놓치거나 보지 못해도 질문과 결과는 수신함에서 읽을 수 있습니다. 실행 전 확인을 선택했다면 질문에 “계속해” 또는 “중단해”라고 답하세요. 기한이 지났거나 중단 후 반영 여부가 불분명하면 수신함에서 기존 작업 기록 대조를 요청하세요. 제출된 변경을 수락할지는 결과를 읽은 뒤 결정합니다.
 
-In isolated tests on macOS and a designated Windows 11 ARM64 VM under a standard account, a one-shot worker could continue after the submitting process exited. Tests covered Work summaries, prepared-result submission, answering a question and interruption handling. Device notification calls returned successfully. Actual banner display, user reads and adopter use remain unverified. See [commands and verification limits](REFERENCE.md#single-work-handoff-and-inbox).
+In isolated tests on macOS and a designated Windows 11 ARM64 VM under a standard account, a one-shot worker could continue after the submitting process exited. Tests covered Work summaries, prepared-result submission, answering a question and interruption handling. Device notification calls returned successfully. In one macOS adopter project, a user found a prepared submission in the inbox and used Work detail to read its location and recorded checks. A generic Colvia notice appeared in Notification Center. Its text did not identify the Work. See [commands and verification limits](REFERENCE.md#single-work-handoff-and-inbox).
+
+실제 Mac 한 대에서는 사용자가 수신함에서 제출된 작업을 찾고 상세 화면에서 결과 위치와 검사 내역을 확인했습니다. 알림 센터의 Colvia 문구에는 Work 식별자가 없습니다. 수신함에서 작업 제목을 찾고 상세를 열면 결과 위치와 검사 내역을 볼 수 있습니다.
 
 ## macOS Managed Distribution Candidate
 
