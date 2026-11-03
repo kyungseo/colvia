@@ -1,4 +1,4 @@
-// Windows ARM64 user bootstrap. The release builder embeds only the product payload
+// Native Windows user bootstrap. The release builder embeds only the product payload
 // and its manifest. Python comes from the pinned upstream ZIP or an identical cache.
 package main
 
@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -27,10 +28,6 @@ var catalog []byte
 
 //go:embed core.zip
 var payload []byte
-
-const pythonSHA = "f6773983c8959d4281e48c4540cb0bdd23e42391e4e951ce17e7ceb52658f21c"
-const pythonSize = 11980260
-const upstream = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-arm64.zip"
 
 type manifest struct {
 	Release, Fixture string
@@ -243,8 +240,8 @@ func storeRoot(m manifest) (string, error) {
 	if ok == 0 {
 		return "", e
 	}
-	if processMachine != 0 || nativeMachine != 0xaa64 {
-		return "", errors.New("native Windows ARM64 required")
+	if runtime.GOARCH != pythonArch || processMachine != 0 || nativeMachine != pythonMachine {
+		return "", fmt.Errorf("native Windows %s required", pythonArch)
 	}
 	token, e := syscall.OpenCurrentProcessToken()
 	if e != nil {
