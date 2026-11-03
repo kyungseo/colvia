@@ -35,6 +35,7 @@ def build(prepared, upstream, output, fixture):
         raise ValueError("fixture requires an absolute local Windows test directory")
     files = {"core/" + k: v for k, v in candidate["payload"].items()}
     files["manage.py"] = (SOURCE / "distribution/windows/manage.py").read_bytes()
+    files["notices.py"] = (SOURCE / "distribution/windows/notices.py").read_bytes()
     with zipfile.ZipFile(io.BytesIO(raw)) as source:
         runtime = {name: digest(source.read(name)) for name in source.namelist()}
     config = {"release": candidate["release_ref"]["id"], "fixture": fixture or "",
@@ -48,6 +49,7 @@ def build(prepared, upstream, output, fixture):
             info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
             archive.writestr(info, data, compress_type=zipfile.ZIP_DEFLATED)
     shutil.copyfile(SOURCE / "distribution/windows/bootstrap.go", work / "bootstrap.go")
+    shutil.copyfile(SOURCE / "distribution/windows/window.go", work / "window.go")
     for name in ("cache", "temp"):
         (work / name).mkdir()
     go = shutil.which("go")
@@ -58,7 +60,7 @@ def build(prepared, upstream, output, fixture):
            "GOPROXY": "off", "GOSUMDB": "off", "GOTELEMETRY": "off", "GO111MODULE": "off",
            "GOCACHE": str(work / "cache"), "GOTMPDIR": str(work / "temp")}
     exe = output / "colvia-manage.exe"
-    subprocess.run([go, "build", "-trimpath", "-buildvcs=false", "-o", str(exe), "bootstrap.go"],
+    subprocess.run([go, "build", "-trimpath", "-buildvcs=false", "-o", str(exe), "bootstrap.go", "window.go"],
                    check=True, cwd=work, env=env)
     result = {"profile": "windows-2", "architecture": "arm64", "fixture": bool(fixture),
               "sha256": digest(exe.read_bytes()), "release": candidate["release_ref"],

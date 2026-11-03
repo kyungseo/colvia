@@ -67,7 +67,11 @@ def arguments():
             p.add_argument("--backup", type=Path)
         if name == "rollback":
             p.add_argument("--to")
-    return parser.parse_args(sys.argv[2:])
+    for name in ("notice-enable", "notice-disable", "notice-identity", "notice-detail", "notice-post"):
+        p = sub.add_parser(name)
+        if name in ("notice-detail", "notice-post"):
+            p.add_argument("--event", required=True)
+    return parser.parse_args(sys.argv[3:])
 
 
 def lifecycle_args(args, target):
@@ -106,6 +110,12 @@ def main():
         raise ValueError("검증된 Windows용 colvia-manage.exe로 시작해 주세요.")
     store = Path(sys.argv[1])
     args = arguments()
+    if args.command.startswith("notice-"):
+        sys.path.insert(0, str(CORE / "src"))
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from notices import handle
+        handle(store, sys.argv[2], args.command, getattr(args, "event", None))
+        return 0
     target = args.target.absolute()
     if (".." in target.parts or target == store or target.is_relative_to(store)
             or store.is_relative_to(target)):

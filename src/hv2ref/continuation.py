@@ -777,6 +777,256 @@ def _delivery_command(target, key, epoch):
                             close_fds=True, **options)
 
 
+def _notice_store(store, *, create):
+    """Private local click index, separate from project snapshots and approval records."""
+    from contextlib import closing
+    import sqlite3
+    root = Path(store)
+    _delivery_require(root.is_dir() and root.resolve(strict=True) == root, "알림 저장소를 확인해 주세요.")
+    folder = root / "notification-events"
+    if create:
+        folder.mkdir(mode=0o700, exist_ok=True)
+    def plain(path, directory):
+        st = path.lstat()
+        return ((stat.S_ISDIR(st.st_mode) if directory else stat.S_ISREG(st.st_mode) and st.st_nlink == 1)
+                and not getattr(st, "st_file_attributes", 0) & 0x400
+                and (os.name == "nt" or st.st_uid == os.getuid() and st.st_mode & 0o077 == 0))
+    _delivery_require(plain(folder, True) and folder.resolve(strict=True) == folder, "알림 저장소를 확인해 주세요.")
+    path = folder / "events.db"
+    if create:
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        except FileExistsError:
+            pass
+        else:
+            os.close(fd)
+    _delivery_require(plain(path, False) and all(
+        f.name in ("events.db", "events.db-journal") and plain(f, False) for f in folder.iterdir()
+    ), "알림 인덱스를 확인해 주세요.")
+    conn = sqlite3.connect(path.as_uri() + ("?mode=rw" if create else "?mode=ro"), uri=True, timeout=3)
+    try:
+        conn.execute("PRAGMA trusted_schema=OFF")
+        if create:
+            conn.execute("CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, entry BLOB NOT NULL)")
+        else:
+            conn.execute("PRAGMA query_only=ON")
+    except Exception:
+        conn.close()
+        raise
+    return closing(conn)
+
+
+def _notice_anchor(path):
+    st = path.lstat()
+    _delivery_require(stat.S_ISDIR(st.st_mode) and not getattr(st, "st_file_attributes", 0) & 0x400
+                      and path.resolve(strict=True) == path, "프로젝트 위치를 확인해 주세요.")
+    return [st.st_dev, st.st_ino]
+
+
+def record_notification(store, target, db, key, epoch, phase):
+    """Called after the receipt commit. Never copy a confirmation token into the OS index."""
+    import hashlib
+    import json
+    import secrets
+    row = db.execute("SELECT rowid AS receipt_number,* FROM delivery WHERE id=? AND epoch=? AND phase=?",
+                     (key, epoch, phase)).fetchone()
+    _delivery_require(row is not None and phase in ("question","done","stopped","reconcile"),
+                      "알림을 요청한 접수 기록을 확인해 주세요.")
+    receipt = _delivery_public(row)
+    source = json.loads(row["plan"])["source"]
+    target = safe_target(target)
+    _delivery_require(str(target) == source["project"], "프로젝트 연결을 확인해 주세요.")
+    entry = {"project":str(target), "anchor":_notice_anchor(target), "home":source["home"],
+             "binding":source["binding"], "work":receipt["work_id"], "row":row["receipt_number"],
+             "receipt_digest":hashlib.sha256(key.encode("ascii")).hexdigest(), "epoch":epoch,
+             "phase":phase, "result_digest":work._digest(receipt["result"])}
+    event_id = secrets.token_hex(16)
+    with _notice_store(store, create=True) as conn, conn:
+        conn.execute("INSERT INTO events(id,entry) VALUES (?,?)", (event_id, canonical_json_bytes(entry)))
+    return event_id
+
+
+@contextmanager
+def _notice_pinned_project(target, anchor):
+    """Pin the physical POSIX directory and check displayed authority through that handle."""
+    from contextlib import ExitStack
+    import hashlib
+    if os.name == "nt":
+        from . import jsonio
+        with ExitStack() as held:
+            pinned = set()
+            def pin(directory):
+                if directory in pinned:
+                    return
+                handle = jsonio._windows_open(directory, share=3)
+                held.callback(jsonio._windows_api().CloseHandle, handle)
+                state = jsonio._windows_handle_state(handle)
+                _delivery_require(state["directory"], "작업 폴더를 확인해 주세요.")
+                pinned.add(directory)
+            for directory in reversed((target, *target.parents)):
+                pin(directory)
+            _delivery_require(_notice_anchor(target) == anchor, "프로젝트 연결을 확인해 주세요.")
+            def windows_matches(parts, expected):
+                path = target.joinpath(*parts)
+                for directory in reversed(path.relative_to(target).parents):
+                    pin(target / directory)
+                data = jsonio.windows_bounded_bytes(path, jsonio.MAX_JSON_BYTES)
+                _delivery_require(hashlib.sha256(data).hexdigest() == expected, "알림과 작업 기록을 대조해 주세요.")
+            yield windows_matches
+        return
+    _delivery_require(os.name == "posix", "이 환경의 알림 상세 조회는 준비 중입니다.")
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_DIRECTORY
+    with ExitStack() as opened:
+        root_fd = os.open(target, flags)
+        opened.callback(os.close, root_fd)
+        info = os.fstat(root_fd)
+        _delivery_require([info.st_dev, info.st_ino] == anchor, "프로젝트 연결을 확인해 주세요.")
+        def matches(parts, expected):
+            with ExitStack() as dirs:
+                parent = root_fd
+                for component in parts[:-1]:
+                    parent = os.open(component, flags, dir_fd=parent)
+                    dirs.callback(os.close, parent)
+                fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+                with os.fdopen(fd, "rb") as stream:
+                    st = os.fstat(fd)
+                    _delivery_require(stat.S_ISREG(st.st_mode) and st.st_nlink == 1 and
+                                      hashlib.file_digest(stream, "sha256").hexdigest() == expected,
+                                      "알림과 작업 기록을 대조해 주세요.")
+        yield matches
+
+
+def notification_detail(store, event_id):
+    """Read exactly the clicked event. Do not switch to a newer submission or run project code."""
+    import hashlib
+    import json
+    from contextlib import closing
+    from .product import verify_workspace_product
+    from .view import _work_state_label
+    _delivery_require(isinstance(event_id, str) and re.fullmatch("[0-9a-f]{32}", event_id),
+                      "알림 기록을 찾을 수 없습니다.")
+    with _notice_store(store, create=False) as index:
+        found = index.execute("SELECT entry FROM events WHERE id=?", (event_id,)).fetchone()
+    _delivery_require(found is not None, "알림 기록을 찾을 수 없습니다.")
+    entry = decode_json_bytes(found[0], require_canonical=True)
+    target = safe_target(Path(entry["project"]))
+    def verify():
+        _delivery_require(str(target) == entry["project"] and _notice_anchor(target) == entry["anchor"]
+                          and verify_workspace_product(target)["binding_ref"] == entry["binding"],
+                          "알림을 보냈던 프로젝트 연결을 확인해 주세요.")
+    verify()
+    db = _delivery_db(target, read=True)
+    _delivery_require(db is not None, "수신함 기록을 확인해 주세요.")
+    with closing(db), _notice_pinned_project(target, entry["anchor"]) as matches:
+        row = db.execute("SELECT * FROM delivery WHERE rowid=?", (entry["row"],)).fetchone()
+        _delivery_require(row is not None and hashlib.sha256(row["id"].encode("ascii")).hexdigest()
+                          == entry["receipt_digest"], "접수 기록이 달라졌습니다.")
+        receipt = _delivery_public(row)
+        plan = json.loads(row["plan"])
+        source = plan["source"]
+        _delivery_require(source["home"] == entry["home"] and source["binding"] == entry["binding"]
+                          and source["project"] == str(target) and receipt["work_id"] == entry["work"]
+                          and row["epoch"] >= entry["epoch"], "알림과 작업 기록을 대조해 주세요.")
+        graph = work.read_work(target, entry["work"])
+        _delivery_require(graph["identity"]["authority_home_id"] == entry["home"], "작업 연결을 확인해 주세요.")
+        question = entry["phase"] == "question"
+        selection = source["selection"]
+        if question:
+            _delivery_require(plan["request"]["ask"] and entry["epoch"] == 1, "질문 기록을 확인해 주세요.")
+            message = "이 단계를 이어갈지 확인해 주세요."
+        else:
+            _delivery_require(receipt["result"] is not None and work._digest(receipt["result"]) == entry["result_digest"],
+                              "이 알림의 결과를 확인할 수 없습니다.")
+            message = receipt["result"]["message"]
+            if "selection" in receipt["result"]:
+                selection = receipt["result"]["selection"]
+        ref = work._resolve(graph["selections"], selection)["revision_ref"]
+        revision = work._resolve(graph["revisions"], ref)
+        lines = [source["label"].replace("`", ""), "", "알림 당시의 " + ("질문" if question else "결과"), message]
+        if not question:
+            if receipt["result"].get("view"):
+                lines.append(receipt["result"]["view"])
+            else:
+                lines += ["작업 범위 · " + ", ".join(revision["scope"])]
+                lines.extend("결과 문서 · " + v["path"] for v in revision["document_refs"])
+                lines.extend("검증 기록 · " + v["path"] for v in revision["evidence_refs"])
+        lines += ["", "현재 상태", _work_state_label(graph["state"]) + " · " + receipt["message"]]
+        if graph["current"]["selection_ref"] != selection:
+            lines.append("이 알림 이후 작업 기록이 갱신됐습니다.")
+        current_ref = work._resolve(graph["selections"], graph["current"]["selection_ref"])["revision_ref"]
+        lines += ["이어서 할 일 · " + work._resolve(graph["revisions"], current_ref)["next_action"]]
+        identifier(entry["work"])
+        root = (".hrn", "work", entry["work"])
+        matches((".hrn","product","binding.json"), entry["binding"]["sha256"])
+        matches((*root,"identity.json"), work._digest(graph["identity"]))
+        matches((*root,"current.json"), work._digest(graph["current"]))
+        for selected, revision_ref in ((selection, ref), (graph["current"]["selection_ref"], current_ref)):
+            matches((*root,"selections",selected["id"] + ".json"), selected["sha256"])
+            matches((*root,"revisions",revision_ref["id"] + ".json"), revision_ref["sha256"])
+    verify()
+    return "\n".join(lines)
+
+
+def windows_notice_identity(store):
+    import uuid
+    value = uuid.uuid5(uuid.NAMESPACE_URL, "colvia:work-notice:" + str(Path(store).resolve(strict=True)).casefold())
+    return "Colvia.Work." + value.hex, "{" + str(value).upper() + "}"
+
+
+def windows_notice_manager(store):
+    import hashlib
+    import winreg
+    from .jsonio import windows_path_observation
+    app, cls = windows_notice_identity(store)
+    root = "Software" + chr(92) + "Classes" + chr(92)
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, root + "AppUserModelId" + chr(92) + app) as reg:
+        _delivery_require(winreg.QueryValueEx(reg, "CustomActivator") == (cls, winreg.REG_SZ),
+                          "알림 연결을 확인해 주세요.")
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, root + "CLSID" + chr(92) + cls + r"\LocalServer32") as reg:
+        command, kind = winreg.QueryValueEx(reg, "")
+    match = re.fullmatch(r'"([^"]+)" notice-activate', command)
+    _delivery_require(kind == winreg.REG_SZ and match is not None, "알림 앱 등록을 확인해 주세요.")
+    path = Path(match[1])
+    _delivery_require(path.parent == store / "notification-tools" and re.fullmatch(r"[0-9a-f]{64}\.exe", path.name),
+                      "알림 앱 위치를 확인해 주세요.")
+    state = windows_path_observation(path)
+    _delivery_require(not state["directory"] and state["links"] == 1, "알림 앱 파일을 확인해 주세요.")
+    with path.open("rb") as stream:
+        _delivery_require(hashlib.file_digest(stream, "sha256").hexdigest() == path.stem,
+                          "알림 앱 버전을 확인해 주세요.")
+    return path
+
+
+def _notify_recorded(target, db, key, epoch, phase):
+    """Use the managed sender when this worker was launched with its dedicated runtime."""
+    import sqlite3
+    import subprocess
+    python = Path(sys.executable)
+    if os.name == "nt" and re.fullmatch(r"python-[0-9a-f]{24}", python.parent.name):
+        store = python.parent.parent
+        try:
+            manager = windows_notice_manager(store)
+        except FileNotFoundError:
+            return _delivery_notify()
+        except (OSError, ValueError, ContractError):
+            return "unavailable"
+    elif (sys.platform != "darwin" or len(python.parents) < 5
+            or python.parts[-3:] != ("python", "bin", "python3.14")
+            or python.parents[3].name != "runtimes"):
+        return _delivery_notify()
+    else:
+        store = python.parents[4]
+        manager = store / "bin/colvia-manage"
+    try:
+        _delivery_require(manager.resolve(strict=True) == manager, "관리 도구 위치를 확인해 주세요.")
+        event = record_notification(store, target, db, key, epoch, phase)
+        call = subprocess.run([str(manager), "notice-post", "--event", event], stdin=subprocess.DEVNULL,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=40)
+        return "api_returned" if call.returncode == 0 else "unavailable"
+    except (ContractError, OSError, ValueError, KeyError, sqlite3.Error, subprocess.SubprocessError):
+        return "unavailable"
+
+
 def _delivery_notify():
     import subprocess
     if sys.platform == "darwin":
@@ -1037,7 +1287,7 @@ def _delivery_dispatch(target, args, value):
                             (phase,json.dumps(result,ensure_ascii=False),"attempted" if request["notify"] else "off",now(),key,epoch))
                     if updated.rowcount!=1: return {"status":"inspect-existing-effect"}
                 if request["notify"]:
-                    notify=_delivery_notify()
+                    notify = _notify_recorded(target, db, key, epoch, "question" if question else phase)
                     with db: db.execute("UPDATE delivery SET notice=? WHERE id=? AND epoch=? AND notice='attempted'",(notify,key,epoch))
                 return {"status":"recorded"}
             else: raise ContractError("COLVIA-DELIVERY","알 수 없는 작업입니다.")

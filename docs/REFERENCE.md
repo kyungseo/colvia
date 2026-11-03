@@ -113,6 +113,10 @@ All new lifecycle plans/receipts use paired schema5. Historical action/version p
 
 ## Single Work handoff and inbox
 
+In the notification detail candidate, enable the receiver once per account with the verified management tool. On macOS use `colvia-manage notice-enable` and allow notifications when prompted. On Windows use `colvia-manage.exe notice-enable`. After a manager update, run the Windows command with the new manager to switch the registered receiver. Select **View** or the notification body to read the original submission and the Work’s current status. On Windows, `colvia-manage.exe notice-disable` removes the account registration. Project records and the inbox remain available.
+
+Isolated macOS and Windows 11 ARM64 tests used two projects with the same Work ID. Clicking each notification opened the corresponding submission. On Windows, an earlier receiver’s notification still opened the connected project after a receiver update. After disconnecting the other project, its notification directed the user back to the project chat. Native Windows 11 x64 clicks and separate Codex and Claude Code notification journeys on the release candidate are pending.
+
 In an installed project, the agent maps “‘설치 안내 정리’ 작업에서 준비한 변경을 검토용으로 제출하고, 결과가 나오면 이 기기에서 알려줘.” to a preview and a confirmed start. “‘설치 안내 정리’에 질문이나 결과가 있어?” opens that Work’s inbox. A project can have one outstanding handoff for an active ordinary local Work. Choose a future deadline no more than 24 hours from the request.
 
 The commands below are arguments to the installed project launcher. On macOS run `./colvia` in the project directory. For Windows use the [Windows launcher invocation](#windows-2-command-and-failure-boundary).

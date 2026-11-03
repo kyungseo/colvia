@@ -297,7 +297,7 @@ func run(args []string) error {
 		return e
 	}
 	if len(args) == 0 || args[0] == "--help" {
-		fmt.Println("colvia-manage prepare [--runtime-zip FILE] | install | update | rollback | repair | remove | status | start | view | resume | project")
+		fmt.Println("colvia-manage prepare [--runtime-zip FILE] | install | update | rollback | repair | remove | status | start | view | resume | project | notice-enable | notice-disable")
 		return nil
 	}
 	root, e := storeRoot(m)
@@ -350,7 +350,17 @@ func run(args []string) error {
 	if e = verify(slot, m.Payload); e != nil {
 		return fmt.Errorf("check the prepared release before continuing: %w", e)
 	}
-	cmd := exec.Command(filepath.Join(runtimePath, "python.exe"), append([]string{"-I", "-B", filepath.Join(slot, "manage.py"), root}, args...)...)
+	self, e := os.Executable()
+	if e != nil {
+		return e
+	}
+	if args[0] == "notice-activate" {
+		return noticeWindow(self)
+	}
+	cmd := exec.Command(filepath.Join(runtimePath, "python.exe"), append([]string{"-I", "-B", filepath.Join(slot, "manage.py"), root, self}, args...)...)
+	if strings.HasPrefix(args[0], "notice-") {
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x08000000}
+	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

@@ -243,6 +243,30 @@ export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/
             + shlex.quote(body) + ' colvia-bootstrap "$0" "$@"\n').encode()
 
 
+def build_notice_app(source, output, *, fixture_root):
+    """Embed signed bundle bytes in the same retained manager as their publication recipe."""
+    import base64
+    import plistlib
+    import subprocess
+    app = output / "notification-build" / "ColviaWork.app"
+    contents = app / "Contents"
+    binary = contents / "MacOS" / "ColviaWork"
+    binary.parent.mkdir(parents=True)
+    suffix = ".fixture." + digest(str(fixture_root).encode())[:16] if fixture_root else ""
+    info = {"CFBundleIdentifier":"org.colvia.work.notice"+suffix,"CFBundleName":"Colvia Work",
+            "CFBundleDisplayName":"Colvia","CFBundleExecutable":binary.name,"CFBundlePackageType":"APPL",
+            "CFBundleVersion":"1","CFBundleShortVersionString":"1.0","NSPrincipalClass":"NSApplication",
+            "LSMinimumSystemVersion":"13.0"}
+    (contents / "Info.plist").write_bytes(plistlib.dumps(info))
+    subprocess.run(["/usr/bin/xcrun","clang","-arch","arm64","-mmacosx-version-min=13.0","-fobjc-arc",
+                    "-framework","AppKit","-framework","UserNotifications","-framework","CoreServices",
+                    str(source / "distribution/notification/WorkWindow.m"),"-o",str(binary)],check=True)
+    subprocess.run(["/usr/bin/codesign","--force","--sign","-",str(app)],check=True)
+    subprocess.run(["/usr/bin/codesign","--verify","--strict",str(app)],check=True)
+    return {f.relative_to(app).as_posix():base64.b64encode(regular(f)).decode("ascii")
+            for f in sorted(app.rglob("*")) if f.is_file()}
+
+
 def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: str,
             fixture_root: Path | None = None) -> dict:
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", version):
@@ -287,6 +311,7 @@ def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: s
     config = {"version": version, "fixture_root": str(fixture_root) if fixture_root else None,
               "profiles": profile_info, "runtime_id": runtime_slot(digest(verifier)), "runtime_files": runtime_files,
               "product_archive_sha256": digest(product), "notices_sha256": digest(notices)}
+    config["notice_app"] = build_notice_app(source, output, fixture_root=fixture_root)
     manager_source = regular(source / "distribution/manager.py")
     manager_source = b"from __future__ import annotations\n" + manager_source.split(b"from __future__ import annotations\n", 1)[1]
     if manager_source.count(b"CONFIG: dict = {}") != 1:
