@@ -637,6 +637,31 @@ def _delivery_observe(target, wid):
             "intent": revision["intent_ref"], "scope": revision["scope"]}, graph
 
 
+def _submission_manifest(target, payload, graph):
+    if "manifest" in payload:  # Existing packets retain their original digest and replay rules.
+        return payload["manifest"]
+    revision = payload["revision"]
+    selected = graph["current"]["selection_ref"]
+    _delivery_require(revision["expected_prior_selection"] == selected, "제출 기준이 달라졌습니다.")
+    baseline = work._resolve(graph["revisions"], work._resolve(graph["selections"], selected)["revision_ref"])
+    _delivery_require(graph["state"] == "active" and graph["identity"]["work_type"] == "local-edit"
+                      and baseline["operation"] in ("start", "rework")
+                      and revision["intent_ref"]["id"] == graph["identity"]["work_id"]
+                      and baseline["execution_context"] == revision["execution_context"] == {"mode": "local", "attempt_id": "ordinary"},
+                      "일반 파일 작업의 현재 시작점과 제출 대상을 확인해 주세요.")
+    before = work._resolve(graph["manifests"], baseline["result_refs"]["manifest"])["result"]
+    runtime = work.WorkStore(target)._runtime()
+    live = work.snapshot(target, verified_launcher_sha256=runtime["launcher_sha256"],
+                         verified_inventory_id=runtime.get("inventory_id"))
+    manifest = work.make_manifest(before, live, scope=revision["scope"])
+    _delivery_require(bool(manifest["changes"]), "제출할 파일 변경이 없습니다.")
+    work._ordinary_manifest_size(manifest)
+    digest = work._digest(manifest)
+    _delivery_require(revision["result_refs"]["manifest"] == {"id": digest, "sha256": digest},
+                      "검토한 뒤 파일이 달라졌습니다. 현재 변경을 다시 확인해 주세요.")
+    return manifest
+
+
 def _delivery_validate(target, request):
     from time import time
     fields = {"work_id", "action", "payload", "expires", "ask", "notify"}
@@ -653,9 +678,12 @@ def _delivery_validate(target, request):
     if action == "summary":
         _delivery_require(payload is None, "작업 요약에는 추가 입력이 필요하지 않습니다.")
     elif action == "submit":
-        exact(payload, {"identity","revision","manifest","selection_id","operation_id"})
+        keys = {"identity","revision","selection_id","operation_id"}
+        compact = isinstance(payload, dict) and "manifest" not in payload
+        if compact:
+            _delivery_require(request.get("detail_required") is True, "결과 상세 제출 경로를 확인해 주세요.")
+        exact(payload, keys if compact else keys | {"manifest"})
         revision = work.validate_work_record(payload["revision"])
-        work.validate_manifest(payload["manifest"], scope=revision["scope"])
         for field in ("selection_id","operation_id"):
             identifier(payload[field])
         _delivery_require(payload["identity"] == graph["identity"] and revision["work_id"] == wid
@@ -664,6 +692,9 @@ def _delivery_validate(target, request):
                           and revision["intent_ref"] == observed["intent"] and revision["scope"] == observed["scope"]
                           and revision["execution_context"]["mode"] == "local",
                           "현재 Work의 승인된 범위와 제출 결과를 대조해 주세요.")
+        manifest = _submission_manifest(target, payload, graph)
+        if not compact:
+            work.validate_manifest(manifest, scope=revision["scope"])
     elif action == "execute":
         from .product import require_workspace_runtime
         _delivery_require(require_workspace_runtime(target)["inventory_id"] == "official-execution-2",
@@ -682,7 +713,11 @@ def _delivery_validate(target, request):
     else:
         _delivery_require(False, "선택할 수 있는 단계는 요약, 준비한 결과 제출, 공식 문서 실행입니다.")
     plan = {"version": 1, "route": "local-work-inbox", "source": observed, "request": request}
-    _delivery_require(len(canonical_json_bytes(plan)) <= 1024*1024, "맡길 요청이 너무 큽니다.")
+    if len(canonical_json_bytes(plan)) > 1024 * 1024:
+        message = "맡길 요청이 1 MiB를 넘습니다."
+        if request.get("detail_required"):
+            message += " 초안은 그대로입니다. 알림 없이 검토용으로 제출할 수 있습니다."
+        _delivery_require(False, message)
     return plan
 
 
@@ -940,7 +975,8 @@ def notification_detail(store, event_id):
             _delivery_require(plan["request"]["ask"] and entry["epoch"] == 1, "질문 기록을 확인해 주세요.")
             message = "이 단계를 이어갈지 확인해 주세요."
         else:
-            _delivery_require(receipt["result"] is not None and work._digest(receipt["result"]) == entry["result_digest"],
+            _delivery_require(isinstance(receipt.get("result"), dict) and isinstance(receipt["result"].get("message"), str)
+                              and work._digest(receipt["result"]) == entry["result_digest"],
                               "이 알림의 결과를 확인할 수 없습니다.")
             message = receipt["result"]["message"]
             if "selection" in receipt["result"]:
@@ -955,11 +991,25 @@ def notification_detail(store, event_id):
                 lines += ["작업 범위 · " + ", ".join(revision["scope"])]
                 lines.extend("결과 문서 · " + v["path"] for v in revision["document_refs"])
                 lines.extend("검증 기록 · " + v["path"] for v in revision["evidence_refs"])
-        lines += ["", "현재 상태", _work_state_label(graph["state"]) + " · " + receipt["message"]]
-        if graph["current"]["selection_ref"] != selection:
-            lines.append("이 알림 이후 작업 기록이 갱신됐습니다.")
+        submitted = not question and plan["request"]["action"] == "submit" and "selection" in receipt["result"]
+        if submitted:
+            lines.append("당시 제출 내용 · " + revision["next_action"])
         current_ref = work._resolve(graph["selections"], graph["current"]["selection_ref"])["revision_ref"]
-        lines += ["이어서 할 일 · " + work._resolve(graph["revisions"], current_ref)["next_action"]]
+        current_revision = work._resolve(graph["revisions"], current_ref)
+        lines += ["", "현재 상태", _work_state_label(graph["state"])]
+        if question:
+            lines.append(receipt["message"] if receipt["status"] == "question"
+                         else "이 질문은 닫혔습니다. " + receipt["message"])
+        if not question and not submitted:
+            lines.append("접수 상태 · " + receipt["message"])
+            if graph["current"]["selection_ref"] != selection:
+                lines.append("이 알림 이후 작업 기록이 갱신됐습니다.")
+        if submitted and ref != current_ref:
+            lines.append("이전 제출에 대한 알림입니다.")
+        if graph["state"] == "review":
+            lines.append("현재 검토할 내용 · " + current_revision["next_action"])
+        elif graph["state"] == "active":
+            lines.append("이어서 할 일 · " + current_revision["next_action"])
         identifier(entry["work"])
         root = (".hrn", "work", entry["work"])
         matches((".hrn","product","binding.json"), entry["binding"]["sha256"])
@@ -1076,7 +1126,9 @@ def _delivery_report(target, plan):
             view = view[:32700].rpartition("\n")[0] + "\n상세는 현재 Work에서 이어서 확인하세요."
         return {"message":"작업 현황을 정리했습니다.", "view":view}
     if action == "submit":
-        graph = work.WorkStore(target).publish(payload["identity"],payload["revision"],payload["manifest"],
+        manifest = (payload["manifest"] if "manifest" in payload else
+                    _submission_manifest(target, payload, work.read_work(target, plan["source"]["work_id"])))
+        graph = work.WorkStore(target).publish(payload["identity"],payload["revision"],manifest,
                     selection_id=payload["selection_id"],operation_id=payload["operation_id"])
         _delivery_require(graph["state"] == "review", "제출된 결과 기록을 확인해 주세요.")
         return {"message":"결과를 제출했습니다. 검토해 주세요.", "selection":graph["current"]["selection_ref"]}

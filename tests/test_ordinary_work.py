@@ -48,7 +48,8 @@ class OrdinaryFlowTests(unittest.TestCase):
         with self.assertRaises(ContractError):
             self.call("submit", *args)
         extra.unlink()
-        self.assertEqual(self.call("submit", *args)["state"], "review")
+        submitted = self.call("submit", *args)
+        self.assertEqual(submitted["state"], "review")
         review = self.call("review")
         self.assertEqual(review["review"]["files"], ["report.md"])
         self.assertIn("마무리", review["question"])
@@ -60,7 +61,42 @@ class OrdinaryFlowTests(unittest.TestCase):
         done = self.call("accept", "--receipt", review["receipt"])
         self.assertEqual(done["state"], "completed")
         self.assertEqual(done, self.call("accept", "--receipt", review["receipt"]))
+        historical = self.call("review", "--selection", submitted["selection"])
+        self.assertEqual(historical["state"], "completed")
+        self.assertNotIn("receipt", historical)
         self.assertEqual(len(read_work(self.target, "report")["decisions"]), 1)
+
+    def test_plan_checks_record_size_before_writing(self):
+        from hv2ref.jsonio import canonical_json_bytes
+        from hv2ref.work import _ordinary_manifest_size
+        size = len(canonical_json_bytes({"example": "three"}))
+        for limit in (size + 1, size, size - 1):
+            with self.subTest(limit=limit), patch("hv2ref.jsonio.MAX_JSON_BYTES", limit):
+                if limit >= size:
+                    self.assertEqual(_ordinary_manifest_size({"example": "three"}), size)
+                else:
+                    with self.assertRaises(ContractError) as refusal:
+                        _ordinary_manifest_size({"example": "three"})
+                    self.assertEqual(refusal.exception.code, "HV2-JSON-LIMIT")
+        with patch("hv2ref.work._ordinary_manifest_size", side_effect=ContractError("HV2-JSON-LIMIT", "size")):
+            with self.assertRaises(ContractError):
+                self.plan("report.md")
+        self.assertFalse((self.target / ".hrn/intents/report").exists())
+        self.assertFalse((self.target / ".hrn/work/report").exists())
+        from hv2ref.jsonio import MAX_JSON_BYTES
+        with patch("hv2ref.work._ordinary_manifest_size", return_value=MAX_JSON_BYTES - 8):
+            plan = self.plan("report.md")
+        self.assertIn("8바이트", plan["size_notice"])
+
+    def test_change_counts_keep_distinct_paths_for_moves(self):
+        from hv2ref.work import _ordinary_change_summary
+        changes = [{"path": f"src/{i}/a", "pre": {}, "post": {}} for i in range(6)]
+        changes.extend([{"path": "old", "pre": {}, "post": None},
+                        {"path": "new", "pre": None, "post": {}}])
+        summary = _ordinary_change_summary(changes)
+        self.assertEqual((summary["added"], summary["modified"], summary["deleted"], summary["total"]), (1, 6, 1, 8))
+        self.assertEqual(summary["top_folders"]["."], 2)
+        self.assertEqual(summary["other_folders"], 2)
 
     def test_explicit_work_and_scope(self):
         first = self.plan("brief.md")
@@ -99,7 +135,7 @@ class OrdinaryFlowTests(unittest.TestCase):
         self.assertEqual(self.call("status")["state"], "rejected")
         with self.assertRaises(ContractError):
             self.call(*change[:-1], "Replace the whole draft")
-        self.assertIn("resume-revision", self.call("status")["next"])
+        self.assertEqual(self.call("status")["recovery_action"], "resume-revision")
         baseline = self.call("resume-revision")
         self.assertEqual(self.call(*change), baseline)
         doc.write_text("Clarified")
@@ -132,8 +168,15 @@ class OrdinaryFlowTests(unittest.TestCase):
             token = packet["confirm_token"]
             with self.assertRaises(ContractError):
                 handoff("start", token, value=dict(packet, preview={}))
-            with patch.object(continuation, "_delivery_command"):
+            competing = self.call("prepare-delivery", *args, "--expires", str(int(time.time()) + 900))
+            with patch.object(continuation, "_delivery_command") as worker:
                 handoff("start", token, value=packet)
+                with self.assertRaises(ContractError):
+                    handoff("start", competing["confirm_token"], value=competing)
+                worker.assert_called_once()
+            from hv2ref.workspace import guard_delivery_transition
+            with self.assertRaises(ContractError):
+                guard_delivery_transition(self.target)
             with patch.object(continuation, "_click_receiver", return_value=None), patch.object(continuation, "_delivery_notify") as generic:
                 self.assertEqual(handoff("_step", token, "--epoch", "1")["status"], "recorded")
                 generic.assert_not_called()
@@ -141,7 +184,64 @@ class OrdinaryFlowTests(unittest.TestCase):
             self.assertEqual((received["status"], received["notification"]), ("done", "unavailable"))
             self.assertEqual(self.call("review")["review"]["summary"], "Ready")
             self.assertEqual(handoff("start", token, value=packet), received)
+            first = received["result"]["selection"]["sha256"]
+            reviewed = self.call("review", "--selection", first)
+            baseline = self.call("revise", "--receipt", reviewed["receipt"], "--reason", "Clarify timing")
+            (self.target / "report.md").write_text("Clarified timing")
+            revised = self.call("prepare-delivery", "--baseline", baseline["selection"], "--summary", "Clarified",
+                                "--checked", "Checked", "--expires", str(int(time.time()) + 600))
+            second = revised["confirm_token"]
+            self.assertNotEqual(second, token)
+            with patch.object(continuation, "_delivery_command"):
+                handoff("start", second, value=revised)
+            with patch.object(continuation, "_click_receiver", return_value=None):
+                handoff("_step", second, "--epoch", "1")
+            self.assertEqual(handoff("show", token)["result"], received["result"])
+            self.assertNotEqual(handoff("show", second)["result"]["selection"]["sha256"], first)
+            with self.assertRaises(ContractError):
+                self.call("review", "--selection", first)
+            self.assertEqual(self.call("review")["review"]["summary"], "Clarified")
 
+
+
+    def test_handoff_exact_size_limit(self):
+        from hv2ref.jsonio import canonical_json_bytes
+        request = dict(work_id="report", action="summary", payload=None, expires=int(time.time()) + 600,
+                       ask=False, notify=False)
+        source = {"label": ""}
+        with patch.object(continuation, "_delivery_observe", return_value=(source, {})):
+            overhead = len(canonical_json_bytes(continuation._delivery_validate(self.target, request)))
+            for size in (2**20 - 1, 2**20, 2**20 + 1):
+                source["label"] = "a" * (size - overhead)
+                if size <= 2**20:
+                    plan = continuation._delivery_validate(self.target, request)
+                    self.assertEqual(len(canonical_json_bytes(plan)), size)
+                else:
+                    with self.assertRaises(ContractError) as refusal:
+                        continuation._delivery_validate(self.target, request)
+                    self.assertEqual(refusal.exception.code, "COLVIA-DELIVERY")
+
+    def test_compact_delivery_recovers_after_publish_before_receipt(self):
+        args = self.edited_draft()
+        runtime = WorkStore(self.target)._runtime()
+        def handoff(action, token, *options, value=None):
+            parsed = self.parser.parse_args(["handoff", action, token, *options])
+            return continuation.delivery_command(self.target, parsed, value)
+        original = WorkStore.publish
+        def interrupt_after_publish(store, *args, **kwargs):
+            return original(store, *args, **kwargs, inject_at="after-current")
+        with patch("hv2ref.product.require_workspace_runtime", return_value=dict(runtime, inventory_id="continuation-1")):
+            packet = self.call("prepare-delivery", *args, "--expires", str(int(time.time()) + 600))
+            token = packet["confirm_token"]
+            with patch.object(continuation, "_delivery_command"):
+                handoff("start", token, value=packet)
+            with patch.object(WorkStore, "publish", interrupt_after_publish), patch.object(continuation, "_click_receiver", return_value=None):
+                handoff("_step", token, "--epoch", "1")
+            self.assertEqual(handoff("show", token)["status"], "reconcile")
+            result = handoff("inspect", token)
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["result"]["selection"]["sha256"], self.call("status")["selection"])
+            self.assertEqual(handoff("start", token, value=packet), result)
 
     def test_prepared_worker_refuses_changed_files(self):
         args = self.edited_draft()
@@ -153,15 +253,42 @@ class OrdinaryFlowTests(unittest.TestCase):
                 continuation._delivery_report(self.target, packet["plan"])
             self.assertEqual(self.call("status")["state"], "active")
 
-    def test_resume_after_only_the_rejection_record_was_written(self):
-        self.call("submit", *self.edited_draft())
-        receipt = self.call("review")["receipt"]
-        original = WorkStore.apply
-        def stop_after_decision(store, ticket, **kwargs):
-            return original(store, ticket, inject_at="after-decision", **kwargs)
-        with patch.object(WorkStore, "apply", stop_after_decision):
-            with self.assertRaises(InjectedCrash):
-                self.call("revise", "--receipt", receipt, "--reason", "Clarify the last step")
-        self.assertIn("resume-revision", self.call("status")["next"])
-        self.assertEqual(self.call("resume-revision")["state"], "active")
-        self.assertEqual(len(read_work(self.target, "report")["decisions"]), 1)
+    def test_interrupted_decision_preserves_only_the_recorded_choice(self):
+        for point in ("after-decision", "after-selection", "after-staged-current"):
+            for action in ("accept", "revise"):
+                with self.subTest(point=point, action=action):
+                    fixture = OrdinaryFlowTests()
+                    fixture.setUp()
+                    try:
+                        fixture.call("submit", *fixture.edited_draft())
+                        receipt = fixture.call("review")["receipt"]
+                        args = ["--receipt", receipt]
+                        if action == "revise":
+                            args += ["--reason", "Clarify timing"]
+                        original = WorkStore.apply
+                        def interrupt(store, ticket, **kwargs):
+                            return original(store, ticket, inject_at=point, **kwargs)
+                        with patch.object(WorkStore, "apply", interrupt), self.assertRaises(InjectedCrash):
+                            fixture.call(action, *args)
+                        with self.assertRaises(ContractError):
+                            fixture.call("review")
+                        if action == "revise":
+                            self.assertEqual(fixture.call("status")["recovery_action"], "resume-revision")
+                            self.assertEqual(fixture.call("resume-revision")["state"], "active")
+                        else:
+                            with self.assertRaises(ContractError):
+                                fixture.call("revise", "--receipt", receipt, "--reason", "Different decision")
+                            self.assertEqual(fixture.call("status")["recovery_action"], "resume-accept")
+                            with self.assertRaises(ContractError):
+                                fixture.call("resume-revision")
+                            doc = fixture.target / "report.md"
+                            doc.write_text("Human change")
+                            with self.assertRaises(ContractError):
+                                fixture.call("resume-accept")
+                            self.assertEqual(doc.read_text(), "Human change")
+                            doc.write_text("Draft")
+                            self.assertEqual(fixture.call("resume-accept")["state"], "completed")
+                            self.assertEqual(fixture.call(action, *args)["state"], "completed")
+                        self.assertEqual(len(read_work(fixture.target, "report")["decisions"]), 1)
+                    finally:
+                        fixture.doCleanups()

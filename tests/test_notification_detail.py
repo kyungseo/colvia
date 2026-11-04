@@ -63,9 +63,12 @@ class NoticeDetailTests(unittest.TestCase):
                 historic = notice.notification_detail(store,question)
                 detail = notice.notification_detail(store,done)
                 self.assertIn("알림 당시의 질문",historic)
-                self.assertIn("결과가 준비됐습니다",historic)
+                self.assertIn("이 질문은 닫혔습니다. 결과가 준비됐습니다",historic)
                 self.assertNotIn("Submitted",historic)
                 self.assertIn("Submitted "+name,detail)
+                self.assertIn("당시 제출 내용 · human review", detail)
+                self.assertIn("현재 검토할 내용 · human review", detail)
+                self.assertNotIn("이전 제출에 대한 알림", detail)
                 self.assertIn(name+" (same-work)",detail)
             self.assertEqual(before,authority())
             for unknown in ("../other","0"*32):
