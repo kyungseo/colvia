@@ -1,5 +1,7 @@
 # Development Index
 
+- [첫 적용과 일반 작업의 검토](FEAT-20261104-002-first-use-and-ordinary-work.md) · Owner 수락·완료(2026-11-04)
+
 [User documentation writing and navigation](user-documentation.md)
 
 - [승인한 작업의 수정본 검토](FEAT-20261104-001-approved-work-review.md) · Owner 수락·완료(2026-11-04). 깨끗한 VM에서의 대화 검증은 공개 후보 단계에 진행한다.

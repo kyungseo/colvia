@@ -257,6 +257,27 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
         p.add_argument("--operation-id");p.add_argument("--observed-at")
         p.add_argument("--input");p.add_argument("--confirm");p.add_argument("--apply",action="store_true")
         p.set_defaults(recover=False,inject_at=None)
+    simple = sub.add_parser("ordinary", help="prepare a plan, start a local Work, or present its result")
+    actions = simple.add_subparsers(dest="action", required=True)
+    for name in ("plan", "plan-review", "approve", "start", "status", "submit", "review", "accept"):
+        cmd = actions.add_parser(name)
+        cmd.add_argument("id", help="explicit local Work and intent identifier")
+        cmd.set_defaults(target=target)
+        if name == "plan":
+            cmd.add_argument("--goal", required=True)
+            cmd.add_argument("--file", action="append", required=True)
+            cmd.add_argument("--check", required=True)
+            cmd.add_argument("--exclude", required=True)
+            cmd.add_argument("--owner", required=True)
+        if name == "submit":
+            cmd.add_argument("--summary", required=True)
+            cmd.add_argument("--checked", action="append", required=True)
+            cmd.add_argument("--unchecked", action="append", default=[])
+            cmd.add_argument("--baseline", required=True, help="selection digest returned by start")
+        if name == "start":
+            cmd.add_argument("--approval", required=True, help="intent selection digest returned by approve")
+        if name in ("approve", "accept"):
+            cmd.add_argument("--receipt", required=True, help="use the receipt shown before the human decision")
     for kind in ("intent", "work"):
         parent = sub.add_parser(kind);commands = parent.add_subparsers(dest="action", required=True)
         for operation in (("draft", "prepare", "apply") if kind == "intent" else ("publish", "prepare", "apply")):
@@ -313,6 +334,9 @@ def workspace_run(args: argparse.Namespace) -> object:
     if args.command in {"status", "doctor"}: return _doctor_status(args)
     # Reject source/worker/foreign-target entry before reading or publishing records.
     require_workspace_runtime(args.target)
+    if args.command == "ordinary":
+        from .work import ordinary_command
+        return ordinary_command(args.target, args)
     if args.command == "handoff":
         from .continuation import delivery_command
         value = _workspace_input(args.input) if args.action in ("prepare","start") else None

@@ -1952,3 +1952,162 @@ Human confirmation is a trusted-local declaration, not OS authentication.
 
     def _runtime_equal(self, expected):
         _require(self._runtime() == expected, "bound runtime changed during publication")
+
+
+def _ordinary_paths(target, paths):
+    _path_set(paths)
+    for path in paths:
+        parts = path.split("/")
+        _require(parts[0].casefold() != "colvia" and not any(c in path for c in "*?[]"),
+                 "name each editable file explicitly")
+        directory = target
+        for i, part in enumerate(parts):
+            matches = [p for p in directory.iterdir()
+                       if unicodedata.normalize("NFC", p.name).casefold() == part.casefold()]
+            if not matches:
+                break  # New files (and missing parent directories) are allowed.
+            _require(len(matches) == 1 and unicodedata.normalize("NFC", matches[0].name) == part,
+                     "scope path spelling differs from the project")
+            directory = matches[0]
+            info = directory.lstat()
+            _require(not stat.S_ISLNK(info.st_mode) and not getattr(info, "st_file_attributes", 0) & 0x400 and
+                     (stat.S_ISREG(info.st_mode) and info.st_nlink == 1
+                      if i == len(parts) - 1 else stat.S_ISDIR(info.st_mode)),
+                     "scope must name an ordinary file through real directories")
+
+
+def ordinary_command(target, args):
+    """Convenience entry for a serial local edit. All writes go through the original stores."""
+    from datetime import datetime, timezone
+    from .intent import WorkspaceIntentStore, read_workspace_intent_graph
+    from .workspace import _file_json, validate_format
+
+    wid, action = args.id, args.action
+    _identifier(wid)
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    works = WorkStore(target)
+    intents = WorkspaceIntentStore(target)
+    if action == "plan":
+        _text(args.goal)
+        _text(args.check)
+        _text(args.exclude)
+        _text(args.owner)
+        _ordinary_paths(target, args.file)
+        home = validate_format(_file_json(target / ".hrn/format.json"))["authority_home_id"]
+        facets = dict(goal=args.goal, scope=args.file, expected_outcome=args.goal,
+                      acceptance_oracle=args.check, destination=args.file, forbidden_scope=args.exclude)
+        intents.publish_draft(dict(record_type="intent-draft", schema_version=1, authority_home_id=home,
+                                   intent_id=wid, revision_id="ordinary-plan", sequence=1, prior_revision_ref=None,
+                                   actor="agent", acceptance_authority=args.owner, observed_at=now,
+                                   facets={k: {"status": "known", "value": v} for k, v in facets.items()},
+                                   gaps=[], statements=[], route="direct-entry"))
+        action = "plan-review"
+
+    if action == "status" and wid not in works._all():
+        plan = read_workspace_intent_graph(target, wid)
+        if plan["pending_acceptances"] or plan["pending_selections"]:
+            return {"work": wid, "state": "plan-approval-pending"}
+        if plan["current"] is None:
+            return {"work": wid, "state": "plan-awaiting-approval"}
+        return {"work": wid, "state": "plan-approved", "selection": plan["current"]["selection_ref"]["sha256"]}
+    if action in ("plan-review", "approve", "start"):
+        graph = read_workspace_intent_graph(target, wid)
+        _require(set(graph["drafts"]) == {"ordinary-plan"}, "select the exact intent revision through intent review")
+        draft = graph["drafts"]["ordinary-plan"]
+        _require(draft["schema_version"] == 1, "ordinary work requires a local, nondelegated intent")
+        draft_ref = record_ref(draft, "revision_id")
+        facets = {key: value["value"] for key, value in draft["facets"].items() if value["status"] == "known"}
+        if action != "start":
+            return _ordinary_confirmation(intents, graph, wid, draft_ref, draft["acceptance_authority"],
+                                          facets, now, getattr(args, "receipt", None), intent=True)
+        _require(graph["current"] is not None, "approve the exact plan before starting")
+        approved = graph["current"]["selection_ref"]
+        selected = _resolve(graph["selections"], approved)
+        _require(approved["sha256"] == args.approval and selected["revision_ref"] == draft_ref,
+                 "the approved plan has changed")
+        scope = facets.get("scope")
+        _require(isinstance(scope, list) and scope and all(isinstance(f, str) for f in scope),
+                 "ordinary work requires explicit file paths")
+        _ordinary_paths(target, scope)
+        home = graph["identity"]["authority_home_id"]
+        common = dict(schema_version=1, authority_home_id=home, work_id=wid)
+        identity = dict(common, record_type="work-identity", work_type="local-edit", created_at=now,
+                        acceptance_authority=draft["acceptance_authority"], lineage=None)
+        revision = dict(common, record_type="work-revision", record_id="ordinary-start", observed_at=now,
+                        observed_scope=[facets["goal"]], unavailable_scope=[], author="agent", operation="start",
+                        expected_prior_selection=None, intent_ref=dict(authority_home_id=home, kind="intent", id=wid,
+                            revision_ref=draft_ref, acceptance_ref=selected["acceptance_ref"], selection_ref=approved),
+                        scope=scope, document_refs=[], evidence_refs=[], progress="active", next_action=facets["goal"],
+                        relations=[], rebind_from=None, execution_context={"mode": "local", "attempt_id": "ordinary"})
+    else:
+        graph = read_work(target, wid)
+        identity = graph["identity"]
+        _require(graph["current"] is not None, "no current Work")
+        current = graph["current"]["selection_ref"]
+        selected = _resolve(graph["selections"], current)
+        revision = _resolve(graph["revisions"], selected["revision_ref"])
+        if action == "status":
+            return {"work": wid, "state": graph["state"], "selection": current["sha256"],
+                    "files": revision["scope"], "next": revision["next_action"]}
+        _require(revision["execution_context"]["mode"] == "local" and revision["schema_version"] == 1,
+                 "use the full review for a parent or worker result")
+        if action in ("review", "accept"):
+            prior = _resolve(graph["manifests"], revision["result_refs"]["manifest"])
+            summary = dict(files=[item["path"] for item in prior["changes"]], summary=revision["next_action"],
+                           checked=revision["observed_scope"], unchecked=revision["unavailable_scope"])
+            return _ordinary_confirmation(works, graph, wid, selected["revision_ref"], identity["acceptance_authority"],
+                                          summary, now, getattr(args, "receipt", None), intent=False)
+        _require(action == "submit" and current["sha256"] == args.baseline and
+                 graph["state"] == "active" and revision["operation"] == "start", "review the current baseline before submission")
+        prior = _resolve(graph["manifests"], revision["result_refs"]["manifest"])
+        revision = dict(revision, record_id="ordinary-submit", operation="submit-result", progress="review",
+                        observed_at=now, expected_prior_selection=current, next_action=args.summary,
+                        observed_scope=args.checked, unavailable_scope=args.unchecked)
+
+    runtime = works._runtime()
+    actual = snapshot(target, verified_launcher_sha256=runtime["launcher_sha256"],
+                      verified_inventory_id=runtime.get("inventory_id"))
+    manifest = make_manifest(actual if action == "start" else prior["result"], actual, scope=revision["scope"])
+    if action == "submit":
+        _require(bool(manifest["changes"]), "no edited file to submit; describe the unchanged result")
+    digest = _digest(manifest)
+    revision["result_refs"] = {"manifest": {"id": digest, "sha256": digest}}
+    saved = works.publish(identity, revision, manifest, selection_id=revision["record_id"], operation_id=revision["record_id"])
+    return {"work": wid, "state": saved["state"], "selection": saved["current"]["selection_ref"]["sha256"]}
+
+
+def _ordinary_confirmation(store, graph, wid, revision_ref, owner, summary, now, receipt, *, intent):
+    """Regenerate an exact preview without a token file. Replays use the immutable decision if written."""
+    at, expected = now, None
+    if receipt is not None:
+        _require(re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z@[a-f0-9]{64}", receipt),
+                 "use the exact review receipt")
+        at, expected = receipt.split("@")
+    records = graph["acceptances"] if intent else graph["decisions"]
+    prefix = "acceptance-" if intent else "decision-"
+    previous = records.get(prefix + expected) if expected else None
+    if previous:
+        ticket = previous["confirmation"]
+        _require(ticket["observed_at"] == at and ticket["action"] == "accept" and ticket["actor"] == owner
+                 and ticket["target_revision_ref"] == revision_ref, "decision refers to a different review")
+    else:
+        if intent:
+            _require(graph["current"] is None, "plan is already approved; use ordinary status")
+        options = dict(actor=owner, reason="Approve this plan" if intent else "Accept the reviewed result",
+                       observed_at=at, request_id="review-" + _digest([wid, revision_ref, at])[:32])
+        if not intent:
+            _require(graph["state"] == "review", "there is no submitted result awaiting review")
+        prepared = (store.prepare(wid, revision_ref, **options) if intent else
+                    store.prepare(wid, action="accept", revision_ref=revision_ref, **options))
+        ticket = prepared["ticket"]
+    digest = _digest(ticket)
+    if expected is None:
+        return {"work": wid, "review": summary, "receipt": at + "@" + digest,
+                "question": ("이 범위로 진행할까요?" if intent else "이대로 마무리할까요, 아니면 고칠 부분이 있을까요?")}
+    _require(digest == expected, "the reviewed plan or result changed; present it again")
+    saved = store.apply(ticket, confirm_token=digest[:16])
+    selection = _resolve(saved["selections"], saved["current"]["selection_ref"])
+    decision_ref = selection["acceptance_ref"] if intent else selection["decision_ref"]
+    _require(decision_ref and decision_ref["id"] == prefix + digest, "historical decision; inspect current state")
+    return {"work": wid, "state": "plan-approved" if intent else saved["state"],
+            "selection": saved["current"]["selection_ref"]["sha256"]}

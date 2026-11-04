@@ -16,19 +16,54 @@ for name in "$objects" "$checksums"; do
   [ -f "$name" ] && [ ! -L "$name" ] || exit 65
   [ "$(/usr/bin/stat -f '%l' "$name")" = 1 ] || exit 65
 done
-umask 077
-scratch=$(/usr/bin/mktemp -d "$scratch_parent/check.XXXXXXXX")
-trap '/bin/rm -f "$scratch/paths" "$scratch/raw" "$scratch/objects" "$scratch/sorted" "$scratch/hashes"; /bin/rmdir "$scratch"' EXIT
+# Both catalogs were authenticated before entering this script. Walk actual
+# names as bytes, so even a filename containing a newline cannot forge a row.
 cd "$root"
-# Separate commands preserve every exit status, including find and xargs.
-/usr/bin/find -P . -print0 > "$scratch/paths"
-/usr/bin/xargs -0 /usr/bin/stat -f '%HT|%OLp|%OMp|%l|%N|%Y' < "$scratch/paths" > "$scratch/raw"
-/usr/bin/awk -F '|' 'BEGIN { OFS="|" }
- NF!=6 || $3!=0 || $5 !~ /^[A-Za-z0-9_.\/+@=,%-]+$/ { exit 65 }
- $1=="Regular File" && $4!=1 { exit 65 }
- $1=="Symbolic Link" { if ($6 !~ /^[A-Za-z0-9_.\/+@=,%-]+$/) exit 65; print $1,"-",$5,$6; next }
- $1!="Directory" && $1!="Regular File" { exit 65 }
- { print $1,$2,$5,$6 }' "$scratch/raw" > "$scratch/objects"
-/usr/bin/sort "$scratch/objects" > "$scratch/sorted"
-/usr/bin/cmp -s "$objects" "$scratch/sorted"
-/usr/bin/shasum -a 256 -c "$checksums" > "$scratch/hashes"
+/usr/bin/perl -T - "$objects" <<'PERL'
+use strict;
+use warnings FATAL => 'all';
+use Fcntl ':mode';
+
+my ($catalog) = @ARGV;
+open my $in, '<', $catalog or die "catalog open";
+my %expected;
+my $previous = '';
+while (<$in>) {
+    die "catalog newline" unless chomp;
+    die "catalog order" unless $_ gt $previous;
+    $previous = $_;
+    die "duplicate object" if $expected{$_}++;
+}
+close $in or die "catalog read";
+my @todo = ('.');
+while (@todo) {
+    my $path = pop @todo;
+    my @s = lstat($path);
+    die "metadata" unless @s && !($s[2] & 07000);
+    my ($kind, $mode, $link) = ('', sprintf('%o', $s[2] & 0777), '');
+    if (S_ISDIR($s[2])) {
+        $kind = 'Directory';
+        opendir my $dir, $path or die "directory open";
+        local $! = 0;
+        while (defined(my $name = readdir $dir)) {
+            next if $name eq '.' || $name eq '..';
+            die "name" unless $name =~ /\A[A-Za-z0-9_.+@=,%-]+\z/;
+            push @todo, "$path/$name";
+        }
+        die "directory read" if $!;
+        closedir $dir or die "directory close";
+    } elsif (S_ISREG($s[2]) && $s[3] == 1) {
+        $kind = 'Regular File';
+    } elsif (S_ISLNK($s[2])) {
+        $kind = 'Symbolic Link';
+        $mode = '-';
+        $link = readlink $path;
+        die "link" unless defined $link && $link =~ m{\A[A-Za-z0-9_./+@=,%-]+\z};
+    } else {
+        die "unsupported object";
+    }
+    die "unexpected object" unless delete $expected{join('|', $kind, $mode, $path, $link)};
+}
+die "missing object" if %expected;
+PERL
+/usr/bin/shasum -a 256 -c "$checksums" > /dev/null

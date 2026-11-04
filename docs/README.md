@@ -174,6 +174,8 @@ Use the ZIP filename supplied with your manager. The manager checks the ZIP size
 
 Create an empty practice folder and open Codex or Claude Code in it. Ask “Show me what connecting this folder would change.” Check the folder and proposed changes before approving.
 
+In an empty folder, start with what you want to make. In an existing project, ask “What would Colvia add here?” If your agent hasn’t encountered Colvia yet, give it the manager location from setup. Run the manager with `start --target "PROJECT"` to see the next step before changing any files.
+
 ### Connect an existing project
 
 1. Ask “Show me this folder’s Colvia status and any work in progress.” If it already uses Colvia, check its installed version and manager. If it was disconnected, stop here. Keep the original folder and its `.hrn/` intact. To start over, choose a different folder. The next step is for a project that has never been connected.
@@ -364,6 +366,8 @@ Windows 11 ARM64에서는 일반 사용자로 PowerShell을 열어 `Get-FileHash
 ZIP 이름은 받은 관리 도구와 함께 안내된 이름을 사용하세요. 관리 도구가 ZIP의 크기와 해시를 확인한 뒤 전용 Python을 준비합니다. 이 명령은 ARM64용입니다. Windows 11 x64에서의 공개 설치 절차는 최종 확인을 기다리고 있습니다.
 
 처음이라면 빈 연습 폴더를 만들고 그 폴더에서 Codex나 Claude Code를 여세요. “여기에 Colvia를 적용하면 어떤 파일이 생기는지 먼저 보여줘”라고 물은 뒤 대상과 변경 내용을 확인하고 연결하세요.
+
+빈 폴더라면 만들고 싶은 결과물부터 이야기하세요. README나 팀 규칙이 있는 폴더라면 “이 프로젝트에 Colvia를 적용하면 어떤 파일이 생겨?”라고 물어보세요. 에이전트가 처음 듣는 도구라면 준비 단계에서 안내한 관리 명령의 위치를 한 번 알려주세요. 관리 도구의 `start --target "프로젝트 경로"`는 파일을 바꾸지 않고 다음 단계를 안내합니다.
 
 ### 기존 프로젝트에 적용하기
 

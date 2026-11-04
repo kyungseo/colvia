@@ -412,6 +412,7 @@ def activate(stage):
     write_new(staged, manager, 0o500)
     os.replace(staged, active); sync_directory(active.parent)
     print("Colvia와 전용 Python 준비가 끝났습니다. 프로젝트에 연결할 범위를 확인해 주세요.")
+    print("처음이라면: " + shlex.quote(str(active)) + ' start --target "프로젝트 경로"')
     print("새 프로젝트 연결: " + shlex.quote(str(active)) + ' install --target "프로젝트 경로"')
     print("기존 프로젝트 갱신: " + shlex.quote(str(active)) + ' update --target "프로젝트 경로"')
     print("관리 명령만 복구했다면 기존 프로젝트에서 ./colvia view로 작업을 이어가세요.")
@@ -522,13 +523,15 @@ def lifecycle(args, store):
                 print(str(value.get("next_action") or value.get("message") or "연결 상태를 먼저 확인해 주세요. --details에서 판정 근거를 볼 수 있습니다."))
         elif args.apply:
             if args.command == "remove":
-                print("프로젝트 연결을 해제했습니다. 작업·승인·결과 기록과 공유 Python은 보존했습니다.")
+                print("프로젝트 연결을 해제했습니다. 문서와 작업 기록은 그대로 있습니다. 관리 도구의 status로 보존한 기록을 읽는 방법을 확인하세요.")
             else:
                 print("요청한 변경을 적용했습니다. 프로젝트에서 ./colvia view로 현재 작업을 확인하세요.")
         elif state == "preview":
             actions = {"install": "Colvia 연결", "update": "프로젝트 Colvia 갱신", "rollback": "이전 프로젝트 배포본으로 복귀",
                        "repair": "프로젝트 Colvia 복구", "remove": "프로젝트 Colvia 연결 해제"}
             print("확인할 변경: " + actions[args.command])
+            if args.command == "remove":
+                print("진행 중인 일과 검토할 결과는 해제 전에 확인하세요. 기록은 남으며, 같은 폴더에서 다시 이어갈 예정이면 연결을 유지하세요.")
             print("검토한 요청: " + value["request_file"])
             print("확인값: " + str(value["confirm_token"]))
             print("이 요청으로 진행하려면 에이전트에게 ‘저장한 요청대로 적용해줘’라고 말하세요. 변경·보존 파일은 --details에서 확인할 수 있습니다.")
@@ -605,8 +608,18 @@ def main():
     if args.command in ("start", "resume"):
         entry = args.target.absolute() / "colvia"
         if not entry.is_file():
-            command = "status" if (args.target.absolute() / ".hrn").exists() else "install"
-            print("프로젝트 상태 확인부터 시작하세요: " + shlex.join([str(store / "bin/colvia-manage"), command, "--target", str(args.target.absolute())]))
+            folder = entry.parent
+            if not folder.is_dir() or folder.is_symlink():
+                raise ValueError("시작할 프로젝트 폴더를 확인해 주세요.")
+            command = "status" if os.path.lexists(folder / ".hrn") or os.path.lexists(entry) else "install"
+            if command == "install":
+                if any(item.name != ".DS_Store" for item in folder.iterdir()):
+                    print("기존 프로젝트입니다. README와 프로젝트 규칙에서 맡길 일과 유지할 내용을 먼저 확인하세요.")
+                else:
+                    print("빈 폴더입니다. 여기에 만들 첫 결과물을 정하세요. Git 저장소를 만들 필요는 없습니다.")
+                print("연결하면 이 폴더에 colvia와 .hrn이 생깁니다. 프로젝트 지침 변경은 따로 확인하세요. 다음 명령으로 적용할 범위를 미리 볼 수 있습니다.")
+            label = "보존한 기록 확인" if command == "status" else "연결 미리보기"
+            print(label + ": " + shlex.join([str(store / "bin/colvia-manage"), command, "--target", str(folder)]))
             if command == "status": print("기존 기록이 있습니다. 연결 해제·부분 적용 상태를 확인한 뒤 보존 기록 조회 또는 복구를 선택하세요.")
             return 15
         if args.command == "start":

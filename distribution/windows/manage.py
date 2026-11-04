@@ -126,6 +126,10 @@ def main():
     if args.command in ("view", "project", "start", "resume"):
         # Use the installed launcher as the real Python entry point. Writers
         # check __main__.__file__ as well as the loaded release modules.
+        if args.command == "start" and target.is_dir() and not any(os.path.lexists(target / name) for name in ("colvia", ".hrn")):
+            print("기존 파일과 프로젝트 규칙을 먼저 확인하세요." if any(target.iterdir()) else "빈 폴더입니다. 여기에 만들 첫 결과물을 정하세요.")
+            print("관리 도구의 install --target으로 연결 범위를 미리 보세요. 적용하면 colvia와 .hrn이 생기며 프로젝트 지침 변경은 별도로 확인합니다.")
+            return 15
         entry["workspace_source"](target)
         launcher = target / "colvia"
         if entry["regular_bytes"](launcher) != entry["regular_bytes"](CORE / "colvia"):
