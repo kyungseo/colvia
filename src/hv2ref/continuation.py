@@ -639,7 +639,12 @@ def _delivery_observe(target, wid):
 
 def _delivery_validate(target, request):
     from time import time
-    exact(request, {"work_id", "action", "payload", "expires", "ask", "notify"})
+    fields = {"work_id", "action", "payload", "expires", "ask", "notify"}
+    if isinstance(request, dict) and "detail_required" in request:
+        fields.update(("detail_required", "receiver_at_preview"))
+        _delivery_require(request["detail_required"] is True and request.get("notify") is True
+                          and type(request.get("receiver_at_preview")) is bool and request.get("action") == "submit", "결과 상세 알림 요청을 확인해 주세요.")
+    exact(request, fields)
     wid, action, payload = request["work_id"], request["action"], request["payload"]
     _delivery_require(type(request["expires"]) is int and time() < request["expires"] <= time()+86400,
                       "24시간 이내의 유효 기한을 지정해 주세요.")
@@ -997,26 +1002,33 @@ def windows_notice_manager(store):
     return path
 
 
-def _notify_recorded(target, db, key, epoch, phase):
-    """Use the managed sender when this worker was launched with its dedicated runtime."""
-    import sqlite3
-    import subprocess
+def _click_receiver():
     python = Path(sys.executable)
     if os.name == "nt" and re.fullmatch(r"python-[0-9a-f]{24}", python.parent.name):
         store = python.parent.parent
         try:
-            manager = windows_notice_manager(store)
+            return store, windows_notice_manager(store)
         except FileNotFoundError:
-            return _delivery_notify()
-        except (OSError, ValueError, ContractError):
-            return "unavailable"
-    elif (sys.platform != "darwin" or len(python.parents) < 5
-            or python.parts[-3:] != ("python", "bin", "python3.14")
-            or python.parents[3].name != "runtimes"):
-        return _delivery_notify()
-    else:
+            return None
+    if (sys.platform == "darwin" and len(python.parents) >= 5
+            and python.parts[-3:] == ("python", "bin", "python3.14")
+            and python.parents[3].name == "runtimes"):
         store = python.parents[4]
-        manager = store / "bin/colvia-manage"
+        return store, store / "bin/colvia-manage"
+    return None
+
+
+def _notify_recorded(target, db, key, epoch, phase, *, detail_required=False):
+    """Only a managed sender can open the result belonging to this receipt."""
+    import sqlite3
+    import subprocess
+    try:
+        receiver = _click_receiver()
+    except (OSError, ValueError, ContractError):
+        return "unavailable"
+    if receiver is None:
+        return "unavailable" if detail_required else _delivery_notify()
+    store, manager = receiver
     try:
         _delivery_require(manager.resolve(strict=True) == manager, "관리 도구 위치를 확인해 주세요.")
         event = record_notification(store, target, db, key, epoch, phase)
@@ -1150,12 +1162,46 @@ def _delivery_recover(target, row, plan):
     return None
 
 
+def _delivery_preview(plan):
+    request = plan["request"]
+    source = plan["source"]
+    preview = {"label": source["label"], "action": request["action"], "scope": source["scope"],
+               "expires": request["expires"], "step_limit": 1, "question_before_step": request["ask"],
+               "device_notice": request["notify"]}
+    if request.get("detail_required"):
+        preview["notification_target"] = "이 Work의 제출 결과 상세"
+        preview["receiver_available_at_preview"] = request["receiver_at_preview"]
+        preview["notification_limit"] = "결과는 프로젝트 수신함에 남습니다. 기기 알림 전송 여부는 제출 후 확인합니다."
+    return {"preview": preview, "plan": plan, "confirm_token": work._digest(plan), "steps": 1,
+            "recipient": "이 Work의 로컬 수신함", "meaning": "확인한 작업과 범위만 맡깁니다."}
+
+
+def prepare_delivery(target, request):
+    if isinstance(request, dict) and request.get("detail_required") is True:
+        try:
+            receiver = _click_receiver()
+            available = receiver is not None and receiver[1].is_file() and receiver[1].resolve() == receiver[1]
+        except (OSError, ValueError, ContractError):
+            available = False
+        request = dict(request, receiver_at_preview=available)
+    return _delivery_preview(_delivery_validate(target, request))
+
+
 def delivery_command(target, args, value=None):
     if args.action == "show" or args.action == "start":
         from contextlib import closing
         key = args.key
         _delivery_require(type(key) is str and re.fullmatch(r"[a-f0-9]{64}",key), "접수 확인값을 확인해 주세요.")
         if args.action == "start":
+            if isinstance(value, dict) and "plan" in value:
+                plan = value["plan"]
+                _delivery_require(type(plan) is dict and work._digest(plan) == key
+                                  and isinstance(plan.get("source"), dict) and isinstance(plan.get("request"), dict)
+                                  and all(k in plan["source"] for k in ("label", "scope"))
+                                  and all(k in plan["request"] for k in ("action", "expires", "ask", "notify"))
+                                  and (not plan["request"].get("detail_required") or type(plan["request"].get("receiver_at_preview")) is bool)
+                                  and value == _delivery_preview(plan), "확인한 알림 미리보기가 바뀌었습니다.")
+                value = plan
             _delivery_require(type(value) is dict and work._digest(value)==key and value.get("source",{}).get("project")==str(target),
                               "이 프로젝트의 정확한 미리보기를 지정해 주세요.")
         db = _delivery_db(target,read=True)
@@ -1182,11 +1228,7 @@ def _delivery_dispatch(target, args, value):
     now=lambda: int(time.time())
     target=safe_target(target)
     if args.action=="prepare":
-        plan=_delivery_validate(target,value)
-        preview = {"label":plan["source"]["label"],"action":value["action"],"scope":plan["source"]["scope"],
-                   "expires":value["expires"],"step_limit":1,"question_before_step":value["ask"],"device_notice":value["notify"]}
-        return {"preview":preview,"plan":plan,"confirm_token":work._digest(plan),"steps":1,"recipient":"이 Work의 로컬 수신함",
-                "meaning":"확인한 작업과 범위만 맡깁니다."}
+        return prepare_delivery(target, value)
     key=args.key
     _delivery_require(type(key) is str and re.fullmatch(r"[a-f0-9]{64}",key), "접수 확인값을 확인해 주세요.")
     if args.action == "start":
@@ -1287,7 +1329,8 @@ def _delivery_dispatch(target, args, value):
                             (phase,json.dumps(result,ensure_ascii=False),"attempted" if request["notify"] else "off",now(),key,epoch))
                     if updated.rowcount!=1: return {"status":"inspect-existing-effect"}
                 if request["notify"]:
-                    notify = _notify_recorded(target, db, key, epoch, "question" if question else phase)
+                    notify = _notify_recorded(target, db, key, epoch, "question" if question else phase,
+                                              detail_required=request.get("detail_required", False))
                     with db: db.execute("UPDATE delivery SET notice=? WHERE id=? AND epoch=? AND notice='attempted'",(notify,key,epoch))
                 return {"status":"recorded"}
             else: raise ContractError("COLVIA-DELIVERY","알 수 없는 작업입니다.")

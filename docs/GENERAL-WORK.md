@@ -1,5 +1,8 @@
 # General Work Development Slice
 
+For an ordinary local edit, use the [ordinary revision and delivery shortcuts](REFERENCE.md#single-work-handoff-and-inbox) before consulting the low-level record procedure.
+
+
 Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
 Status: development machine CLI with local record writing, worker publication, human baseline refresh and exact worker result application. Human acceptance is the default; [Delegation-1](#delegation-1-implementation-candidate) defines the sole exact ordinary-worker accept exception. Exact-candidate qualification and actual adoption require separate evidence; see [Security and Support](SECURITY-AND-SUPPORT.md).

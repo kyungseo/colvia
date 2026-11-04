@@ -1869,7 +1869,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         validate_ticket(ticket)
         return {"record_type": "work-decision", "schema_version": 1, "authority_home_id": ticket["authority_home_id"], "work_id": ticket["object"]["id"], "record_id": "decision-" + _digest(ticket), "confirmation": ticket}
 
-    def apply(self, ticket: dict[str, Any], *, confirm_token: str, inject_at: str | None = None) -> dict[str, Any]:
+    def apply(self, ticket: dict[str, Any], *, confirm_token: str, inject_at: str | None = None, match_reviewed_files: bool = False) -> dict[str, Any]:
         """Human decision publication, exact worker application and prefix resume."""
         from .workspace import writer_guard, target_fingerprint
         from .errors import InjectedCrash
@@ -1904,7 +1904,7 @@ Human confirmation is a trusted-local declaration, not OS authentication.
                 self._umbrella(revision, runtime, current=grants_authority)
                 if worker_mode:
                     return self._worker_confirmation(ticket, revision, manifest, runtime, initial=initial, final=final)
-                if grants_authority:
+                if grants_authority or match_reviewed_files:
                     _windows_non_git_manifest(self.target, manifest, runtime.get("inventory_id"))
                     _live_external_refs(self.target, revision, runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id"))
                     _require(snapshot(self.target, verified_launcher_sha256=runtime["launcher_sha256"], verified_inventory_id=runtime.get("inventory_id")) == manifest["result"], "result changed since submission")
@@ -1989,13 +1989,13 @@ def ordinary_command(target, args):
     intents = WorkspaceIntentStore(target)
     if action == "plan":
         _text(args.goal)
-        _text(args.check)
-        _text(args.exclude)
+        for item in args.check + args.exclude:
+            _text(item)
         _text(args.owner)
         _ordinary_paths(target, args.file)
         home = validate_format(_file_json(target / ".hrn/format.json"))["authority_home_id"]
         facets = dict(goal=args.goal, scope=args.file, expected_outcome=args.goal,
-                      acceptance_oracle=args.check, destination=args.file, forbidden_scope=args.exclude)
+                      acceptance_oracle="\n".join(args.check), destination=args.file, forbidden_scope="\n".join(args.exclude))
         intents.publish_draft(dict(record_type="intent-draft", schema_version=1, authority_home_id=home,
                                    intent_id=wid, revision_id="ordinary-plan", sequence=1, prior_revision_ref=None,
                                    actor="agent", acceptance_authority=args.owner, observed_at=now,
@@ -2047,20 +2047,36 @@ def ordinary_command(target, args):
         selected = _resolve(graph["selections"], current)
         revision = _resolve(graph["revisions"], selected["revision_ref"])
         if action == "status":
+            next_action = revision["next_action"]
+            if _interrupted_correction(graph, selected):
+                next_action = "이전에 요청한 보완 이어가기 (ordinary resume-revision)"
             return {"work": wid, "state": graph["state"], "selection": current["sha256"],
-                    "files": revision["scope"], "next": revision["next_action"]}
+                    "files": revision["scope"], "next": next_action}
         _require(revision["execution_context"]["mode"] == "local" and revision["schema_version"] == 1,
                  "use the full review for a parent or worker result")
+        if action in ("revise", "resume-revision", "prepare-delivery"):
+            _require(identity["work_type"] == "local-edit" and revision["intent_ref"]["id"] == wid
+                     and revision["execution_context"].get("attempt_id") == "ordinary",
+                     "use the detailed procedure for this Work")
+        if action == "resume-revision":
+            recorded = _interrupted_correction(graph, selected)
+            _require(recorded is not None, "no matching recorded correction to resume")
+            ticket, reviewed = recorded
+            return _ordinary_revise(works, graph, selected, revision, wid,
+                                    ticket["observed_at"] + "@" + reviewed, ticket["reason"])
+        if action == "revise":
+            return _ordinary_revise(works, graph, selected, revision, wid, args.receipt, args.reason)
         if action in ("review", "accept"):
             prior = _resolve(graph["manifests"], revision["result_refs"]["manifest"])
             summary = dict(files=[item["path"] for item in prior["changes"]], summary=revision["next_action"],
                            checked=revision["observed_scope"], unchecked=revision["unavailable_scope"])
             return _ordinary_confirmation(works, graph, wid, selected["revision_ref"], identity["acceptance_authority"],
                                           summary, now, getattr(args, "receipt", None), intent=False)
-        _require(action == "submit" and current["sha256"] == args.baseline and
-                 graph["state"] == "active" and revision["operation"] == "start", "review the current baseline before submission")
+        _require(action in ("submit", "prepare-delivery") and current["sha256"] == args.baseline and
+                 graph["state"] == "active" and revision["operation"] in ("start", "rework"), "review the current baseline before submission")
         prior = _resolve(graph["manifests"], revision["result_refs"]["manifest"])
-        revision = dict(revision, record_id="ordinary-submit", operation="submit-result", progress="review",
+        submission_id = "ordinary-submit" if revision["operation"] == "start" else "submit-" + current["sha256"]
+        revision = dict(revision, record_id=submission_id, operation="submit-result", progress="review",
                         observed_at=now, expected_prior_selection=current, next_action=args.summary,
                         observed_scope=args.checked, unavailable_scope=args.unchecked)
 
@@ -2068,11 +2084,94 @@ def ordinary_command(target, args):
     actual = snapshot(target, verified_launcher_sha256=runtime["launcher_sha256"],
                       verified_inventory_id=runtime.get("inventory_id"))
     manifest = make_manifest(actual if action == "start" else prior["result"], actual, scope=revision["scope"])
-    if action == "submit":
+    if action in ("submit", "prepare-delivery"):
         _require(bool(manifest["changes"]), "no edited file to submit; describe the unchanged result")
     digest = _digest(manifest)
     revision["result_refs"] = {"manifest": {"id": digest, "sha256": digest}}
-    saved = works.publish(identity, revision, manifest, selection_id=revision["record_id"], operation_id=revision["record_id"])
+    payload = dict(identity=identity, revision=revision, manifest=manifest,
+                   selection_id=revision["record_id"], operation_id=revision["record_id"])
+    if action == "prepare-delivery":
+        from .continuation import prepare_delivery
+        request = dict(work_id=wid, action="submit", payload=payload, expires=args.expires,
+                       ask=False, notify=True, detail_required=True)
+        return prepare_delivery(target, request)
+    saved = works.publish(**payload)
+    return {"work": wid, "state": saved["state"], "selection": saved["current"]["selection_ref"]["sha256"]}
+
+
+def _original_review_digest(ticket):
+    at = ticket["observed_at"]
+    wid = ticket["object"]["id"]
+    acceptance = dict(ticket, action="accept", reason="Accept the reviewed result",
+                      request_id="review-" + _digest([wid, ticket["target_revision_ref"], at])[:32])
+    return _digest(acceptance)
+
+
+def _interrupted_correction(graph, selected):
+    # Recover only the current decision (or its exact persisted pre-selection prefix).
+    if graph["state"] == "rejected" and selected["decision_ref"]:
+        decision = _resolve(graph["decisions"], selected["decision_ref"])
+    elif graph["state"] == "review" and len(graph["pending_decisions"]) == 1:
+        decision = graph["decisions"][graph["pending_decisions"][0]]
+        if decision["confirmation"]["expected_selection_ref"] != graph["current"]["selection_ref"]:
+            return None
+    else:
+        return None
+    ticket = decision["confirmation"]
+    digest = _original_review_digest(ticket)
+    receipt = ticket["observed_at"] + "@" + digest
+    if (ticket["action"] == "reject" and ticket["actor"] == graph["identity"]["acceptance_authority"]
+            and ticket["target_revision_ref"] == selected["revision_ref"]
+            and ticket["request_id"] == "revise-" + _digest([receipt, ticket["reason"]])):
+        return ticket, digest
+    return None
+
+
+def _ordinary_revise(store, graph, selected, revision, wid, receipt, reason):
+    """Record the human's revision request, then establish its unchanged editing baseline."""
+    _require(re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z@[a-f0-9]{64}", receipt),
+             "use the receipt for the result the human reviewed")
+    _text(reason)
+    _require(len(reason) <= 4096, "shorten the correction request")
+    identity = graph["identity"]
+    at, reviewed = receipt.split("@")
+    request_id = "revise-" + _digest([receipt, reason])
+    baseline_id = "rework-" + _digest([wid, request_id])
+    previous = next((d for d in graph["decisions"].values()
+                     if d["confirmation"]["request_id"] == request_id), None)
+    if previous:
+        ticket = previous["confirmation"]
+    else:
+        _require(graph["state"] == "review", "select the submitted result to revise")
+        ticket = store.prepare(wid, action="reject", actor=identity["acceptance_authority"],
+                               reason=reason, request_id=request_id, observed_at=at,
+                               revision_ref=selected["revision_ref"])["ticket"]
+    # Both decisions identify exactly the same review. Never apply the acceptance.
+    reference = ticket["target_revision_ref"]
+    _require(ticket["action"] == "reject" and ticket["reason"] == reason
+             and ticket["observed_at"] == at and ticket["actor"] == identity["acceptance_authority"]
+             and _original_review_digest(ticket) == reviewed, "the reviewed result changed; inspect it again")
+    decision = store._decision(ticket)
+    if previous and revision["record_id"] == baseline_id and graph["state"] == "active":
+        parent = _resolve(graph["selections"], revision["expected_prior_selection"])
+        _require(parent["decision_ref"] == record_ref(decision), "different rework decision")
+        return {"work": wid, "state": "active", "selection": graph["current"]["selection_ref"]["sha256"]}
+    saved = store.apply(ticket, confirm_token=_digest(ticket)[:16], match_reviewed_files=True)
+    current = saved["current"]["selection_ref"]
+    rejected = _resolve(saved["selections"], current)
+    _require(saved["state"] == "rejected" and rejected["decision_ref"] == record_ref(decision),
+             "the submitted result is no longer awaiting this correction")
+    source = _resolve(saved["revisions"], reference)
+    result = _resolve(saved["manifests"], source["result_refs"]["manifest"])["result"]
+    manifest = make_manifest(result, result, scope=source["scope"])
+    digest = _digest(manifest)
+    baseline = dict(source, operation="rework", record_id=baseline_id, expected_prior_selection=current,
+                    progress="active", next_action=reason, observed_at=at,
+                    observed_scope=[reason], unavailable_scope=[],
+                    result_refs={"manifest": {"id": digest, "sha256": digest}})
+    saved = store.publish(identity, baseline, manifest, selection_id=baseline_id, operation_id=baseline_id)
+    _require(saved["current"]["selection_ref"]["id"] == baseline_id and saved["state"] == "active",
+             "this correction was already followed by another selection")
     return {"work": wid, "state": saved["state"], "selection": saved["current"]["selection_ref"]["sha256"]}
 
 
