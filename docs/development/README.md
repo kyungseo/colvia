@@ -1,5 +1,9 @@
 # Development Index
 
+- [대량 파일 변경의 제출·수락과 저장 한도](PATCH-20261104-005-large-ordinary-work.md) · Owner 수락·완료(2026-11-04)
+
+- [중단된 수정 요청과 이전 알림 · 12개 기능 점검](PATCH-20261104-004-recovery-and-notification-history.md) · Owner 수락·완료(2026-11-04)
+
 - [일반 작업의 보완과 결과 알림](PATCH-20261104-003-ordinary-revision-and-delivery.md) · Owner 수락·완료(2026-11-04)
 
 - [첫 적용과 일반 작업의 검토](FEAT-20261104-002-first-use-and-ordinary-work.md) · Owner 수락·완료(2026-11-04)

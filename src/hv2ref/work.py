@@ -1954,6 +1954,28 @@ Human confirmation is a trusted-local declaration, not OS authentication.
         _require(self._runtime() == expected, "bound runtime changed during publication")
 
 
+def _ordinary_manifest_size(manifest):
+    from .jsonio import MAX_JSON_BYTES
+    size = len(canonical_json_bytes(manifest))
+    if size > MAX_JSON_BYTES:
+        raise ContractError("HV2-JSON-LIMIT", f"프로젝트의 변경 기록에 {size:,}바이트가 필요합니다. "
+                            f"이 버전의 한도는 {MAX_JSON_BYTES:,}바이트입니다. "
+                            "변경할 파일이 적어도 프로젝트 전체 목록이 기록에 포함됩니다.")
+    return size
+
+
+def _ordinary_change_summary(changes):
+    counts = {"added": 0, "modified": 0, "deleted": 0}
+    folders = {}
+    for change in changes:
+        kind = "added" if change["pre"] is None else "deleted" if change["post"] is None else "modified"
+        counts[kind] += 1
+        folder = change["path"].rpartition("/")[0] or "."
+        folders[folder] = folders.get(folder, 0) + 1
+    top = sorted(folders.items(), key=lambda item: (-item[1], item[0]))[:5]
+    return {"total": len(changes), **counts, "top_folders": dict(top), "other_folders": len(folders) - len(top)}
+
+
 def _ordinary_paths(target, paths):
     _path_set(paths)
     for path in paths:
@@ -1987,12 +2009,17 @@ def ordinary_command(target, args):
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     works = WorkStore(target)
     intents = WorkspaceIntentStore(target)
+    baseline_size = None
     if action == "plan":
         _text(args.goal)
         for item in args.check + args.exclude:
             _text(item)
         _text(args.owner)
         _ordinary_paths(target, args.file)
+        runtime = works._runtime()
+        before = snapshot(target, verified_launcher_sha256=runtime["launcher_sha256"],
+                          verified_inventory_id=runtime.get("inventory_id"))
+        baseline_size = _ordinary_manifest_size(make_manifest(before, before, scope=args.file))
         home = validate_format(_file_json(target / ".hrn/format.json"))["authority_home_id"]
         facets = dict(goal=args.goal, scope=args.file, expected_outcome=args.goal,
                       acceptance_oracle="\n".join(args.check), destination=args.file, forbidden_scope="\n".join(args.exclude))
@@ -2018,8 +2045,14 @@ def ordinary_command(target, args):
         draft_ref = record_ref(draft, "revision_id")
         facets = {key: value["value"] for key, value in draft["facets"].items() if value["status"] == "known"}
         if action != "start":
-            return _ordinary_confirmation(intents, graph, wid, draft_ref, draft["acceptance_authority"],
-                                          facets, now, getattr(args, "receipt", None), intent=True)
+            result = _ordinary_confirmation(intents, graph, wid, draft_ref, draft["acceptance_authority"],
+                                            facets, now, getattr(args, "receipt", None), intent=True)
+            if baseline_size is not None:
+                from .jsonio import MAX_JSON_BYTES
+                if baseline_size >= MAX_JSON_BYTES * 3 // 4:
+                    result["size_notice"] = (f"현재 기준으로 변경 기록에 {MAX_JSON_BYTES - baseline_size:,}바이트가 "
+                                             "남습니다. 파일을 수정한 뒤에는 한도를 넘을 수 있습니다.")
+            return result
         _require(graph["current"] is not None, "approve the exact plan before starting")
         approved = graph["current"]["selection_ref"]
         selected = _resolve(graph["selections"], approved)
@@ -2047,29 +2080,53 @@ def ordinary_command(target, args):
         selected = _resolve(graph["selections"], current)
         revision = _resolve(graph["revisions"], selected["revision_ref"])
         if action == "status":
-            next_action = revision["next_action"]
-            if _interrupted_correction(graph, selected):
-                next_action = "이전에 요청한 보완 이어가기 (ordinary resume-revision)"
-            return {"work": wid, "state": graph["state"], "selection": current["sha256"],
-                    "files": revision["scope"], "next": next_action}
+            status = {"work": wid, "state": graph["state"], "selection": current["sha256"],
+                      "files": revision["scope"], "next": revision["next_action"]}
+            recorded = _recorded_ordinary_decision(graph, selected, revision)
+            if recorded and recorded[0]["action"] == "accept":
+                status.update(next="이미 수락한 결정을 마저 기록하세요.", recovery_action="resume-accept")
+            elif recorded:
+                status.update(next="이미 요청한 수정부터 이어가세요.", recovery_action="resume-revision")
+            elif graph["pending_decisions"] or graph["pending_selections"]:
+                status["next"] = "진행 중에 멈춘 기록을 확인한 뒤 이어가세요."
+            elif graph["state"] == "rejected":
+                status["next"] = "결과를 반려한 이유와 다음 수정 범위를 확인하세요."
+            elif graph["state"] == "completed":
+                status["next"] = "결과를 수락했습니다."
+            return status
         _require(revision["execution_context"]["mode"] == "local" and revision["schema_version"] == 1,
                  "use the full review for a parent or worker result")
-        if action in ("revise", "resume-revision", "prepare-delivery"):
+        if action in ("revise", "resume-revision", "resume-accept", "prepare-delivery"):
             _require(identity["work_type"] == "local-edit" and revision["intent_ref"]["id"] == wid
                      and revision["execution_context"].get("attempt_id") == "ordinary",
                      "use the detailed procedure for this Work")
-        if action == "resume-revision":
-            recorded = _interrupted_correction(graph, selected)
-            _require(recorded is not None, "no matching recorded correction to resume")
+        if action in ("resume-revision", "resume-accept"):
+            recorded = _recorded_ordinary_decision(graph, selected, revision)
+            kind = "accept" if action == "resume-accept" else "reject"
+            _require(recorded and recorded[0]["action"] == kind, "no matching recorded decision to resume")
             ticket, reviewed = recorded
-            return _ordinary_revise(works, graph, selected, revision, wid,
-                                    ticket["observed_at"] + "@" + reviewed, ticket["reason"])
+            receipt = ticket["observed_at"] + "@" + reviewed
+            if kind == "reject":
+                return _ordinary_revise(works, graph, selected, revision, wid, receipt, ticket["reason"])
+            return _ordinary_confirmation(works, graph, wid, selected["revision_ref"], identity["acceptance_authority"],
+                                          None, now, receipt, intent=False)
         if action == "revise":
             return _ordinary_revise(works, graph, selected, revision, wid, args.receipt, args.reason)
         if action in ("review", "accept"):
+            if action == "review":
+                expected = getattr(args, "selection", None)
+                _require(not (graph["pending_decisions"] or graph["pending_selections"]),
+                         "a publication is pending; inspect the recorded action before reviewing")
+                if (expected is not None and graph["state"] == "completed" and selected["parent_selection_ref"]
+                        and expected == selected["parent_selection_ref"]["sha256"]):
+                    return {"work": wid, "state": "completed", "next": "이 제출본은 이미 수락했습니다."}
+                _require(expected is None or expected == current["sha256"],
+                         "the referenced submission is no longer current; present the current result separately")
             prior = _resolve(graph["manifests"], revision["result_refs"]["manifest"])
             summary = dict(files=[item["path"] for item in prior["changes"]], summary=revision["next_action"],
                            checked=revision["observed_scope"], unchecked=revision["unavailable_scope"])
+            if len(prior["changes"]) > 10:
+                summary["change_counts"] = _ordinary_change_summary(prior["changes"])
             return _ordinary_confirmation(works, graph, wid, selected["revision_ref"], identity["acceptance_authority"],
                                           summary, now, getattr(args, "receipt", None), intent=False)
         _require(action in ("submit", "prepare-delivery") and current["sha256"] == args.baseline and
@@ -2086,12 +2143,14 @@ def ordinary_command(target, args):
     manifest = make_manifest(actual if action == "start" else prior["result"], actual, scope=revision["scope"])
     if action in ("submit", "prepare-delivery"):
         _require(bool(manifest["changes"]), "no edited file to submit; describe the unchanged result")
+    _ordinary_manifest_size(manifest)
     digest = _digest(manifest)
     revision["result_refs"] = {"manifest": {"id": digest, "sha256": digest}}
     payload = dict(identity=identity, revision=revision, manifest=manifest,
                    selection_id=revision["record_id"], operation_id=revision["record_id"])
     if action == "prepare-delivery":
         from .continuation import prepare_delivery
+        del payload["manifest"]  # revision.result_refs binds the full canonical manifest.
         request = dict(work_id=wid, action="submit", payload=payload, expires=args.expires,
                        ask=False, notify=True, detail_required=True)
         return prepare_delivery(target, request)
@@ -2107,12 +2166,25 @@ def _original_review_digest(ticket):
     return _digest(acceptance)
 
 
-def _interrupted_correction(graph, selected):
+def _recorded_ordinary_decision(graph, selected, revision):
+    if (graph["identity"]["work_type"] != "local-edit" or revision["schema_version"] != 1
+            or revision["intent_ref"]["id"] != graph["identity"]["work_id"]
+            or revision["execution_context"].get("attempt_id") != "ordinary"
+            or revision["execution_context"]["mode"] != "local"):
+        return None
     # Recover only the current decision (or its exact persisted pre-selection prefix).
     if graph["state"] == "rejected" and selected["decision_ref"]:
         decision = _resolve(graph["decisions"], selected["decision_ref"])
-    elif graph["state"] == "review" and len(graph["pending_decisions"]) == 1:
-        decision = graph["decisions"][graph["pending_decisions"][0]]
+    elif graph["state"] == "review":
+        if len(graph["pending_decisions"]) == 1:
+            decision = graph["decisions"][graph["pending_decisions"][0]]
+        elif len(graph["pending_selections"]) == 1:
+            pending = graph["selections"][graph["pending_selections"][0]]
+            if not pending["decision_ref"]:
+                return None
+            decision = _resolve(graph["decisions"], pending["decision_ref"])
+        else:
+            return None
         if decision["confirmation"]["expected_selection_ref"] != graph["current"]["selection_ref"]:
             return None
     else:
@@ -2120,9 +2192,11 @@ def _interrupted_correction(graph, selected):
     ticket = decision["confirmation"]
     digest = _original_review_digest(ticket)
     receipt = ticket["observed_at"] + "@" + digest
-    if (ticket["action"] == "reject" and ticket["actor"] == graph["identity"]["acceptance_authority"]
-            and ticket["target_revision_ref"] == selected["revision_ref"]
-            and ticket["request_id"] == "revise-" + _digest([receipt, ticket["reason"]])):
+    if ticket["actor"] != graph["identity"]["acceptance_authority"] or ticket["target_revision_ref"] != selected["revision_ref"]:
+        return None
+    if ticket["action"] == "accept" and _digest(ticket) == digest:
+        return ticket, digest
+    if ticket["action"] == "reject" and ticket["request_id"] == "revise-" + _digest([receipt, ticket["reason"]]):
         return ticket, digest
     return None
 
@@ -2199,6 +2273,9 @@ def _ordinary_confirmation(store, graph, wid, revision_ref, owner, summary, now,
         prepared = (store.prepare(wid, revision_ref, **options) if intent else
                     store.prepare(wid, action="accept", revision_ref=revision_ref, **options))
         ticket = prepared["ticket"]
+        if not intent:
+            _require(ticket["expected_selection_ref"] == graph["current"]["selection_ref"],
+                     "the selected result changed during review; present it again")
     digest = _digest(ticket)
     if expected is None:
         return {"work": wid, "review": summary, "receipt": at + "@" + digest,

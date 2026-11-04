@@ -259,13 +259,15 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
         p.set_defaults(recover=False,inject_at=None)
     simple = sub.add_parser("ordinary", help="prepare a plan, start a local Work, or present its result")
     actions = simple.add_subparsers(dest="action", required=True)
-    for name in ("plan", "plan-review", "approve", "start", "status", "submit", "prepare-delivery", "review", "revise", "resume-revision", "accept"):
+    for name in ("plan", "plan-review", "approve", "start", "status", "submit", "prepare-delivery", "review", "revise", "resume-revision", "resume-accept", "accept"):
         cmd = actions.add_parser(name)
         cmd.add_argument("id", help="explicit local Work and intent identifier")
         cmd.set_defaults(target=target)
         if name == "plan":
             cmd.add_argument("--goal", required=True)
-            cmd.add_argument("--file", action="append", required=True)
+            paths = cmd.add_mutually_exclusive_group(required=True)
+            paths.add_argument("--file", action="append")
+            paths.add_argument("--files-stdin", action="store_true", help="read the exact path list as canonical JSON on stdin")
             cmd.add_argument("--check", action="append", required=True)
             cmd.add_argument("--exclude", action="append", required=True)
             cmd.add_argument("--owner", required=True)
@@ -278,6 +280,8 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
             cmd.add_argument("--approval", required=True, help="intent selection digest returned by approve")
         if name == "prepare-delivery":
             cmd.add_argument("--expires", type=int, required=True, help="UTC Unix deadline, within 24 hours")
+        if name == "review":
+            cmd.add_argument("--selection", help="require the exact submission identified by a handoff result")
         if name == "revise":
             cmd.add_argument("--reason", required=True, help="the human's requested correction")
         if name in ("approve", "accept", "revise"):
@@ -340,6 +344,10 @@ def workspace_run(args: argparse.Namespace) -> object:
     require_workspace_runtime(args.target)
     if args.command == "ordinary":
         from .work import ordinary_command
+        if args.action == "plan" and args.files_stdin:
+            args.file = _workspace_input("-")
+            if not isinstance(args.file, list) or not args.file or not all(isinstance(p, str) for p in args.file):
+                raise ContractError("HV2-WORK-RECORD", "provide a nonempty JSON array of file paths")
         return ordinary_command(args.target, args)
     if args.command == "handoff":
         from .continuation import delivery_command

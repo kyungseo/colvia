@@ -21,6 +21,8 @@ Start with one change you expect to come back to. You decide what the agent may 
 ### 2. Revise and review one Work
 “Go ahead. Leave the choice of improvements to me.” The agent edits and checks the report within the agreed limits, then shows you the draft. If a required check fails, it explains why. Accept the draft you reviewed or ask for a correction.
 
+For a change across several folders, ask “Which folders changed the most?” When more than ten paths change, the review includes counts of additions, edits and deletions and the most affected folders. A move counts as a deletion and an addition. If the project inventory is too large to record, even an edit to a single file can hit the limit.
+
 ### 3. Find the result that needs you
 “What’s ready for me to review?” The project View points to a Work and the reason it needs attention. Open the submitted changes and checks before deciding. If two titles fit, identify the intended Work. Reading its status keeps the decision open. The current compact View includes Korean labels, even when you use the English guide.
 
