@@ -86,6 +86,16 @@ The compact View's next line proposes a check or decision from recorded state. E
 Execution cards describe historical runs separately from the current Work. A matching Work ID identifies the recorded target, not the current revision, submission or approval. Distinguish recorded document effect, process closure, recorded checks and current file agreement. For an unresolved run, inspect permitted evidence before proposing recovery or a new execution approval; never retry a consumed grant. A terminal run with unknown historical effect retains that uncertainty without becoming a new blocker for otherwise permitted work. A terminal event with status `unknown` remains unresolved; `operator-resolved-unknown` is a distinct resolved state. Unconfirmed process evidence on an unresolved run, and pending operations, still follow their existing recovery boundaries. Missing individual closure evidence on an already resolved run is historical uncertainty, not a new lifecycle blocker. Summarize checked and unchecked scope and link the existing detailed evidence; a complete log or declared observation alone does not prove successful verification.
 
 
+## Show The Revision For Review
+
+For an ordinary local editing Work, describe the review endpoint when agreeing on the plan: name the files to edit, read-only inputs, required checks and the revision the human will see. Approval of that plan covers editing, checking and submitting the agreed result for review. Honor a narrower grant or a draft-only, planning or submission hold. Do not extend an older approval to a new endpoint.
+
+After the required checks pass, recheck the current selection, scope, holds, limits and pending operations. Use the existing local `submit-result` path for the full agreed result. Read back the selected revision before calling it submitted. In the current chat, show its Work title and revision, the changes the human can inspect, the checks and any remaining decision. Leave it in review. A local inbox handoff or device alert has its own preview and authorization.
+
+Leave out-of-scope files alone. If an unrelated issue leaves every agreed deliverable valid, present the full result and mention the issue separately. If an input changed or a required check failed, correct only within the agreed limits or explain what blocks submission. Never silently drop a deliverable. If publication was interrupted or its outcome is unclear, inspect that Work's records and pending operations before any further write. When the result is already selected, show it once without submitting it again.
+
+In a fresh chat, resolve the same Work and exact submitted revision. If more than one matches, show their titles and revisions and ask which the human means. Compare the displayed revision with the current selection and files before recording acceptance. If either changed, show the difference you can verify and follow the existing rework or recovery procedure. Only a human decision about the exact revision displayed can accept this result. A go-ahead to edit or an ambiguous acknowledgment leaves it in review.
+
 ## Unavailable Observations Before Acceptance
 
 Have the human declare important criteria in the intent acceptance oracle or stable referenced brief before execution. Do not turn a free-text observation into an automatic proof, waiver, or new runtime gate.
