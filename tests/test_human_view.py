@@ -195,7 +195,11 @@ class HumanViewInstalledTests(unittest.TestCase):
                 self.assertTrue(path.is_file());self.assertTrue(path.read_bytes())
             self.assertIn('view --details',(root/'AGENTS.md').read_text())
             self.assertIn('Read and follow `AGENTS.md`',(root/'CLAUDE.md').read_text())
-            self.assertIn('Run ./colvia view and follow its guidance',(root/'adapters/colvia-work/SKILL.md').read_text())
+            adapter = (root/'adapters/colvia-work/SKILL.md').read_text()
+            header, steps = adapter.removeprefix('---\n').split('\n---\n', 1)
+            self.assertEqual(['name', 'description'], [line.partition(':')[0] for line in header.splitlines()])
+            self.assertIn('[verified Windows launcher](#windows-2-entry)', steps)
+            self.assertIn('current adapter within the human request and project authorization', steps)
             return detail
         self.apply_init(self.preview());self.complete_work()
         p=legacy_entry()

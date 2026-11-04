@@ -1,13 +1,11 @@
 ---
 name: colvia-work
-For the separate Windows-2 candidate, follow [Windows entry and boundaries](../../docs/README.md#windows-2-integration-candidate).
-
 description: Guide candidate planning, requested project briefs and decisions, intent, session handoff, targeted document checks, Work review and exact acceptance through the installed human interface.
 ---
 
 # Colvia Work Entry
 
-Use this adapter with the verified `continuation-1` installed profile; read [Profile and authorization](../../docs/README.md#continuation-1). A verified binding or this adapter's presence does not prove human authorization.
+Use the adapter identified by the installed project. Read [Profile and authorization](../../docs/README.md#continuation-1) for the default profile. On Windows, follow [Windows entry and boundaries](../../docs/README.md#windows-2-integration-candidate) and use the [verified Windows launcher](#windows-2-entry) wherever an example below starts with `./colvia`. A verified binding or this adapter's presence does not prove human authorization.
 
 Use when the human asks to record an idea, author a brief or decision, choose what to do next, defer a candidate, or start, continue or review a project task. [The work cycle and request examples](../../docs/CONCEPTS.md#the-work-cycle) explain that experience to the human; use the procedures below for the actual action. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
 
@@ -19,7 +17,7 @@ Use when the human asks to record an idea, author a brief or decision, choose wh
 6. Return material scope, acceptance/rejection/revoke/rebind and result acceptance to the human. Apply an exact ticket only after explicit human authorization for that action. The display can become stale; apply performs its own guarded validation. Never edit records or bypass a refusal.
 7. Re-read the view after action. Report stored completion separately from live-file agreement. Rejection/revocation does not undo project bytes. Pending is not completed; preserve the exact ticket for documented recovery.
 
-For fresh resume, begin with `./colvia view --details`, open the current accepted intent and selected Work, and read referenced project Markdown. Use [Resume The Same Task](#resume-the-same-task) to recover the unfinished request and carry out its next authorized action. Do not install this adapter into project entry files automatically. A human may add the stable instruction “Run ./colvia view and follow its guidance to read the current verified adapter, then apply its applicable instructions within the current human request and project authorization” to their project entry.
+For fresh resume, begin with `./colvia view --details`, open the current accepted intent and selected Work, and read referenced project Markdown. Use [Resume The Same Task](#resume-the-same-task) to recover the unfinished request and carry out its next authorized action. Do not install this adapter into project entry files automatically. A human may add a stable project instruction to open the View with the verified platform launcher and follow the current adapter within the human request and project authorization.
 
 This development adapter has no automatic agent-runtime discovery, scheduler or intake registry. Human comprehension, actual adoption and native runtime qualification need separate evidence.
 
