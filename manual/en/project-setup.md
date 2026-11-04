@@ -26,6 +26,8 @@ Use the ZIP filename supplied with your manager. The manager checks the ZIP size
 
 Create an empty practice folder and open Codex or Claude Code in it. Ask “Show me what connecting this folder would change.” Check the folder and proposed changes before approving.
 
+In an empty folder, start with what you want to make. In an existing project, ask “What would Colvia add here?” If your agent hasn’t encountered Colvia yet, give it the manager location from setup. Run the manager with `start --target "PROJECT"` to see the next step before changing any files.
+
 ### Connect an existing project
 
 1. Ask “Show me this folder’s Colvia status and any work in progress.” If it already uses Colvia, check its installed version and manager. If it was disconnected, stop here. Keep the original folder and its `.hrn/` intact. To start over, choose a different folder. The next step is for a project that has never been connected.

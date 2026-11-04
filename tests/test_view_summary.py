@@ -142,6 +142,25 @@ class SummaryObservationTests(unittest.TestCase):
         self.assertEqual(before, (status, works, intents))
         return result
 
+    def test_detached_parent_shows_planned_child_before_registration(self):
+        from hv2ref.work import record_ref
+        graph, intents = label_graph("예약 정책")
+        draft = intents["intent-a"]["drafts"]["draft-old"]
+        draft["composition"] = {"required_children": [{"work": {"id": "not-started"}}]}
+        revision = graph["revisions"]["revision-a"]
+        revision["schema_version"] = 2
+        revision["intent_ref"]["revision_ref"] = record_ref(draft, "revision_id")
+        selection = graph["selections"]["selection-a"]
+        selection["revision_ref"] = record_ref(revision)
+        graph["current"]["selection_ref"] = record_ref(selection)
+        graph["state"] = "active"
+        status = self.status()
+        status.update(classification="detached", work_states={"parent": "active"})
+        lines = view._project_summary(status, {"parent": graph}, intents,
+                                      graph_details=True, target=Path("/synthetic"), compact=True)
+        self.assertTrue(any("계획에 포함된 하위 작업" in line for line in lines))
+        self.assertTrue(any("not-started" in line and "등록 전" in line for line in lines))
+
     def test_empty_known_records_and_unknown_records_are_distinct(self):
         known = self.summary(self.status())
         self.assertIn('작업 0개 / 목표 0개', known)

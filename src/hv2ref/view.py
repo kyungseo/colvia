@@ -1180,6 +1180,23 @@ def _project_summary(status, works, intents, *, graph_details, target, compact=F
             wid, graph = next(iter(works.items()))
             if graph.get("state") == "active":
                 lines += ["- 진행 중: " + _work_label(wid, graph, intents)]
+        if distribution_known and classification in ("pass", "detached"):
+            from .umbrella import bound_composition
+            for wid, graph in sorted(works.items()):
+                rid = _current_revision(graph)
+                revision = graph["revisions"][rid] if rid else None
+                if not revision or revision.get("schema_version") != 2:
+                    continue
+                composition = bound_composition(revision, intents)
+                if not composition:
+                    continue
+                lines.append("- " + _work_label(wid, graph, intents) + " · 계획에 포함된 하위 작업")
+                for child in composition["required_children"]:
+                    cid = child["work"]["id"]
+                    child_graph = works.get(cid)
+                    state = _work_state_label(child_graph["state"]) if child_graph else "등록 전"
+                    child_label = _work_label(cid, child_graph, intents) if child_graph else code(cid)
+                    lines.append("  - " + child_label + " · " + state)
         if not works and work_count == 0 and not issue:
             lines += ["- " + ("등록된 목표를 바탕으로 시작할 작업을 물어보세요." if intent_count else "원하는 작업을 설명하면 목표와 범위부터 정리할 수 있습니다.")]
         return lines + ["- " + counts + " · " + progress + ".", "- 프로젝트 경로: " + location, ""]

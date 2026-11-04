@@ -4,6 +4,8 @@
 
 For an installed project, use the verified platform launcher to run `view --details` and follow the manual and adapter identified there. For a new project or a launcher that will not start, first identify the platform, the target folder and the trusted setup source. Follow the [macOS managed setup](OPERATIONS.md#onboarding-macos-managed-distribution-candidate) or [native Windows procedure](OPERATIONS.md#onboarding-windows-2-entry). Show the proposed changes before applying them with the user's approval.
 
+When a project has no launcher yet, use the verified manager location shown when the tools were prepared. Run its `start --target PATH` entry to guide the first conversation. In an empty folder, ask what the user wants to produce. With existing files, read the local README and project rules before proposing a change; preserve previous instructions. Describe where the launcher and records go, separately from any proposed edits to project instructions. Open the exact connection preview before applying it. A connected project with zero Works is ready for its first task.
+
 For a guided first Work, open the [English exercise](README.md#guide-en) or [한국어 실습](README.md#guide-ko).
 
 ## Hand off one Work item
