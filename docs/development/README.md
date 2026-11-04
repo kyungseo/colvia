@@ -1,6 +1,10 @@
 # Development Index
 
+[User documentation writing and navigation](user-documentation.md)
+
 - [승인한 작업의 수정본 검토](FEAT-20261104-001-approved-work-review.md) · Owner 수락·완료(2026-11-04). 깨끗한 VM에서의 대화 검증은 공개 후보 단계에 진행한다.
+
+[첫 Preview의 플랫폼별 지원 결정과 사용자 여정](preview-release-order-and-user-journey.md) · 동시 준비 방향 선택, 시점 개정 문안 수락과 플랫폼별 검증 대기.
 
 - [macOS 도입 프로젝트의 준비된 결과 제출과 조회](CHORE-20261103-004-macos-prepared-result-observation.md) — 수신함·Work 상세의 사용자 조회와 개별 알림을 연결할 수 있는 범위를 구분한다.
 

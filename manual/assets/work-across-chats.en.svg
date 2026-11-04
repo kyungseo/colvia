@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="470" viewBox="0 0 1200 470" role="img" aria-labelledby="title desc" xml:lang="en"><title id="title">Pick up your report in a new chat</title><desc id="desc">One week with a customer inquiry report. Five of the twelve are refund questions. Four fewer inquiries, still five about refunds. Your decision stays with the report.</desc>
+<style>
+@media (prefers-color-scheme: dark) {
+  [fill="#FAF9F6"] { fill: #292825; }
+  [fill="#EEEBE4"] { fill: #33312E; }
+  [fill="#332F2B"] { fill: #F2EEE7; }
+  [fill="#383530"] { fill: #EEEAE3; }
+  [fill="#5D5953"] { fill: #CDC7BE; }
+  [fill="#716452"] { fill: #BEAE99; }
+  [stroke="#716452"] { stroke: #BEAE99; }
+  [fill="#635D55"] { fill: #C9C0B5; }
+  [stroke="#A29684"] { stroke: #A99D8C; }
+  [fill="#88755F"] { fill: #C4B299; }
+  [fill="#8B7B66"] { fill: #B1A18C; }
+  [stroke="#8B7B66"] { stroke: #B1A18C; }
+  [stroke="#DCD8D0"] { stroke: #514D46; }
+  [fill="#695B49"] { fill: #CBBBA4; }
+  [fill="#786651"] { fill: #BEAA8F; }
+  [stroke="#FCFAF6"] { stroke: #2C2822; }
+}
+</style>
+<rect width="1200" height="470" rx="20" fill="#FAF9F6"/>
+<path d="M20 0 H1180 Q1200 0 1200 20 V166 H0 V20 Q0 0 20 0Z" fill="#EEEBE4"/>
+<g font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif">
+<text x="44" y="40" font-size="16" font-weight="750" fill="#716452" letter-spacing="3">COLVIA</text>
+<text x="42" y="100" font-size="48" font-weight="720" fill="#332F2B" >Pick up your report in a new chat</text>
+<text x="45" y="140" font-size="23" font-weight="450" fill="#5D5953" >One week with a customer inquiry report</text>
+<path d="M846 96 H1150" fill="none" stroke="#A29684" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M862 96 C876 96 877 62 897 62 H911 C931 62 933 96 946 96" fill="none" stroke="#716452" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="904" cy="62" r="4" fill="#88755F" stroke="none" stroke-width="0"/>
+<path d="M960 96 C974 96 975 62 995 62 H1009 C1029 62 1031 96 1044 96" fill="none" stroke="#716452" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1002" cy="62" r="4" fill="#88755F" stroke="none" stroke-width="0"/>
+<path d="M1058 96 C1072 96 1073 62 1093 62 H1107 C1127 62 1129 96 1142 96" fill="none" stroke="#716452" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="1100" cy="62" r="4" fill="#88755F" stroke="none" stroke-width="0"/>
+<text x="998" y="130" font-size="14" font-weight="650" fill="#635D55" text-anchor="middle" letter-spacing="1.2">ONE WORK RECORD</text>
+<path d="M53 235 H1144" fill="none" stroke="#8B7B66" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M419 270 V438" fill="none" stroke="#DCD8D0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M788 270 V438" fill="none" stroke="#DCD8D0" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="45" y="212" font-size="21" font-weight="670" fill="#695B49" >Monday</text>
+<circle cx="53" cy="235" r="9" fill="#FAF9F6" stroke="#8B7B66" stroke-width="3"/>
+<circle cx="53" cy="235" r="3" fill="#8B7B66" stroke="none" stroke-width="0"/>
+<text x="45" y="296" font-size="25" font-weight="670" fill="#383530" >Review the first draft</text>
+<text x="45" y="348" font-size="24" font-weight="480" fill="#383530" >“Summarize all 12 inquiries.</text>
+<text x="45" y="383" font-size="24" font-weight="480" fill="#383530" >Leave the decision to me.”</text>
+<text x="45" y="434" font-size="17" font-weight="420" fill="#5D5953" >Five of the twelve are refund questions.</text>
+<text x="439" y="212" font-size="21" font-weight="670" fill="#695B49" >Wednesday</text>
+<circle cx="447" cy="235" r="9" fill="#FAF9F6" stroke="#8B7B66" stroke-width="3"/>
+<circle cx="447" cy="235" r="3" fill="#8B7B66" stroke="none" stroke-width="0"/>
+<text x="439" y="296" font-size="25" font-weight="670" fill="#383530" >Revisit the brief</text>
+<text x="439" y="348" font-size="24" font-weight="480" fill="#383530" >“Leave out shipping. Keep</text>
+<text x="439" y="383" font-size="24" font-weight="480" fill="#383530" >my edit to the conclusion.”</text>
+<text x="439" y="434" font-size="17" font-weight="420" fill="#5D5953" >Four fewer inquiries, still five about refunds.</text>
+<text x="808" y="212" font-size="21" font-weight="670" fill="#695B49" >Friday</text>
+<circle cx="816" cy="235" r="9" fill="#FAF9F6" stroke="#8B7B66" stroke-width="3"/>
+<circle cx="816" cy="235" r="3" fill="#8B7B66" stroke="none" stroke-width="0"/>
+<text x="808" y="296" font-size="25" font-weight="670" fill="#383530" >Choose the conclusion</text>
+<text x="808" y="348" font-size="24" font-weight="480" fill="#383530" >“The count stayed the same.</text>
+<text x="808" y="383" font-size="24" font-weight="480" fill="#383530" >Let’s explain what changed.”</text>
+<text x="808" y="434" font-size="17" font-weight="420" fill="#5D5953" >Your decision stays with the report.</text>
+<circle cx="1144" cy="235" r="12" fill="#786651" stroke="none" stroke-width="0"/>
+<path d="M1138 235 l4 4 8 -9" fill="none" stroke="#FCFAF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g></svg>

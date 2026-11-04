@@ -1,10 +1,8 @@
 # 첫 작업에 필요한 기록과 결정
 
-이 문서는 활성화 전 `entry-1` 후보를 설명합니다. 사용하려면 정확한 artifact의 별도 qualification과 설치 승인이 필요하며, 아래의 과거 checkout-1 실습은 현재 명령의 검증 근거가 아닙니다.
+[사용 설명서](README.md)
 
-[목차](README.md) · [첫 Work](first-work.md) · [재개](resume.md)
-
-[English](../en/concepts.md)
+현재 사용법은 [Work에 남는 기록](understand.md)과 [일을 맡기는 예시](work-guide.md)에서 확인하세요. 아래의 상세 기록 예시는 이전 entry-1 구성을 기준으로 합니다.
 
 첫 프로젝트에서는 프로젝트 계획, 수락할 작업 요청서, 그 요청서를 수행하는 Work를 구별하면 됩니다. 사람은 Markdown 설명을 읽고, Colvia는 정확히 어느 판본이 수락됐는지 식별하는 기록을 보관합니다.
 
@@ -101,6 +99,6 @@ Colvia는 변경 파일 목록만이 아니라 프로젝트 전체 내용을 비
 
 ---
 
-[목차](README.md) · [첫 Work](first-work.md) · [재개](resume.md)
+[사용 설명서로 돌아가기](README.md)
 
-<!-- en_content_sha256: 06948b9aa044b315325b854edbd7c98a0de30da0afe8de61a8004290aaf977f9 -->
+<!-- en_content_sha256: 0e79fc53308b1be46f802da024e89095d58dc246d1515e2f8cc2853244894901 -->

@@ -1,12 +1,8 @@
 # Extend Project Rules And Remove Colvia
 
-This entry describes continuation-1. Use the exact qualified release and obtain installation authorization. The linked step-by-step tutorial retains entry-1 examples; use the current operating documents for commands. The historical checkout-1 exercise below does not qualify this release.
+[User guide](README.md)
 
-[Manual home](README.md) · [한국어](../ko/rules-and-removal.md)
-
-Keep project-specific instructions in files the project owns. Colvia supplies common guidance and a managed adapter, which helps an agent turn your request into the supported workflow. Removing the installed runtime removes that guidance from the project; it does not remove your own instructions or project history.
-
-Use this guide when adding a project rule, adapting how an agent works, reviewing a runtime update, or leaving Colvia. The examples are proposed instructions to adapt with the project Owner. They are not an automatic extension mechanism or a tested native-agent integration.
+Keep team instructions separate from files managed by Colvia. The notes below describe an earlier installation. For current procedures, see [Install, update or disconnect](project-setup.md).
 
 ## 1. Identify Who Owns Each File
 
@@ -57,11 +53,16 @@ A runtime update changes the managed release and the path reported by `./colvia 
 
 Treat runtime installation and local rule edits as separate changes requiring their respective authorization. Check pending work and document-reference effects before changing either; update authorization is not permission to alter a submitted result. After an authorized update, confirm the current adapter path, relevant local pointers and the affected checks. Preserve old referenced versions where history or recovery needs them.
 
+<details>
+<summary>Historical transition — use only for the matching older installation</summary>
+
 The following two paragraphs preserve the historical checkout-1→entry-1 procedure for matching retained source. For current continuation-1, use [current transition and recovery](../../docs/OPERATIONS.md#continuation-1). It admits only the named exact delegation-1 predecessor, uses paired schema5 lifecycle records and preserves continuation truth. Valid pending continuation blocks ordinary update/detach; invalid continuation also blocks repair. Exact active repair has only the stated valid-pending exception.
 
 For that historical checkout-1→entry-1 transition, only the exact allowlisted predecessor is supported. Stop cooperating writers and retain exact old/new sources, original request/token and restoration-verified external recovery material before applying. S1, the first durable switch receipt, is one-way: no rollback to checkout-1 or earlier, even before new records exist. Local/parent manifest and captured-child reference checks can block admission; old worker results need separate Git approval, explicit same-intent worker rebind and resubmission. Runtime does not edit project entry pointers or perform Git actions. See [Entry-1 transition](../../docs/OPERATIONS.md#entry-1-transition).
 
 Torn first receipt/S2 files and unsupported O-plus-binding.next prefixes may have no supported product recovery; preserve them and obtain separate external recovery/disposition approval. OLD pending init/repair/detach requires the matching retained OLD source and original request, not a new entry-1 request. A scoped retired `hv2` occupant is preserved: otherwise-valid live diagnostics report conflict/12 and lifecycle calls refuse65; after schema-3 detach loses its binding, source diagnostics instead use degraded/10 with the collision error. Neither a confirmation display nor a healthy current status certifies historical comparison or earlier synchronization. That historical detach uses paired schema3; paired1/2 history remains readable but its recovery belongs to matching OLD source.
+
+</details>
 
 ## 5. Remove Colvia And Finish Project Entry Cleanup
 

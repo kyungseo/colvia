@@ -1,5 +1,7 @@
 # Windows Native Implementation And Verification Plan
 
+현재 공개 순서에 대한 [개정 제안 · Owner의 정확한 문안 수락 대기](preview-release-order-and-user-journey.md)가 있다. 아래 기록은 작성 당시의 조건을 보존한다.
+
 Revision: 0.4
 Date: 2026-10-18 (KST)
 State: Revised after R0-I03; v0.4 not re-reviewed; execution not approved

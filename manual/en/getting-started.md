@@ -1,39 +1,47 @@
-# Prepare Colvia And Your Project
+# Write your first inquiry report
 
-[Contents](README.md) · [한국어](../ko/getting-started.md) · [Next: first Work](first-work.md)
+[User guide](README.md)
 
-Start with the result you want from the project. The macOS arm64 distribution candidate prepares Colvia and its own pinned Python, then connects the project through a separate preview and decision. Public distribution and final qualification are pending; use an authorized, qualified release for a real project. Windows is a required pre-publication check.
+Write a short report for your manager. In the first chat, summarize a month of inquiries. In the second, return to the draft you reviewed and respond to a change in the brief. You can try both chats today.
 
-## Private Windows 11 ARM64 candidate
+## Before you begin
 
-The isolated qualification used a standard account and local NTFS. Keep the supplied management executable and check its SHA-256 against the separately provided value with PowerShell `Get-FileHash -Algorithm SHA256`. Invoke it by its full path. The standard build uses the user's local application data directory. Test builds use a directory fixed at build time.
+Open a practice folder that uses Colvia in Codex or Claude Code. On a new device, start with [Install, update or disconnect](project-setup.md) and return here when the folder is ready.
 
-```powershell
-$Manage = 'C:\Tools\Colvia\colvia-manage.exe'  # Use the actual verified executable path
-& $Manage prepare --runtime-zip 'C:\Downloads\python-3.14.7-embed-arm64.zip'
-& $Manage install --target (Get-Location).Path --json
+## Yesterday · agree on the change
+
+Save these twelve fictional inquiries as `inquiries.csv` in the practice folder. Use this sample in place of real customer data. Your chat and the material you share follow your agent provider’s settings.
+
+```csv
+category,inquiry
+refund,cancelled after payment
+shipping,late delivery
+usage,change password
+refund,partial refund terms
+shipping,track parcel
+refund,processing time
+other,replace receipt
+shipping,correct address
+refund,duplicate charge
+usage,notification settings
+shipping,shipping delay
+refund,change refund account
 ```
 
-The first command checks the original upstream archive and prepares a private Python runtime. The online download path still needs separate qualification. The second command previews the project connection. Review the scope, then ask the agent to apply the saved request with its confirmation. Once connected, use the same manager with `start`, `view` or `resume`. Each update, rollback, repair or removal has its own preview. Project removal preserves Work and approval records and the dedicated Python.
+> Use inquiries.csv to write last month’s inquiry report. Check the category totals against the source. Suggest improvements, but leave the choice to me. Leave the CSV unchanged. Save the draft as `report.md`.
 
-## Prepare the macOS tool
+Approve the scope if it fits. After the edits and checks the agent shows you the draft. Compare the draft with these totals: five refunds, four shipping questions, two usage questions and one other inquiry. If it claims an increase over the previous month, ask what supports that statement. You only supplied one month of data. When you are happy to share the draft with your manager, say “I accept this draft.” Approving the scope let the agent start. Accepting the draft records your decision about the result you just read.
 
-Use the named version and bootstrap digest supplied with the release. Download the bootstrap to a durable location, compare its SHA-256 with the separately provided value, then run it without arguments. Review its target storage and preservation plan before applying the displayed exact confirmation. The tool and Python live under `~/Library/Application Support/Colvia`; this path does not require a source clone, Homebrew setup or shell configuration edits.
+## Today · make the decision
 
-## Connect A Project
+Open a fresh chat in the same project. To try keeping a personal edit, first change one sentence in the conclusion and save the file.
 
-Ask your agent:
+> My manager says logistics will cover shipping. Pick up from yesterday’s reviewed draft. Show me any edits since then, and tell me what happens to the refund share if we leave shipping out.
 
-> Preview connecting Colvia to this project with the verified release. Show the target, files that will change and what will be preserved. Keep the first task separate and wait for my installation decision.
+Decide which edits to keep and agree on the narrower brief. The revised report now covers eight inquiries, after excluding four about shipping. There are still five refunds. The refund share rose from about 42% (5/12) to about 63% (5/8) because the denominator shrank. Does the report explain that? Read the figures and conclusion before accepting this draft or asking for a change. [What Colvia remembers](understand.md)
 
-Use a fresh non-Git folder or a primary Git checkout. An existing installation, retained detached records, unknown state or a linked worktree needs its own supported procedure. Keep exact requests outside the project. The agent uses the management command's `install --target PROJECT --json --save REQUEST_FILE`, explains the request, and applies that same request with its confirmation after your decision. Commands, supported transitions and recovery details are in [Getting Started](../../docs/GETTING-STARTED.md#macos-managed-distribution-candidate).
+<a id="update-recovery-en" name="update-recovery-en"></a>
 
-Before the first Work, agree on the project's purpose and plan, preserve existing instructions, and review the [project ignore rules](../../docs/GETTING-STARTED.md#prepare-project-ignore-rules). Keep shared instructions in project-owned `AGENTS.md`; Claude's entry can point to it while retaining unique tool instructions. A runtime update leaves these project-owned files in place. In managed distribution mode, effective Git policy comes from project configuration and ignore rules; review intended shared ignores before establishing the baseline.
+## Update, Recovery And Removal
 
-## Check Where You Are
-
-From the project folder, `./colvia view` shows current work and next steps. The agent reads `./colvia view --details` for the verified manual and adapter. A fresh connection has no accepted task or Work yet. Keep the stable view command in project instructions, not a remembered release directory.
-
-If setup stops, preserve its request, exact distribution and partial state. Ask for the current state and supported recovery before another attempt. Completed detach preserves records for reading and does not create a fresh install target.
-
-Next, [agree on the first Work](first-work.md). Historical checkout-1 observations from 2026-10-05 describe that older exercise; qualification of this distribution and its first-use flow is tracked separately.
+[Next · Return in a fresh chat](resume.md) · [Install, update or disconnect](project-setup.md#maintenance-en)

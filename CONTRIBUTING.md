@@ -1,4 +1,20 @@
-# Contributing
+# Contributing to Colvia
+
+[English README](.github/README.md)
+
+Small changes are welcome for review. If you found a bug, describe what you expected, what happened, the operating system and the asset name or version you received. A short example in a clean project helps. Leave out account details, private paths and project files.
+
+For a typo, a clearer example or a reproducible bug, open a focused pull request against `main`. Explain what changed and how you checked it. Discuss larger features, changes to what agents can do, or changes to stored Work records with a maintainer before implementing them.
+
+Please keep security reports out of public issues and pull requests. During the private preview, contact the person who supplied your build privately. Before public release, we’ll list a private reporting contact here.
+
+Colvia’s own code and documentation in this revision use Apache-2.0. Contributions intentionally submitted for inclusion are handled under section 5 of the license unless explicitly stated otherwise. Third-party components keep their own licenses. [License](LICENSE)
+
+## Maintainer Git policy (proposal)
+
+Use a topic branch and a PR to main. Keep related changes reviewable and prefer a merge commit when individual accepted commits carry distinct evidence. Protect shared branches against deletion and force pushes. Require checks once the project actually runs them. Merging and publishing are separate owner decisions. Leave a distributed release tag in place; issue a new version for a correction. These are proposed practices, not a statement that branch or tag rules are enabled.
+
+## Source development workflow
 
 This file locates the rules for developing Colvia itself. Start with [Source Project Rules And Development Workflow](docs/development/WORKFLOW.md) and the [Development Index](docs/development/README.md). Decision-document rules are in the [Decision Guide](docs/DECISION-GUIDE.md); technical verification remains in [Maintaining](docs/MAINTAINING.md).
 
@@ -47,3 +63,5 @@ Read [Review And Evidence](docs/development/WORKFLOW.md#review-and-evidence) and
 ### Resume, Handoff And Close
 
 Read [Resume And Handoff](docs/development/WORKFLOW.md#resume-and-handoff) and [Close And Assess Adopter Impact](docs/development/WORKFLOW.md#close-and-assess-adopter-impact).
+
+[Writing and navigating the user guides](docs/development/user-documentation.md)

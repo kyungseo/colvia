@@ -1,36 +1,27 @@
-# Resume From The Project Records
+# Pick up your work in a fresh chat
 
-[Previous: first Work](first-work.md) · [Contents](README.md) · [한국어](../ko/resume.md)
+[User guide](README.md)
 
-Open a new conversation with access to the same project. Ask:
+Open the report project in a new chat and ask:
 
-> Read this project's instructions and current Colvia Work. Explain what was accepted, what remains, any pending operation and the recommended next step with its reason. Check the existing authorization and limits before changing files.
+> Where did we leave the inquiry report? Has anything changed since I reviewed the draft?
 
-The agent starts with project rules and `./colvia view --details`, reads the verified adapter, then compares the selected Work, referenced plan, continuation and current files. Human-facing `./colvia view` remains the compact overview. `./colvia help` shows query commands and prompt examples when needed.
+The agent can find the same task and compare the draft you saw with today’s files. If two tasks have similar titles, choose the one you meant. Read any draft awaiting review and accept it or ask for an edit. If someone changed a file after you accepted it, look at the difference before deciding what to do next.
 
-## Recover The Current Situation
+If a run stopped midway, ask “Before we try again, show me what actually changed in the files.” Keep the original request and files until you know where to resume.
 
-Expect a concise explanation of the accepted result, unfinished scope, current file agreement or drift, consumed time/attempts and valid remaining authority. A completed Work remains a historical acceptance even if files later change. Resolve differences between narrative and records before proposing a write.
+<a id="hand-off-one-work-item" name="hand-off-one-work-item"></a>
+<a id="handoff" name="handoff"></a>
 
-If the previously approved task still has work remaining and its conditions hold, the agent continues it. If you asked only for a status check or recommendation, it stays read-only. A pending or unknown operation uses its recovery path; a new chat does not reset the operation or its budget. Keep the exact request and source needed for recovery.
+## Step away and find your result
 
+> Submit the prepared report for review and notify me on this device when it’s ready.
 
-The View puts the Work title, ID, recorded state and next check together. `view work ID` adds the recorded scope and submitted observations before technical details. The agent explains any interpretation separately from that output.
+Here you’re handing off one step: submitting drafts you’ve already prepared. Check the action, deadline and inbox, then confirm. Colvia runs the submission on this device. Keep it awake and stay signed in until the step finishes. For a device alert, ask your agent to turn on Work notifications. On Mac, allow notifications when prompted. If you replace the Windows manager EXE, register notifications again with the new file.
 
-Execution records have their own cards. They describe what was recorded for that run, including document effects and process closure. A shared Work ID does not establish a link to the current Work revision. If an unresolved run has an unknown effect, first inspect the permitted records and current files; any recovery or new execution follows the existing approval rules. An already resolved run can retain an unknown historical effect while current work proceeds under its own conditions. Detailed evidence shows the limits of what was checked.
+When you return, ask “Does the report task have any questions or results?” Even without a banner you can check the same task’s inbox. Read the draft and decide whether to accept them. [Supported steps and environments](work-guide.md)
 
-## Choose The Next Work
+<a id="recover-the-current-situation" name="recover-the-current-situation"></a>
+<a id="choose-the-next-work" name="choose-the-next-work"></a>
 
-For a completed task, ask for one recommendation or compare named alternatives. The agent first reads `./colvia view candidates`, then explains the proposed scope, checks and why it is useful now. An explicit request to record a candidate permits that planning change; execution and result acceptance retain their own boundaries.
-
-If the runtime is missing after moving or cloning the project, acquire the exact pinned runtime from the trusted release. If the installed entry is damaged, use an independent trusted distribution and [Operations](../../docs/OPERATIONS.md). Preserve detached records for supported reading rather than treating them as a fresh project.
-
-Fresh CLI-process reads and synthetic agent behavior are different observations. Record which was actually checked and retain unobserved real-project limitations.
-
-## Hand off one Work item
-
-Ask the agent to continue an approved Work item and tell you when its result is ready. Review the title, action, scope, deadline and local inbox before confirming. A one-shot process continues after the submitting client exits while the device and user session are available. The supported actions are summarizing one active Work, submitting an already prepared result for review, and running a previously prepared document execution on the official macOS profile.
-
-Ask whether the Work has a question or result, or open `colvia view inbox` from the project. Answer a question in that Work or stop the request. Device notifications use generic text. The local inbox retains the result even if delivery fails. After an interruption, inspect the existing Work and its recorded effects before submitting anything again.
-
-If the deadline passes and the effect remains uncertain, ask what the Work records show. Once the worker is inactive, you may explicitly close that receipt with the outcome marked unknown. Its history and consumed step stay in the inbox. You can then hand off a different action.
+[Next · Updates and recovery](project-setup.md#maintenance-en) · [Technical details on resuming and recovery](reference.md#resume-details)

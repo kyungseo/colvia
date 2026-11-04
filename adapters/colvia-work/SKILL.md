@@ -132,6 +132,12 @@ Use a parent only when the human needs independently accepted child results plus
 Use the accepted composition and exact child snapshot from the parent baseline to run verification, write the existing project report and submit its required result/evidence references. If children change, explain the human baseline refresh and repeat verification; never substitute newer typed references behind an older report. Before parent acceptance, show the parent Work and confirmation views, distinguish captured/submitted/current child revisions, and expose unavailable evidence. A completed-child count is not parent acceptance. Keep historical completion when later child drift appears, and explain the next human decision instead of automatically revoking or creating work.
 
 
+## Managed Update And Project Disconnect
+
+When explaining a Windows manager update to someone who uses Work notifications, offer to switch the account receiver with the newly verified manager's `notice-enable`. Confirm that the user wants notifications. They can read a pending result in the project chat while registration is unavailable. Check the Work in the correct project before offering the next action.
+
+When presenting a project removal preview, identify the target, Work and approval history that will remain, and the current limitation on reconnecting the detached folder as a fresh project. For someone who wants to pause and resume, offer to leave it connected. Distinguish disconnecting a project from removing a management tool or its private Python. Follow the platform's supported operations and the user's decision on the exact request. See [first use, update and recovery](../../docs/README.md#guide-en-recovery).
+
 ## Requested Project Documents
 
 For comparisons, human decisions or unresolved project questions, load [Project Document Assistance](../../docs/REFERENCE.md#project-document-assistance) only when needed. Reuse project conventions and the existing narrative. Task/idea planning follows Candidate Conversation; when the object of “save this” or “later” is unclear, ask once without writing.
