@@ -1,10 +1,8 @@
 # The Records And Decisions You Need
 
-This page describes the unactivated `entry-1` candidate. Use requires separate exact-artifact qualification and installation approval; the historical checkout-1 exercise below does not qualify these commands.
+[User guide](README.md)
 
-[Contents](README.md) · [First Work](first-work.md) · [Resume](resume.md)
-
-[한국어](../ko/concepts.md)
+For the current workflow, start with [what a Work remembers](understand.md) and [what to ask your agent](work-guide.md). The detailed record examples below describe the earlier entry-1 profile.
 
 For the first project, keep three things distinct: the plan for the project, the exact request you accept, and the Work that carries it out. You can read explanations in Markdown while Colvia keeps the records that identify the accepted revisions.
 
@@ -101,4 +99,4 @@ Historical exercise — Edition: private development, `checkout-1`; checked 2026
 
 ---
 
-[Contents](README.md) · [First Work](first-work.md) · [Resume](resume.md)
+[Back to the user guide](README.md)

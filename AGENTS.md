@@ -18,8 +18,8 @@ These instructions describe the `continuation-1` profile; in an installed projec
 
 ## Start
 
-1. When explicitly asked to develop Colvia itself in its trusted source checkout, read source-only `CONTRIBUTING.md`, then its Development Workflow and existing task record. The Workflow's unchanged-entry statement describes the earlier source-only relocation; this candidate adds the conditional route. Do not install a runtime or create typed Work to begin source development.
-2. In an installed project run `./colvia view --details`, follow project-owned rules and read the verified manual/adapter paths in its technical details. The default `./colvia view` is the concise human screen. Stable project-owned entry instructions may start there and follow its guidance to the current adapter. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
+1. When explicitly asked to develop Colvia itself in its trusted source checkout, read source-only `CONTRIBUTING.md`, then its Development Workflow and existing task record. Do not install a runtime or create typed Work to begin source development.
+2. In an installed project use the verified launcher for that platform: on macOS run `./colvia view --details`; on Windows use the [native launcher procedure](docs/OPERATIONS.md#onboarding-windows-2-entry) with the same `view --details` arguments. Use that platform launcher for every command below, including candidate lookup and resuming a Work. Then follow project-owned rules and read the verified manual/adapter paths in its technical details. The default `./colvia view` is the concise human screen. Stable project-owned entry instructions may start there and follow its guidance to the current adapter. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
 3. For setup or broken-launcher diagnosis, use an independent trusted source with explicit `--source-checkout`; see [Getting Started](docs/GETTING-STARTED.md) and [Operations](docs/OPERATIONS.md).
 4. Propose scope and evidence. Obtain human acceptance of the exact intent and result. Keep one editing Work at a time during serial use.
 
@@ -27,11 +27,11 @@ Lifecycle commands preview by default. Intent/Work publication writes machine re
 
 ## Candidate Entry
 
-Read `./colvia view candidates` before recording ideas or recommending next work; follow the installed adapter’s Candidate Conversation. Project-owned planning grants no execution authority. Recommendations and ambiguous resume requests stay read-only; explicit planning requests authorize only the named change. Never upgrade the runtime merely to save an idea.
+Use the verified launcher with `view candidates` before recording ideas or recommending next work; follow the installed adapter’s Candidate Conversation. Project-owned planning grants no execution authority. Recommendations and ambiguous resume requests stay read-only; explicit planning requests authorize only the named change. Never upgrade the runtime merely to save an idea.
 
 ## Follow-Up And Plan Alignment
 
-On resume, read the selected Work, its referenced plan and `./colvia view continuation WORK_ID`, including completed Work. Explain accepted result, remaining plan items and the recorded follow-up separately. Proposal, existing Work, explicit none and undecided have different meanings. Selection grants no execution or acceptance authority. Reconcile conflicting valid choices with the human; never choose by timestamp. Preserve pending/unknown state and explain usage out of 256, remaining count or unavailable usage. Follow the installed adapter’s Follow-Up And Plan Alignment section.
+On resume, read the selected Work, its referenced plan and the verified launcher's `view continuation WORK_ID` output, including completed Work. Explain accepted result, remaining plan items and the recorded follow-up separately. Proposal, existing Work, explicit none and undecided have different meanings. Selection grants no execution or acceptance authority. Reconcile conflicting valid choices with the human; never choose by timestamp. Preserve pending/unknown state and explain usage out of 256, remaining count or unavailable usage. Follow the installed adapter’s Follow-Up And Plan Alignment section.
 
 ## Typed Pointers
 

@@ -1,12 +1,8 @@
 # 프로젝트 규칙 확장과 Colvia 제거
 
-이 진입 안내는 continuation-1을 기준으로 합니다. 정확한 설치본의 검증과 설치 승인이 필요합니다. 연결된 단계별 실습에는 entry-1 예제가 남아 있으므로 명령은 현재 운영 문서를 따르세요. 아래의 과거 checkout-1 실습은 이 설치본의 검증 근거가 아닙니다.
+[사용 설명서](README.md)
 
-[매뉴얼 처음으로](README.md) · [English](../en/rules-and-removal.md)
-
-프로젝트에 맞춘 지침은 프로젝트가 소유하는 파일에 둡니다. Colvia는 공통 규칙과 managed adapter를 제공합니다. Adapter는 agent가 사용자의 요청을 지원되는 작업 절차로 이어 가도록 돕는 지침입니다. 설치된 runtime을 제거하면 그 안의 지침도 제거되지만, 프로젝트가 작성한 규칙과 작업 이력은 남습니다.
-
-프로젝트 규칙을 추가하거나 agent의 작업 방식을 보완할 때, runtime을 갱신하거나 Colvia 사용을 끝낼 때 이 안내를 읽으세요. 예시는 프로젝트 Owner와 검토해 적용할 문안입니다. 자동 확장 기능이나 native agent에서 동작을 확인한 연동 방식은 아닙니다.
+프로젝트 팀의 지침과 Colvia가 관리하는 파일은 별도로 유지합니다. 아래는 이전 설치본을 사용한 운영 참고 자료입니다. 현재 프로젝트에 적용하거나 제거하는 절차는 [설치·갱신·연결 해제](project-setup.md)에서 확인하세요.
 
 ## 1. 파일의 소유자 확인하기
 
@@ -57,11 +53,16 @@ Runtime을 갱신하면 managed release와 `./colvia view`가 안내하는 경�
 
 Runtime 설치와 프로젝트 규칙 편집은 별개의 작업·승인으로 다룹니다. 어느 쪽을 바꾸든 pending 작업과 문서 참조에 미치는 영향을 먼저 살펴보세요. Update 승인은 제출된 결과를 고칠 권한이 아닙니다. 승인된 갱신 뒤에는 현재 adapter 경로, 관련 프로젝트 연결과 검사를 확인합니다. 이력이나 복구에 필요한 과거 참조 판본은 보존합니다.
 
+<details>
+<summary>이전 설치의 전환 절차 · 해당 버전을 사용하는 경우</summary>
+
 다음 두 문단은 일치하는 과거 source용 checkout-1→entry-1 절차를 보존합니다. 현재 continuation-1은 [현재 전환·복구 안내](../../docs/OPERATIONS.md#continuation-1)를 따릅니다. 명시된 정확한 delegation-1 predecessor만 허용하며, schema5 lifecycle 쌍을 사용하고 continuation 기록을 보존합니다. 유효한 pending continuation은 일반 update·detach를 차단하고, 분류할 수 없는 continuation은 repair도 차단합니다. 정확한 현재 설치본 repair에는 명시된 유효 pending 예외만 있습니다.
 
 이 과거 checkout-1→entry-1 전환은 허용 목록의 정확한 predecessor만 지원합니다. 적용 전에 협력하는 writer를 멈추고, 정확한 old/new source와 원래 request·token, 복원을 확인한 외부 복구 자료를 보존하세요. 첫 switch receipt가 영속화되는 S1부터는 새 기록이 없어도 checkout-1이나 이전 window로 rollback할 수 없습니다. Local/parent manifest와 직접 포착한 child 참조 검사 때문에 전환이 거부될 수 있습니다. 기존 worker 결과는 별도 Git 승인, 명시적인 same-intent worker rebind와 재제출이 필요합니다. Runtime은 프로젝트 진입 지침을 수정하거나 Git 작업을 수행하지 않습니다. [Entry-1 transition](../../docs/OPERATIONS.md#entry-1-transition)을 참고하세요.
 
-첫 receipt나 S2 파일의 torn bytes, 지원하지 않는 O-plus-binding.next 조합은 제품 안에서 복구할 경로가 없을 수 있습니다. 원본을 보존하고 외부 복구·처분 승인을 별도로 받으세요. OLD pending init/repair/detach는 새로운 entry-1 요청이 아니라, 일치하는 보존 OLD source와 원래 요청으로 처리합니다. 적용 대상인 은퇴 경로 `hv2`의 점유물은 보존합니다. 그 밖의 검증이 유효한 live 진단은 conflict/12, lifecycle 호출은65로 거부하고, schema-3 detach로 binding이 사라진 뒤의 source 진단은 충돌 오류를 동반한 degraded/10을 사용합니다. Confirmation 표시나 정상적인 현재 status가 과거 내용 비교 또는 이전 동기화의 성공을 증명하지는 않습니다. 그 과거 detach는 paired schema3을 사용합니다. Paired1/2 이력은 읽을 수 있지만 복구에는 일치하는 OLD source가 필요합니다.
+첫 receipt나 S2 파일의 torn bytes, 지원하지 않는 O-plus-binding.next 조합은 제품 안에서 복구할 경로가 없을 수 있습니다. 원본을 보존하고 외부 복구·처분 승인을 별도로 받으세요. OLD pending init/repair/detach는 새로운 entry-1 요청이 아니라, 일치하는 보존 OLD source와 원래 요청으로 처리합니다. 적용 대상인 은퇴 경로 `hv2`의 점유물은 보존합니다. 그 밖의 검증이 유효한 live 진단은 conflict/12, lifecycle 호출은 65로 거부하고, schema-3 detach로 binding이 사라진 뒤의 source 진단은 충돌 오류를 동반한 degraded/10을 사용합니다. Confirmation 표시나 정상적인 현재 status가 과거 내용 비교 또는 이전 동기화의 성공을 증명하지는 않습니다. 그 과거 detach는 paired schema3을 사용합니다. Paired1/2 이력은 읽을 수 있지만 복구에는 일치하는 OLD source가 필요합니다.
+
+</details>
 
 ## 5. Colvia 제거와 진입 지침 정리하기
 
@@ -84,4 +85,4 @@ Runtime 설치와 프로젝트 규칙 편집은 별개의 작업·승인으로 �
 
 [매뉴얼 처음으로](README.md)
 
-<!-- en_content_sha256: bcdd83d08b70282f4f7d2571d4469bcd633794c6529ebbc8e9313ecb753feb39 -->
+<!-- en_content_sha256: 857bd2fb73918833acd58801b58bab2abc6d8bba658a361ec7dd404a9ff22fc2 -->

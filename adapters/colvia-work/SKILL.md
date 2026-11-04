@@ -1,13 +1,11 @@
 ---
 name: colvia-work
-For the separate Windows-2 candidate, follow [Windows entry and boundaries](../../docs/README.md#windows-2-integration-candidate).
-
 description: Guide candidate planning, requested project briefs and decisions, intent, session handoff, targeted document checks, Work review and exact acceptance through the installed human interface.
 ---
 
 # Colvia Work Entry
 
-Use this adapter with the verified `continuation-1` installed profile; read [Profile and authorization](../../docs/README.md#continuation-1). A verified binding or this adapter's presence does not prove human authorization.
+Use the adapter identified by the installed project. Read [Profile and authorization](../../docs/README.md#continuation-1) for the default profile. On Windows, follow [Windows entry and boundaries](../../docs/README.md#windows-2-integration-candidate) and use the [verified Windows launcher](#windows-2-entry) wherever an example below starts with `./colvia`. A verified binding or this adapter's presence does not prove human authorization.
 
 Use when the human asks to record an idea, author a brief or decision, choose what to do next, defer a candidate, or start, continue or review a project task. [The work cycle and request examples](../../docs/CONCEPTS.md#the-work-cycle) explain that experience to the human; use the procedures below for the actual action. This adapter does not grant permission to mutate records, accept results, change scope or publish software.
 
@@ -19,7 +17,7 @@ Use when the human asks to record an idea, author a brief or decision, choose wh
 6. Return material scope, acceptance/rejection/revoke/rebind and result acceptance to the human. Apply an exact ticket only after explicit human authorization for that action. The display can become stale; apply performs its own guarded validation. Never edit records or bypass a refusal.
 7. Re-read the view after action. Report stored completion separately from live-file agreement. Rejection/revocation does not undo project bytes. Pending is not completed; preserve the exact ticket for documented recovery.
 
-For fresh resume, begin with `./colvia view --details`, open the current accepted intent and selected Work, and read referenced project Markdown. Use [Resume The Same Task](#resume-the-same-task) to recover the unfinished request and carry out its next authorized action. Do not install this adapter into project entry files automatically. A human may add the stable instruction “Run ./colvia view and follow its guidance to read the current verified adapter, then apply its applicable instructions within the current human request and project authorization” to their project entry.
+For fresh resume, begin with `./colvia view --details`, open the current accepted intent and selected Work, and read referenced project Markdown. Use [Resume The Same Task](#resume-the-same-task) to recover the unfinished request and carry out its next authorized action. Do not install this adapter into project entry files automatically. A human may add a stable project instruction to open the View with the verified platform launcher and follow the current adapter within the human request and project authorization.
 
 This development adapter has no automatic agent-runtime discovery, scheduler or intake registry. Human comprehension, actual adoption and native runtime qualification need separate evidence.
 
@@ -86,6 +84,16 @@ The compact View's next line proposes a check or decision from recorded state. E
 Execution cards describe historical runs separately from the current Work. A matching Work ID identifies the recorded target, not the current revision, submission or approval. Distinguish recorded document effect, process closure, recorded checks and current file agreement. For an unresolved run, inspect permitted evidence before proposing recovery or a new execution approval; never retry a consumed grant. A terminal run with unknown historical effect retains that uncertainty without becoming a new blocker for otherwise permitted work. A terminal event with status `unknown` remains unresolved; `operator-resolved-unknown` is a distinct resolved state. Unconfirmed process evidence on an unresolved run, and pending operations, still follow their existing recovery boundaries. Missing individual closure evidence on an already resolved run is historical uncertainty, not a new lifecycle blocker. Summarize checked and unchecked scope and link the existing detailed evidence; a complete log or declared observation alone does not prove successful verification.
 
 
+## Show The Revision For Review
+
+For an ordinary local editing Work, describe the review endpoint when agreeing on the plan: name the files to edit, read-only inputs, required checks and the revision the human will see. Approval of that plan covers editing, checking and submitting the agreed result for review. Honor a narrower grant or a draft-only, planning or submission hold. Do not extend an older approval to a new endpoint.
+
+After the required checks pass, recheck the current selection, scope, holds, limits and pending operations. Use the existing local `submit-result` path for the full agreed result. Read back the selected revision before calling it submitted. In the current chat, show its Work title and revision, the changes the human can inspect, the checks and any remaining decision. Leave it in review. A local inbox handoff or device alert has its own preview and authorization.
+
+Leave out-of-scope files alone. If an unrelated issue leaves every agreed deliverable valid, present the full result and mention the issue separately. If an input changed or a required check failed, correct only within the agreed limits or explain what blocks submission. Never silently drop a deliverable. If publication was interrupted or its outcome is unclear, inspect that Work's records and pending operations before any further write. When the result is already selected, show it once without submitting it again.
+
+In a fresh chat, resolve the same Work and exact submitted revision. If more than one matches, show their titles and revisions and ask which the human means. Compare the displayed revision with the current selection and files before recording acceptance. If either changed, show the difference you can verify and follow the existing rework or recovery procedure. Only a human decision about the exact revision displayed can accept this result. A go-ahead to edit or an ambiguous acknowledgment leaves it in review.
+
 ## Unavailable Observations Before Acceptance
 
 Have the human declare important criteria in the intent acceptance oracle or stable referenced brief before execution. Do not turn a free-text observation into an automatic proof, waiver, or new runtime gate.
@@ -123,6 +131,12 @@ Use a parent only when the human needs independently accepted child results plus
 
 Use the accepted composition and exact child snapshot from the parent baseline to run verification, write the existing project report and submit its required result/evidence references. If children change, explain the human baseline refresh and repeat verification; never substitute newer typed references behind an older report. Before parent acceptance, show the parent Work and confirmation views, distinguish captured/submitted/current child revisions, and expose unavailable evidence. A completed-child count is not parent acceptance. Keep historical completion when later child drift appears, and explain the next human decision instead of automatically revoking or creating work.
 
+
+## Managed Update And Project Disconnect
+
+When explaining a Windows manager update to someone who uses Work notifications, offer to switch the account receiver with the newly verified manager's `notice-enable`. Confirm that the user wants notifications. They can read a pending result in the project chat while registration is unavailable. Check the Work in the correct project before offering the next action.
+
+When presenting a project removal preview, identify the target, Work and approval history that will remain, and the current limitation on reconnecting the detached folder as a fresh project. For someone who wants to pause and resume, offer to leave it connected. Distinguish disconnecting a project from removing a management tool or its private Python. Follow the platform's supported operations and the user's decision on the exact request. See [first use, update and recovery](../../docs/README.md#guide-en-recovery).
 
 ## Requested Project Documents
 
