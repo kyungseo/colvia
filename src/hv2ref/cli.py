@@ -259,24 +259,28 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
         p.set_defaults(recover=False,inject_at=None)
     simple = sub.add_parser("ordinary", help="prepare a plan, start a local Work, or present its result")
     actions = simple.add_subparsers(dest="action", required=True)
-    for name in ("plan", "plan-review", "approve", "start", "status", "submit", "review", "accept"):
+    for name in ("plan", "plan-review", "approve", "start", "status", "submit", "prepare-delivery", "review", "revise", "resume-revision", "accept"):
         cmd = actions.add_parser(name)
         cmd.add_argument("id", help="explicit local Work and intent identifier")
         cmd.set_defaults(target=target)
         if name == "plan":
             cmd.add_argument("--goal", required=True)
             cmd.add_argument("--file", action="append", required=True)
-            cmd.add_argument("--check", required=True)
-            cmd.add_argument("--exclude", required=True)
+            cmd.add_argument("--check", action="append", required=True)
+            cmd.add_argument("--exclude", action="append", required=True)
             cmd.add_argument("--owner", required=True)
-        if name == "submit":
+        if name in ("submit", "prepare-delivery"):
             cmd.add_argument("--summary", required=True)
             cmd.add_argument("--checked", action="append", required=True)
             cmd.add_argument("--unchecked", action="append", default=[])
             cmd.add_argument("--baseline", required=True, help="selection digest returned by start")
         if name == "start":
             cmd.add_argument("--approval", required=True, help="intent selection digest returned by approve")
-        if name in ("approve", "accept"):
+        if name == "prepare-delivery":
+            cmd.add_argument("--expires", type=int, required=True, help="UTC Unix deadline, within 24 hours")
+        if name == "revise":
+            cmd.add_argument("--reason", required=True, help="the human's requested correction")
+        if name in ("approve", "accept", "revise"):
             cmd.add_argument("--receipt", required=True, help="use the receipt shown before the human decision")
     for kind in ("intent", "work"):
         parent = sub.add_parser(kind);commands = parent.add_subparsers(dest="action", required=True)
