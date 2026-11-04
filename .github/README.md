@@ -4,7 +4,7 @@
 
 **Your agent does the work. You decide what to keep. Your project remembers.**
 
-Colvia is a local tool for picking up work with Codex or Claude Code in a fresh chat. Your project keeps what you asked for, what the agent submitted and which result you accepted. Chat messages and file contents you share with your agent follow that service’s settings.
+Colvia keeps a local record of what you asked your agent to do and which results you accepted. If you asked Codex to draft a report yesterday, open the same project in Claude Code today and ask, “Which draft did I review, and what do I still need to decide?” Chat messages and file contents you share with your agent follow that service’s settings.
 
 ![On Monday you review a report on 12 customer inquiries. On Wednesday your manager narrows the brief. On Friday you check the figures and decide which conclusion to keep.](../manual/assets/work-across-chats.en.svg)
 
