@@ -1,5 +1,7 @@
 # Development Index
 
+- [macOS receiver and ordinary Work journey](PATCH-20261105-001-receiver-and-journey.md) — accepted with recorded limits.
+
 - [대량 파일 변경의 제출·수락과 저장 한도](PATCH-20261104-005-large-ordinary-work.md) · Owner 수락·완료(2026-11-04)
 
 - [중단된 수정 요청과 이전 알림 · 12개 기능 점검](PATCH-20261104-004-recovery-and-notification-history.md) · Owner 수락·완료(2026-11-04)

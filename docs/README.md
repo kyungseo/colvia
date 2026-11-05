@@ -229,6 +229,8 @@ Start with one change you expect to come back to. You decide what the agent may 
 #### 2. Revise and review one Work
 “Go ahead. Leave the choice of improvements to me.” The agent edits and checks the report within the agreed limits, then shows you the draft. If a required check fails, it explains why. Accept the draft you reviewed or ask for a correction.
 
+For a change across several folders, ask “Which folders changed the most?” When more than ten paths change, the review includes counts of additions, edits and deletions and the most affected folders. A move counts as a deletion and an addition. If the project inventory is too large to record, even an edit to a single file can hit the limit.
+
 #### 3. Find the result that needs you
 “What’s ready for me to review?” The project View points to a Work and the reason it needs attention. Open the submitted changes and checks before deciding. If two titles fit, identify the intended Work. Reading its status keeps the decision open. The current compact View includes Korean labels, even when you use the English guide.
 
@@ -421,6 +423,8 @@ Windows 11 ARM64에서 기기 알림을 쓰고 있다면 새 관리 EXE의 확�
 
 #### 2. 한 작업 안에서 고치고 검토하기
 “그 범위로 진행해. 개선안은 내가 고를게.” 에이전트가 승인한 범위 안에서 수정하고 검사한 뒤 검토할 보고서를 보여줍니다. 통과하지 못한 검사가 있다면 그 이유부터 확인하세요. 이번 초안을 받아들일지, 어디를 더 고칠지는 직접 정합니다.
+
+여러 폴더를 한꺼번에 고쳤다면 “어느 폴더가 얼마나 바뀌었는지 먼저 보여 줘”라고 해 보세요. 변경 경로가 열 개를 넘으면 추가·수정·삭제 건수와 변경이 많은 폴더부터 볼 수 있습니다. 이름을 옮긴 파일은 이전 경로의 삭제와 새 경로의 추가로 셉니다. 프로젝트의 파일 목록이 너무 커서 작업을 시작할 수 없다면, 한 파일만 고쳐도 같은 제한에 걸릴 수 있습니다.
 
 #### 3. 내가 봐야 할 결과 찾기
 “지금 내가 검토할 게 있어?” 작업 현황(View)에서 어떤 일에 왜 확인이 필요한지 볼 수 있습니다. 제출된 변경과 검사 결과를 열어 보고 판단하세요. 비슷한 제목이 둘이면 어느 작업인지 먼저 고릅니다. 화면을 열어 보는 것만으로 수락되지는 않습니다.

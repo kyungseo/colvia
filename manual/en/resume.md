@@ -8,6 +8,8 @@ Open the report project in a new chat and ask:
 
 The agent can find the same task and compare the draft you saw with today’s files. If two tasks have similar titles, choose the one you meant. Read any draft awaiting review and accept it or ask for an edit. If someone changed a file after you accepted it, look at the difference before deciding what to do next.
 
+If a Mac notification opens the wrong window or cannot open its result, ask “Check the notification app connected to this installation.” Your result remains in the project inbox. Close any older Colvia detail window before checking again; you do not need to submit the work again.
+
 If a run stopped midway, ask “Before we try again, show me what actually changed in the files.” Keep the original request and files until you know where to resume.
 
 <a id="hand-off-one-work-item" name="hand-off-one-work-item"></a>

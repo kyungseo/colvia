@@ -248,6 +248,8 @@ def build_notice_app(source, output, *, fixture_root):
     import base64
     import plistlib
     import subprocess
+    if fixture_root and (not fixture_root.is_absolute() or any(ord(c) < 32 or ord(c) == 127 for c in str(fixture_root))):
+        raise ValueError("fixture receiver requires an absolute path without control characters")
     app = output / "notification-build" / "ColviaWork.app"
     contents = app / "Contents"
     binary = contents / "MacOS" / "ColviaWork"
@@ -258,7 +260,9 @@ def build_notice_app(source, output, *, fixture_root):
             "CFBundleVersion":"1","CFBundleShortVersionString":"1.0","NSPrincipalClass":"NSApplication",
             "LSMinimumSystemVersion":"13.0"}
     (contents / "Info.plist").write_bytes(plistlib.dumps(info))
-    subprocess.run(["/usr/bin/xcrun","clang","-arch","arm64","-mmacosx-version-min=13.0","-fobjc-arc",
+    fixture_flag = (["-DCOLVIA_FIXTURE_APP=" + json.dumps(str(fixture_root / "bin/ColviaWork.app"), ensure_ascii=False),
+                     "-DCOLVIA_FIXTURE_ID=" + json.dumps(info["CFBundleIdentifier"])] if fixture_root else [])
+    subprocess.run(["/usr/bin/xcrun","clang",*fixture_flag,"-arch","arm64","-mmacosx-version-min=13.0","-fobjc-arc",
                     "-framework","AppKit","-framework","UserNotifications","-framework","CoreServices",
                     str(source / "distribution/notification/WorkWindow.m"),"-o",str(binary)],check=True)
     subprocess.run(["/usr/bin/codesign","--force","--sign","-",str(app)],check=True)

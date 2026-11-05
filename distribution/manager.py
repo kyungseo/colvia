@@ -283,6 +283,18 @@ def install_notice_app(store, stage, old):
     sync_directory(app.parent)
 
 
+def notice_location_matches(store):
+    # Do not silently redirect a HOME-based installation to another account store.
+    # A source-built fixture has its own fixed root and distinct native identity.
+    if CONFIG.get("fixture_root"):
+        return store == Path(CONFIG["fixture_root"]).resolve()
+    import pwd
+    if os.getuid() != os.geteuid():
+        return False
+    expected = Path(pwd.getpwuid(os.getuid()).pw_dir) / "Library/Application Support/Colvia"
+    return store == expected.resolve()
+
+
 def notice_command(store, action, event):
     import sqlite3
     if not isinstance(event,str) or len(event)!=32 or any(c not in "0123456789abcdef" for c in event):
@@ -302,7 +314,7 @@ def notice_command(store, action, event):
             return 65
         return subprocess.run([str(app/NOTICE_BINARY),"--post",event],stdin=subprocess.DEVNULL,
                               stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30).returncode
-    except (ContractError,OSError,KeyError,TypeError,ValueError,sqlite3.Error):
+    except (ContractError,OSError,KeyError,TypeError,ValueError,sqlite3.Error,subprocess.TimeoutExpired):
         return 65
 
 
@@ -546,7 +558,7 @@ def lifecycle(args, store):
 
 def main():
     parser = argparse.ArgumentParser(description="Colvia 설치·갱신·제거: 먼저 적용 범위를 확인합니다.")
-    parser.add_argument("command", choices=("install", "update", "rollback", "repair", "remove", "status", "doctor", "start", "resume", "remove-tool", "remove-runtime", "notice-post", "notice-detail", "notice-enable"))
+    parser.add_argument("command", choices=("install", "update", "rollback", "repair", "remove", "status", "doctor", "start", "resume", "remove-tool", "remove-runtime", "notice-post", "notice-detail", "notice-enable", "notice-check"))
     parser.add_argument("--target", type=Path, default=Path.cwd())
     parser.add_argument("--event")
     parser.add_argument("--profile", choices=("continuation-1", "official-execution-2"), default=None)
@@ -564,12 +576,25 @@ def main():
     if args.runtime_input is not None and args.command != "doctor":
         parser.error("--runtime-input은 doctor에서 사용합니다.")
     store = store_root()
+    if args.command.startswith("notice-") and not notice_location_matches(store):
+        print("현재 로그인 계정의 설치 위치와 알림 앱 위치가 다릅니다. 프로젝트 수신함에서 결과를 확인하고 설치 위치를 점검하세요.")
+        return 3
     verify_runtime(runtime_path(store), store)
-    if args.command == "notice-enable":
+    if args.command in ("notice-enable", "notice-check"):
         app = store / "bin/ColviaWork.app"
         if args.event or not notice_matches(app, notice_members(CONFIG["notice_app"])):
             return 65
-        return subprocess.run([str(app/NOTICE_BINARY),"--authorize"],timeout=35).returncode
+        action = "--check-receiver" if args.command == "notice-check" else "--authorize"
+        try:
+            code = subprocess.run([str(app/NOTICE_BINARY),action],stdout=subprocess.DEVNULL if args.command == "notice-check" else None,timeout=35).returncode
+        except subprocess.TimeoutExpired:
+            print("알림 앱 확인이 시간 안에 끝나지 않았습니다. 프로젝트 수신함에서 결과를 확인해 주세요.")
+            return 65
+        if code == 3:
+            print("현재 설치본의 알림 앱 연결을 확인하지 못했습니다. 설치 위치와 열려 있는 Colvia 상세 창을 확인하세요. 결과는 프로젝트 수신함에서 볼 수 있습니다.")
+        elif code == 0 and args.command == "notice-check":
+            print("현재 설치본과 알림 앱의 연결이 일치합니다. 실제 알림 표시와 클릭은 별도로 확인해야 합니다.")
+        return code
     if args.command in ("notice-post","notice-detail"):
         return notice_command(store,args.command,args.event)
     if args.event is not None:
