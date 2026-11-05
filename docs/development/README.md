@@ -1,6 +1,7 @@
 # Development Index
 
 - [macOS receiver and ordinary Work journey](PATCH-20261105-001-receiver-and-journey.md) — accepted with recorded limits.
+- [Host receiver and Codex confirmation](CHORE-20261105-002-host-receiver-confirmation.md) — accepted and complete (2026-11-05): same-candidate Codex/Claude notification clicks, with recorded limits; public-release sequence recorded in the Work.
 
 - [대량 파일 변경의 제출·수락과 저장 한도](PATCH-20261104-005-large-ordinary-work.md) · Owner 수락·완료(2026-11-04)
 
