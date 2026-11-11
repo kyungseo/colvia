@@ -1,0 +1,10 @@
+{
+  "tag": "v4.1",
+  "url": "https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip",
+  "archive_sha256": "9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e",
+  "files": {
+    "Inter-Medium.otf": "6c222ed2c3660524dd0c14fb745e00fee65c5361ab28f60fba6730bf4e648763",
+    "Inter-SemiBold.otf": "0a4d30778fa2dc239368d90fd854b88b27e7ede737450da72686a90eca66f02c",
+    "LICENSE.txt": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+  }
+}

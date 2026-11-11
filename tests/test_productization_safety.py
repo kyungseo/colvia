@@ -1058,7 +1058,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
             if kind=="ignored":
                 preview=self.preview();self.apply_init(preview,expected=65)
             else:
-                self.call(["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
+                self.call(["init","--profile",fixture_window("continuation-1"),"--target",self.target,"--source",self.source,"--authority-home-id","home-a","--operation-id","init-a","--observed-at",self.TIME],expected=65)
             self.assertEqual(before,exact_snapshot(self.target))
 
     def test_recovery_preserves_unknown_and_torn_staged_bytes(self):
@@ -1105,7 +1105,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
 
     def test_source_lifecycle_requires_explicit_profile(self):
         before=exact_snapshot(self.base)
-        for command in (["init","--target",self.target],["update","--target",self.target,"--source",self.source],
+        for command in (["init","--target",self.target,"--source",self.source],["update","--target",self.target,"--source",self.source],
                         ["rollback","--target",self.target],["detach","--target",self.target]):
             with self.subTest(command=command[0]):
                 result=self.call(command,expected=65); error=json.loads(result.stdout)
@@ -1202,7 +1202,7 @@ class ActualWorkspaceInitTests(unittest.TestCase):
         before=exact_snapshot(self.base)
         for target in (child,alias):
             with self.subTest(target=target):
-                result=self.call(["init","--target",target,"--apply"],expected=65)
+                result=self.call(["init","--target",target,"--source",self.source,"--apply"],expected=65)
                 error=json.loads(result.stdout)
                 self.assertEqual("HV2-WORKSPACE-COMMAND",error["code"])
                 self.assertEqual("source lifecycle requires explicit " + fixture_window("continuation-1") + " profile; use retained old source for older windows",error["message"])
@@ -2983,10 +2983,10 @@ class InventoryWindowLifecycleTests(unittest.TestCase):
         from hv2ref.cli import parser, run
         with self.assertRaises(SystemExit):
             parser().parse_args(['init', '--profile', 'human-1', '--target', str(self.target)])
-        args = parser().parse_args(['init', '--target', str(self.target)])
+        args = parser().parse_args(['init', '--target', str(self.target), '--source', str(self.source)])
         with self.assertRaisesRegex(ContractError, 'explicit continuation-1'):
             run(args)
-        self.assertEqual('continuation-1', parser().parse_args(['init', '--profile', 'continuation-1', '--target', str(self.target)]).profile)
+        self.assertEqual('continuation-1', parser().parse_args(['init', '--profile', 'continuation-1', '--target', str(self.target), '--source', str(self.source)]).profile)
         self.assertEqual([], list(self.target.iterdir()))
 
     def test_worker_window_round_trip_and_replay(self):

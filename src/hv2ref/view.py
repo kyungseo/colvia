@@ -230,12 +230,50 @@ def _product(target):
     except (ContractError, OSError, ValueError): return None
 
 
-def _live(target, manifest, product):
+class _FileObservation(str):
+    """Human-only detail attached to the unchanged full-tree advisory string."""
+    def __new__(cls, value, *, changed=(), other=(), policy_matches=True):
+        obj = super().__new__(cls, value)
+        obj.changed, obj.other, obj.policy_matches = tuple(changed), tuple(other), policy_matches
+        return obj
+
+
+def _live(target, manifest, product, scope=None):
     if product is None: return "unavailable: no verified active product"
     try:
         observed = snapshot(target, verified_launcher_sha256=product["launcher_sha256"], verified_inventory_id=product["inventory"]["inventory_id"])
-        return "matches stored result" if observed == manifest["result"] else "stale: current files differ from stored result"
-    except (ContractError, OSError, ValueError): return "unavailable: current content observation failed"
+        label = "matches stored result" if observed == manifest["result"] else "stale: current files differ from stored result"
+        if scope is None:
+            return label
+        # Both inputs come from the verified selected revision, never a candidate claim.
+        paths = {project_path(p) for p in scope} | {c["path"] for c in manifest["changes"]}
+        before = {e["path"]: e for e in manifest["result"]["entries"]}
+        after = {e["path"]: e for e in observed["entries"]}
+        differences = {p for p in set(before) | set(after) if before.get(p) != after.get(p)}
+        # The digest summarizes entries and is expected to differ for other files.
+        # Unknown tree metadata must not be silently treated as comparable.
+        keys = {"policy_version", "ignore_fingerprint", "entries", "sha256"}
+        policy = (set(observed) == set(manifest["result"]) == keys and
+                  all(observed[k] == manifest["result"][k] for k in ("policy_version", "ignore_fingerprint")))
+        return _FileObservation(label, changed=sorted(paths & differences), other=sorted(differences - paths), policy_matches=policy)
+    except (ContractError, OSError, ValueError):
+        return "unavailable: current content observation failed"
+
+
+def _file_summary(observation, *, active=False):
+    if not isinstance(observation, _FileObservation):
+        return []
+    basis = "시작할 때" if active else "제출할 때"
+    if not observation.policy_matches:
+        return ["- 작업 파일: 비교 기준이 달라져 확인이 필요합니다."]
+    lines = ["- 작업 파일: " + (basis + "와 다름" if observation.changed else basis + "와 같음")]
+    for label, paths in (("달라진 작업 파일", observation.changed), ("프로젝트의 다른 변경", observation.other)):
+        if paths:
+            lines.append("- " + label + ": " + ", ".join(code(p) for p in paths[:8]) + (" 외 " + str(len(paths) - 8) + "개" if len(paths) > 8 else ""))
+    if observation.other:
+        lines.append("- 새 수락·적용 전에는 프로젝트 전체 변경도 확인해야 합니다. 이 표시는 적용 허가가 아닙니다.")
+    lines.append("- 파일 일치는 내용의 품질이나 이번 검사 실행을 뜻하지 않습니다.")
+    return lines
 
 
 def _current_revision(graph):
@@ -403,7 +441,7 @@ def _work(target, graph, rid, product, intents, works, *, file_observation=None)
         lines += _worker_observation_lines(candidate)
         if r["operation"] == "rebind": lines += _baseline_review(graph, r, manifest, works)
     else:
-        lines += ["## Current files (advisory)", "", "- " + text(live), ""]
+        lines += ["## Current files (advisory)", "", "- " + text(live), ""] + _file_summary(live, active=graph.get("state") == "active")
     # Follow exact parent references, including human decisions; never timestamps.
     chain = []; ref = graph["current"]["selection_ref"] if graph["current"] else None
     while ref:
@@ -686,7 +724,7 @@ def render_candidates(target, *, works: dict, intents: dict, brief=False) -> tup
     if brief:
         lines = ['', '## 다음 작업 후보', '', '이 작업 공간에 기록된 계획입니다. 시작할 때 목표·범위와 실행 승인을 확인합니다.']
     if not observed['present']:
-        return lines + ['- 이 checkout에는 후보 기록이 없습니다. 다른 branch일 수 있습니다.'], observed
+        return lines + ['- 아직 기록한 후보가 없습니다. 다음에 하고 싶은 일을 말하면 후보로 남길 수 있습니다.' if brief else '- 이 checkout에는 후보 기록이 없습니다. 다른 branch일 수 있습니다.'], observed
     count = len(store['candidates']); decisions = len(store['decisions']); size = len(canonical_json_bytes(store))
     if not brief: lines += [f'- 한도: 후보 {count}/{MAX_CANDIDATES}, 결정 {decisions}/{MAX_DECISIONS}, bytes {size}/{MAX_BYTES}.']
     if count >= MAX_CANDIDATES * .8 or decisions >= MAX_DECISIONS * .8 or size >= MAX_BYTES * .8:
@@ -694,6 +732,13 @@ def render_candidates(target, *, works: dict, intents: dict, brief=False) -> tup
     for cid, row in sorted(store['candidates'].items()):
         if brief:
             disposition = {'open': '검토 중', 'deferred': '보류', 'absorbed': '다른 계획에 반영', 'rejected': '채택하지 않음'}.get(row['disposition'], row['disposition'])
+            for linked in row['links']:
+                if linked['kind'] == 'work':
+                    try:
+                        linked_graph = check_link(linked, store['authority_home_id'], works, intents, current=False)
+                        disposition = '연결된 작업 · ' + (_work_state_label(linked_graph['state']) if not linked_graph.get('pending_decisions') and not linked_graph.get('pending_selections') else '처리 중인 결정 확인 필요')
+                    except ContractError:
+                        disposition = '연결된 작업 확인 불가'
             lines += ['', '### ' + text(row['title']) + ' (' + code(cid) + ')', '- 상태: ' + text(disposition), '- 목적: ' + text(row['purpose']), '- 기대 효과: ' + text(row['expected_effect']), '- 최근 이유: ' + text(row['reason'])]
         else:
             lines += ['', '### ' + text(cid) + ' — ' + text(row['title']), '- 목적: ' + text(row['purpose']), '- 기대 효과: ' + text(row['expected_effect']), '- 후보 처분: ' + text(row['disposition']), '- 최근 이유: ' + text(row['reason'])]
@@ -705,6 +750,15 @@ def render_candidates(target, *, works: dict, intents: dict, brief=False) -> tup
                 label = 'current' if same else 'historical link; current revision differs'
                 if ref['kind'] == 'work':
                     linked_work = True
+                    if brief:
+                        ready = not g.get('pending_decisions') and not g.get('pending_selections')
+                        state_label = _work_state_label(g['state']) if ready else '처리 중인 결정 확인 필요'
+                        lines += ['- 연결된 작업: ' + text(ref['id']) + ' · ' + state_label]
+                        if g['state'] == 'completed' and ready:
+                            lines += ['- 연결된 작업은 수락됐습니다. 후보 이력은 보존되며 새 작업을 시작하라는 뜻은 아닙니다.']
+                        elif not same:
+                            lines += ['- 연결 뒤 작업이 진행됐습니다. 현재 작업에서 다음 행동을 확인하세요.']
+                        continue
                     lines += ['- 관련 Work: ' + text(ref['id']) + ' / 실제 상태: ' + text(g['state']) + ' / ' + text(label), '- 선택 소진: 이 후보로 다시 착수하지 말고 실제 Work의 다음 행동 또는 새 후속 후보를 검토하세요.']
                 else:
                     linked_intent = True; intent_ids.add(ref['id'])
@@ -761,6 +815,7 @@ def _work_label(wid, graph, intents, *, graph_details=True):
             goal = draft["facets"]["goal"]
             if goal["status"] == "known" and isinstance(goal.get("value"), str):
                 value = " ".join(goal["value"].split())
+                value = re.sub(r"^(?:sha256[:= ]*)?[0-9a-fA-F]{32,64}\s*[-:·]\s*", "", value)
                 if value:
                     title = ("" if observed["is_current"] else "이전 목표: ") + text(value[:60] + ("…" if len(value) > 60 else ""))
         except (ContractError, KeyError, ValueError, TypeError, AttributeError, IndexError):
@@ -885,7 +940,7 @@ def _work_files(target, revision, manifest, product):
                        "isolated-drift" if content.get("outside_drift") or content.get("policy_matches") is False else
                        "isolated-observed")
         return candidate, observation
-    return None, _live(target, manifest, product)
+    return None, _live(target, manifest, product, revision["scope"])
 
 
 def _resume_next(wid, graph, status, current_files=None, *, environment_ready=True):
@@ -908,6 +963,10 @@ def _resume_next(wid, graph, status, current_files=None, *, environment_ready=Tr
         return "해당 실행의 기록과 현재 파일 확인"
     if current_files in ("isolated-unavailable", "isolated-drift"):
         return "격리 작업 근거를 확인하지 못한 원인 확인" if current_files == "isolated-unavailable" else "격리 작업 원본과 후보의 차이 확인"
+    if isinstance(current_files, _FileObservation) and current_files.policy_matches and not current_files.changed:
+        if current_files.other and graph.get("state") != "completed":
+            return "작업 파일은 그대로입니다. 새 수락·적용 전에 프로젝트의 다른 변경 확인"
+        current_files = "matches stored result"
     if current_files not in (None, "isolated-observed", "matches stored result"):
         return (("기준 기록과 달라진 현재 파일 확인" if graph.get("state") == "active" else "제출본과 달라진 현재 파일 확인") if current_files.startswith("stale") else
                 "현재 파일을 확인하지 못한 원인 확인")
@@ -967,8 +1026,17 @@ def _work_overview(wid, graph, intents, works, *, status=None, current_files=Non
     lines = ["### " + _work_label(wid, graph, intents), "",
              "- 상태: " + _work_state_label(graph.get("state"))]
     lines += ["- 다음: " + _resume_next(wid, graph, status or {}, current_files, environment_ready=environment_ready)]
+    if not include_scope and graph.get("current"):
+        try:
+            selected = _resolve(graph["selections"], graph["current"]["selection_ref"])
+            paths = _resolve(graph["revisions"], selected["revision_ref"])["scope"]
+            lines += ["- 대상 파일: " + ", ".join(code(p) for p in paths[:2]) + (" 외 " + str(len(paths) - 2) + "개" if len(paths) > 2 else "")]
+        except (ContractError, KeyError, TypeError):
+            pass
     if current_files is not None and current_files.startswith("isolated-"):
         lines += ["- 격리 작업: 원본과 후보의 관찰 근거는 아래 상세에서 확인"]
+    elif isinstance(current_files, _FileObservation):
+        lines += _file_summary(current_files, active=graph.get("state") == "active")
     elif current_files is not None:
         basis = "기준 기록" if graph.get("state") == "active" else "제출본"
         live_label = (basis + "과 일치" if current_files == "matches stored result" else
@@ -1233,10 +1301,11 @@ def _project_summary(status, works, intents, *, graph_details, target, compact=F
     return lines
 
 
-def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None, installed=False, details=False):
+def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None, installed=False, details=False, brief=False):
     """Return GFM and exit status; make no filesystem changes even on degraded input."""
     try:
         _require(not details or (kind is None and revision is None and ticket is None), "--details requires project view without selector, revision or input")
+        _require(not brief or (kind in ("work", "candidates") and not details and revision is None and ticket is None), "--brief requires work or candidates without revision/input/details")
         target = safe_target(target)
         if kind == "inbox":
             _require(installed and not details and revision is None and ticket is None, "설치된 프로젝트의 수신함에서 확인해 주세요.")
@@ -1326,6 +1395,12 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                     lines += ["### 안내 문서", "", "- manual: " + code(entry_root + "/docs/README.md"),
                               "- natural_language_adapter: " + code(entry_root + "/" + WINDOW_ADAPTERS[product["inventory"]["inventory_id"]]), ""]
                 lines += _project_summary(status, works, intents, graph_details=graph_details, target=target, diagnostics_only=True)
+            if brief and kind == "candidates" and graph_details and _normal_overview(status, product):
+                candidate_lines, _ = render_candidates(target, works=works, intents=intents, brief=True)
+                lines = ["# 다음 작업 후보", ""] + candidate_lines
+                lines += ["", "기술 상세: " + code(_display_command(target, installed, "view", "candidates"))]
+                if before == _observe(target): return "\n".join(lines) + "\n", EXITS.get(classification, 0)
+                continue
             file_observation = None
             if kind == "work" and graph_details and object_id in works and revision is None:
                 graph = works[object_id]
@@ -1338,6 +1413,22 @@ def render_view(target, *, kind=None, object_id=None, revision=None, ticket=None
                     current_files=file_observation[1] if file_observation is not None else None, include_scope=True,
                     environment_ready=_normal_overview(status, product))
                 lines += _execution_overview(status, work_id=object_id, details=True)
+                if brief and _normal_overview(status, product):
+                    if graph.get("current"):
+                        refs = list(r.get("document_refs", []))
+                        try:
+                            ig = intents[r["intent_ref"]["id"]]
+                            accepted = _resolve(ig["acceptances"], r["intent_ref"]["acceptance_ref"])["confirmation"]
+                            refs += accepted.get("document_refs", [])
+                            for doc in refs:
+                                observed_ref = reference_observation(target, doc)
+                                label = "기록과 같음" if observed_ref == "matches" else "기록 이후 변경됨" if observed_ref == "stale" else "확인 불가"
+                                lines += ["- 참고 문서: " + code(doc["path"]) + " · " + label + (" · 필수 입력" if doc["required"] else " · 선택 참고")]
+                        except (ContractError, KeyError, ValueError):
+                            lines += ["- 참고 문서: 확인 불가. 근거 확인 전 새 결정을 적용하지 마세요."]
+                    lines += ["", "기술 상세: " + code(_display_command(target, installed, "view", "work", object_id))]
+                    if before == _observe(target): return "\n".join(lines) + "\n", EXITS.get(classification, 0)
+                    continue
                 lines += ["더 보기: 아래 작업 근거와 기술 상세", "", "## 기술 상세", ""]
             lines += fields({"target": str(target), "entry": "installed launcher; target release observed separately" if installed else "independent source; not the bound release", "status": {k: v for k, v in status.items() if k in {"classification", "topology", "authoritative_control", "pending_work", "pending_intent", "pending_continuation", "next_action", "error_code", "reason", "message", "lifecycle_ready", "retired_entry_collision", "continuation_unavailable", "official_execution"}}})
             if kind is None:
@@ -1411,6 +1502,6 @@ def run(args, *, installed):
         if args.input is not None:
             raw = sys.stdin.buffer.read(READ_LIMIT + 1) if args.input == "-" else bounded_bytes(Path(args.input))
             ticket = decode_json_bytes(raw, require_canonical=True)
-        return render_view(args.target, kind=args.kind, object_id=args.object_id, revision=args.revision, ticket=ticket, installed=installed, details=details)
+        return render_view(args.target, kind=args.kind, object_id=args.object_id, revision=args.revision, ticket=ticket, installed=installed, details=details, brief=getattr(args, "brief", False))
     except (ContractError, OSError, ValueError) as exc:
         return "# Confirmation unavailable\n\n" + text(getattr(exc, "message", str(exc))) + "\n", 65

@@ -21,10 +21,11 @@ def main():
         parser.error("output must not exist; preserve prior preparation")
     if output == source or source in output.parents:
         parser.error("output must be outside the common source")
-    sys.path.insert(0, str(source / "src"))
+    sys.path[:0] = [str(source / "distribution"), str(source / "src")]
+    from source_layout import read_checkout, SOURCE_MAP
     from hv2ref.product import workspace_candidate
     from hv2ref.jsonio import canonical_json_bytes, sha256_bytes
-    candidate = workspace_candidate(source)
+    candidate = read_checkout(source)
     if candidate["release_ref"]["inventory_id"] != "continuation-1":
         parser.error("preparation requires the unchanged continuation-1 common declaration")
     original = candidate["payload"]
@@ -42,7 +43,8 @@ def main():
               "entries": [{"path": name, "input_sha256": sha256_bytes(data),
                            "output_sha256": sha256_bytes(prepared[name]),
                            "input_size": len(data), "output_size": len(prepared[name]),
-                           "source_mode": (source / name).stat().st_mode & 0o777}
+                           "source_path": SOURCE_MAP.get(name, name),
+                           "source_mode": candidate["source_modes"][name]}
                           for name, data in original.items()]}
     output.mkdir(parents=True)
     for name, data in prepared.items():
@@ -50,11 +52,11 @@ def main():
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("xb") as handle:
             handle.write(data)
-        shutil.copymode(source / name, path)
+        path.chmod(candidate["source_modes"][name])
     observed = workspace_candidate(output)
     if observed["payload"] != prepared or observed["release_ref"]["inventory_id"] != "windows-2":
         raise RuntimeError("prepared payload verification failed; preserve output")
-    if workspace_candidate(source) != candidate:
+    if read_checkout(source) != candidate:
         raise RuntimeError("common source changed during preparation; preserve output")
     report["output_release"] = observed["release_ref"]
     (output / "preparation.json").write_bytes(canonical_json_bytes(report))

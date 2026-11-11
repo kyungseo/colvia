@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "selection": "R6-1 Open C",
+  "name": "Colvia",
+  "descriptor": "AI Work Harness",
+  "palette": {
+    "teal": "#1F5F5B",
+    "ivory": "#F6F1E7",
+    "mint": "#8CC6BC"
+  },
+  "renderer": {
+    "aom": "3.15.1",
+    "archive": "3.8.9",
+    "cairo": "1.18.6",
+    "cgif": "0.5.4",
+    "exif": "0.6.26",
+    "expat": "2.8.5",
+    "ffi": "3.8.0",
+    "fontconfig": "2.18.3",
+    "freetype": "2.14.3",
+    "fribidi": "1.0.17",
+    "glib": "2.90.0",
+    "harfbuzz": "14.5.0",
+    "heif": "1.23.5",
+    "highway": "1.4.0",
+    "imagequant": "2.4.1",
+    "lcms": "2.19.1",
+    "mozjpeg": "0826579",
+    "pango": "1.58.2",
+    "pixman": "0.46.4",
+    "png": "1.6.58",
+    "proxy-libintl": "0.5",
+    "rsvg": "2.63.2",
+    "tiff": "4.7.2",
+    "uhdr": "2.0.2",
+    "vips": "8.18.7",
+    "webp": "1.6.0",
+    "xml2": "2.15.4",
+    "zlib-ng": "2.3.3",
+    "sharp": "0.35.5"
+  },
+  "inputs": {
+    "geometry.json": "ab4e7f57d9b96f54c18195f98a793a2365a8caa2479bcb4ef835d676864c2d68",
+    "r6-1-open-c.svg": "3ad729a48ea40a9927b49a1b68826485d1ca514397050a89f7679fd59a193dd9",
+    "Inter-SemiBold.otf": "0a4d30778fa2dc239368d90fd854b88b27e7ede737450da72686a90eca66f02c",
+    "Inter-Medium.otf": "6c222ed2c3660524dd0c14fb745e00fee65c5361ab28f60fba6730bf4e648763",
+    "LICENSE.txt": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+  },
+  "files": {
+    "symbol-light.svg": {
+      "sha256": "2bc2e41230744a158488ea223a6d04a230c2ff900dadeb7898705704e0352caf",
+      "bytes": 3413
+    },
+    "symbol-dark.svg": {
+      "sha256": "8bdee4a636099265b3b9a784bc8e4e4d3a0d5dae5d711da6eb78460fa635ab12",
+      "bytes": 3413
+    },
+    "symbol-black.svg": {
+      "sha256": "0e50298e8aede580c2a2037a42d565fa1c0ba79232a9194e65936f794e20c1e4",
+      "bytes": 3413
+    },
+    "symbol-white.svg": {
+      "sha256": "b360f5830e07c59d7552af19067ef349d8b4d6ce46e8181e0801924a26d33c96",
+      "bytes": 3413
+    },
+    "symbol-current.svg": {
+      "sha256": "c8a68db1501f1194f31b6cc0b7d976df172af9bee11b42237446d6e5097c0967",
+      "bytes": 3418
+    },
+    "logo-light.svg": {
+      "sha256": "eee9fae7f3aaf3a16d46520b6749f9695f5e9bb477e2afb0649e7a7d3673591c",
+      "bytes": 6312
+    },
+    "logo-light.png": {
+      "sha256": "b36aa962c4bfa4eb23abae97d2123ecd5d1b3db339da946a7c8af1f69a7e9ef7",
+      "bytes": 7946
+    },
+    "logo-intro-light.svg": {
+      "sha256": "420c37dc20b95663063498c993e3c09df72d6cf9edcfe6f60e379aa6ac517622",
+      "bytes": 13164
+    },
+    "logo-intro-light.png": {
+      "sha256": "1c35d3c1c63fdd54d51efd18d24d7fc369db8720971746aaea59a367bf61e2ff",
+      "bytes": 11120
+    },
+    "logo-dark.svg": {
+      "sha256": "e938612b4ea3502e9ee7870d657d68a7abce36824018b79e8243dd46ed99f8af",
+      "bytes": 6312
+    },
+    "logo-dark.png": {
+      "sha256": "72af2904406fd8f22a7f749e65e2180f3e67136daafc4fca294e902132c0721a",
+      "bytes": 8139
+    },
+    "logo-intro-dark.svg": {
+      "sha256": "d56400eab4780daa3052b9a65cad755a3603f2674c368f50770d4a74ce684226",
+      "bytes": 13164
+    },
+    "logo-intro-dark.png": {
+      "sha256": "0089f92ead0bad7aaa7b144e80c52c2d8f0d0ea65efb714957ba967be30e4188",
+      "bytes": 11359
+    },
+    "logo-hero-light.svg": {
+      "sha256": "b482f570cb8186d8a0227a698e28969e829f7153e8d934538d3e89bed8b63cb2",
+      "bytes": 13261
+    },
+    "logo-hero-light.png": {
+      "sha256": "17eae2e27be2c600735b371209ae9020902fea3873467ef868cebdddda0c6af0",
+      "bytes": 13011
+    },
+    "logo-hero-dark.svg": {
+      "sha256": "b6240bdf69b71ba7192e6e5108cc02afb166a49e4eb01877e5da0bb8a060c873",
+      "bytes": 13261
+    },
+    "logo-hero-dark.png": {
+      "sha256": "f92eb5d2b4ea2339c3049a7535654b10329f00dba74cb0b9b2e0612b99264422",
+      "bytes": 13216
+    },
+    "icon.svg": {
+      "sha256": "8e1a83b87c88ef1c5420401d036c5ffa79bf69ad814f96934de690da103adb32",
+      "bytes": 3565
+    },
+    "png/icon-16.png": {
+      "sha256": "baaea50585a2d5f9980b7b4ef5a151ce17fbec9f1e86bbf2f9dabbf444cbbf8b",
+      "bytes": 359
+    },
+    "png/icon-20.png": {
+      "sha256": "987faddc3f090091a88644e7b9921333c639ce1b8e68ab6c60d7b9ed3efb496d",
+      "bytes": 421
+    },
+    "png/icon-24.png": {
+      "sha256": "32c3fe4a7c8bab95ce210f1373a91de6652545b2459f0ba36344480d97ce9988",
+      "bytes": 548
+    },
+    "png/icon-32.png": {
+      "sha256": "ee766d8f1c03c56ffc53c799fed8e4d206648b1ca9bfa0f8e2559d8f38889a8c",
+      "bytes": 671
+    },
+    "png/icon-40.png": {
+      "sha256": "e3c9a650689195a72058890c0e906d1c5be8f2c44d838abf31f6ee17f9a7e3f4",
+      "bytes": 811
+    },
+    "png/icon-48.png": {
+      "sha256": "bb343223809b772c11ef4304e8050d53deda9ae9bbfa6ed36b7881d6a0f21e45",
+      "bytes": 999
+    },
+    "png/icon-64.png": {
+      "sha256": "512779a8b5aa287bc30d543cafa29b1be034f140458cd94d4108edd4596b924f",
+      "bytes": 1289
+    },
+    "png/icon-128.png": {
+      "sha256": "d01bb8ea1f5888b6475b108347d9dc57a25ea19c099ba38b3bf183f3ff2e808c",
+      "bytes": 2702
+    },
+    "png/icon-256.png": {
+      "sha256": "7a61eea1f03fdccb583483ece7fe6e54686787972215c7cbc423c3cfdbfdeecd",
+      "bytes": 6155
+    },
+    "png/icon-512.png": {
+      "sha256": "85e4e3e18412244b3cb520fffffce0b7e0a5495033c77309032dcbbc7fd8f4d0",
+      "bytes": 15551
+    },
+    "png/icon-1024.png": {
+      "sha256": "23b0ea9ca8458b45ca394d8d10671f461a4c100a9829db70cb13ab1cc629aaec",
+      "bytes": 43145
+    },
+    "png/symbol-black-16.png": {
+      "sha256": "f5a2dc2b95337535251ee863d7a39a11c2f3f23bcb6adaf80982a856e9e08a3b",
+      "bytes": 284
+    },
+    "png/symbol-black-32.png": {
+      "sha256": "fde49ec9ffe0f9d773c3781cb6f3da1cdc4b4e971ae59b5a4f7f2cca99dd74b4",
+      "bytes": 455
+    },
+    "png/symbol-white-16.png": {
+      "sha256": "f083754cf39f8ee72b342df3e869516734175058fb907b59f586e925e6f3950f",
+      "bytes": 285
+    },
+    "png/symbol-white-32.png": {
+      "sha256": "ab8230d2d6553c58ef8274cf32b87abe1138885f4ba45d00a278c6cba2160fdc",
+      "bytes": 476
+    },
+    "colvia.ico": {
+      "sha256": "c6b6bbb4d68a272b3bcf3e0dc02c8352fdfbdd34b6526b5a4fbeba0ed8b2afe0",
+      "bytes": 11387
+    },
+    "colvia.icns": {
+      "sha256": "8d7dc994e67a53dce7e43f47164933bc440ba4b6db465571e3165b0ca40f901a",
+      "bytes": 93634
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "icon_sha256": "c6b6bbb4d68a272b3bcf3e0dc02c8352fdfbdd34b6526b5a4fbeba0ed8b2afe0",
+  "objects": {
+    "rsrc_windows_amd64.syso": "93fcfda3cf1b55aeb4435a18e8ab7f31cd0b1ae831f207b823d43425c524fe62",
+    "rsrc_windows_arm64.syso": "ceea573fc13c9425a611d22b8d2611b78050a0c23439cb431ed517e3b81abd41"
+  },
+  "png_256_sha256": "7a61eea1f03fdccb583483ece7fe6e54686787972215c7cbc423c3cfdbfdeecd"
+}

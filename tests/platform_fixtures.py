@@ -52,10 +52,8 @@ def fixture_temporary_directory(**kwargs):
 
 
 def fixture_source():
-    """Prepare one real Windows source per test process; keep raw source untouched."""
+    """Prepare one mapped source per test process; keep public README out of fixtures."""
     from hv2ref.product import source_root, workspace_candidate
-    if sys.platform != "win32":
-        return source_root()
     cached = getattr(fixture_source, "_prepared", None)
     if cached is not None:
         return cached
@@ -65,9 +63,12 @@ def fixture_source():
     import subprocess
     import tempfile
     common = source_root()
-    holder = Path(tempfile.mkdtemp(prefix="s-", dir=os.environ["COLVIA_NATIVE_TEST_ROOT"]))
+    holder = Path(tempfile.mkdtemp(prefix="s-", dir=os.environ.get("COLVIA_NATIVE_TEST_ROOT")))
+    import atexit
+    if not os.environ.get("COLVIA_NATIVE_TEST_ROOT"):
+        atexit.register(shutil.rmtree, holder)
     output = holder / "p"
-    result = subprocess.run([sys.executable, "-I", "-B", str(common / "scripts/prepare-windows.py"),
+    result = subprocess.run([sys.executable, "-I", "-B", str(common / "scripts" / ("prepare-windows.py" if sys.platform == "win32" else "prepare-source.py")),
                              "--source", str(common), "--output", str(output)], capture_output=True, timeout=45)
     if result.returncode:
         raise AssertionError((result.stdout + result.stderr).decode(errors="replace"))
@@ -84,7 +85,7 @@ def fixture_source():
             if not destination.exists():
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(path, destination)
-    if workspace_candidate(output)["release_ref"]["inventory_id"] != "windows-2":
+    if workspace_candidate(output)["release_ref"]["inventory_id"] != ("windows-2" if sys.platform == "win32" else "continuation-1"):
         raise AssertionError("prepared fixture window mismatch")
     fixture_source._prepared = output
     return output

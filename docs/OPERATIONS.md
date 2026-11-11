@@ -238,9 +238,43 @@ The agent/operator performs this adoption procedure outside Core `init`. Root `.
 
 ### Onboarding: Prepare Project Agent Entry
 
-For new projects, put shared instructions, purpose/context/plan pointers and stable `./colvia view` entry in project-owned root `AGENTS.md`; never pin a managed release path. With Claude Code, add a thin root `CLAUDE.md` directing it to read and follow `AGENTS.md`, without duplicating instructions.
+For new projects, put shared instructions, purpose/context/plan pointers and stable `./colvia view` entry in project-owned root `AGENTS.md`; never pin a managed release path. With Claude Code, add a thin root `CLAUDE.md` that imports `AGENTS.md` on its own line, without duplicating shared instructions. Preserve existing Claude-specific instructions and add the import to the existing file after reviewing the diff.
 
 For existing projects, preserve entry files and tool-specific instructions. Reconcile shared instructions before replacing duplicates with pointers; preserve unique Claude rules and keep tool-specific additions in their entries. Do not copy this repository’s development entry. A pointer directs agents to read and follow `AGENTS.md`; it does not prove they did.
+
+The following is a project-owned entry example after installation, not a copy of Colvia's source-development entry. Replace the purpose and document pointers with this project's actual context. Choose the installed launcher for the platform; do not paste a developer's home path or pin a release directory.
+
+```markdown
+# Project agent entry
+
+Read README.md for this project's purpose and follow its applicable rules.
+Before inspecting Colvia's internal records, use the verified installed launcher:
+- macOS: run ./colvia view --details from this project folder.
+- Windows: use this project's native launcher selected during installation,
+  with view --details and the explicit project target from the installation guide.
+Read the current manual and adapter identified by that verified output.
+If verification fails, report the failure; do not infer authority from raw records,
+install or repair automatically, or substitute a remembered release path.
+Human scope decisions and result acceptance remain separate from agent reports.
+```
+
+For the Windows command and target syntax, use [Windows native entry](#onboarding-windows-2-entry). Keep that verified project-specific invocation in the project's instructions when adopting the template.
+
+Append the following to an existing project `CLAUDE.md`, retaining its unique rules; for a new file it can be the whole entry:
+
+```markdown
+@AGENTS.md
+```
+
+The import loads context; it does not enforce commands or prove that an agent followed them. As checked on 2026-11-05, [Claude Code's instructions documentation](https://code.claude.com/docs/en/memory#agentsmd) describes direct AGENTS.md discovery in newer versions when no project/ancestor CLAUDE entry takes precedence, and supports this import alongside a CLAUDE entry. Do not require a personal global setting, memory, hook or skill for Colvia entry. No SessionStart hook or copied adapter is required by this procedure.
+
+Verify the entry in a fresh session: the project instructions should be loaded, the agent should run the platform's view command and read its reported adapter, and it should preserve unavailable state rather than inventing a current Work. A default-account observation with pre-existing global rules is not evidence for a clean account. Test the latter separately before claiming general-user qualification.
+
+A read-only Colvia command can still need transient scratch for runtime verification. If an agent sandbox refuses that scratch, report the exact refusal and use the documented platform execution boundary; do not disable sandboxing globally, bypass verification or read internal records as a verified substitute. Private account hooks and historical memory are not product prerequisites.
+
+Worker worktrees can carry out their approved file edits, but control-authority decisions must route to the primary control folder shown by the verified platform view. In an app that creates a worktree automatically, check the folder and authority classification before attempting a control write; select the primary project folder when the task needs that authority.
+
+Tool permission rules can reduce mistakes, but do not authenticate human acceptance. Review any optional project settings with the project's owner. Do not assume that an ask rule applies in every permission mode, that a shell command pattern constrains all programs, or that a Write(path) rule protects files; Claude's Edit rules cover file-editing tools. Colvia's own authority checks and the human decision boundary still apply.
 
 For project-specific adapter additions and their maintenance boundaries, use [Project-Owned Adapter Additions](REFERENCE.md#project-owned-adapter-additions). Runtime updates leave these additions unchanged; a later detach needs a separate review of obsolete project-entry instructions.
 
@@ -316,3 +350,16 @@ For a qualified windows-2 target, invoke the verified colvia file with an absolu
 ### Onboarding: Optional Official Execution Candidate
 
 The shared source still declares `continuation-1`. Preparing `scripts/prepare-official.py --output NEW_DIRECTORY` creates the explicit macOS `official-execution-2` payload without installation or execution. Install only with separate authorization and the existing lifecycle preview/apply procedure. The verified release includes `docs/OFFICIAL-EXECUTION.md`. The candidate does not authorize updating an existing adopter or qualify Windows.
+
+
+## Windows Notification Branding And Recovery
+
+The Windows management package includes its notification PNG. `notice-enable` verifies and retains that image together with the management executable before changing the current user's app registration. The registered icon is a literal path under the product's own store, derived from the image digest; it does not depend on a developer folder, globally installed font or personal agent setting. The managed project inventory is unchanged.
+
+The icon-aware manager accepts existing registrations without an icon and recovers old pending registration records. New pending records identify the previous and requested executable/image by digest, so an interrupted change can restore the previous values before handling the next request. Unknown registry children, values or paths are preserved and reported. New image references require verified bytes. Recovery and disable can restore/remove an owned registration even if its previous cosmetic image is missing; they never overwrite or delete that image to conceal damage.
+
+The executable has a stricter boundary: if the retained manager is missing or its bytes no longer match its digest, recovery and disable refuse to proceed. Preserve the pending record and retained files for diagnosis; do not delete the record or edit the registry to force success. Automated repair of a damaged retained executable is not supported by this flow.
+
+Use the icon-aware manager to run `notice-disable` before reverting to a legacy manager that does not support icon registration. An old manager cannot interpret a new pending record or remove an icon-aware registration. Keep the new manager available until any pending recovery and disable have completed. A retained PNG with damaged bytes blocks re-enabling that same image even after disable. Automated image repair is not supported; preserve the file for diagnosis. Retained executables and PNGs are deliberately kept for recovery; disabling notifications does not delete those files.
+
+Existing notification permission remains an OS/user decision.

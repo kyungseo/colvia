@@ -1008,8 +1008,10 @@ def notification_detail(store, event_id):
             lines.append("이전 제출에 대한 알림입니다.")
         if graph["state"] == "review":
             lines.append("현재 검토할 내용 · " + current_revision["next_action"])
+            lines.append("같은 프로젝트 대화에서 이 작업의 검토할 결과를 보여 달라고 하세요. 확인한 뒤 마무리하거나 고칠 부분을 알려 주세요.")
         elif graph["state"] == "active":
             lines.append("이어서 할 일 · " + current_revision["next_action"])
+            lines.append("같은 프로젝트 대화에서 이 작업을 어디까지 했는지 물어보세요.")
         identifier(entry["work"])
         root = (".hrn", "work", entry["work"])
         matches((".hrn","product","binding.json"), entry["binding"]["sha256"])

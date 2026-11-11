@@ -186,6 +186,8 @@ A healthy observation shares its verified graphs between status and rendering. W
 
 ### User-facing Communication
 
+Use `view work ID --brief` and `view candidates --brief` for human summaries. Existing full views and machine JSON remain available unchanged in format. Default replies name the result, changed files and remaining human decision. Keep rule quotations, internal paths, tokens and digests in technical detail, except when a higher-priority host rule requires disclosure. Explain a renewed confirmation using the changed condition, not a recital of procedure. Report historical checks, current file agreement and checks run now separately. Current bytes matching a submitted result do not prove that the implementation is correct.
+
 Colvia owns these defaults for View, help/manual text and agent explanations. Optional writing tools can refine the wording. Apply the principles to the reader's task; they are not a required response template.
 
 - Lead with the answer, current situation or result the human needs, then the evidence and next useful action. Explain relationships in the order the reader needs them; give complex roles or sequences a short example or diagram when that helps.
@@ -208,6 +210,10 @@ snapshot or a performance guarantee.
 
 
 ## Candidate Planning
+
+For ordinary planning use `candidate ACTION --id ID --request-id REQUEST_ID --writer ROLE --owner-statement TEXT --reason TEXT`. Add/amend also need `--title TEXT --purpose TEXT --effect TEXT`; use repeated `--related ID` only for known candidate links. Defer takes `--resume-condition TEXT`; resume needs `--condition-observation TEXT`. Link takes exactly one of `--link-work ID` and `--link-intent ID`, with `--revision SHA` from the verified current view. Disposition needs `--disposition rejected` or `--disposition absorbed` with that exact link. Select/reopen take no action-specific fields. These commands construct an existing request through the canonical encoder/decoder and the original writer guard. They neither select by recency nor authorize Work execution. Raw `--input` cannot be combined with argument construction.
+
+A linked Work's displayed completion is derived from verified records. The candidate history is not automatically closed or rewritten; changed, missing or pending links remain visible. Choosing a new follow-up still requires the human's actual instruction.
 
 Candidate planning records ideas before they become execution work. Ask the agent naturally; the installed adapter prepares machine input. `./colvia view candidates` is read-only and shows the recorded choice, reasons, conditions and actual linked Work state. The root `./colvia view` includes a reader-facing summary; `view candidates` retains full fields, digests and limits. A recommendation writes nothing; selection is not intent acceptance or execution approval.
 
@@ -438,3 +444,7 @@ An existing read-only replacement/removal target or an existing file requiring a
 ## Official Execution Candidate
 
 Current source exposes bounded execution only in an explicitly verified `official-execution-2` installation. `colvia run` previews by default; `run execute --input SPEC --confirm DIGEST` consumes one grant. `run status --grant DIGEST`, `run cancel --grant DIGEST --reason CODE`, and `run resolve --grant DIGEST [--confirm DIGEST]` inspect, request cancellation, or record an operator resolution. Status and resolution accept optional `--host-control-root PATH` for explicit recovery availability checks. V2 cancellation uses fixed reason codes, with `cancelled` as the default. Read the verified release's `docs/OFFICIAL-EXECUTION.md` for exact input, effect and storage boundaries; retained v1 releases keep their own command contract.
+
+## Choosing where to record a next step
+
+A general request to keep an idea uses the candidate store once. An explicit choice of what follows a named Work uses that Work’s continuation flow. Do not mirror the same request into both stores without a separate instruction. Existing records keep their meaning; matching titles alone do not establish a link or completion.

@@ -1,4 +1,6 @@
 """Receiver decisions and refusal before OS registration; no notification is posted."""
+import base64
+import plistlib
 import importlib.util
 import os
 from pathlib import Path
@@ -54,7 +56,19 @@ class ReceiverPackagingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, patch.object(subprocess, "run") as run:
             root = Path(tmp)
             for name, fixture in (("production",None), ("fixture",root/"store")):
-                mod.build_notice_app(ROOT, root/name, fixture_root=fixture)
+                def build(command, **kwargs):
+                    if command[:2] == ["/usr/bin/xcrun", "clang"]:
+                        Path(command[-1]).write_bytes(b"synthetic executable")
+                    elif command[:2] == ["/usr/bin/codesign", "--force"]:
+                        signature = Path(command[-1]) / "Contents/_CodeSignature/CodeResources"
+                        signature.parent.mkdir()
+                        signature.write_bytes(b"synthetic signature")
+                run.side_effect = build
+                bundled = mod.build_notice_app(ROOT, root/name, fixture_root=fixture, build_version="2")
+                self.assertEqual(base64.b64decode(bundled["Contents/Resources/Colvia.icns"]), (ROOT/"assets/brand/colvia.icns").read_bytes())
+                info = plistlib.loads(base64.b64decode(bundled["Contents/Info.plist"]))
+                self.assertEqual(info["CFBundleIconFile"], "Colvia")
+                self.assertEqual(info["CFBundleVersion"], "2")
                 clang = run.call_args_list[-3].args[0]
                 macros = [arg for arg in clang if arg.startswith("-DCOLVIA_FIXTURE_APP=")]
                 self.assertEqual(len(macros), int(fixture is not None))
@@ -70,7 +84,7 @@ class ReceiverPackagingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, patch.object(subprocess, "run") as run:
             root=Path(tmp)
             for fixture in (Path("relative"),root/"bad\x01name"):
-                with self.assertRaises(ValueError):mod.build_notice_app(ROOT,root/"output",fixture_root=fixture)
+                with self.assertRaises(ValueError):mod.build_notice_app(ROOT,root/"output",fixture_root=fixture, build_version="2")
                 self.assertFalse((root/"output").exists())
             run.assert_not_called()
 

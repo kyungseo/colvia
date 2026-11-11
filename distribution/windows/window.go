@@ -129,6 +129,15 @@ func registerNoticeWindow() (*uint16, uintptr, error) {
 	}
 	cursor, _, _ := user.NewProc("LoadCursorW").Call(0, 32512)
 	wc := windowClass{procedure: user.NewProc("DefWindowProcW").Addr(), instance: module, cursor: cursor, background: 6, name: name}
+	// Resource 101 is bundled with this executable. Icon failure must not block review.
+	loadIcon := func(metricX, metricY uintptr) uintptr {
+		w, _, _ := user.NewProc("GetSystemMetrics").Call(metricX)
+		h, _, _ := user.NewProc("GetSystemMetrics").Call(metricY)
+		icon, _, _ := user.NewProc("LoadImageW").Call(module, 101, 1, w, h, 0x8000) // LR_SHARED
+		return icon
+	}
+	wc.icon = loadIcon(11, 12)      // SM_CXICON, SM_CYICON
+	wc.smallIcon = loadIcon(49, 50) // SM_CXSMICON, SM_CYSMICON
 	wc.size = uint32(unsafe.Sizeof(wc))
 	atom, _, err := user.NewProc("RegisterClassExW").Call(ptr(&wc))
 	if atom == 0 {

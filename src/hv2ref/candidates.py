@@ -228,6 +228,61 @@ def check_link(ref: dict, authority: str, works: dict, intents: dict, *, current
     return graph
 
 
+def argument_request(target, args):
+    """Build an existing request, not a second mutation or authorization API."""
+    from datetime import datetime, timezone
+    from .jsonio import canonical_json_bytes, decode_json_bytes
+    observed = read_candidates(target)
+    store = observed['store']
+    action = args.action
+    values = vars(args)
+    fields_by_action = {
+        'add': {'title', 'purpose', 'effect', 'related'},
+        'amend': {'title', 'purpose', 'effect', 'related'},
+        'defer': {'resume_condition'}, 'resume': {'condition_observation'},
+        'link': {'link_work', 'link_intent', 'revision'},
+        'disposition': {'disposition', 'link_work', 'link_intent', 'revision'},
+        'select': set(), 'reopen': set(),
+    }
+    specific = set().union(*fields_by_action.values())
+    require(all(values.get(k) in (None, []) for k in specific - fields_by_action[action]), 'options do not match candidate action')
+    for key in ('candidate_id', 'request_id', 'writer', 'owner_statement', 'reason'):
+        require(bool(values.get(key)), 'explicit --' + key.replace('_', '-') + ' is required')
+    payload = {}
+    if action in ('add', 'amend'):
+        payload = dict(title=args.title, purpose=args.purpose, expected_effect=args.effect,
+                       related_candidates=args.related or [])
+    elif action == 'defer':
+        payload = dict(resume_condition=args.resume_condition or '')
+    elif action == 'resume':
+        payload = dict(condition_observation=args.condition_observation)
+    elif action in ('link', 'disposition'):
+        target_ref = None
+        if args.link_work or args.link_intent:
+            require(not (args.link_work and args.link_intent), 'choose one explicit link')
+            require(bool(args.revision), 'exact --revision digest from the verified view is required')
+            works, intents = _graphs(target)
+            kind, identity = ('work', args.link_work) if args.link_work else ('intent', args.link_intent)
+            graph = (works if kind == 'work' else intents).get(identity)
+            require(graph is not None, 'linked object unavailable')
+            selected = _selected_revision(graph)
+            require(selected is not None and selected['sha256'] == args.revision, 'linked revision changed; inspect before preparing a new request')
+            target_ref = dict(authority_home_id=store['authority_home_id'], kind=kind, id=identity, revision_ref=selected)
+            check_link(target_ref, store['authority_home_id'], works, intents, current=True)
+        else:
+            require(args.revision is None, 'revision requires an explicit link')
+        payload = {'target': target_ref}
+        if action == 'disposition': payload['disposition'] = args.disposition
+    request = dict(record_type='candidate-request', schema_version=1,
+                   authority_home_id=store['authority_home_id'], request_id=args.request_id,
+                   candidate_id=args.candidate_id, action=action, expected_sha256=observed['sha256'],
+                   writer=args.writer, owner_statement=args.owner_statement, reason=args.reason,
+                   observed_at=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), payload=payload)
+    request_shape(request)
+    # Preserve canonical byte admission even for the convenience path.
+    return decode_json_bytes(canonical_json_bytes(request), require_canonical=True)
+
+
 class CandidateStore:
     def __init__(self, target: Path, runtime_verifier=None):
         from .product import require_workspace_runtime

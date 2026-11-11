@@ -292,6 +292,21 @@ class ManagerReviewTests(unittest.TestCase):
         self.assertIn("추가 진단", err.getvalue())
 
 
+    def test_preview_write_permission_failure_explains_no_project_apply(self):
+        import argparse, json, subprocess
+        (self.root / "requests").mkdir()
+        self.manager.CONFIG.update(profiles={"continuation-1": {"release": {"id": "fixture"}}})
+        args=argparse.Namespace(command="install",profile=None,target=self.root/"project",apply=False,
+            input=None,confirm=None,recover=False,save=None,json=True,details=False,backup=None,to=None)
+        value={"classification":"preview","request":{"operation_id":"exact"},"confirm_token":"synthetic"}
+        response=subprocess.CompletedProcess([],0,json.dumps(value).encode(),b"")
+        with patch.object(self.manager,"validate_payload"),patch.object(self.manager,"run_lifecycle",return_value=response) as child,patch.object(self.manager,"write_new",side_effect=PermissionError("denied")):
+            with self.assertRaisesRegex(ValueError,"프로젝트에 적용하지 않았습니다"):
+                self.manager.lifecycle(args,self.root)
+        self.assertEqual(1,child.call_count)
+        self.assertNotIn("--apply",child.call_args.args[0])
+        self.assertEqual([],list((self.root/"requests").iterdir()))
+
     def test_malformed_binding_keeps_diagnostics_available_and_blocks_writes(self):
         import argparse, json
         target = self.root / "project"; binding = target / ".hrn/product/binding.json"

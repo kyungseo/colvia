@@ -225,17 +225,18 @@ def run_lifecycle(argv):
 
 
 NOTICE_BINARY = "Contents/MacOS/ColviaWork"
-NOTICE_MEMBERS = {"Contents/Info.plist", NOTICE_BINARY, "Contents/_CodeSignature/CodeResources"}
+NOTICE_LEGACY_MEMBERS = {"Contents/Info.plist", NOTICE_BINARY, "Contents/_CodeSignature/CodeResources"}
+NOTICE_MEMBERS = NOTICE_LEGACY_MEMBERS | {"Contents/Resources/Colvia.icns"}
 
 
-def notice_members(encoded):
-    if set(encoded) != NOTICE_MEMBERS:
+def notice_members(encoded, *, allow_legacy=False):
+    if set(encoded) != NOTICE_MEMBERS and not (allow_legacy and set(encoded) == NOTICE_LEGACY_MEMBERS):
         raise ValueError("알림 앱 구성 목록을 확인해 주세요.")
     return {name:base64.b64decode(value, validate=True) for name,value in encoded.items()}
 
 
 def notice_matches(app, files):
-    allowed_dirs = {".", "Contents", "Contents/MacOS", "Contents/_CodeSignature"}
+    allowed_dirs = {"."} | {parent.as_posix() for name in files for parent in Path(name).parents}
     dirs, members = set(), set()
     for p in (app, *app.rglob("*")):
         name = p.relative_to(app).as_posix()
@@ -266,7 +267,7 @@ def install_notice_app(store, stage, old):
         prior = [n for n in nodes if isinstance(n, ast.AnnAssign)
                  and isinstance(n.target, ast.Name) and n.target.id == "CONFIG"]
         conf = ast.literal_eval(prior[0].value) if len(prior) == 1 else {}
-        if "notice_app" not in conf or not notice_matches(app, notice_members(conf["notice_app"])):
+        if "notice_app" not in conf or not notice_matches(app, notice_members(conf["notice_app"], allow_legacy=True)):
             raise ValueError("기존 알림 앱의 출처를 확인해 주세요.")
     pending = stage / "ColviaWork.app"
     pending.mkdir(mode=0o700)
@@ -501,7 +502,11 @@ def lifecycle(args, store):
             raise ValueError("요청 저장 경로의 링크를 확인해 주세요.")
         if not isinstance(value.get("confirm_token"), str) or not value["confirm_token"]:
             raise ValueError("미리보기 확인값을 읽지 못했습니다. 적용을 보류하고 응답을 확인해 주세요.")
-        write_new(path, canonical(value["request"]), 0o600)
+        try:
+            write_new(path, canonical(value["request"]), 0o600)
+        except PermissionError:
+            raise ValueError("관리 도구의 요청 폴더에 미리보기를 저장할 권한이 없습니다. "
+                             "프로젝트에 적용하지 않았습니다. 실행 도구의 쓰기 허용 범위를 확인해 주세요.") from None
         value["request_file"] = str(path)
     elif args.save is not None and result.returncode == 0:
         raise ValueError("성공한 미리보기의 요청만 저장할 수 있습니다.")
@@ -542,6 +547,9 @@ def lifecycle(args, store):
             actions = {"install": "Colvia 연결", "update": "프로젝트 Colvia 갱신", "rollback": "이전 프로젝트 배포본으로 복귀",
                        "repair": "프로젝트 Colvia 복구", "remove": "프로젝트 Colvia 연결 해제"}
             print("확인할 변경: " + actions[args.command])
+            if args.command == "install":
+                print("프로젝트의 실행기와 .hrn 관리 파일을 준비합니다. 정확한 변경 목록은 저장한 요청에서 확인하세요.")
+                print("AGENTS.md·CLAUDE.md는 자동 생성하지 않습니다. 연결 뒤 기존 프로젝트 규칙을 보존하며 첫 진입 안내를 준비하세요.")
             if args.command == "remove":
                 print("진행 중인 일과 검토할 결과는 해제 전에 확인하세요. 기록은 남으며, 같은 폴더에서 다시 이어갈 예정이면 연결을 유지하세요.")
             print("검토한 요청: " + value["request_file"])

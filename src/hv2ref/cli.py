@@ -62,7 +62,7 @@ def parser() -> argparse.ArgumentParser:
 
     product_init = sub.add_parser("init", help="preview or initialize one project-local product binding")
     product_init.add_argument("--target", type=Path, required=True)
-    product_init.add_argument("--source", type=Path, default=product_source_root())
+    product_init.add_argument("--source", type=Path, required=True)
     product_init.add_argument("--apply", action="store_true")
     product_init.add_argument("--profile", choices=("continuation-1", "windows-2", "official-execution-1", "official-execution-2"))
     product_init.add_argument("--authority-home-id")
@@ -241,6 +241,7 @@ def _view_parser(sub, target):
     p.add_argument("--target", type=Path, default=target)
     p.add_argument("--revision")
     p.add_argument("--details", action="store_true", help="프로젝트 기술 상세와 직접 조회 명령도 표시")
+    p.add_argument("--brief", action="store_true", help="작업 또는 후보의 판단에 필요한 요약만 표시")
     p.add_argument("--input", help="canonical ticket file or - for stdin; not the prepare envelope")
 
 
@@ -307,6 +308,12 @@ def workspace_parser(target: Path) -> argparse.ArgumentParser:
     candidate.add_argument("action", choices=ACTIONS)
     candidate.add_argument("--target", type=Path, default=target)
     candidate.add_argument("--input", default="-", help="canonical candidate-request JSON; agent prepares input")
+    candidate.add_argument("--id", dest="candidate_id", help="build a request from explicit arguments instead of JSON input")
+    for flag in ("request-id", "writer", "owner-statement", "reason", "title", "purpose", "effect", "resume-condition", "condition-observation", "link-work", "link-intent", "revision"):
+        candidate.add_argument("--" + flag)
+    candidate.add_argument("--related", action="append")
+    candidate.add_argument("--brief", action="store_true", help="변경 결과의 짧은 확인만 반환")
+    candidate.add_argument("--disposition", choices=("absorbed", "rejected"))
     candidate.add_argument("--inject-at", choices=("after-temporary", "after-directory", "before-replace", "after-replace"), help=argparse.SUPPRESS)
     handoff = sub.add_parser("handoff", help="작업 하나를 맡기고 로컬 수신함에서 답변과 결과 확인")
     actions = handoff.add_subparsers(dest="action", required=True)
@@ -381,6 +388,18 @@ def workspace_run(args: argparse.Namespace) -> object:
             if args.action == "execute":
                 code += "; inspect run status before retry"
             raise ContractError("HV2-OFFICIAL-EXECUTION", code) from None
+    if args.command == "candidate" and args.candidate_id is not None:
+        if args.input != "-" or args.inject_at is not None:
+            raise ContractError("HV2-CANDIDATE-REQUEST", "argument request cannot be mixed with input or interruption injection")
+        from .candidates import CandidateStore, argument_request
+        result = CandidateStore(args.target).mutate(argument_request(args.target, args))
+        if args.brief:
+            row = result["store"]["candidates"][args.candidate_id]
+            return {"classification": result["classification"], "candidate": args.candidate_id,
+                    "title": row["title"], "disposition": row["disposition"], "notice": "계획을 기록했습니다. 작업 실행이나 결과 수락을 뜻하지 않습니다."}
+        return result
+    if args.command == "candidate" and (args.brief or any(getattr(args, k, None) is not None for k in ("request_id", "writer", "owner_statement", "reason", "title", "purpose", "effect", "resume_condition", "condition_observation", "link_work", "link_intent", "revision", "related", "disposition"))):
+        raise ContractError("HV2-CANDIDATE-REQUEST", "argument options require --id; do not mix them with raw input")
     value = _workspace_input(args.input)
     def exact(keys, optional=()):
         if not isinstance(value, dict) or not set(keys) <= set(value) or set(value) - set(keys) - set(optional):

@@ -72,13 +72,7 @@ static BOOL receiverReady(BOOL requireSelection) {
     return receiverVerdict(actual, expected, selected, running, requireSelection);
 }
 
-static NSString *readDetail(NSString *event) {
-    if (!validID(event)) return missing;
-    if (!receiverReady(YES)) return receiverMissing;
-    NSURL *bin = NSBundle.mainBundle.bundleURL.URLByDeletingLastPathComponent;
-    NSTask *reader = [NSTask new];
-    reader.executableURL = [bin URLByAppendingPathComponent:@"colvia-manage"];
-    reader.arguments = @[@"notice-detail", @"--event", event];
+static NSString *readDetailTask(NSTask *reader, NSTimeInterval seconds) {
     NSPipe *pipe = [NSPipe pipe];
     reader.standardOutput = pipe;
     reader.standardInput = NSFileHandle.fileHandleWithNullDevice;
@@ -86,7 +80,7 @@ static NSString *readDetail(NSString *event) {
     if (![reader launchAndReturnError:nil]) return missing;
     NSMutableData *data = [NSMutableData data];
     int fd = pipe.fileHandleForReading.fileDescriptor;
-    NSTimeInterval end = NSProcessInfo.processInfo.systemUptime + 25;
+    NSTimeInterval end = NSProcessInfo.processInfo.systemUptime + seconds;
     BOOL complete = NO;
     while (data.length <= 131072) {
         int ms = (int)((end - NSProcessInfo.processInfo.systemUptime) * 1000);
@@ -97,11 +91,23 @@ static NSString *readDetail(NSString *event) {
         if (count <= 0) { complete = count == 0; break; }
         [data appendBytes:bytes length:(NSUInteger)count];
     }
-    if (!complete) { if (reader.running) [reader terminate]; return missing; }
-    [reader waitUntilExit];
+    // EOF does not prove exit: the reader may close stdout and remain alive.
+    while (complete && reader.running && NSProcessInfo.processInfo.systemUptime < end)
+        [NSThread sleepForTimeInterval:0.01];
+    if (!complete || reader.running) { if (reader.running) [reader terminate]; return missing; }
     NSString *text = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     if (reader.terminationStatus == 3) return receiverMissing;
     return reader.terminationStatus == 0 && text.length ? text : missing;
+}
+
+static NSString *readDetail(NSString *event) {
+    if (!validID(event)) return missing;
+    if (!receiverReady(YES)) return receiverMissing;
+    NSURL *bin = NSBundle.mainBundle.bundleURL.URLByDeletingLastPathComponent;
+    NSTask *reader = [NSTask new];
+    reader.executableURL = [bin URLByAppendingPathComponent:@"colvia-manage"];
+    reader.arguments = @[@"notice-detail", @"--event", event];
+    return readDetailTask(reader, 25);
 }
 
 @interface WorkWindow : NSObject <NSApplicationDelegate, UNUserNotificationCenterDelegate>
@@ -165,7 +171,7 @@ static int post(NSString *event) {
         if (!granted || error) { dispatch_async(dispatch_get_main_queue(), ^{ result=1; }); return; }
         if (!event) { dispatch_async(dispatch_get_main_queue(), ^{ result=receiverReady(YES) ? 0 : 3; }); return; }
         UNMutableNotificationContent *content = [UNMutableNotificationContent new];
-        content.title = @"Colvia · 맡긴 작업"; content.body = @"새 소식이 있습니다. 눌러서 작업을 확인하세요.";
+        content.title = @"Colvia · 맡긴 작업"; content.body = @"맡긴 작업에 확인할 내용이 있습니다. 눌러서 상세를 여세요.";
         content.categoryIdentifier = @"work"; content.userInfo = @{@"id":event};
         UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:event content:content
             trigger:[UNTimeIntervalNotificationTrigger triggerWithTimeInterval:2 repeats:NO]];

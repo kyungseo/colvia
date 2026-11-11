@@ -243,8 +243,15 @@ export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/
             + shlex.quote(body) + ' colvia-bootstrap "$0" "$@"\n').encode()
 
 
-def build_notice_app(source, output, *, fixture_root):
+def validate_notice_build_version(value):
+    # Explicit release input, stable on candidate regeneration; never derive from a label or time.
+    if not isinstance(value, str) or not re.fullmatch(r"[1-9][0-9]{0,3}", value):
+        raise ValueError("notice build version must be an explicit integer from 1 to 9999")
+
+
+def build_notice_app(source, output, *, fixture_root, build_version):
     """Embed signed bundle bytes in the same retained manager as their publication recipe."""
+    validate_notice_build_version(build_version)
     import base64
     import plistlib
     import subprocess
@@ -257,8 +264,11 @@ def build_notice_app(source, output, *, fixture_root):
     suffix = ".fixture." + digest(str(fixture_root).encode())[:16] if fixture_root else ""
     info = {"CFBundleIdentifier":"org.colvia.work.notice"+suffix,"CFBundleName":"Colvia Work",
             "CFBundleDisplayName":"Colvia","CFBundleExecutable":binary.name,"CFBundlePackageType":"APPL",
-            "CFBundleVersion":"1","CFBundleShortVersionString":"1.0","NSPrincipalClass":"NSApplication",
-            "LSMinimumSystemVersion":"13.0"}
+            "CFBundleVersion":build_version,"CFBundleShortVersionString":"1.0","NSPrincipalClass":"NSApplication",
+            "LSMinimumSystemVersion":"13.0", "CFBundleIconFile":"Colvia"}
+    resources = contents / "Resources"
+    resources.mkdir()
+    (resources / "Colvia.icns").write_bytes(regular(source / "assets/brand/colvia.icns"))
     (contents / "Info.plist").write_bytes(plistlib.dumps(info))
     fixture_flag = (["-DCOLVIA_FIXTURE_APP=" + json.dumps(str(fixture_root / "bin/ColviaWork.app"), ensure_ascii=False),
                      "-DCOLVIA_FIXTURE_ID=" + json.dumps(info["CFBundleIdentifier"])] if fixture_root else [])
@@ -267,18 +277,26 @@ def build_notice_app(source, output, *, fixture_root):
                     str(source / "distribution/notification/WorkWindow.m"),"-o",str(binary)],check=True)
     subprocess.run(["/usr/bin/codesign","--force","--sign","-",str(app)],check=True)
     subprocess.run(["/usr/bin/codesign","--verify","--strict",str(app)],check=True)
-    return {f.relative_to(app).as_posix():base64.b64encode(regular(f)).decode("ascii")
-            for f in sorted(app.rglob("*")) if f.is_file()}
+    encoded = {f.relative_to(app).as_posix():base64.b64encode(regular(f)).decode("ascii")
+               for f in sorted(app.rglob("*")) if f.is_file()}
+    expected = {"Contents/Info.plist", "Contents/MacOS/ColviaWork",
+                "Contents/_CodeSignature/CodeResources", "Contents/Resources/Colvia.icns"}
+    if set(encoded) != expected:
+        raise ValueError("알림 앱 빌드 구성 목록을 확인해 주세요.")
+    return encoded
 
 
 def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: str,
-            fixture_root: Path | None = None) -> dict:
+            notice_build_version: str, fixture_root: Path | None = None) -> dict:
+    validate_notice_build_version(notice_build_version)
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", version):
         raise ValueError("explicit version required")
     if output.exists() or output.is_symlink() or source == output or source in output.parents:
         raise ValueError("new external output required")
     from hv2ref.product import workspace_candidate, OFFICIAL_V2_MANAGED_PATHS
-    baseline = workspace_candidate(source)
+    from distribution.source_layout import read_checkout
+    baseline = read_checkout(source)
+    official = read_checkout(source, OFFICIAL_V2_MANAGED_PATHS)
     if baseline["release_ref"]["inventory_id"] != "continuation-1":
         raise ValueError("common source required")
     objects, checksums = runtime_catalog(supply / ARCHIVE)
@@ -293,7 +311,7 @@ def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: s
         prepared = output / "prepared" / profile
         prepared.mkdir(parents=True, mode=0o700)
         for name in paths:
-            raw = regular(source / name)
+            raw = (baseline if profile == "continuation-1" else official)["payload"][name]
             if name == "colvia":
                 raw = raw.split(b"\n", 1)[1]
                 raw = raw.replace(b'WORKSPACE_INVENTORY_ID = "continuation-1"',
@@ -312,10 +330,10 @@ def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: s
     product = tar_bytes(packaged, executable)
     notices = tar_bytes(notice_files, set())
     runtime_files = {"verify-tree.sh": digest(verifier), "objects.txt": OBJECTS_SHA, "files.sha256": FILES_SHA}
-    config = {"version": version, "fixture_root": str(fixture_root) if fixture_root else None,
+    config = {"version": version, "notice_build_version": notice_build_version, "fixture_root": str(fixture_root) if fixture_root else None,
               "profiles": profile_info, "runtime_id": runtime_slot(digest(verifier)), "runtime_files": runtime_files,
               "product_archive_sha256": digest(product), "notices_sha256": digest(notices)}
-    config["notice_app"] = build_notice_app(source, output, fixture_root=fixture_root)
+    config["notice_app"] = build_notice_app(source, output, fixture_root=fixture_root, build_version=notice_build_version)
     manager_source = regular(source / "distribution/manager.py")
     manager_source = b"from __future__ import annotations\n" + manager_source.split(b"from __future__ import annotations\n", 1)[1]
     if manager_source.count(b"CONFIG: dict = {}") != 1:
@@ -325,7 +343,7 @@ def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: s
     assets = {"product.tar": product, "notices.tar": notices, "objects.txt": objects,
               "files.sha256": checksums, "verify-tree.sh": verifier, "colvia-manage": manager,
               ARCHIVE: regular(supply / ARCHIVE)}
-    manifest = {"schema": 1, "version": version, "platform": "darwin", "architecture": "arm64",
+    manifest = {"schema": 1, "version": version, "notice_build_version": notice_build_version, "platform": "darwin", "architecture": "arm64",
                 "python": "3.14.10", "gil": "enabled", "runtime_id": runtime_slot(digest(verifier)),
                 "runtime_catalog_id": RUNTIME_ID,
                 "supply": {"provider": "astral-sh/python-build-standalone", "tag": "20261026",
@@ -341,7 +359,7 @@ def prepare(source: Path, supply: Path, output: Path, *, version: str, origin: s
         path = output / name
         path.write_bytes(raw); path.chmod(0o500 if name in ("bootstrap.sh", "colvia-manage") else 0o400)
     (output / "SHA256SUMS").write_text("".join(digest(raw) + "  " + name + "\n" for name, raw in sorted(assets.items())))
-    if workspace_candidate(source) != baseline:
+    if read_checkout(source) != baseline or read_checkout(source, OFFICIAL_V2_MANAGED_PATHS) != official:
         raise ValueError("source changed during preparation")
     return {"manifest_sha256": digest(raw_manifest), "bootstrap_sha256": digest(assets["bootstrap.sh"]),
             "profiles": manifest["profiles"], "fixture": manifest["fixture"], "published": False, "installed": False}
