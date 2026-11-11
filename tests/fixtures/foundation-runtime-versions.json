@@ -1,0 +1,326 @@
+[
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.6",
+    "allowed": true
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.7",
+    "allowed": true
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.10",
+    "allowed": true
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.8",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.9",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.11",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.15.0",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.1",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.010",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "v3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.10 ",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "3.14.10-custom",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "arm64",
+    "version": "",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.6",
+    "allowed": true
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.7",
+    "allowed": true
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.8",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.9",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.11",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.15.0",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.1",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.010",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "v3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.10 ",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "3.14.10-custom",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "arm64",
+    "version": "",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.6",
+    "allowed": true
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.7",
+    "allowed": true
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.8",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.9",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.11",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.15.0",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.1",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.010",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "v3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.10 ",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "3.14.10-custom",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "x64",
+    "version": "",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "x64",
+    "version": "3.14.7",
+    "allowed": false
+  },
+  {
+    "os": "macos",
+    "architecture": "x64",
+    "version": "3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "linux",
+    "architecture": "arm64",
+    "version": "3.14.7",
+    "allowed": false
+  },
+  {
+    "os": "linux",
+    "architecture": "arm64",
+    "version": "3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "linux",
+    "architecture": "x64",
+    "version": "3.14.7",
+    "allowed": false
+  },
+  {
+    "os": "linux",
+    "architecture": "x64",
+    "version": "3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "MacOS",
+    "architecture": "arm64",
+    "version": "3.14.7",
+    "allowed": false
+  },
+  {
+    "os": "MacOS",
+    "architecture": "arm64",
+    "version": "3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "darwin",
+    "architecture": "arm64",
+    "version": "3.14.7",
+    "allowed": false
+  },
+  {
+    "os": "darwin",
+    "architecture": "arm64",
+    "version": "3.14.10",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "amd64",
+    "version": "3.14.7",
+    "allowed": false
+  },
+  {
+    "os": "windows",
+    "architecture": "amd64",
+    "version": "3.14.10",
+    "allowed": false
+  }
+]

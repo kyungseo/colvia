@@ -1,0 +1,56 @@
+{
+  "files": [
+    {
+      "bytes": 184962,
+      "file": "cffi-2.1.1-cp314-cp314-macosx_11_0_arm64.whl",
+      "package": "cffi",
+      "sha256": "661c298b4821edebead0c91edd2b00374d67ad7c5a1f7a91d4442633b79d6a72",
+      "source": "https://files.pythonhosted.org/packages/b3/a9/9db617d05d7367c1ad0ab00b3aa6e6f9281edd689b4ee9ea0e5a84e89c97/cffi-2.1.1-cp314-cp314-macosx_11_0_arm64.whl",
+      "version": "2.1.1"
+    },
+    {
+      "bytes": 3914904,
+      "file": "cryptography-50.0.2-cp311-abi3-macosx_11_0_arm64.whl",
+      "package": "cryptography",
+      "sha256": "fa8f5efb344d6908a1ce62f4a24e2e5780f825d6f53f5f50ec5ffacac72936cb",
+      "source": "https://files.pythonhosted.org/packages/e5/56/d194340cc4a57535e82e1bee9e89667ac4b7c13b5d3f59686deae3094dd5/cryptography-50.0.2-cp311-abi3-macosx_11_0_arm64.whl",
+      "version": "50.0.2"
+    },
+    {
+      "bytes": 62600,
+      "file": "pycparser-3.12-py3-none-any.whl",
+      "package": "pycparser",
+      "sha256": "a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e",
+      "source": "https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl",
+      "version": "3.12"
+    },
+    {
+      "bytes": 874777,
+      "file": "securesystemslib-1.6.0-py3-none-any.whl",
+      "package": "securesystemslib",
+      "sha256": "1c1aa00f058f4851f038d409c8ca4a727db854a91f07ec3a0fa047bb93e43e0e",
+      "source": "https://files.pythonhosted.org/packages/50/1e/56bf4531475c32a8503c040ab7f05c34430a0c6b5744bf6c373246dd3c97/securesystemslib-1.6.0-py3-none-any.whl",
+      "version": "1.6.0"
+    },
+    {
+      "bytes": 56253,
+      "file": "tuf-7.0.1-py3-none-any.whl",
+      "package": "tuf",
+      "sha256": "d30434bda6e079ab303fb30d1b3006d939a10ca34783b1573d61cd9b802fa45c",
+      "source": "https://files.pythonhosted.org/packages/a2/10/171e306e4a19ff980b9029ce5a523881e34bc6a2a52750fb1853f49f0fb9/tuf-7.0.1-py3-none-any.whl",
+      "version": "7.0.1"
+    },
+    {
+      "bytes": 135717,
+      "file": "urllib3-2.8.0-py3-none-any.whl",
+      "package": "urllib3",
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "source": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+      "version": "2.8.0"
+    }
+  ],
+  "platform": "macos-arm64",
+  "purpose": "Source verification dependency identities; native release bundles require their own platform lock.",
+  "python": "3.14",
+  "version": 1
+}

@@ -1,0 +1,30 @@
+"""Portable refusal checks; no native Windows qualification is claimed here."""
+import sys,unittest
+from unittest.mock import patch
+from colvia.codec import RecordError
+from colvia.storage.windows import API,local_path
+
+class WindowsStorageContractTests(unittest.TestCase):
+    def test_portable_path_rejects_remote_devices_ads_aliases_and_normalization(self):
+        for path in ('C:relative',r'\\server\share\record',r'\\?\C:\record',r'C:\record:stream',r'C:\NUL.txt',
+                     'C:\\trailing.\\record',r'C:\a\..\b',r'C:\a\.\b',r'C:\a\\b','C:\\'+'x'*248):
+            with self.subTest(path=path),self.assertRaises(RecordError):local_path(path)
+        self.assertEqual(r'C:\Users\Example\Colvia\state.sqlite3',local_path(r'C:\Users\Example\Colvia\state.sqlite3'))
+    def test_native_unicode_spelling_is_preserved_not_renamed(self):
+        native='C:\\e\u0301\\record'
+        self.assertEqual(native,local_path(native))
+        self.assertNotEqual('C:\\é\\record',local_path(native))
+
+    def test_visible_wsl_marker_refuses_before_loading_windows_authority(self):
+        import os
+        from colvia.managed_entry import current_platform
+        with patch('colvia.managed_entry.sys.platform','win32'),patch.dict(os.environ,{'WSL_INTEROP':'synthetic'}):
+            with self.assertRaisesRegex(RecordError,'wsl-native-interop-unqualified'):current_platform()
+
+    def test_non_windows_never_loads_native_dll_or_uses_posix_fallback(self):
+        with patch('colvia.storage.windows.sys.platform','darwin'):
+            with self.assertRaisesRegex(RecordError,'windows-native-unavailable'):API()
+    def test_windows_platform_selection_cannot_fall_back_to_posix(self):
+        with patch('colvia.storage.files.sys.platform','win32'),patch('colvia.storage.windows.WindowsFiles',side_effect=RecordError('unavailable')):
+            from colvia.storage.files import platform_files
+            with self.assertRaisesRegex(RecordError,'unavailable'):platform_files()
