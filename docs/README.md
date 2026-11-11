@@ -1,5 +1,7 @@
 # Documentation Index
 
+For the new record-foundation candidate, use its [source task and current evidence](development/FEAT-20261106-002-record-foundation.md) or the paired [English](../manual/en/foundation-preview.md) / [한국어](../manual/ko/foundation-preview.md) guide. The retained profile instructions below describe earlier runtime contracts; they are not the new candidate's installation instructions.
+
 New to Colvia? [Start with the inquiry report](#guide-en). 한국어로 처음 사용한다면 [고객 문의 보고서 실습](#guide-ko)부터 보세요.
 
 Use this index to find the instructions for this release, whether you are reading source or a verified installation. The `continuation-1` profile provides commands for writing local records, init/update/rollback, restoring an exact active release with repair, and removing the runtime with receipt-bound detach. General usability and real-project multi-worker efficiency remain unverified. [Security and Support](SECURITY-AND-SUPPORT.md) distinguishes current limits from historical observations.
@@ -150,7 +152,7 @@ Decide which edits to keep and agree on the narrower brief. The revised report n
 
 [한국어](#setup-ko) · English
 
-Prepare the tools on your device, then preview the changes for each project you want to use.
+Prepare the tools on your device, then preview the changes for each project you want to use. Preview packages target Apple silicon Mac and Windows 11 ARM64. On Windows, use a standard account and a local NTFS project folder. See [environments and limits](#limits-en).
 
 | Where | What lives there |
 | --- | --- |
@@ -170,7 +172,7 @@ On Windows 11 ARM64, open PowerShell as a standard user. Check the manager with 
 & "$HOME\Downloads\colvia-manage.exe" prepare --runtime-zip "$HOME\Downloads\python-3.14.7-embed-arm64.zip"
 ```
 
-Use the ZIP filename supplied with your manager. The manager checks the ZIP size and digest before preparing Python. This command is for ARM64. The public Windows 11 x64 installation path still needs native qualification.
+Use the ZIP filename supplied with your manager. The manager checks the ZIP size and digest before preparing Python. This command is for ARM64.
 
 Create an empty practice folder and open Codex or Claude Code in it. Ask “Show me what connecting this folder would change.” Check the folder and proposed changes before approving.
 
@@ -212,14 +214,23 @@ If a download or first launch is blocked, keep Gatekeeper or SmartScreen enabled
 
 Start with one change you expect to come back to. You decide what the agent may change and which revision you accept. The project keeps that agreement alongside the submitted work. If tomorrow’s files differ, you can see which checks belonged to yesterday’s revision.
 
-#### Which workflows have been checked?
+<a id="which-workflows-have-been-checked"></a>
+<a id="limits-en"></a>
 
-| Path | Coverage |
+#### Environments and limits
+
+Preview packages target Apple silicon Mac and Windows 11 ARM64. On Windows, use a standard account, a local NTFS project folder, and the ARM64 manager with its matching Python ZIP.
+
+| Path | Scope |
 | --- | --- |
-| Everyday tasks (1–6) | Scoped edits, checks, submission and returning to the task record. Single-step handoff and inbox delivery have also been checked on isolated Mac and Windows ARM64 systems. |
-| Advanced reference (7–9) | Grouping child tasks, separate working copies and delegating one acceptance decision have narrower, case-specific evidence. |
-| Installation (10–11) | A private installation was checked on an Apple silicon Mac, and installation and a first task on a designated Windows 11 ARM64 system. The x64 development build still needs final checks on Windows 11 x64. |
-| Optional document execution (12) | A pinned Mac package and Codex runner were checked for normal completion and cancellation after reading. |
+| Everyday tasks (1–6) | Scoped edits, checks, review, resuming a task and handing off one summary or prepared submission. |
+| Advanced reference (7–9) | Grouping child results, separate working copies and delegating one acceptance decision. These are outside the first Preview everyday scope. |
+| Installation (10–11) | Connecting a project, updating its installed copy and preserving records when disconnecting. |
+| Optional document execution (12) | A bounded edit on macOS, with Codex CLI 0.165.0, its own setup and separate approval. |
+
+Colvia assumes a trusted local account and cooperating agents. It records scope and decisions; it is not a security sandbox or a way to authenticate the person making a decision.
+
+Reconnecting a disconnected folder with its existing Work history is currently unsupported. Leave it connected if you intend to return.
 
 ### Work with your agent
 
@@ -239,21 +250,25 @@ For a change across several folders, ask “Which folders changed the most?” W
 #### 4. Resume in a fresh chat
 “Where did we leave the inquiry report? Is the report still the version I reviewed?” In the same project the agent can compare the selected revision, your decision and the current files. If someone edited the report overnight, review that difference. If an earlier run stopped midway, inspect what reached the file and whether the process ended before deciding how to continue.
 
+When you return to a report, Colvia distinguishes changes to that Work’s files from other changes in the project. A reference document may also have changed. Ask your agent to explain which change affects your decision. A file matching the reviewed version does not mean its quality was checked again.
+
+For an idea with no chosen Work, say “Keep this for later.” To choose what follows a particular Work, name that Work and the next step. These are different decisions; you do not need to request two copies of the same note.
+
 #### 5. Keep an idea for later
 “Save next month’s report for later. What would we need to decide first?” A candidate records a possible follow-up. You can compare it with other ideas or link it to a Work when you choose it. Choosing a next step and authorizing its execution are separate decisions. You can start a new Work, continue a named Work, or explicitly finish with no follow-up. An undecided next step stays open.
 
 #### 6. Step away and receive a result
-“The draft is ready. Submit it for review and notify me on this device.” Check the Work, action, deadline (within 24 hours) and inbox in the preview before confirming. One active ordinary local Work can have one supported step in flight per project: a summary or submission of a prepared result. The optional macOS profile also accepts a separately approved document run. Direct runs have been tested. Running one through the handoff still needs verification. The local worker needs the device and user session to stay available. In the tested notification candidates on macOS and Windows ARM64, opening the alert led to that submission. Missed it? Ask “Does the report Work have a question or a result?” If the outcome is unclear, inspect the receipt first. The inbox leaves acceptance to you.
+“The draft is ready. Submit it for review and notify me on this device.” Check the Work, action, deadline (within 24 hours) and inbox in the preview before confirming. One active ordinary local Work can have one supported step in flight per project: a summary or submission of a prepared result. The local worker needs the device and user session to stay available. If you missed the alert or selecting **View** on it does not open the submission, ask “Does the report Work have a question or a result?” If the outcome is unclear, inspect the receipt first. The inbox leaves acceptance to you.
 
 ### Combine work when one edit is no longer enough
 
-These advanced paths are documented for reference. They fall outside the proposed first Preview support promise.
+These advanced workflows are reference material outside the first Preview everyday scope. See [environments and limits](#limits-en).
 
 #### 7. Review a group of related results
 “Group the inquiry report and meeting summary. Show me whether the two submitted drafts agree.” A parent Work can refer to its named direct children in the same project. You review their accepted revisions and the combined check, then decide on the parent result yourself. If a child changes, compare the captured revision before refreshing it. Nested groups and groups spanning projects are outside this scope.
 
 #### 8. Prepare separate edits in one repository
-“Could the inquiry report and meeting summary be edited in separate working copies? Show me how they would be checked together.” Cooperating workers can prepare isolated results; integration into the control checkout proceeds one result at a time. If scopes overlap or the base changes, stop for comparison. Doing the edits serially remains an option. The existing evidence covers bounded synthetic cases; real-team throughput is unmeasured.
+“Could the inquiry report and meeting summary be edited in separate working copies? Show me how they would be checked together.” Cooperating workers can prepare isolated results; integration into the control checkout proceeds one result at a time. If scopes overlap or the base changes, stop for comparison. Doing the edits serially remains an option.
 
 #### 9. Delegate one acceptance decision
 “Show me exactly which worker, Work and files this grant would cover.” On a qualified profile, you may authorize a named delegate to accept one ordinary isolated-worker result under the accepted intent. Review the grant before choosing. If its target, scope or conditions differ, leave the decision with the owner. This grant does not cover the parent result, initial intent, publication or ordinary inbox delivery.
@@ -264,10 +279,12 @@ These advanced paths are documented for reference. They fall outside the propose
 “Show me what connecting this folder changes.” Check the target and preview before applying. For an existing project, ask which installed version and recovery route apply before updating. If an update stops, preserve its request and inspect the recorded effect. Disconnecting removes the project runtime but retains project records. Removing the manager or private Python is a different operation. To take a break and return to the same history, leave the project connected.
 
 #### 11. Use a Windows project
-“Check this PC’s architecture and the dedicated Python, then show me how to start a practice Work.” Private tests on a designated Windows 11 ARM64 standard account covered preparation, first Work, View, resume and lifecycle cases. The x64 build must still be checked on Windows 11 x64. Use the matching manager/runtime pair and a supported local NTFS target. If download or first launch is blocked, note the step and warning. After an ARM64 manager update, use the verified new manager to register notifications again.
+“Check this PC’s architecture and the dedicated Python, then show me how to start a practice Work.” Use the matching manager/runtime pair and a supported local NTFS target. If download or first launch is blocked, note the step and warning. After an ARM64 manager update, use the verified new manager to register notifications again.
 
 #### 12. Run a bounded document edit on macOS
-“Show me the paragraph this run may change, its checks and the time limit.” The optional macOS profile uses a pinned Codex CLI (0.165.0) and a separate approval for the run. Fixed private packages have evidence for normal completion and a read followed by external cancellation. A cancellation request alone cannot establish that execution stopped or that the file stayed unchanged. Inspect both the document effect and process closure, then review the Work result. This evidence does not extend to a Windows or Claude Code execution host.
+Start an optional document edit from its dedicated setup.
+
+“Show me the paragraph this run may change, its checks and the time limit.” The optional macOS profile uses a pinned Codex CLI (0.165.0) and a separate approval for the run. A cancellation request alone cannot establish that execution stopped or that the file stayed unchanged. Inspect both the document effect and process closure, then review the Work result.
 
 <a id="coding-en"></a>
 
@@ -347,6 +364,8 @@ Colvia를 적용한 빈 연습 폴더에서 Codex나 Claude Code를 여세요. �
 
 기기의 도구를 준비한 뒤, 사용할 프로젝트마다 적용할 내용을 먼저 확인하세요.
 
+Preview 패키지는 Apple silicon Mac과 Windows 11 ARM64를 대상으로 합니다. Windows에서는 표준 계정과 로컬 NTFS 폴더를 사용하세요. [사용 환경과 제한](#limits-ko)을 먼저 확인하세요.
+
 | 위치 | 담긴 내용 |
 | --- | --- |
 | 기기 | 관리 도구와 전용 Python을 여러 프로젝트가 함께 씁니다. |
@@ -365,7 +384,7 @@ Windows 11 ARM64에서는 일반 사용자로 PowerShell을 열어 `Get-FileHash
 & "$HOME\Downloads\colvia-manage.exe" prepare --runtime-zip "$HOME\Downloads\python-3.14.7-embed-arm64.zip"
 ```
 
-ZIP 이름은 받은 관리 도구와 함께 안내된 이름을 사용하세요. 관리 도구가 ZIP의 크기와 해시를 확인한 뒤 전용 Python을 준비합니다. 이 명령은 ARM64용입니다. Windows 11 x64에서의 공개 설치 절차는 최종 확인을 기다리고 있습니다.
+ZIP 이름은 받은 관리 도구와 함께 안내된 이름을 사용하세요. 관리 도구가 ZIP의 크기와 해시를 확인한 뒤 전용 Python을 준비합니다. 이 명령은 ARM64용입니다.
 
 처음이라면 빈 연습 폴더를 만들고 그 폴더에서 Codex나 Claude Code를 여세요. “여기에 Colvia를 적용하면 어떤 파일이 생기는지 먼저 보여줘”라고 물은 뒤 대상과 변경 내용을 확인하고 연결하세요.
 
@@ -407,14 +426,23 @@ Windows 11 ARM64에서 기기 알림을 쓰고 있다면 새 관리 EXE의 확�
 
 내일 다시 검토할 일이 하나 있다면 거기서 시작해 보세요. 어디까지 고칠지는 일을 맡길 때 정하고, 어떤 수정본을 받아들일지는 결과를 읽은 뒤 결정합니다. Colvia가 프로젝트에 그 둘을 함께 남겨 두면, 다음 날 파일이 달라져도 어제의 검사가 어느 판본에 대한 것이었는지 찾을 수 있습니다.
 
-#### 어디까지 사용할 수 있나요?
+<a id="어디까지-사용할-수-있나요"></a>
+<a id="limits-ko"></a>
 
-| 사용 경로 | 확인한 범위 |
+#### 사용 환경과 제한
+
+Preview 패키지의 대상은 Apple silicon Mac과 Windows 11 ARM64입니다. Windows에서는 표준 계정과 로컬 NTFS 프로젝트 폴더, ARM64 관리 도구와 그에 맞는 Python ZIP을 사용합니다.
+
+| 사용 경로 | 범위 |
 | --- | --- |
-| 일상적인 작업 (1–6) | 승인한 범위 안의 수정·검사와 제출, 새 대화에서 작업 기록을 찾아가는 절차입니다. 한 단계 맡기기와 수신함은 격리된 Mac과 Windows ARM64에서도 확인했습니다. |
-| 고급 참고 기능 (7–9) | 상위 작업, 분리된 작업 공간, 특정 결과의 수락 위임은 제한된 사례에서 확인했습니다. |
-| 설치 환경 (10–11) | Apple silicon Mac에서 비공개 설치를, 지정 Windows 11 ARM64에서 설치와 첫 작업을 확인했습니다. Windows 11 x64 개발 빌드의 실제 x64 최종 확인은 남아 있습니다. |
-| 선택형 문서 실행 (12) | 고정한 macOS 패키지와 Codex 실행기로 정상 완료와 읽기 후 취소를 확인했습니다. |
+| 일상적인 작업 (1–6) | 범위를 정한 수정·검사와 검토, 새 대화에서 이어가기, 현황 정리나 준비된 결과 제출 한 단계 맡기기. |
+| 고급 참고 기능 (7–9) | 하위 결과 묶기, 분리된 작업 공간, 결과 한 건의 수락 위임. 첫 Preview의 일상적인 사용 범위에는 포함하지 않습니다. |
+| 설치와 운영 (10–11) | 프로젝트 연결, 설치본 갱신, 기록을 보존하면서 연결 해제하기. |
+| 선택형 문서 실행 (12) | macOS에서 문서 일부 편집. Codex CLI 0.165.0과 별도 준비·실행 승인이 필요합니다. |
+
+Colvia는 신뢰하는 로컬 계정과 협력하는 에이전트를 전제로 범위와 결정을 기록합니다. 보안 샌드박스나 결정한 사람을 인증하는 수단은 아닙니다.
+
+연결을 해제한 폴더를 기존 Work 이력과 함께 다시 연결하는 기능은 아직 없습니다. 같은 이력으로 돌아올 계획이라면 연결을 유지하세요.
 
 ### 에이전트와 함께 일하기
 
@@ -434,21 +462,25 @@ Windows 11 ARM64에서 기기 알림을 쓰고 있다면 새 관리 EXE의 확�
 #### 4. 새 대화에서 이어가기
 “어제 맡긴 문의 보고서 어디까지 했지? 지금 보고서도 내가 검토한 판본이야?” 같은 프로젝트에서 물으면 에이전트가 선택된 수정본과 당시 결정, 현재 파일을 대조할 수 있습니다. 밤사이 누군가 고쳤다면 달라진 부분부터 보세요. 실행이 중간에 멈췄다면 파일에 무엇이 반영됐고 프로세스가 끝났는지 확인한 뒤 다음 행동을 정합니다.
 
+보고서를 다시 열면 해당 작업의 파일 변경과 프로젝트의 다른 변경을 구분해서 볼 수 있습니다. 참고 문서가 달라졌을 수도 있으니, 지금 판단에 영향을 주는 차이를 에이전트에게 설명해 달라고 하세요. 검토했던 파일과 같다는 것이 내용을 다시 검사했다는 뜻은 아닙니다.
+
+아직 맡길 작업을 정하지 않은 아이디어는 “나중에 할 일로 남겨줘”라고 하세요. 특정 작업 다음에 무엇을 할지 정하려면 그 작업과 다음 할 일을 함께 말하면 됩니다. 같은 내용을 두 곳에 기록해 달라고 요청할 필요는 없습니다.
+
 #### 5. 나중에 할 일 남기기
 “다음 달 보고서는 다음 후보로 남겨줘. 다시 시작하려면 뭘 먼저 정해야 해?” 후보에는 앞으로 할 수 있는 일을 기록합니다. 다른 후보와 비교하거나, 선택한 뒤 실제 작업에 연결할 수 있습니다. 다음에 할 일을 골라도 실행하려면 그 범위에 맞는 승인이 필요합니다. 새 작업을 시작하거나, 지정한 기존 작업을 이어가거나, 후속 없이 마칠 수 있습니다. 아직 고르지 않았다면 미정으로 남겨 두세요.
 
 #### 6. 자리를 비우고 결과 받기
-“보고서 초안은 준비됐어. 검토용으로 제출하고 이 기기에서 알려줘.” 미리보기에서 작업, 맡길 단계, 기한(요청 후 24시간 이내), 결과를 받을 수신함을 확인하고 진행하세요. 프로젝트마다 진행 중인 일반 로컬 Work 하나에서 한 단계씩 맡길 수 있습니다. 현황을 정리하거나 준비된 수정본을 제출할 수 있습니다. 선택형 macOS 구성에서는 별도 승인으로 문서 실행도 요청할 수 있습니다. 실행기를 직접 호출하는 경우는 확인했으며, 이 맡기기 절차로 문서 실행까지 마치는 경우는 아직 확인이 필요합니다. 기기와 사용자 세션이 유지돼야 로컬 작업자가 계속 일합니다. 시험한 macOS·Windows ARM64 알림 후보에서는 알림을 누르면 해당 제출본이 열렸습니다. 놓쳤다면 “문의 보고서 작업에 질문이나 결과가 있어?”라고 물어보세요. 어디서 멈췄는지 불분명하면 접수 기록부터 확인합니다. 결과 수락은 사용자에게 남습니다.
+“보고서 초안은 준비됐어. 검토용으로 제출하고 이 기기에서 알려줘.” 미리보기에서 작업, 맡길 단계, 기한(요청 후 24시간 이내), 결과를 받을 수신함을 확인하고 진행하세요. 프로젝트마다 진행 중인 일반 로컬 Work 하나에서 한 단계씩 맡길 수 있습니다. 현황을 정리하거나 준비된 수정본을 제출할 수 있습니다. 기기와 사용자 세션이 유지돼야 로컬 작업자가 계속 일합니다. 알림을 놓쳤거나 알림의 ‘보기’에서 제출본이 열리지 않으면 “문의 보고서 작업에 질문이나 결과가 있어?”라고 물어보세요. 어디서 멈췄는지 불분명하면 접수 기록부터 확인합니다. 결과 수락은 사용자에게 남습니다.
 
 ### 일이 여러 갈래로 나뉠 때
 
-다음 세 가지는 조건을 좁혀 확인한 고급 사용법입니다. 이 문서에서는 참고용으로 다룹니다.
+다음 고급 기능은 첫 Preview의 일상적인 사용 범위 밖의 참고 자료입니다. [사용 환경과 제한](#limits-ko)을 함께 보세요.
 
 #### 7. 관련 작업의 결과를 모아 검토하기
 “분석 보고서와 회의 요약 작업을 묶어줘. 완성된 두 문서가 같은 기준으로 안내하는지 보고 싶어.” 한 프로젝트에서 상위 작업(umbrella)에 바로 아래 작업들을 지정할 수 있습니다. 각 작업에서 수락한 판본과 통합 검사 결과를 보고, 상위 결과도 받아들일지 직접 결정하세요. 하위 판본이 달라졌다면 기존에 묶은 판본과 비교한 뒤 기준을 갱신합니다. 여러 층으로 중첩하거나 프로젝트를 넘나드는 구성은 이 범위 밖입니다.
 
 #### 8. 한 저장소에서 수정본을 따로 준비하기
-“분석 보고서와 회의 요약을 각자 작업 공간에서 고쳐도 될까? 나중에 어떻게 합쳐서 검사할지 보여줘.” 협력하는 작업자들이 분리된 공간에서 결과를 준비하고, 기준 작업 공간에는 한 건씩 통합합니다. 담당 범위가 겹치거나 기준 파일이 달라졌다면 먼저 차이를 비교하세요. 한 작업씩 진행해도 됩니다. 확인한 범위는 합성 프로젝트의 제한된 사례이며 실제 팀의 시간 절감 효과는 측정하지 않았습니다.
+“분석 보고서와 회의 요약을 각자 작업 공간에서 고쳐도 될까? 나중에 어떻게 합쳐서 검사할지 보여줘.” 협력하는 작업자들이 분리된 공간에서 결과를 준비하고, 기준 작업 공간에는 한 건씩 통합합니다. 담당 범위가 겹치거나 기준 파일이 달라졌다면 먼저 차이를 비교하세요. 한 작업씩 진행해도 됩니다.
 
 #### 9. 특정 결과 한 건의 수락을 위임하기
 “누가 어느 작업의 어떤 파일까지 수락할 수 있게 되는지 먼저 보여줘.” 해당 기능을 검증한 구성에서는 사용자가 승인한 목표 안에서, 지정한 대리인에게 일반 격리 작업자 결과 한 건의 수락을 맡길 수 있습니다. 대상과 조건을 확인한 뒤 결정하세요. 작업이나 범위가 다르면 원래 담당자가 판단합니다. 상위 결과 수락, 최초 목표 승인, 게시, 수신함으로 결과 받기는 이 위임에 포함되지 않습니다.
@@ -459,10 +491,12 @@ Windows 11 ARM64에서 기기 알림을 쓰고 있다면 새 관리 EXE의 확�
 “이 폴더에 Colvia를 적용하면 무엇이 바뀌는지 보여줘.” 대상과 예상 변경을 확인하고 적용하세요. 기존 프로젝트를 갱신할 때는 설치한 버전과 복구 경로부터 확인합니다. 중간에 멈추면 원래 요청을 보관하고 어디까지 반영됐는지 보세요. 연결을 해제하면 프로젝트 실행 도구는 제거되지만 작업 기록은 남습니다. 관리 도구와 전용 Python을 지우는 일은 별도입니다. 잠시 쉬었다 같은 이력으로 돌아올 계획이라면 연결을 유지하세요.
 
 #### 11. Windows에서 첫 작업 열기
-“내 PC의 아키텍처와 전용 Python을 확인하고, 연습할 작업을 하나 여는 방법을 보여줘.” 지정된 Windows 11 ARM64 표준 계정에서는 비공개 설치 준비, 첫 Work, 조회·재개와 갱신·복구 사례를 확인했습니다. x64 빌드는 실제 Windows 11 x64에서 최종 확인이 남았습니다. 아키텍처에 맞는 관리 도구·Python 조합과 지원되는 로컬 NTFS 폴더를 사용하세요. 다운로드나 첫 실행이 차단되면 멈춘 단계와 경고를 남겨 주세요. ARM64에서 관리 도구를 갱신한 뒤에는 확인한 새 실행 파일로 알림을 다시 등록합니다.
+“내 PC의 아키텍처와 전용 Python을 확인하고, 연습할 작업을 하나 여는 방법을 보여줘.” 아키텍처에 맞는 관리 도구·Python 조합과 지원되는 로컬 NTFS 폴더를 사용하세요. 다운로드나 첫 실행이 차단되면 멈춘 단계와 경고를 남겨 주세요. ARM64에서 관리 도구를 갱신한 뒤에는 확인한 새 실행 파일로 알림을 다시 등록합니다.
 
 #### 12. macOS에서 문서 일부만 실행기에 맡기기
-“이번 실행이 고칠 수 있는 문단과 검사 방법, 시간 한도를 보여줘.” 선택형 macOS 구성은 고정한 Codex CLI(0.165.0)를 쓰며, 실행 자체에 별도 승인이 필요합니다. 고정한 비공개 패키지에서 정상 완료와 문서를 읽은 뒤 외부에서 취소한 사례를 확인했습니다. 취소 요청이 접수됐어도 파일 반영과 프로세스 종료는 따로 확인하세요. 그다음 Work 결과를 검토합니다. 이 근거가 Windows나 Claude Code의 별도 문서 실행기까지 포괄하지는 않습니다.
+선택형 문서 편집은 전용 절차에서 직접 실행하세요.
+
+“이번 실행이 고칠 수 있는 문단과 검사 방법, 시간 한도를 보여줘.” 선택형 macOS 구성은 고정한 Codex CLI(0.165.0)를 쓰며, 실행 자체에 별도 승인이 필요합니다. 취소 요청이 접수됐어도 파일 반영과 프로세스 종료는 따로 확인하세요. 그다음 Work 결과를 검토합니다.
 
 <a id="coding-ko"></a>
 
@@ -480,7 +514,7 @@ Windows 11 ARM64에서 기기 알림을 쓰고 있다면 새 관리 EXE의 확�
 
 다음 날에는 검토했던 초안과 현재 파일을 비교합니다. 직접 손본 결론이 있다면 그 문장을 남길지 정한 뒤 이어가세요.
 
-한 작업 안에서 초안을 고치고 다시 검토할 수 있습니다. 여러 작업의 결과를 하나로 묶어 검토하는 방법은 고급 기능입니다. 첫 공개에서 어느 범위까지 다룰지는 [기능별 안내](#features-ko)에서 확인하세요.
+한 작업 안에서 초안을 고치고 다시 검토할 수 있습니다. 여러 작업의 결과를 하나로 묶어 검토하는 방법은 첫 Preview의 일상적인 사용 범위 밖의 고급 참고 기능입니다. [사용 환경과 제한](#limits-ko)을 함께 보세요.
 
 잠시 자리를 비울 때는 지원되는 단계 하나를 맡길 수 있습니다. 예를 들어 이미 준비한 수정본을 검토용으로 제출해 달라고 하세요. 확인하면 Colvia가 이 기기에서 그 단계를 실행합니다. 질문이나 결과는 프로젝트 수신함에서 찾을 수 있습니다. 기기를 다시 켰다면 수신함에서 마지막으로 기록된 단계부터 확인하세요.
 
@@ -519,14 +553,14 @@ flowchart TD
 1. **범위를 정합니다.** 에이전트가 입력, 수정 대상, 확인 방법을 제안하고 사용자가 작업 요청을 승인합니다.
 2. **수정하고 확인합니다.** 한 Work 안에서 허용한 시간과 횟수만큼 고치고 다시 확인할 수 있습니다. 이 반복이 작업 루프입니다. 입력이나 권한이 달라지면 필요한 결정을 먼저 받습니다.
 3. **제출하고 검토합니다.** 결과에는 수정본과 근거가 남습니다. 같은 작업을 재개할 때는 최신 파일과 해당 판본을 대조합니다. 파일이 달라졌다면 그 차이를 먼저 설명합니다.
-4. **수락하거나 다시 고칩니다.** 수정본을 읽고 직접 수락하거나 고칠 부분을 알려 주세요. 상위 작업과 위임은 고급 기능으로 첫 Preview의 지원 제안에서 제외했습니다. 상위 작업에서는 바로 아래 작업 각각의 수락과 통합 결과의 수락을 구분합니다. 위임을 쓰면 지정한 대리인이 정해진 조건에서 일반 격리 작업자의 결과 한 건을 수락할 수 있습니다. 최초 작업 범위 승인과 상위 결과 수락은 사용자가 직접 결정합니다.
+4. **수락하거나 다시 고칩니다.** 수정본을 읽고 직접 수락하거나 고칠 부분을 알려 주세요. 상위 작업과 위임은 첫 Preview의 일상적인 사용 범위 밖의 고급 참고 기능입니다. 상위 작업에서는 바로 아래 작업 각각의 수락과 통합 결과의 수락을 구분합니다. 위임을 쓰면 지정한 대리인이 정해진 조건에서 일반 격리 작업자의 결과 한 건을 수락할 수 있습니다. 최초 작업 범위 승인과 상위 결과 수락은 사용자가 직접 결정합니다.
 5. **다음을 고릅니다.** 다음 작업을 추천하거나 후보로 남길 수 있습니다. 후보를 고르는 일과 실행을 승인하는 일은 별개의 결정입니다.
 
 ### 실행을 맡기는 두 가지 경우
 
 **프로젝트 수신함.** 작업 현황 정리나 준비된 결과 제출처럼 지원되는 한 단계를 기한과 함께 맡깁니다. 결과는 수신함에 남고 알림은 그 결과를 다시 찾는 지름길입니다. 기기의 프로세스가 멈췄다면 실행이 끝났는지와 파일에 반영된 내용을 따로 확인합니다.
 
-**선택형 macOS 문서 실행.** Python Host가 승인된 입력과 편집 범위, 시간·호출 한도를 확인하고 고정된 Codex CLI의 App Server와 통신합니다. 모델이 제안한 읽기·편집은 Host가 허용한 로컬 작업자를 거칩니다. 문서 일부를 바꾼 뒤 링크와 Markdown 형식, 미리 지정한 필수·금지 문구를 검사합니다. 사용자는 그 결과를 따로 검토하고 수락합니다. 이 경로를 확인한 환경은 고정한 비공개 macOS 패키지와 Codex입니다. [문서 실행의 확인 범위](#features-ko)에서 자세한 조건을 볼 수 있습니다.
+**선택형 macOS 문서 실행.** Python Host가 승인된 입력과 편집 범위, 시간·호출 한도를 확인하고 고정된 Codex CLI의 App Server와 통신합니다. 모델이 제안한 읽기·편집은 Host가 허용한 로컬 작업자를 거칩니다. 문서 일부를 바꾼 뒤 링크와 Markdown 형식, 미리 지정한 필수·금지 문구를 검사합니다. 사용자는 그 결과를 따로 검토하고 수락합니다. 필요한 macOS·Codex 구성은 [사용 환경과 제한](#limits-ko)에서 확인하세요.
 
 ```mermaid
 flowchart TD

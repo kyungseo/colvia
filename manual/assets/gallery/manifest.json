@@ -1,0 +1,437 @@
+{
+  "schema": 2,
+  "basis": "Preserved original README diagrams; geometry and role labels retained.",
+  "sources": {
+    "manual/assets/readme-scope.ko.svg": "ec8fc24b4e0b7cfef9af0b7e8279fd1f07ad3883506f714f5ab5a342b4585723",
+    "manual/assets/readme-switch.ko.svg": "401727f63d4791bee20014ac0f2123cbc48ac3489372858f08a255d5cd178d23",
+    "manual/assets/readme-drift.ko.svg": "8ace33c3b56f0dc3d128641e78dad844e38b18f5fe933e70d71c49c48795de25",
+    "manual/assets/readme-notify.ko.svg": "7dd9a6acd43ea36db8f29ab3a8ca3b852c3253648cd800453216b2c4b0d6f055",
+    "manual/assets/readme-split.ko.svg": "8c71261fa5d9187879e19e3a8de5a015f4f7b47b0fef2863fa91ba84ac07e4c9",
+    "manual/assets/readme-parallel.ko.svg": "ee6b159ab4c1ae397dc4f585653ed34f044bd934671da0ad3b3e9319f412ee21",
+    "manual/assets/readme-overview.ko.svg": "e7c7f3264a8d85d1fb5bb4d0df533f8f02cca6d9e3710cc8a192d3e7a227cc47"
+  },
+  "files": {
+    "scope-light.svg": "17e233ca3960170d5857980504999b8e394dcd7e5fa9c6d09c1b0270bb8bd641",
+    "scope-dark.svg": "a5f075d00819023d4f404f417a8ea9541873bbd66b6c43805367fdaef5163438",
+    "scope-en-light.svg": "08fc12d51f603ff51c5c25fb6364e7eaf07654c50686d1bc0ae76b9615d7e1ff",
+    "scope-en-dark.svg": "b4a944777a1a4214fc89ce9ffb4cb9c22a76489d799b0903a872137bd8c5f3f6",
+    "switch-light.svg": "92e8be8ed8e22b537dafe8f9e4805f34c124f6695c1c18acb810da016380a223",
+    "switch-dark.svg": "6765eeef9050377d275f6b9d98ccb862b5da3af4540a8a296f214f9bf891f1dd",
+    "switch-en-light.svg": "20705f621d1188e8e19eb45fbd6c54338d409f22b43903b6e7992bfc24ed756f",
+    "switch-en-dark.svg": "cf3c82c349a9e607e63257e49f3fb5bb5324e7d5f892276fb11789c41f1b6124",
+    "drift-light.svg": "a68ee736897c8c1a6544e1e935996e47d25cc35a6ff5fe1a88da50a5e596ecd1",
+    "drift-dark.svg": "76e9491fe7b9c5be0d9bd51e8bfddc9a2e4f460649790b23ab4ee69c36dc2816",
+    "drift-en-light.svg": "ca4ddf52f01f068e40c505c18090511a96bc313e5900e4ad12abe77d90b6a71a",
+    "drift-en-dark.svg": "ba6fea1540f6e165f7f2fb3f3219955edeb9874218b0d65b0c658a677df2777c",
+    "notify-light.svg": "b9270720a8f3c23b349b1e909b3c773c55f974cfee65fcf097ea147c36aadaee",
+    "notify-dark.svg": "5d2deaac95a4d3eed6dabb225a413e339435e57ebb9ec79c90dc623b1a272483",
+    "notify-en-light.svg": "f114c3a4b2539e8dd91fe240e63f935b2870725c767f1043de3671644c706be1",
+    "notify-en-dark.svg": "cc2e0c326f386fdd3e312b6b9faef72d45cdb8ea8d43aca0210f8d2936ee09f9",
+    "split-light.svg": "8b947e26f4551409da31e0c22506bd0746fb6c14a9f46255f88c59ccf6422ed8",
+    "split-dark.svg": "aab11ada2f500630f909c23a5e9e2148facdbc7b234ee243dbd0873d45573a9a",
+    "split-en-light.svg": "5eed896113886fb3d5e8b8cf560b0d65133251410a4066bc2384ca28660e0cbb",
+    "split-en-dark.svg": "98218eef553939394d1073a7c22b27a59429b558247d491ebb37ea9fb5f5e2da",
+    "parallel-light.svg": "969ae4a74c6c8992c6378ec00831fc9954e497ef45dff2c7d71e3495ef3b3be3",
+    "parallel-dark.svg": "fb2014d0d7b76e890e0da01c556c49a7d3544a54f47d04d578dffb773d55b0a6",
+    "parallel-en-light.svg": "c0ff303064208c31c0b6c32c2ae2b33a0a8504638f84223fe47716c29fbe0831",
+    "parallel-en-dark.svg": "150e26854720a0ab24096dd07ee5e10bb6a1d6253f9d1d1c32f1c3634769e97f",
+    "overview-light.svg": "85414832129b53ea2ac3a210025d322cbcc80afac86c646a1a8d261997f82d81",
+    "overview-dark.svg": "c448a57359dfc3fa92d6b17da99d27e64cb034850411f44f5e0a39d28f1a5c44",
+    "overview-en-light.svg": "84a71b12e95352a9899ffbc409110c534d0c08e8e863e8ba47fd1ad57590ed97",
+    "overview-en-dark.svg": "53d30b89fcf5549699df88eee419b8145dcb5926eafb42ba064d00c4cfddaa4e"
+  },
+  "alignments": [
+    {
+      "file": "scope-light.svg",
+      "box": [
+        194.0,
+        72.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        234.0,
+        92.0
+      ]
+    },
+    {
+      "file": "scope-dark.svg",
+      "box": [
+        194.0,
+        72.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        234.0,
+        92.0
+      ]
+    },
+    {
+      "file": "scope-en-light.svg",
+      "box": [
+        194.0,
+        72.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        234.0,
+        92.0
+      ]
+    },
+    {
+      "file": "scope-en-dark.svg",
+      "box": [
+        194.0,
+        72.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        234.0,
+        92.0
+      ]
+    },
+    {
+      "file": "switch-light.svg",
+      "box": [
+        138.0,
+        42.0,
+        84.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        180.0,
+        61.0
+      ]
+    },
+    {
+      "file": "switch-dark.svg",
+      "box": [
+        138.0,
+        42.0,
+        84.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        180.0,
+        61.0
+      ]
+    },
+    {
+      "file": "switch-en-light.svg",
+      "box": [
+        138.0,
+        42.0,
+        84.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        180.0,
+        61.0
+      ]
+    },
+    {
+      "file": "switch-en-dark.svg",
+      "box": [
+        138.0,
+        42.0,
+        84.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        180.0,
+        61.0
+      ]
+    },
+    {
+      "file": "drift-light.svg",
+      "box": [
+        120.0,
+        74.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        160.0,
+        94.0
+      ]
+    },
+    {
+      "file": "drift-dark.svg",
+      "box": [
+        120.0,
+        74.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        160.0,
+        94.0
+      ]
+    },
+    {
+      "file": "drift-en-light.svg",
+      "box": [
+        120.0,
+        74.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        160.0,
+        94.0
+      ]
+    },
+    {
+      "file": "drift-en-dark.svg",
+      "box": [
+        120.0,
+        74.0,
+        80.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        160.0,
+        94.0
+      ]
+    },
+    {
+      "file": "notify-light.svg",
+      "box": [
+        104.0,
+        54.0,
+        80.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        144.0,
+        73.0
+      ]
+    },
+    {
+      "file": "notify-dark.svg",
+      "box": [
+        104.0,
+        54.0,
+        80.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        144.0,
+        73.0
+      ]
+    },
+    {
+      "file": "notify-en-light.svg",
+      "box": [
+        104.0,
+        54.0,
+        80.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        144.0,
+        73.0
+      ]
+    },
+    {
+      "file": "notify-en-dark.svg",
+      "box": [
+        104.0,
+        54.0,
+        80.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        144.0,
+        73.0
+      ]
+    },
+    {
+      "file": "split-light.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "split-dark.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "split-en-light.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "split-en-dark.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "parallel-light.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "parallel-dark.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "parallel-en-light.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "parallel-en-dark.svg",
+      "box": [
+        12.0,
+        86.0,
+        76.0,
+        38.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        50.0,
+        105.0
+      ]
+    },
+    {
+      "file": "overview-light.svg",
+      "box": [
+        698.0,
+        68.0,
+        104.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        750.0,
+        88.0
+      ]
+    },
+    {
+      "file": "overview-dark.svg",
+      "box": [
+        698.0,
+        68.0,
+        104.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        750.0,
+        88.0
+      ]
+    },
+    {
+      "file": "overview-en-light.svg",
+      "box": [
+        698.0,
+        68.0,
+        104.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        750.0,
+        88.0
+      ]
+    },
+    {
+      "file": "overview-en-dark.svg",
+      "box": [
+        698.0,
+        68.0,
+        104.0,
+        40.0
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        750.0,
+        88.0
+      ]
+    }
+  ]
+}

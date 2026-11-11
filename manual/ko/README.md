@@ -2,6 +2,8 @@
 
 한국어 · [English](../en/README.md) · [제품 소개](../../README.ko.md)
 
+다음 Preview의 설치·기록 보관 방식은 [새 기록 구조의 Preview 안내](foundation-preview.md)에 정리했습니다. 아래 절차는 기존 시험본용입니다.
+
 ## 처음 쓰는 순서
 
 기기에 처음 설치하거나 기존 프로젝트에 적용하려면 [설치·갱신·연결 해제](project-setup.md)부터 보세요.
@@ -19,4 +21,4 @@
 
 [Colvia가 기억하는 것](understand.md) · [맡길 수 있는 일과 지원 범위](work-guide.md) · [구조와 역할](architecture.md) · [예약 안내 추가 실습](first-work.md) · [기술 자료와 과거 실습](reference.md)
 
-<!-- en_content_sha256: 3073b7449ab26c924c9cd45df3df1dd39e3b8baeffb9b10911767bd7b1831fbd -->
+<!-- en_content_sha256: 02ff7934699d71ab33c9dba6118632129341a8427429c393175a75ba243e4c67 -->

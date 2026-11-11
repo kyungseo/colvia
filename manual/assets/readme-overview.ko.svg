@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="340" viewBox="0 0 960 340" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif"><title id="title">처음 한 번 연결하고, 그 뒤에는 Work 단위로 이어갑니다</title><desc id="desc">처음에는 Colvia를 설치하고 프로젝트 폴더에서 에이전트에게 연결을 요청한 뒤 미리보기를 확인합니다. 그 뒤에는 목표와 계획에서 후보를 고르고, Work마다 범위를 승인하고 결과를 수락한 다음 다음 할 일로 이어갑니다.</desc>
+<style>
+.bg{fill:#FAF9F6}.frame{fill:none;stroke:#E4E0D8}
+.ink{fill:#2B2A27}.mut{fill:#6B675F}
+.ln{fill:none;stroke:#9C968B;stroke-width:1.6}.lnd{fill:none;stroke:#B9B3A8;stroke-width:1.4;stroke-dasharray:5 5}
+.ah{fill:#9C968B}
+.agent{fill:#EEEBE4;stroke:#CFC9BE;stroke-width:1.2}
+.col{fill:#1F5F5B}.colt{fill:#FFFFFF}.sym{fill:none;stroke:#FFFFFF;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.work{fill:#FFFFFF;stroke:#1F5F5B;stroke-width:1.6}.workt{fill:#1F5F5B}
+.rec{fill:#E3EEEC;stroke:#1F5F5B;stroke-width:1.4}
+.dec{fill:#D9822B}.dect{fill:none;stroke:#FFFFFF;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.note{fill:#FFFFFF;stroke:#CFC9BE;stroke-width:1.2}
+.icon{fill:none;stroke:#2B2A27;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.iconf{fill:#2B2A27}
+@media (prefers-color-scheme: dark){
+.bg{fill:#22262A}.frame{stroke:#363B40}
+.ink{fill:#ECE6DA}.mut{fill:#A9A397}
+.ln{stroke:#8A857C}.lnd{stroke:#5F5B55}.ah{fill:#8A857C}
+.agent{fill:#30353A;stroke:#4A5056}
+.col{fill:#8CC6BC}.colt{fill:#13201E}.sym{stroke:#13201E}
+.work{fill:#2A2F33;stroke:#8CC6BC}.workt{fill:#8CC6BC}
+.rec{fill:#253330;stroke:#8CC6BC}
+.dec{fill:#F0A35E}.dect{stroke:#22262A}
+.note{fill:#2A2F33;stroke:#4A5056}
+.icon{stroke:#ECE6DA}.iconf{fill:#ECE6DA}
+}
+</style>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="ah"/></marker></defs>
+<rect x="1" y="1" width="958" height="338" rx="16" class="bg"/><rect x="1" y="1" width="958" height="338" rx="16" class="frame"/>
+<text x="28" y="40" class="mut" font-size="13" font-weight="600" text-anchor="start">처음 한 번</text>
+<rect x="52" y="70" width="40" height="26" rx="3" class="icon"/><path d="M44 102 H100" class="icon"/>
+<text x="72" y="130" class="ink" font-size="13.5" font-weight="400" text-anchor="middle">Colvia 설치</text>
+<path d="M110 88 H150" class="ln" marker-end="url(#ah)"/>
+<path d="M162 74 H180 L186 80 H206 V104 H162 Z" class="icon"/>
+<text x="184" y="130" class="ink" font-size="13.5" font-weight="400" text-anchor="middle">프로젝트 폴더</text>
+<path d="M222 88 H258" class="ln" marker-end="url(#ah)"/>
+<circle cx="282" cy="81" r="7" class="iconf"/>
+<path d="M270 103 Q270 90 282 90 Q294 90 294 103 Z" class="iconf"/>
+<text x="282" y="130" class="ink" font-size="13.5" font-weight="400" text-anchor="middle">나</text>
+<rect x="304" y="68" width="150" height="40" rx="9" class="note"/>
+<text x="379.0" y="93.0" class="ink" font-size="13.5" font-weight="500" text-anchor="middle">“Colvia 연결해 줘”</text>
+<path d="M454 88 H490" class="ln" marker-end="url(#ah)"/>
+<rect x="492" y="66" width="168" height="44" rx="9" class="agent"/>
+<text x="576.0" y="93.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">Codex · Claude Code</text>
+<path d="M660 88 H696" class="ln" marker-end="url(#ah)"/>
+<rect x="698" y="68" width="104" height="40" rx="9" class="col"/>
+<g transform="translate(710.0,79.0) scale(0.2812)"><path d="M27.9 45.7 A14 14 0 1 1 22 19 C29 19 31 30 36.5 30 C42 30 44 21 49.5 21 L56 21" class="sym"/></g>
+<text x="761.0" y="93.0" class="colt" font-size="14" font-weight="600" text-anchor="middle">Colvia</text>
+<path d="M802 88 H834" class="ln" marker-end="url(#ah)"/>
+<rect x="836" y="68" width="96" height="40" rx="9" class="note"/>
+<text x="884.0" y="93.0" class="ink" font-size="13.5" font-weight="500" text-anchor="middle">미리보기</text>
+<circle cx="930" cy="70" r="10.5" class="dec"/>
+<path d="M925.5 70 L929 73.6 L935 66.2" class="dect"/>
+<path d="M884 110 V170 H100 V204" class="lnd" marker-end="url(#ah)"/>
+<text x="28" y="168" class="mut" font-size="13" font-weight="600" text-anchor="start">그 뒤 매일</text>
+<rect x="40" y="206" width="122" height="48" rx="9" class="note"/>
+<text x="101.0" y="228.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">목표·계획</text>
+<text x="101.0" y="245.0" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">프로젝트 문서</text>
+<path d="M162 230 H196" class="ln" marker-end="url(#ah)"/>
+<rect x="198" y="210" width="108" height="40" rx="9" class="note"/>
+<text x="252.0" y="235.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">후보 목록</text>
+<path d="M306 230 H340" class="ln" marker-end="url(#ah)"/>
+<rect x="342" y="210" width="92" height="40" rx="9" class="work"/>
+<text x="388.0" y="235.0" class="workt" font-size="15" font-weight="600" text-anchor="middle">Work</text>
+<text x="388" y="274" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">큰 일은 하위 Work로</text>
+<path d="M434 230 H518" class="ln" marker-end="url(#ah)"/>
+<circle cx="476" cy="230" r="10.5" class="dec"/>
+<path d="M471.5 230 L475 233.6 L481 226.2" class="dect"/>
+<text x="476" y="260" class="mut" font-size="12" font-weight="400" text-anchor="middle">범위</text>
+<rect x="520" y="210" width="92" height="40" rx="9" class="note"/>
+<text x="566.0" y="235.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">결과</text>
+<path d="M612 230 H696" class="ln" marker-end="url(#ah)"/>
+<circle cx="654" cy="230" r="10.5" class="dec"/>
+<path d="M649.5 230 L653 233.6 L659 226.2" class="dect"/>
+<text x="654" y="260" class="mut" font-size="12" font-weight="400" text-anchor="middle">수락</text>
+<rect x="698" y="210" width="120" height="40" rx="9" class="note"/>
+<text x="758.0" y="235.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">다음 할 일</text>
+<path d="M758 250 V300 H252 V254" class="ln" marker-end="url(#ah)"/>
+<text x="505" y="318" class="mut" font-size="12" font-weight="400" text-anchor="middle">다음 Work로 계속</text>
+</svg>

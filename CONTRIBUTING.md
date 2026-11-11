@@ -1,6 +1,6 @@
 # Contributing to Colvia
 
-[English README](.github/README.md)
+[English README](README.md)
 
 Small changes are welcome for review. If you found a bug, describe what you expected, what happened, the operating system and the asset name or version you received. A short example in a clean project helps. Leave out account details, private paths and project files.
 
@@ -10,13 +10,29 @@ Please keep security reports out of public issues and pull requests. During the 
 
 Colvia’s own code and documentation in this revision use Apache-2.0. Contributions intentionally submitted for inclusion are handled under section 5 of the license unless explicitly stated otherwise. Third-party components keep their own licenses. [License](LICENSE)
 
+## Make your first change
+
+Use the [next Preview guide](manual/en/foundation-preview.md) to see the SQLite candidate’s user flow. The earlier `.hrn/` profile has its own [user guide](manual/en/README.md).
+
+For the source check below, use a standard GIL-enabled CPython 3.14.7 in a POSIX shell. The check ran in the development worktree on macOS 27.2 ARM64 with SQLite 3.54.0. Colvia’s installed runtime uses its own dedicated Python.
+
+From the repository root, run this command before opening a PR for a change to the ordinary Work flow.
+
+```sh
+PYTHONPATH=src:tests python3.14 -B -m unittest test_foundation_work.WorkTests.test_one_approval_submission_prepares_review_and_one_acceptance
+```
+
+The test should report `OK`. It uses a synthetic project to check scope approval, submission for review, and acceptance of a specific result. Installed behavior, native execution, and a Windows contributor command need their own verification.
+
+For a documentation change, check links and applicable instructions. For storage, packaging, or platform changes, choose the relevant checks from [Maintaining](docs/MAINTAINING.md#evidence-reuse-and-selection) and the [verification map](docs/development/product-evidence-and-followups.md#record-foundation-verification). Run the checks locally and include the command, environment and result in your PR to `main`.
+
 ## Maintainer Git policy (proposal)
 
 Use a topic branch and a PR to main. Keep related changes reviewable and prefer a merge commit when individual accepted commits carry distinct evidence. Protect shared branches against deletion and force pushes. Require checks once the project actually runs them. Merging and publishing are separate owner decisions. Leave a distributed release tag in place; issue a new version for a correction. These are proposed practices, not a statement that branch or tag rules are enabled.
 
 ## Source development workflow
 
-This file locates the rules for developing Colvia itself. Start with [Source Project Rules And Development Workflow](docs/development/WORKFLOW.md) and the [Development Index](docs/development/README.md). Decision-document rules are in the [Decision Guide](docs/DECISION-GUIDE.md); technical verification remains in [Maintaining](docs/MAINTAINING.md).
+This file locates the rules for developing Colvia itself. Start with [Source Project Rules And Development Workflow](docs/development/WORKFLOW.md) and the [Development Index](docs/development/README.md). Use [Document and artifact placement](docs/development/document-ownership.md) to keep product specifications and reusable material in source while preserving private evidence separately. Decision-document rules are in the [Decision Guide](docs/DECISION-GUIDE.md); technical verification remains in [Maintaining](docs/MAINTAINING.md).
 
 Reorganization and effective-state record: [DR-0006](docs/decisions/DR-0006-source-contributor-document-structure.md). Until the Owner accepts and activates its exact amendment, the [retained source procedures](docs/DECISION-GUIDE.md#retained-source-procedures) remain effective. After that recorded activation, the identified guides own the relocated rules. This entry does not activate them.
 
@@ -65,3 +81,20 @@ Read [Review And Evidence](docs/development/WORKFLOW.md#review-and-evidence) and
 Read [Resume And Handoff](docs/development/WORKFLOW.md#resume-and-handoff) and [Close And Assess Adopter Impact](docs/development/WORKFLOW.md#close-and-assess-adopter-impact).
 
 [Writing and navigating the user guides](docs/development/user-documentation.md)
+
+
+## Preparing source for lifecycle checks
+
+The repository README introduces the product. The installed bilingual entry is maintained in `distribution/README-installed.md`; its links are relative to its destination, `README.md` in the prepared tree. Do not pass the raw developer checkout as a lifecycle candidate.
+
+Prepare an ordinary managed source tree in a new directory outside the checkout:
+
+```sh
+python3 scripts/prepare-source.py --output /path/to/new-prepared-source
+```
+
+Then use that prepared directory as the explicit `--source` for a source lifecycle preview. Source `init` requires this argument; the user-facing management tools already supply it. Preview and apply remain separate. Windows and macOS packaging scripts apply the same README mapping and retain the installed file names and inventory. Preparation alone installs nothing.
+
+### Record-foundation candidate preparation
+
+For the SQLite candidate, [`foundation_bundle.assemble`](distribution/foundation_bundle.py) builds an unsigned archive from prepared inputs. Reproducing an identical release archive from a clone alone remains unverified. Assembly requires the pinned platform runtime, verifier dependencies and native launcher, plus the channel configuration, trust root and notices for that candidate. See [the supply and candidate procedure](docs/development/record-foundation/runtime-and-extension.md#supply-candidate-and-vm-reuse) and [verified results](docs/development/product-evidence-and-followups.md#record-foundation-verification).

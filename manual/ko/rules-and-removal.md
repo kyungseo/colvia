@@ -45,7 +45,7 @@ Use the existing Work narrative; follow its scope and reference requirements.
 
 기존 agent 진입 문서에는 CLI 변경 시 `docs/agent-guide.md`의 해당 지침을 읽으라는 짧은 연결을 추가합니다. 도구에만 필요한 지침은 해당 도구의 진입 문서에 유지합니다. Managed adapter 전문을 복제하지 마세요. Local 지침으로 수락 권한을 부여하거나 불변 기록을 바꾸고 무결성 검사를 우회할 수는 없습니다. Runtime의 거부를 실행 허가로 해석할 수도 없습니다. 지침이 충돌하면 행동하기 전에 Owner에게 차이를 보여 주세요.
 
-연결 경로가 열리는지 확인하고, 새 세션에서 어떤 지침을 읽었고 언제 적용하는지 설명하도록 요청하세요. 이 세션 확인을 실행할 수 없었다면 미검증으로 기록합니다. Markdown에 연결을 썼다는 사실만으로 특정 도구의 자동 로드를 확인한 것은 아닙니다. Native skill 포장이나 discovery는 해당 도구의 설정과 별도 검증이 필요합니다.
+연결 경로가 열리는지 확인한 뒤 새 세션에서 어떤 지침을 읽었고 언제 적용하는지 물어보세요. 스킬을 자동으로 찾게 하려면 해당 도구의 설정 절차를 따르고 스킬 목록에 나타나는지 확인하세요.
 
 ## 4. Runtime 갱신 시 비교하기
 
@@ -79,10 +79,10 @@ Runtime 설치와 프로젝트 규칙 편집은 별개의 작업·승인으로 �
 
 ## 근거와 확인 범위
 
-이 안내는 현행 [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules), [프로젝트 진입 준비](../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach 계약](../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach), [남은 이력 읽기](../../docs/MANUAL-OPERATION.md)를 연결합니다. Repository에서 읽는 문서이며 설치 payload에는 포함되지 않습니다. 이 페이지는 매뉴얼 README에 명시된 실습 기준 release보다 뒤의 source 지침을 참조하므로, 그 설치본에는 추가된 절이 없을 수 있습니다. Detach 전에 `./colvia view`로 실제 대상의 검증된 문서 위치와 내용을 확인하세요. 이 안내를 읽었다고 설치본이 갱신되는 것은 아닙니다.
+이 안내는 현행 [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules), [프로젝트 진입 준비](../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach 계약](../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach), [남은 이력 읽기](../../docs/MANUAL-OPERATION.md)를 연결합니다. Repository에서 읽는 문서이며 설치 payload에는 포함되지 않습니다. Detach 전에 `./colvia view`로 실제 대상의 검증된 문서 위치와 내용을 확인하세요.
 
-예제 local adapter와 사람이 agent와 함께 수행하는 전체 제거 순서는 native agent 세션에서 시험하지 않았습니다. 문서 검사와 합성 lifecycle 테스트만으로 실제 사용자의 이해도나 모든 agent의 지침 준수를 확인할 수는 없습니다.
+이번 Preview의 범위는 [사용 환경과 제한](work-guide.md#limits-ko)을 참고하세요.
 
 [매뉴얼 처음으로](README.md)
 
-<!-- en_content_sha256: 857bd2fb73918833acd58801b58bab2abc6d8bba658a361ec7dd404a9ff22fc2 -->
+<!-- en_content_sha256: 04d734971b1c0acc440a36c946aa23636943e9b946ef11a8493f193e4ec07c10 -->

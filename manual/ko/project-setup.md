@@ -4,6 +4,8 @@
 
 기기의 도구를 준비한 뒤, 사용할 프로젝트마다 적용할 내용을 먼저 확인하세요.
 
+Preview 패키지는 Apple silicon Mac과 Windows 11 ARM64를 대상으로 합니다. Windows에서는 표준 계정과 로컬 NTFS 폴더를 사용하세요. [사용 환경과 제한](work-guide.md#limits-ko)을 먼저 확인하세요.
+
 | 위치 | 담긴 내용 |
 | --- | --- |
 | 기기 | 관리 도구와 전용 Python을 여러 프로젝트가 함께 씁니다. |
@@ -22,7 +24,7 @@ Windows 11 ARM64에서는 일반 사용자로 PowerShell을 열어 `Get-FileHash
 & "$HOME\Downloads\colvia-manage.exe" prepare --runtime-zip "$HOME\Downloads\python-3.14.7-embed-arm64.zip"
 ```
 
-ZIP 이름은 받은 관리 도구와 함께 안내된 이름을 사용하세요. 관리 도구가 ZIP의 크기와 해시를 확인한 뒤 전용 Python을 준비합니다. 이 명령은 ARM64용입니다. Windows 11 x64에서의 공개 설치 절차는 최종 확인을 기다리고 있습니다.
+ZIP 이름은 받은 관리 도구와 함께 안내된 이름을 사용하세요. 관리 도구가 ZIP의 크기와 해시를 확인한 뒤 전용 Python을 준비합니다. 이 명령은 ARM64용입니다.
 
 처음이라면 빈 연습 폴더를 만들고 그 폴더에서 Codex나 Claude Code를 여세요. “여기에 Colvia를 적용하면 어떤 파일이 생기는지 먼저 보여줘”라고 물은 뒤 대상과 변경 내용을 확인하고 연결하세요.
 
@@ -56,4 +58,4 @@ Windows 11 ARM64에서 기기 알림을 쓰고 있다면 새 관리 EXE의 확�
 
 [사용 설명서로 돌아가기](README.md)
 
-<!-- en_content_sha256: 9cd7dc0f763237b7ed93d6df2e7cca8c6e8bf31fa79d7c6cda577b3461216543 -->
+<!-- en_content_sha256: fe710a541d3e1feb0bd8806f67b9cba624ca5a4af253dc2f648bfdeee5603403 -->

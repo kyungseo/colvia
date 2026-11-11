@@ -95,7 +95,7 @@ Colvia compares whole project content, not only the changed-file list. Prepare i
 
 These boundaries keep “what I approved” meaningful when an agent continues later. They do not provide an execution sandbox or prevent another process from editing the project.
 
-Historical exercise — Edition: private development, `checkout-1`; checked 2026-10-05.
+Earlier exercise details are in the [operations reference](reference.md#earlier-checkout-exercise).
 
 ---
 

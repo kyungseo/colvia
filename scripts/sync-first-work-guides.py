@@ -49,6 +49,7 @@ def setup_chapter(language):
     title, _, body = source.read_text(encoding="utf-8").strip().split("\n\n", 2)
     body = re.sub(r"\n+<!-- en_content_sha256: [0-9a-f]{64} -->\Z", "", body)
     body = body.replace("](README.md)", "](../README.md#한국어)" if language == "ko" else "](../README.md#english)")
+    body = body.replace(f"](work-guide.md#limits-{language})", f"](#limits-{language})")
     nav = "[한국어](#setup-ko) · English" if language == "en" else "한국어 · [English](#setup-en)"
     return f"{anchor('setup-' + language)}\n\n#{title}\n\n{nav}\n\n{body}"
 

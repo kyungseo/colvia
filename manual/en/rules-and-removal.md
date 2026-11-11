@@ -45,7 +45,7 @@ Use the existing Work narrative; follow its scope and reference requirements.
 
 Add a short pointer from the existing agent entry to the relevant instructions in `docs/agent-guide.md` for CLI changes. Keep genuinely tool-specific instructions in that tool's entry. Do not duplicate the full managed adapter. Local instructions cannot grant acceptance, change immutable records, bypass integrity checks or turn a runtime refusal into permission. If the instructions conflict, show the conflict to the Owner before acting.
 
-Check that the pointer resolves and ask a fresh session to explain which instructions it read and when they apply. Record an unavailable session check as untested. A Markdown pointer does not prove that a particular tool loads it automatically; native skill packaging or discovery needs that tool's own setup and verification.
+Check that the pointer resolves, then open a fresh session and ask which instructions it read and when they apply. If you want automatic skill discovery, follow the tool’s setup procedure and check that the skill appears there.
 
 ## 4. Review A Runtime Update
 
@@ -79,8 +79,8 @@ Project entries need to distinguish an expected completed detach from an unexpec
 
 ## Basis And Limits
 
-This guide explains the current [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules), [project-entry preparation](../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach contract](../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach) and [retained-history operation](../../docs/MANUAL-OPERATION.md). It is a repository-only guide, outside the installed payload. This page refers to source guidance newer than the practice release identified in the manual README; that installed release may lack these added sections. Before detach, use `./colvia view` to locate and check the verified documents for the actual target. Do not assume this guide updates the installed release.
+This guide explains the current [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules), [project-entry preparation](../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach contract](../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach) and [retained-history operation](../../docs/MANUAL-OPERATION.md). It is a repository-only guide, outside the installed payload. Before detach, use `./colvia view` to locate and check the verified documents for the actual target.
 
-The example local adapter and the complete human/agent exit sequence have not been tested in a native agent session. Document checks and synthetic lifecycle tests do not establish that a person understood the guide or that every agent follows these instructions.
+The [environments and limits](work-guide.md#limits-en) describe this Preview’s scope.
 
 [Manual home](README.md)

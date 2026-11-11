@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="210" viewBox="0 0 360 210" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif"><title id="title">도구를 바꿔도 이어가기</title><desc id="desc">월요일에 Codex에서 한 일이 Colvia를 거쳐 프로젝트 기록에 남고, 수요일에 Claude Code가 그 기록에서 이어갑니다.</desc>
+<style>
+.bg{fill:#FAF9F6}.frame{fill:none;stroke:#E4E0D8}
+.ink{fill:#2B2A27}.mut{fill:#6B675F}
+.ln{fill:none;stroke:#9C968B;stroke-width:1.6}.lnd{fill:none;stroke:#B9B3A8;stroke-width:1.4;stroke-dasharray:5 5}
+.ah{fill:#9C968B}
+.agent{fill:#EEEBE4;stroke:#CFC9BE;stroke-width:1.2}
+.col{fill:#1F5F5B}.colt{fill:#FFFFFF}.sym{fill:none;stroke:#FFFFFF;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
+.work{fill:#FFFFFF;stroke:#1F5F5B;stroke-width:1.6}.workt{fill:#1F5F5B}
+.rec{fill:#E3EEEC;stroke:#1F5F5B;stroke-width:1.4}
+.dec{fill:#D9822B}.dect{fill:none;stroke:#FFFFFF;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.note{fill:#FFFFFF;stroke:#CFC9BE;stroke-width:1.2}
+.icon{fill:none;stroke:#2B2A27;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.iconf{fill:#2B2A27}
+@media (prefers-color-scheme: dark){
+.bg{fill:#22262A}.frame{stroke:#363B40}
+.ink{fill:#ECE6DA}.mut{fill:#A9A397}
+.ln{stroke:#8A857C}.lnd{stroke:#5F5B55}.ah{fill:#8A857C}
+.agent{fill:#30353A;stroke:#4A5056}
+.col{fill:#8CC6BC}.colt{fill:#13201E}.sym{stroke:#13201E}
+.work{fill:#2A2F33;stroke:#8CC6BC}.workt{fill:#8CC6BC}
+.rec{fill:#253330;stroke:#8CC6BC}
+.dec{fill:#F0A35E}.dect{stroke:#22262A}
+.note{fill:#2A2F33;stroke:#4A5056}
+.icon{stroke:#ECE6DA}.iconf{fill:#ECE6DA}
+}
+</style>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="ah"/></marker></defs>
+<rect x="1" y="1" width="358" height="208" rx="16" class="bg"/><rect x="1" y="1" width="358" height="208" rx="16" class="frame"/>
+<text x="66" y="34" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">월요일</text>
+<rect x="18" y="42" width="96" height="38" rx="9" class="agent"/>
+<text x="66.0" y="66.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">Codex</text>
+<path d="M114 61 H136" class="ln" marker-end="url(#ah)"/>
+<rect x="138" y="42" width="84" height="38" rx="9" class="col"/>
+<g transform="translate(140.0,52.0) scale(0.2812)"><path d="M27.9 45.7 A14 14 0 1 1 22 19 C29 19 31 30 36.5 30 C42 30 44 21 49.5 21 L56 21" class="sym"/></g>
+<text x="191.0" y="66.0" class="colt" font-size="14" font-weight="600" text-anchor="middle">Colvia</text>
+<text x="294" y="34" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">수요일</text>
+<rect x="244" y="42" width="100" height="38" rx="9" class="agent"/>
+<text x="294.0" y="66.0" class="ink" font-size="13.5" font-weight="500" text-anchor="middle">Claude Code</text>
+<path d="M180 80 V100" class="ln" marker-end="url(#ah)"/>
+<path d="M134.0 108.0 V144.0 A46.0 7 0 0 0 226.0 144.0 V108.0" class="rec"/>
+<ellipse cx="180" cy="108.0" rx="46.0" ry="7" class="rec"/>
+<text x="180" y="136" class="workt" font-size="13.5" font-weight="600" text-anchor="middle">기록</text>
+<path d="M226 126 C262 126 294 112 294 84" class="ln" marker-end="url(#ah)"/>
+<text x="180" y="184" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">범위 · 수락한 판본 · 다음 할 일</text>
+</svg>

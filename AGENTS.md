@@ -1,5 +1,7 @@
 # Agent Entry
 
+For explicitly requested record-foundation source work, start with [CONTRIBUTING](CONTRIBUTING.md) and the [owning record](docs/development/FEAT-20261106-002-record-foundation.md). Its current contracts and checkpoints govern that source task. The retained profile instructions below do not install or activate the new candidate. An installed project always uses its verified launcher and bundled guide.
+
 Windows-2 candidate: follow [entry and boundaries](docs/README.md#windows-2-integration-candidate).
 
 Canonical agent entry for Colvia’s single-home `continuation-1` profile.
@@ -18,7 +20,7 @@ These instructions describe the `continuation-1` profile; in an installed projec
 
 ## Start
 
-1. When explicitly asked to develop Colvia itself in its trusted source checkout, read source-only `CONTRIBUTING.md`, then its Development Workflow and existing task record. Do not install a runtime or create typed Work to begin source development.
+1. When explicitly asked to develop Colvia itself in its trusted source checkout, read source-only `CONTRIBUTING.md`, then its Development Workflow, [document and artifact placement](docs/development/document-ownership.md), and existing task record. Do not install a runtime or create typed Work to begin source development.
 2. In an installed project use the verified launcher for that platform: on macOS run `./colvia view --details`; on Windows use the [native launcher procedure](docs/OPERATIONS.md#onboarding-windows-2-entry) with the same `view --details` arguments. Use that platform launcher for every command below, including candidate lookup and resuming a Work. Then follow project-owned rules and read the verified manual/adapter paths in its technical details. The default `./colvia view` is the concise human screen. Stable project-owned entry instructions may start there and follow its guidance to the current adapter. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
 3. For setup or broken-launcher diagnosis, use an independent trusted source with explicit `--source-checkout`; see [Getting Started](docs/GETTING-STARTED.md) and [Operations](docs/OPERATIONS.md).
 4. Propose scope and evidence. Obtain human acceptance of the exact intent and result. Keep one editing Work at a time during serial use.

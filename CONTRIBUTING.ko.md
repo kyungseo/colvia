@@ -25,3 +25,9 @@ Colvia가 작성한 코드와 문서에는 [Apache License 2.0](LICENSE)이 적�
 Colvia 자체를 개발한다면 [개발 절차(영문)](docs/development/WORKFLOW.md)와 [개발 문서 목록](docs/development/README.md)에서 시작하세요. 기존 결정과 개발 규칙의 적용 시점은 [영문 기여 안내의 개발 절차](CONTRIBUTING.md#source-development-workflow)에서 확인할 수 있습니다.
 
 [사용자 문서 작성 기준 · 영문](docs/development/user-documentation.md)
+
+소스 체크아웃에서 설치 흐름을 검사할 때는 [설치용 소스 준비](CONTRIBUTING.md#preparing-source-for-lifecycle-checks)를 먼저 확인하세요. 공개 README와 설치본에 들어가는 README는 서로 다른 원본으로 관리합니다.
+
+### 새 기록 구조의 후보 준비
+
+앞의 `scripts/prepare-source.py`는 기존 프로필용 소스 트리를 준비합니다. 새 기록 구조의 배포 후보는 `distribution/foundation_bundle.py`에 정규화한 실행환경, 검증 라이브러리, 네이티브 실행기와 신뢰 입력을 명시해 준비합니다. `guide_sources(source)`는 후보 전용 진입 페이지와 한영 안내를 설치본 경로에 연결하며, 예전 기술 색인을 복사하지 않습니다. 생성 결과는 서명하지 않은 준비용 압축 파일입니다. 설치나 플랫폼 검증을 완료한 것은 아닙니다. 근거와 다음 작업은 [현재 작업 기록](docs/development/FEAT-20261106-002-record-foundation.md)을 확인하세요.

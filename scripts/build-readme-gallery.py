@@ -1,0 +1,123 @@
+"""Refine the preserved README drawings; keep their nodes, labels and routes.
+
+Build-only, standard library. Font subsets in gallery/fonts are committed build
+inputs. See gallery/README.md to extend their glyph coverage when editing labels.
+"""
+from pathlib import Path
+import argparse,base64,hashlib,json,re,xml.etree.ElementTree as ET
+ROOT=Path(__file__).resolve().parents[1]
+NS='http://www.w3.org/2000/svg'
+ET.register_namespace('',NS)
+def tag(n):return '{'+NS+'}'+n
+def el(n,**attrs):return ET.Element(tag(n),{k.replace('_','-'):str(v) for k,v in attrs.items()})
+TRANSLATE={'나':'You','범위':'Scope','다시 고치기':'Revise','수락':'Accept','월요일':'Monday','수요일':'Wednesday','기록':'Records','범위 · 수락한 판본 · 다음 할 일':'Scope · accepted revision · next steps','수락한 판본':'Accepted revision','지금 파일':'Current file','달라짐':'Changed','어느 쪽으로?':'Which one?','알림':'Notice / inbox','알림 · 수신함':'Notice / inbox','상위 Work':'Parent','통합 결과':'Merged result','작업 공간 1':'Workspace 1','작업 공간 2':'Workspace 2','기준 공간':'Main copy','한 건씩 합치기':'One at a time','처음 한 번':'ONE-TIME SETUP','Colvia 설치':'Install Colvia','프로젝트 폴더':'Project folder','“Colvia 연결해 줘”':'“Connect Colvia”','미리보기':'Preview','그 뒤 매일':'EVERYDAY WORK','목표·계획':'Goals & plan','프로젝트 문서':'Project documents','후보 목록':'Candidates','큰 일은 하위 Work로':'Split into child Work','결과':'Result','다음 할 일':'Next steps','다음 Work로 계속':'Continue with the next Work','대조 요청':'Compare'}
+TITLES={'scope':('범위를 정하고 결과를 검토합니다','Agree on scope, then review the result'),'switch':('같은 프로젝트 기록에서 이어갑니다','Pick up from the same project records'),'drift':('수락한 판본과 현재 파일을 비교합니다','Compare the accepted revision with current files'),'notify':('준비한 결과를 알리고 사람이 검토합니다','Notify the owner and review the prepared result'),'split':('하위 결과와 통합 결과를 따로 검토합니다','Review child results and the combined result separately'),'parallel':('분리한 작업 공간의 결과를 한 건씩 통합합니다','Integrate separate working-copy results one at a time'),'overview':('처음 연결한 뒤 Work 단위로 이어갑니다','Connect once, then continue through Work')}
+DESC={'scope':('사람이 범위를 승인하고 에이전트가 Work를 준비합니다. 결과를 검토해 수정하거나 수락합니다.','You approve the scope; the agent prepares the Work. Review the result, request revisions or accept it.'),'switch':('월요일의 범위·수락한 판본·다음 할 일을 프로젝트에 기록합니다. 수요일의 에이전트가 같은 기록에서 이어갑니다.','Keep Monday’s scope, accepted revision and next steps in the project. Wednesday’s agent resumes from those records.'),'drift':('에이전트에게 수락한 판본과 현재 파일의 비교를 요청합니다. 달라진 내용을 보고 사람이 다음 변경을 결정합니다.','Ask the agent to compare the accepted revision with current files, then decide what to change.'),'notify':('확인한 단계와 기한 안에 준비된 결과를 제출합니다. 알림이나 수신함에서 결과를 찾고 사람이 수락합니다.','Submit the prepared result within the confirmed step and deadline. Find it through a notification or the inbox; acceptance stays with you.'),'split':('하위 Work 결과를 각각 수락한 뒤 통합 결과를 별도로 검토합니다.','Accept each child Work result, then review the integrated result separately.'),'parallel':('분리된 공간에서 준비한 결과를 각각 검토하고 기준 공간에 한 건씩 통합합니다.','Review results prepared in separate working copies and integrate them into the main copy one at a time.'),'overview':('처음에는 설치 후 연결 미리보기를 확인합니다. 이후 후보를 골라 Work의 범위와 결과를 결정하고 다음 작업으로 이어갑니다. 점선은 설치에서 일상 사용으로의 전환입니다.','After installation, confirm the project connection preview. Then select a candidate, approve the Work scope, review the result and continue. The dashed line marks the transition from setup to daily use.')}
+
+def style_rules(css,theme):
+    light,dark=css.split('@media',1)
+    chosen=light+(dark[dark.index('{')+1:dark.rfind('}')] if theme=='dark' else '')
+    rules={}
+    for selector,body in re.findall(r'\.([a-z]+)\s*\{([^}]+)\}',chosen):
+        rules.setdefault(selector,{}).update(dict(x.strip().split(':',1) for x in body.split(';') if ':' in x))
+    return rules
+
+def build(scene,lang,theme,fonts):
+    source=ROOT/f'manual/assets/readme-{scene}.ko.svg';root=ET.fromstring(source.read_text(encoding='utf-8'));root.set('{http://www.w3.org/XML/1998/namespace}lang',lang)
+    root.set('font-family','SkinSans-Subset, sans-serif');root.set('style','font-synthesis:none')
+    root.find(tag('title')).text=TITLES[scene][lang=='en'];root.find(tag('desc')).text=DESC[scene][lang=='en']
+    css=root.find(tag('style'));rules=style_rules(css.text,theme);root.remove(css)
+    # Preserve original color roles while replacing implicit CSS with direct paint.
+    for node in root.iter():
+        for c in node.get('class','').split():
+            if c not in rules:raise ValueError(f'Undefined original style class: {c}')
+            for k,v in rules[c].items():node.set(k,v)
+        if node.get('class') in ('ln','lnd'):node.set('stroke-linecap','round');node.set('stroke-linejoin','round')
+        if node.tag==tag('rect') and node.get('rx')=='9':node.set('rx','7')
+    st=el('style');st.text='\n'.join("@font-face{font-family:'SkinSans-Subset';font-style:normal;font-weight:"+str(w)+";src:url(data:font/woff2;base64,"+base64.b64encode(fonts[w]).decode()+") format('woff2');}" for w in fonts);root.insert(2,st)
+    # A 4.8-unit visible open arrowhead for a 1.6-unit shaft. No strokeWidth multiplier.
+    marker=root.find('.//'+tag('marker'));marker.attrib.update({'viewBox':'0 0 12 12','refX':'9','refY':'6','markerWidth':'7.2','markerHeight':'7.2','markerUnits':'userSpaceOnUse','orient':'auto'})
+    for child in list(marker):marker.remove(child)
+    marker.append(el('path',d='M2 2 L10 6 L2 10',fill='none',stroke=rules['ln']['stroke'],stroke_width='2',stroke_linecap='round',stroke_linejoin='round'))
+    dashed=ET.fromstring(ET.tostring(marker))
+    dashed.set('id','ah-dashed');dashed[0].set('stroke',rules['lnd']['stroke']);root.find(tag('defs')).append(dashed)
+    for n in root.iter():
+        if n.get('class')=='lnd' and n.get('marker-end'):n.set('marker-end','url(#ah-dashed)')
+    # Original Colvia rectangles remain. Replace the baseline-positioned pair with
+    # the approved outlines, centered by actual ink bounds in the same rectangle.
+    g=json.loads((ROOT/'assets/brand/source/geometry.json').read_text(encoding='utf-8'));alignments=[]
+    for box in [e for e in root if e.tag==tag('rect') and e.get('class')=='col']:
+        x,y,w,h=(float(box.get(k)) for k in ('x','y','width','height'));cx=x+w/2;cy=y+h/2
+        kids=list(root);idx=kids.index(box)
+        old_symbol=kids[idx+1];old_text=kids[idx+2]
+        assert old_symbol.tag==tag('g') and old_text.text=='Colvia'
+        root.remove(old_symbol);root.remove(old_text)
+        sb,tb=g['symbol']['bounds'],g['colvia']['bounds'];th=10.5;sh=12.8;ss=sh/sb[3];ts=th/tb[3];gap=5.5;total=sb[2]*ss+gap+tb[2]*ts;left=cx-total/2
+        a=el('path',d=g['symbol']['path'],fill=rules['colt']['fill'],transform=f'translate({left-sb[0]*ss} {cy-(sb[1]+sb[3]/2)*ss}) scale({ss})')
+        b=el('path',d=g['colvia']['path'],fill=rules['colt']['fill'],transform=f'translate({left+sb[2]*ss+gap-tb[0]*ts} {cy-(tb[1]+tb[3]/2)*ts}) scale({ts})')
+        root.insert(idx+1,a);root.insert(idx+2,b);alignments.append({'box':[x,y,w,h],'group_width':total,'center':[cx,cy]})
+    # Center single/two-line labels inside existing boxes, preserving all positions.
+    boxes=[n for n in root if n.tag==tag('rect') and n.get('class') in ('agent','note','work')]
+    for box in boxes:
+        x,y,w,h=(float(box.get(k)) for k in ('x','y','width','height'))
+        texts=[n for n in root if n.tag==tag('text') and x<=float(n.get('x',0))<=x+w and y<float(n.get('y',0))<y+h]
+        for i,t in enumerate(texts):t.set('y',str(y+h/2+(i-(len(texts)-1)/2)*17));t.set('dominant-baseline','central')
+    for n in root.iter(tag('text')):
+        n.set('font-weight','700' if int(n.get('font-weight','400'))>=600 else '400')
+        if scene=='notify' and n.text=='알림':n.text='알림 · 수신함'
+        if scene=='overview' and n.text=='그 뒤 매일':n.set('y','160')
+        if scene=='split' and n.text=='통합 결과':n.set('x','332')
+        if lang=='en' and n.text in TRANSLATE:n.text=TRANSLATE[n.text]
+        if scene=='split' and n.text=='Merged result':
+            n.set('y','130');n.text=None
+            a=ET.SubElement(n,tag('tspan'),{'x':'332','dy':'0'});a.text='Merged'
+            b=ET.SubElement(n,tag('tspan'),{'x':'332','dy':'13'});b.text='result'
+        if scene=='drift' and n.text=='Accepted revision':
+            n.set('y','84');n.text=None
+            a=ET.SubElement(n,tag('tspan'),{'x':'46','dy':'0'});a.text='Accepted'
+            b=ET.SubElement(n,tag('tspan'),{'x':'46','dy':'12'});b.text='revision'
+        # Sequence labels in circles share their circle center, not a baseline offset.
+        if scene=='parallel' and n.text in ('1','2'):
+            n.set('y','72' if n.text=='1' else '138');n.set('dominant-baseline','central')
+    if scene=='split':
+        for n in root:
+            if n.tag==tag('circle') and n.get('cx')=='332' and n.get('cy')=='156':n.set('cy','170')
+            if n.tag==tag('path') and n.get('d','').startswith('M327.5 156'):n.set('transform','translate(0 14)')
+    if scene=='drift':
+        n=el('text',x=160,y=139,fill=rules['mut']['fill'],font_size=10.5,text_anchor='middle',font_weight=400);n.text='대조 요청' if lang=='ko' else 'Compare';root.append(n)
+    # Keep the revise icon above the return route; use a left-pointing undo arrow.
+    if scene=='scope':
+        for n in list(root):
+            if n.tag==tag('path') and n.get('d','').startswith(('M226 152','M221 154')):root.remove(n)
+        root.append(el('path',d='M227 135 L221 141 L227 147 M221 141 H236 A6 6 0 0 1 236 153 H232',fill='none',stroke=rules['mut']['fill'],stroke_width=1.8,stroke_linecap='round',stroke_linejoin='round'))
+    # Paint is now explicit; remove the original CSS class references.
+    for n in root.iter():
+        n.attrib.pop('class',None)
+    return ET.tostring(root,encoding='unicode')+'\n',alignments
+
+def all_text():
+    chars=set(''.join(TRANSLATE.values())+''.join(TRANSLATE.keys()))
+    for p in (ROOT/'manual/assets').glob('readme-*.ko.svg'):
+        for t in ET.parse(p).iter(tag('text')):chars.update(t.text or '')
+    return ''.join(sorted(chars))
+
+def main():
+    ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--output',type=Path,default=ROOT/'manual/assets/gallery');ap.add_argument('--text-file',type=Path);args=ap.parse_args()
+    if args.text_file:args.text_file.write_text(all_text(),encoding='utf-8');return
+    dest=args.output;dest.mkdir(parents=True,exist_ok=True);fonts={w:(ROOT/f'manual/assets/gallery/fonts/SkinSans-{w}.woff2').read_bytes() for w in (400,700)}
+    coverage=json.loads((ROOT/'manual/assets/gallery/fonts/PROVENANCE.json').read_text(encoding='utf-8'))
+    for w,b in fonts.items():
+        if hashlib.sha256(b).hexdigest()!=coverage['subsets'][f'SkinSans-{w}.woff2']:raise ValueError('Font subset digest mismatch')
+    result={'schema':2,'basis':'Preserved original README diagrams; geometry and role labels retained.','sources':{},'files':{},'alignments':[]}
+    for scene in TITLES:
+        source=ROOT/f'manual/assets/readme-{scene}.ko.svg';result['sources'][str(source.relative_to(ROOT))]=hashlib.sha256(source.read_bytes()).hexdigest()
+        for lang in ('ko','en'):
+            for theme in ('light','dark'):
+                svg,a=build(scene,lang,theme,fonts)
+                visible=''.join(''.join(t.itertext()) for t in ET.fromstring(svg).iter(tag('text')))
+                missing=set(visible)-set(coverage['characters'])
+                if missing:raise ValueError(f'Rebuild font subsets for missing glyphs: {sorted(missing)}')
+                if lang=='en' and re.search('[가-힣]',visible):raise ValueError('Untranslated English label')
+                name=f'{scene}{"-en" if lang=="en" else ""}-{theme}.svg';(dest/name).write_text(svg,encoding='utf-8');result['files'][name]=hashlib.sha256(svg.encode()).hexdigest();result['alignments']+= [{'file':name,**x} for x in a]
+    (dest/'manifest.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');print('Refined',len(result['files']),'SVGs from',len(result['sources']),'preserved originals')
+if __name__=='__main__':main()

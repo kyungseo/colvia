@@ -1,6 +1,8 @@
 # Colvia user guide
 
-[한국어](../ko/README.md) · English · [About Colvia](../../.github/README.md)
+[한국어](../ko/README.md) · English · [About Colvia](../../README.md)
+
+For the next Preview, see [Installation and records in the new Preview](foundation-preview.md). The procedures below describe the earlier trial build.
 
 ## Your first project
 

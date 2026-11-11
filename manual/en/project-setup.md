@@ -2,7 +2,7 @@
 
 [User guide](README.md)
 
-Prepare the tools on your device, then preview the changes for each project you want to use.
+Prepare the tools on your device, then preview the changes for each project you want to use. Preview packages target Apple silicon Mac and Windows 11 ARM64. On Windows, use a standard account and a local NTFS project folder. See [environments and limits](work-guide.md#limits-en).
 
 | Where | What lives there |
 | --- | --- |
@@ -22,7 +22,7 @@ On Windows 11 ARM64, open PowerShell as a standard user. Check the manager with 
 & "$HOME\Downloads\colvia-manage.exe" prepare --runtime-zip "$HOME\Downloads\python-3.14.7-embed-arm64.zip"
 ```
 
-Use the ZIP filename supplied with your manager. The manager checks the ZIP size and digest before preparing Python. This command is for ARM64. The public Windows 11 x64 installation path still needs native qualification.
+Use the ZIP filename supplied with your manager. The manager checks the ZIP size and digest before preparing Python. This command is for ARM64.
 
 Create an empty practice folder and open Codex or Claude Code in it. Ask “Show me what connecting this folder would change.” Check the folder and proposed changes before approving.
 

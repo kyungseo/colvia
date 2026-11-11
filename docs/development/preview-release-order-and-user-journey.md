@@ -17,6 +17,12 @@ Windows의 기존 10개 지원 판정 기준, 기술 activation, 배포본 재�
 3. 공개 표시명과 설명, 선택한 Apache-2.0의 배포물 적용 범위·문의 채널·버전별 다운로드/서명 안내를 결정한다. 제품명과 명령 변경은 별도 결정이다. 외부 배포 주소와 지원 표시는 확인 후 제공한다.
 4. 새 안내를 포함한 병합 소스와 최종 서명 바이트로 후보를 식별한다. 기존 병합본은 비교 기준이다. macOS arm64와 Windows ARM64에서 각 도구별로 첫 Work, A 알림 열기·B 전환, 현재 상태와 새 대화 재개를 관측한다. Windows는 중복 제목·본문 첫 줄도 확인한다. x64는 네이티브 최종 후보로 별도 확인한다. 다운로드 차단과 관측 누락을 기록하고 지원 결정을 구분한다.
 
+### 최종 문서 정합성 · 공개 완료 조건
+
+2026-11-11 Owner 결정. Windows x64 실기기를 포함한 플랫폼·호스트 검증과 남은 설치·지원·배포 판정을 마친 뒤, 공개 전에 최종 후보 기준으로 사람용 안내와 에이전트용 지침을 함께 검토하고 보강한다. 저장소 README와 기여 안내, 개발·기술 문서, 에이전트 진입 지침과 어댑터, 사용자 매뉴얼, 설치본에 포함된 안내를 대조한다.
+
+같은 후보의 버전·실행 명령·기록 위치·권한과 수락 경계·지원 상태·복구 절차를 설명해야 한다. 기존 프로필과 새 기록 기반의 적용 대상을 표시하고, 한영 의미와 실제 저장소·설치본에서 열리는 링크를 확인한다. 검증 결과의 범위를 넘는 지원 문구, 잘못된 예제, 공개 식별정보를 수정한다. 설치본 바이트나 지침이 바뀌면 해당 후보의 변경분만 다시 검사하고, 영향이 없는 기존 근거는 재사용한다. 검토한 소스와 설치 후보를 식별하고 남은 예외를 기록한 뒤 최종 문서 완료를 판정한다. 이 조건은 플랫폼별 지원이나 공개 승인을 대신하지 않는다.
+
 ## 근거와 상태
 
 개발 문서 작업 중. 격리 후보의 [알림 검증](FEAT-20261103-007-notification-work-detail.md#owner-수락과-완료)은 재사용한다. 보정 뒤 독립 재리뷰와 공개 후보의 도구별 네이티브 클릭은 그 기록에 남긴 범위대로다. 이 문서 변경으로 새 설치·실행·지원·배포를 검증하지 않았다.
@@ -123,3 +129,15 @@ README는 보고서 타임라인과 사용자·에이전트·Colvia·프로젝�
 비공개 기록을 뺀 작업용 소스 사본에서 보존한 공급 파일로 macOS 두 구성과 Windows ARM64·x64 시험 배포물을 만들었다. 선별 사본 45개 문서의 로컬 참조 472곳과 네 배포물의 로컬 참조 289·291·289·289곳에서 누락을 찾지 못했다. 선택형 구성에만 포함된 실행 안내에서 수신함과 입력 검사를 가리키는 두 링크가 차이를 만든다. 선별 소스의 문서·시험 도우미 집중 검사 43건, 격리 프로젝트의 갱신·롤백·해제 후 진입 검사 1건이 통과했다. 실제 대화나 Windows 기기를 실행한 결과와는 구분한다.
 
 2026-11-04 Owner가 위 정합성 보정과 비공개 후보 준비 결과를 수락해 이 점검을 완료했다. 공개용 기여 안내와 파일 선별안은 초안이다. 공개할 소스 정본과 버전, 신고 창구와 배포·서명 방식, 최종 파일의 공개 적합성과 제3자 고지를 확정해야 한다. 깨끗한 macOS·Windows ARM64에서 Codex와 Claude Code로 첫 Work·검토 대기·알림 클릭·새 대화 재개를 확인하고, x64는 최종본을 한 번에 확인한다. 외부에서 실제로 내려받고 확인한 환경별로 지원 여부를 결정한다.
+
+## Candidate freeze prerequisite — accumulated history (2026-11-06)
+
+Owner requires accumulated-history assessment before freezing the public candidate. This is separate from desktop usability: the Owner may test a fixed usability candidate while capacity assessment remains open. No record-format change or automatic pruning is authorized.
+
+Reuse the earlier Work-count/revision/intent-count diagnostics and the accepted [large-file checks and isolated prototype](PATCH-20261104-005-large-ordinary-work.md). The 3,000-file submission checks and 12,000-file early refusal do not establish long-running history performance. Raw record bytes, allocated storage and Git object storage are different measurements.
+
+Proposed focused assessment: keep file count fixed while increasing completed Work history (30, 100, then 300 only if the earlier stages remain bounded); separately keep history fixed while increasing project files (100, 1,000, 3,000). Use a few selected cells rather than the full cross product. Include one deeper revision chain, candidate usage near its warning/refusal thresholds and one small edit after history has accumulated. Generate valid history through supported writers, never by fabricating authoritative JSON. Measure generation cost, record count/bytes, largest record, total/individual View latency, peak process memory and output size. Run one initial observation and three warm observations per selected query; do not call the first observation a cold-cache test. Git storage comparison, if performed, uses only a separately authorized synthetic repository; no real project commits.
+
+Proposed budget, not execution approval: 2–3 hours expected including fixture preparation, measurements and reporting; cumulative cap 4 hours, no model calls, VM or installation. Use at most 2 GiB of new synthetic data, 120 seconds per query and 30 minutes per generation stage; stop a cell on limit, error or inconsistent state and retain it as incomplete. Do not retry to obtain a pass or silently lower coverage. The estimate is judgment informed by earlier small-history measurements, not measured duration for 300 Works.
+
+Decision criteria: records and source files remain unchanged by reads; newest and historical decisions resolve correctly; crossing a record/candidate limit refuses without losing prior state. Report latency and growth by scale, with a provisional usability target of median ≤5 seconds and every measured query ≤10 seconds in the named local environment. These are assessment thresholds, not advertised platform guarantees. If ordinary target usage exceeds the agreed threshold or cannot save a small edit, hold candidate freeze and propose the smallest storage/reader change. A passing bounded test does not qualify unlimited history. Preserve old evidence and separately report unresolved larger-scale, OS and long-term conditions.
