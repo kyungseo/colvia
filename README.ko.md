@@ -8,7 +8,7 @@
 
 한국어 · [English](README.md)
 
-[다음 Preview 안내](manual/ko/foundation-preview.md) · [이전 프로필 설명서](manual/ko/README.md) · [기여와 첫 검사](CONTRIBUTING.md#make-your-first-change) · [검증 근거](docs/development/product-evidence-and-followups.md#record-foundation-verification)
+[SQLite Preview 안내](manual/ko/foundation-preview.md) · [이전 프로필 설명서](manual/ko/README.md) · [기여와 첫 검사](CONTRIBUTING.ko.md#첫-변경과-검사) · [SQLite 후보 검증 근거](docs/development/product-evidence-and-followups.md#record-foundation-verification)
 
 </div>
 
@@ -49,50 +49,15 @@ Colvia는 AI에게 맡긴 범위, 에이전트가 Colvia에 검토용으로 등�
 <picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-dark.png"><img src="manual/assets/gallery/overview-light.png" width="900" alt="처음 연결 미리보기를 확인한 뒤, 후보를 고르고 Work의 범위를 승인하고 결과를 검토해 다음 작업으로 이어갑니다."></picture>
 </p>
 
-[다음 Preview 안내](manual/ko/foundation-preview.md)에서는 Work 기록을 SQLite에 저장하는 후보를 다룹니다. 공개 다운로드와 설치 명령은 준비 중입니다. 첫 Preview를 공개하려면 Windows x64 실기기 검증을 마쳐야 합니다.
+[SQLite Preview 안내](manual/ko/foundation-preview.md)에서 설치, 프로젝트 연결, 첫 작업을 확인하세요. 운영체제별 공개 설치 명령은 Preview 배포와 함께 안내합니다. Windows x64 실기기와 Windows·macOS ARM64 시험 VM에서 비공개 HTTPS 설치를 확인했습니다. 어떤 후보를 어디까지 확인했는지는 [검증 근거](docs/development/product-evidence-and-followups.md#record-foundation-verification)에 정리했습니다.
 
 ### 이전 프로필의 설치 예
 
-아래 파일을 포함한 이전 `.hrn/` 배포본에 적용되는 예입니다. 먼저 배포처를 신뢰할 수 있는지 확인하고, 받은 파일을 각각 해당 SHA-256 확인값과 대조하세요. 아키텍처에 맞는 파일을 사용하고, `Downloads` 외의 위치에 저장했다면 경로를 바꾸세요.
-
-<details>
-<summary><strong>macOS · Apple silicon</strong></summary>
-
-```sh
-/bin/sh "$HOME/Downloads/bootstrap.sh"
-```
-
-저장 위치와 변경 내용을 미리 보여줍니다. 확인한 뒤 화면에 표시된 `--apply --confirm` 명령을 실행하면 관리 도구와 전용 Python을 준비합니다. 프로젝트 연결은 그다음에 별도로 확인합니다.
-
-</details>
-
-<details>
-<summary><strong>Windows 11 · ARM64</strong></summary>
-
-표준 사용자 PowerShell에서 ARM64 관리 도구와 Python ZIP을 사용하세요. 이 명령은 기기의 Colvia 저장소에 도구와 전용 Python을 준비합니다.
-
-```powershell
-& "$HOME\Downloads\colvia-manage.exe" prepare --runtime-zip "$HOME\Downloads\python-3.14.7-embed-arm64.zip"
-```
-
-</details>
-
-<details>
-<summary><strong>Windows 11 · x64</strong></summary>
-
-표준 사용자 PowerShell에서 x64 관리 도구와 Python ZIP을 사용하세요. 이 명령은 기기의 Colvia 저장소에 도구와 전용 Python을 준비합니다.
-
-```powershell
-& "$HOME\Downloads\colvia-manage.exe" prepare --runtime-zip "$HOME\Downloads\python-3.14.7-embed-amd64.zip"
-```
-
-</details>
-
-Windows 프로젝트는 로컬 NTFS 폴더를 사용합니다. 설치와 프로젝트 연결은 [설치·갱신 안내](manual/ko/project-setup.md), 그 밖의 조건은 [사용 환경과 제한](manual/ko/work-guide.md#limits-ko)에서 확인하세요.
-
-처음이라면 [고객 문의 12건으로 첫 작업 따라 하기](manual/ko/getting-started.md)를 진행해 보세요. 같은 프로젝트에서 새 대화를 열면 다음 날 이어가는 과정도 바로 연습할 수 있습니다.
+[이전 프로필의 설치·갱신 안내](manual/ko/project-setup.md)와 [고객 문의 12건 예제](manual/ko/getting-started.md)는 이전 `.hrn/` 배포본용입니다. SQLite Preview에는 위의 안내를 따르세요.
 
 ## 자리를 비울 때는 결과를 수신함으로
+
+아래는 이전 `.hrn/` 프로필의 예입니다. SQLite Preview에서 알림을 쓰려면 [현재 설치본의 안내](manual/ko/foundation-preview.md#알림과-연결-해제)를 확인하세요.
 
 <table>
 <tr>
@@ -113,11 +78,11 @@ Windows 프로젝트는 로컬 NTFS 폴더를 사용합니다. 설치와 프로�
 - **이전 검토에서 이어가기** · “내가 받아들인 결제 변경 이후에 달라진 파일과 내가 다시 볼 부분을 보여줘.”
 - **남은 검사 찾기** · “같은 파일을 두 번 올려도 주문이 하나만 생기는 건 확인했지? 업로드가 끊겼다가 재개되는 경우도 검사했어?”
 
-에이전트는 내가 검토할 수정본의 등록을 Colvia에 요청합니다. 합의한 범위를 벗어난 파일 변경이 포함되어 있으면 Colvia가 그 등록 요청을 거부할 수 있습니다. Colvia는 다른 프로그램의 파일 편집을 막지 않으며, 등록 요청을 거부해도 이미 편집된 파일을 되돌리지는 않습니다. 같은 Work를 새 대화에서 이어가도 그 작업에 기록한 시간과 시도 횟수는 유지됩니다. [코딩 에이전트와 작업하기](manual/ko/work-guide.md#coding-ko)
+에이전트는 내가 검토할 수정본의 등록을 Colvia에 요청합니다. 합의한 범위를 벗어난 파일 변경이 포함되어 있으면 Colvia가 그 등록 요청을 거부할 수 있습니다. Colvia는 다른 프로그램의 파일 편집을 막지 않으며, 등록 요청을 거부해도 이미 편집된 파일을 되돌리지는 않습니다. 범위와 작업 폴더가 그대로라면 새 대화에서도 같은 Work와 기록된 승인을 이어서 사용할 수 있습니다. [SQLite Preview에서 작업하고 검토하기](manual/ko/foundation-preview.md#맡기고-검토하기)
 
 ## 고급 참고 기능 · 여러 작업과 작업 공간
 
-다음은 첫 Preview의 일상적인 사용 범위 밖의 고급 참고 기능입니다.
+다음 그림과 예는 이전 `.hrn/` 프로필의 고급 흐름을 보여 줍니다. SQLite Preview의 기능과 조건은 [현재 안내](manual/ko/foundation-preview.md)를 확인하세요.
 
 <table>
 <tr>
@@ -134,16 +99,10 @@ Windows 프로젝트는 로컬 NTFS 폴더를 사용합니다. 설치와 프로�
 </tr>
 </table>
 
-내가 지정한 대리인에게 특정 결과 한 건의 수락을 맡기는 방법도 있습니다. macOS에는 별도 준비와 승인이 필요한 선택형 문서 실행기가 있습니다. [기능별 조건](manual/ko/work-guide.md)
+내가 지정한 대리인에게 특정 결과 한 건의 수락을 맡기는 방법도 있습니다. 이전 macOS 프로필에는 별도 준비와 승인이 필요한 문서 실행기도 있습니다. [이전 프로필의 기능별 조건](manual/ko/work-guide.md)
 
 ## 내 프로젝트와 기록
 
-아래 절차는 이전 `.hrn/` 프로필에 적용됩니다. SQLite 후보의 기록 위치와 복구 방법은 [다음 Preview 안내](manual/ko/foundation-preview.md)에서 확인하세요.
+SQLite Preview는 작업 기록을 운영체제의 사용자 데이터 폴더에 프로젝트별로 보관합니다. 기록·본문·설정·수락 이력은 [Colvia에서 내보내고 복원](manual/ko/foundation-preview.md#본문과-백업)할 수 있습니다. Git commit이나 clone으로는 이 기록을 백업할 수 없습니다. [연결을 해제](manual/ko/foundation-preview.md#알림과-연결-해제)해도 사용자 파일과 작업 기록은 남습니다.
 
-- 관리 도구와 각 프로젝트의 Colvia 설치본은 따로 갱신합니다.
-- 프로젝트와 Colvia의 연결을 해제해도 작업·수락 기록은 남습니다. 다만 기존 이력을 이어 쓰면서 같은 폴더에 다시 Colvia를 연결하는 기능은 아직 없습니다. 같은 이력으로 돌아올 계획이라면 연결을 유지하세요.
-- 갱신이 중단됐다면 원래 요청과 파일을 보존하고 복구 방법부터 확인하세요.
-
-[설치·갱신·연결 해제](manual/ko/project-setup.md)
-
-[이전 프로필 설명서](manual/ko/README.md) · [사용 환경과 제한](manual/ko/work-guide.md#limits-ko) · [한국어 기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)
+[이전 프로필 설명서](manual/ko/README.md) · [SQLite Preview의 사용 환경](manual/ko/foundation-preview.md#지원-목표와-확인-상태) · [한국어 기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)

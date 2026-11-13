@@ -4,8 +4,8 @@ AI가 일하고, 내가 결정하고, 프로젝트가 기억합니다.
 
 [한국어 안내](manual/ko/README.md) · [English guide](manual/en/README.md)
 
-이 파일은 새 기록 구조의 배포 후보에 포함된 안내입니다. 공개 배포와 실제 설치본 검증은 아직 완료되지 않았습니다. 안내에 적힌 지원 목표와 확인된 범위를 구분해 주세요.
+이 안내는 SQLite Preview용입니다. 고정 후보로 비공개 HTTPS 설치를 확인했으며, 공개 설치 명령은 Preview 배포와 함께 안내합니다. 위 사용 안내에서 운영체제별로 확인한 범위를 살펴보세요.
 
-This guide is included in a distribution candidate using the new record structure. Public distribution and installed-product verification are not complete. The guides distinguish target support from verified behavior.
+These guides are for the SQLite Preview. Fixed candidates were tested over private HTTPS. Public installation commands will be published with the Preview. See the guides above for what was verified on each platform.
 
 [License](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

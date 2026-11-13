@@ -12,8 +12,12 @@ or another project's record directory.
 
 ## Enter and resume
 
-Read the project rules and run `./colvia --json ordinary list` to establish the
-Work context. A successful empty list with no next page means the connected
+Read the project rules and use the connected project’s launcher: `./colvia` in a
+macOS shell or `colvia.cmd` at the Windows project root (`.\colvia.cmd` in
+PowerShell). Read its `guide` on first
+entry. Run `./colvia --json ordinary list` on macOS or
+`.\colvia.cmd --json ordinary list` in Windows PowerShell to establish the
+Work context. In examples below, use the same platform launcher. A successful empty list with no next page means the connected
 project has no Work. Follow [Access failures](#access-failures) when a lookup is
 unavailable or the folder needs a connection preview. Give whatever help you
 can in conversation. Establish the connection and relevant Work state before
@@ -246,8 +250,9 @@ bypass that refusal with a private file-copy script.
 Use the installed command's own help for candidates/follow-ups, composition,
 worker application, delivery, optional execution, backup and separate Git
 integration. Capability presence is not evidence that a host or OS path has been
-qualified. The prepared foundation entry does not yet provide managed optional
-execution; enabling it is refused. Retained execution settings and history remain
+qualified. Direct agent execution is disabled in the first SQLite Preview; enabling it is
+refused. Ordinary work in an agent’s own CLI or desktop app is separate.
+Retained execution settings and history remain
 readable, and disabling the setting remains possible. Preparing or inspecting an action does not execute it.
 
 A Work acceptance records the person's decision about the exact result. It does

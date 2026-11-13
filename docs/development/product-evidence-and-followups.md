@@ -6,22 +6,39 @@ Find the checks behind the current SQLite candidate and the earlier trial findin
 
 | Evidence | What was checked | Result and limits |
 | --- | --- | --- |
-| Cumulative source checks | [Fixed-input integration run](record-foundation/p9-source-checkpoint.md#cumulative-source-verification-after-integration), from the development worktree at the time | 822 tests passed across 104 modules. Later focused tests have separate results. The selected run excluded the native sandbox worker and process-group diagnostics. |
-| Storage interruption and preserved results | In that source run, [killed writer recovery](../../tests/test_foundation_store_faults.py) and [Work acceptance and historical body retention](../../tests/test_foundation_work.py) | The killed writer left a recovery-required journal. The Work tests accepted a specific submitted result and verified historical content after rework, archiving and current-file removal. These are source tests with synthetic projects. |
-| macOS ARM64 installation | [Isolated offline update](FEAT-20261111-001-guided-onboarding.md#installed-verification-result) from sequence 8 to 9 | The accepted guide was selected, and the earlier slot and prior project records were preserved. This check used offline transport. |
-| macOS ARM64 agent behavior | The same [sequence 9 installation](FEAT-20261111-001-guided-onboarding.md#installed-verification-result) with Codex CLI | A new conversation used the installed guide to turn a purpose into a first plan, then recorded the person's exact approval. The trial stopped before starting the Work or writing project deliverables. |
-| Windows ARM64 installation and restore | [Sequence 12 on a Windows ARM64 guest](FEAT-20261106-002-record-foundation.md#windows-origin-restored-project-rebind-qualification), using a standard-user console and a Windows-origin backup | Restore preserved the records. A conflicting rebind was refused after interruption, and a separate folder was rebound successfully. Cross-platform rebind remains outside this result. |
-| Windows x64 packaging | Unsigned offline sequences 1 and 2, using the same native launcher and runtime bytes | The sequence 2 inventory matched all 472 payload entries. Native x64 installation, execution and recovery remain unverified. |
-| Distribution | [Public installation and update criteria](record-foundation/runtime-and-extension.md#첫-공개-설치-진입과-완료-기준) | The actual HTTPS distribution address, installation command and end-to-end public path remain to be verified. |
+| Historical cumulative source checks | [Fixed-input integration run](record-foundation/p9-source-checkpoint.md#cumulative-source-verification-after-integration), earlier development inputs | 822 tests passed across 104 modules. The run excluded the native sandbox worker and process-group diagnostics. Later focused runs overlap and are reported separately. |
+| Clean source clone | `448b581`, macOS ARM64, CPython 3.14.7, SQLite 3.54.0; [representative Work test](../../CONTRIBUTING.md#make-your-first-change) | One test passed in a clean local clone: scope approval, submission for review, and acceptance of a specific result. |
+| Storage interruption and preserved results | Earlier fixed-input run; current examples: [killed writer recovery](../../tests/test_foundation_store_faults.py) and [Work acceptance and historical body retention](../../tests/test_foundation_work.py) | A killed writer left a recovery-required journal. Work tests checked retained content after rework, archiving and current-file removal. These are source tests with synthetic projects. |
+| macOS ARM64 offline update | [Sequence 8 → 9](FEAT-20261111-001-guided-onboarding.md#installed-verification-result) | Selected the accepted guide and kept the previous slot and existing project records. |
+| macOS ARM64 agent behavior | The same [sequence 9 installation](FEAT-20261111-001-guided-onboarding.md#installed-verification-result) with Codex CLI | In a new chat, the installed guide helped turn a purpose into a first plan and record the person's exact approval. The trial stopped before starting the Work or writing deliverables. |
+| ARM64 offline updates | macOS 9 → 10 and Windows 12 → 13; sequences 10 and 13 use `448b581` source without the later private HTTPS overlay | The installations selected the new guides and retained project records, backup receipts and the previous recovery slots. Slot inspection did not perform a rollback. |
+| Windows ARM64 restore and rebind | [Sequence 12 on a Windows ARM64 guest](FEAT-20261106-002-record-foundation.md#windows-origin-restored-project-rebind-qualification), using a Windows-origin backup | Restore preserved the records. A conflicting rebind was refused after interruption; a separate folder was rebound. Cross-platform rebind was outside the trial. |
+| Windows x64 offline packaging | Historical unsigned sequences 1 and 2, using the same native launcher and runtime bytes | Sequence 2 matched all 472 payload entries. This packaging check did not install or run either sequence. |
+| Windows x64 Git registration and connection | Offline sequence 5 on one real device; Git for Windows `2.56.1.windows.1` at its standard per-user installation path | The manager registered the executable and connected a synthetic repository. Connection preserved existing files, Git metadata, HEAD and staging. |
+| Windows x64 private HTTPS | Frozen trial sequences 6 and 7, one real device, standard user, ordinary Windows PowerShell 5.1 | First install, installed launcher readiness and HTTPS update 6 → 7 passed. Records and settings remained intact, and sequence 6 was retained as the recovery slot. The public endpoint, first public trust and other host/permission combinations were outside this check. |
+| Windows ARM64 private HTTPS | Frozen trial sequence 14, test VM, standard user, ordinary Windows PowerShell 5.1 | First installation and launcher readiness passed. An earlier attempt stopped in the trial wrapper while handling an OpenSSL warning. The corrected wrapper retained the warning and verified exit code 0 and the installed launcher. |
+| macOS ARM64 private HTTPS | Frozen trial sequence 11, test VM, standard user | First installation and installed launcher readiness passed. |
+| Host permissions and public delivery | [Host and platform verification criteria](record-foundation/validation.md#codexclaude-권한-모드별-접근승인-경로), [public installation and update criteria](record-foundation/runtime-and-extension.md#첫-공개-설치-진입과-완료-기준) | Windows Codex Request approval mode has no verified path for granting write access to just the record folder in a new chat. This does not establish that the app is unusable. Public HTTPS and first public trust are unverified. Direct agent execution stays disabled in the first Preview; ordinary agent CLI use is separate. |
 
 The 822-test run pinned 528 inputs. The before and after input lists matched SHA-256 `36c3fbc96dc48994364fd6e53fda7568a565550d96423fc9d9c8ddc2faf27ede`.
 
-Candidate manifest SHA-256 values identify the exact packages used for the scoped evidence above.
+The four private HTTPS packages were tested with trial trust. They include 11 packaged Python files whose bytes differ from the bare `448b581` checkout. The clean-clone test covers that checkout; the installed results cover the packages below. Their manifests still identify the guides shipped during the trials, including earlier installation and agent-entry wording. For the corrected wording, see the current [English](../../manual/en/foundation-preview.md) and [Korean](../../manual/ko/foundation-preview.md) source guides.
+
+Selected manifest SHA-256 values identify the packages used for the scoped evidence above.
 
 - macOS ARM64 sequence 9 · `dfd74b0b3ee94098fef22a9460390b784bb1122ea80e486ff8e88fb11e61f09e`
+- macOS ARM64 sequence 10 · `24fa1035eced9dc433cd95a31b905c5ab7307a2974b82a41c2663cf58f5498a5`
 - Windows ARM64 sequence 12 · `22ce66034e75008b1a2d3a4c5b902d3925a9d61975d2c447d38aaace23f26181`
+- Windows ARM64 sequence 13 · `da6aa28cf069031cd49ad71a8fe18cec8345788049b0d2453a4e45bffbe70521`
 - Windows x64 sequence 1 · `8237994d92cb1e04f9fd4fa47d22ec996365d05e82e7ad85c2e457f2028d1eb1`
 - Windows x64 sequence 2 · `4256b76795f3f5556c5b41305169b85f41f88d66abaa62452c766838ac4fd918`
+- Windows x64 sequence 5 · `f0ceb43d5d63dfac9e6dbf7db171ed7dec754f93a98121895a2a5c06d9a53d64`
+- Windows x64 sequence 6 · `dc7e4ce8d326cb8669badc54bb89cc279fcfa34a8ae142c2b86d3454d17ec315`
+- Windows x64 sequence 7 · `cb528c7f0958827229c466644426d242a03f2f28fe2c5e4be2282f25ae6ae401`
+- Windows ARM64 sequence 14 · `e70d405eda2c4468fab49822ad4cc6d9ae6932cc7c0815cfd28ded835a378708`
+- macOS ARM64 sequence 11 · `e3fd4704cd596f9906c1ca7ea2300816065eefdeeafca29fc7dac907b3d7cd85`
+
+Before assembling a public candidate, update the installation guidance with the approved public address and command, and verify that the packaged guides and manager agree. The trial manifests above remain tied to the guides originally shipped.
 
 ## Reading the implementation and its evidence
 

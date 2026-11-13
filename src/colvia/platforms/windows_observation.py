@@ -72,6 +72,25 @@ class Observer:
             require(len(raw)==info['size'] and len(raw)<=limit,'metadata-file-limit')
             return raw
 
+    @contextmanager
+    def opened_git_executable(self, path):
+        """Read the caller-selected Windows Git executable under a read-share-only handle."""
+        path = Path(path)
+        require(path.suffix.lower() == '.exe', 'git-not-executable')
+        with self.opened(path, read=True) as (handle, info):
+            require(not info['directory'] and 1 <= info['links'] and
+                    64 <= info['size'] <= 128 * 1024**2, 'git-not-executable')
+            with self.files._stream_handle(handle) as stream:
+                raw = stream.read(info['size'] + 1)
+            require(len(raw) == info['size'], 'git-executable-changed')
+            offset = int.from_bytes(raw[60:64], 'little')
+            require(raw.startswith(b'MZ') and 64 <= offset <= len(raw) - 24 and
+                    raw[offset:offset + 4] == b'PE\x00\x00', 'git-not-executable')
+            observed = self.stamp('', info)
+            digest = hashlib.sha256(raw).hexdigest()
+            del raw
+            yield observed, digest
+
     def symlink(self,path,*,algorithm=None):
         # The caller holds the reparse-point handle without FILE_SHARE_DELETE.
         raw=os.readlink(path).encode('utf-8',errors='strict')

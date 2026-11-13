@@ -112,4 +112,21 @@ class ManagerEntryTests(unittest.TestCase):
         value=json.loads(stream.getvalue());self.assertEqual({'errno':22,'winerror':87},value['diagnostic'])
         self.assertNotIn('private path',stream.getvalue())
 
+    def test_space_failure_reports_bytes_and_operation(self):
+        from colvia.updates.space import SpaceError
+        error=SpaceError('update-space-insufficient',self.base,'target-download',required=100,available=99)
+        stream=io.StringIO()
+        prefix=['--management-root',str(self.home.root),'--runtime-slot','one',
+                '--runtime-manifest-sha256',self.one['manifest_sha256'],'--json']
+        with patch('colvia.managed_entry.process_runtime',return_value=self.runtime), \
+             patch('colvia.manager_entry.run',side_effect=error),contextlib.redirect_stdout(stream):
+            self.assertEqual(2,main(prefix+['update','--operation','low-space']))
+        result=json.loads(stream.getvalue())
+        self.assertEqual('low-space',result['operation'])
+        self.assertEqual('update-space-insufficient',result['error'])
+        self.assertEqual({'phase':'target-download','volume':self.base.anchor,
+                          'required_bytes':100,'available_bytes':99},result['diagnostic'])
+        self.assertIn('필요 100바이트',result['message'])
+        self.assertNotIn(str(self.base),stream.getvalue())
+
 if __name__=='__main__':unittest.main()

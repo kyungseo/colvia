@@ -5,7 +5,7 @@ archives. A release builder must normalize those archives before signing. Target
 identity and manifest identity come from verified TUF custom metadata. Staging
 never activates a slot, changes PATH, installs an app or runs its interpreter.
 """
-import hashlib,os,re,shutil,stat,zipfile
+import hashlib,os,re,stat,zipfile
 from pathlib import Path
 from ..codec import require,decode_canonical
 from ..tree import logical_path,canonical_entries
@@ -13,6 +13,7 @@ from ..storage.sqlite import _token
 from ..storage.files import platform_files
 from ..worker_state import path_namespace
 from .slots import verify_slot
+from .space import STAGING_ALLOWANCE, require_space, write_space
 
 
 def descriptor(custom,*,channel,os_name,architecture):
@@ -72,27 +73,28 @@ def stage_archive(archive,*,root,slot,target,channel,os_name,architecture,files=
             inventory=canonical_entries(manifest['inventory']);indexed={e['path']:e for e in inventory}
             require(all(e['kind']=='regular' for e in inventory) and set(names)==set(indexed)|{'manifest.json'},'package-inventory-mismatch')
             require(all(manifest.get(k)==d[k] for k in ('release','sequence','os','architecture')),'package-release-mismatch')
-            require(shutil.disk_usage(root/'slots').free>=total+16*1024**2,'package-space-unavailable')
-            files.create_directory(destination)
-            for item in items:
-                require(not cancelled(),'package-cancelled');path=destination/item.filename
-                parent=destination
-                for part in item.filename.split('/')[:-1]:
-                    parent=parent/part
-                    try:files.create_directory(parent)
-                    except FileExistsError:files.private_directory(parent)
-                expected=None if item.filename=='manifest.json' else indexed[item.filename]
-                size=len(manifest_raw) if expected is None else expected['size'];sha=d['manifest_sha256'] if expected is None else expected['sha256']
-                require(item.file_size==size,'package-file-length-mismatch')
-                count=0;h=hashlib.sha256()
-                with files.create_stream(path,executable=expected is not None and expected['mode']=='100755') as output:
-                    with bundle.open(item) as incoming:
-                        while raw:=incoming.read(1024*1024):
-                            require(not cancelled(),'package-cancelled');count+=len(raw);require(count<=size,'package-file-length-mismatch');h.update(raw)
-                            view=memoryview(raw)
-                            while view:
-                                written=output.write(view);require(written>0,'package-short-write');view=view[written:]
-                    require(count==size and h.hexdigest()==sha,'package-content-mismatch')
+            require_space(root/'slots', total + STAGING_ALLOWANCE, 'slot-expand', code='package-space-unavailable')
+            with write_space(root/'slots', 'slot-expand'):
+                files.create_directory(destination)
+                for item in items:
+                    require(not cancelled(),'package-cancelled');path=destination/item.filename
+                    parent=destination
+                    for part in item.filename.split('/')[:-1]:
+                        parent=parent/part
+                        try:files.create_directory(parent)
+                        except FileExistsError:files.private_directory(parent)
+                    expected=None if item.filename=='manifest.json' else indexed[item.filename]
+                    size=len(manifest_raw) if expected is None else expected['size'];sha=d['manifest_sha256'] if expected is None else expected['sha256']
+                    require(item.file_size==size,'package-file-length-mismatch')
+                    count=0;h=hashlib.sha256()
+                    with files.create_stream(path,executable=expected is not None and expected['mode']=='100755') as output:
+                        with bundle.open(item) as incoming:
+                            while raw:=incoming.read(1024*1024):
+                                require(not cancelled(),'package-cancelled');count+=len(raw);require(count<=size,'package-file-length-mismatch');h.update(raw)
+                                view=memoryview(raw)
+                                while view:
+                                    written=output.write(view);require(written>0,'package-short-write');view=view[written:]
+                        require(count==size and h.hexdigest()==sha,'package-content-mismatch')
 
     verified=verify_slot(root,slot,d['manifest_sha256'],os_name=os_name,architecture=architecture,files=files,cancelled=cancelled)
     return verified

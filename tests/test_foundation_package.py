@@ -29,6 +29,27 @@ class PackageTests(unittest.TestCase):
         out,target=self.archive();slot=self.stage(out,target)
         self.assertEqual('release-one',slot.release);self.assertFalse((self.runtime.root/'runtime.json').exists())
         self.runtime.initialize(pointer(slot));self.assertTrue(self.runtime.launch(read_requirements=[])[0].endswith('/bin/python'))
+    def test_slot_space_shortage_and_query_failure_do_not_create_slot(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from colvia.updates.space import SpaceError
+        out,target=self.archive()
+        required=sum(map(len,self.content.values()))+16*1024**2
+        with patch('colvia.updates.space.shutil.disk_usage',return_value=SimpleNamespace(free=required-1)) as usage:
+            with self.assertRaisesRegex(SpaceError,'package-space-unavailable') as raised:
+                self.stage(out,target)
+            usage.assert_called_once_with(self.runtime.root/'slots')
+        self.assertEqual(required,raised.exception.diagnostic['required_bytes'])
+        self.assertEqual(required-1,raised.exception.diagnostic['available_bytes'])
+        self.assertFalse((self.runtime.root/'slots/candidate').exists())
+        with patch('colvia.updates.space.shutil.disk_usage',side_effect=OSError('simulated volume query refusal')):
+            with self.assertRaisesRegex(SpaceError,'update-space-query-unavailable') as raised:
+                self.stage(out,target)
+        self.assertEqual(required,raised.exception.diagnostic['required_bytes'])
+        self.assertNotIn('available_bytes',raised.exception.diagnostic)
+        self.assertFalse((self.runtime.root/'slots/candidate').exists())
+        self.assertFalse((self.runtime.root/'runtime.json').exists())
+
     def test_archive_change_refuses_before_slot_creation(self):
         out,target=self.archive();out.write_bytes(out.read_bytes()+b'changed')
         with self.assertRaisesRegex(RecordError,'package-file-mismatch'):self.stage(out,target)

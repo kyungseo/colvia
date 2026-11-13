@@ -60,18 +60,35 @@ class BundleTests(unittest.TestCase):
 
     def test_foundation_guides_resolve_inside_the_prepared_archive(self):
         import posixpath,re
+        from urllib.parse import unquote,urlsplit
         self.kw['guides']=bundle.guide_sources(self.kw['source'])
+        guides={**self.kw['guides'],
+                'adapters/colvia-work/SKILL.md':self.kw['source']/'adapters/foundation-work/SKILL.md'}
         result=bundle.assemble(**self.kw)
         with zipfile.ZipFile(self.kw['output']) as archive:
             names=set(archive.namelist())
-            for name in self.kw['guides']:
-                self.assertEqual(self.kw['guides'][name].read_bytes(),archive.read(name))
-                body=archive.read(name).decode('utf-8')
-                self.assertNotIn('docs/README.md',body)
-                for link in re.findall(r'\[[^\]]*\]\(([^)]+)\)',body):
-                    self.assertNotIn('://',link)
-                    target=posixpath.normpath(posixpath.join(posixpath.dirname(name),link.split('#')[0]))
+            inventory={entry['path']:entry for entry in decode_canonical(archive.read('manifest.json'))['inventory']}
+            for name,source in guides.items():
+                raw=archive.read(name)
+                self.assertEqual(source.read_bytes(),raw,name)
+                self.assertEqual(hashlib.sha256(raw).hexdigest(),inventory[name]['sha256'],name)
+                # Only inspect prose links, not examples inside fenced blocks.
+                body=re.sub(r'^```[^\n]*\n.*?^```[^\n]*$', '', raw.decode('utf-8'), flags=re.M|re.S)
+                self.assertNotIn('docs/README.md',raw.decode('utf-8'))
+                for link in re.findall(r'\[[^\]]*\]\(([^)]+)\)|href="([^"]+)"',body):
+                    link=next(value for value in link if value)
+                    url=urlsplit(link)
+                    self.assertFalse(url.scheme or url.netloc or url.path.startswith('/'),(name,link))
+                    target=posixpath.normpath(posixpath.join(posixpath.dirname(name),unquote(url.path))) if url.path else name
                     self.assertIn(target,names,(name,link))
+                    if url.fragment:
+                        target_body=archive.read(target).decode('utf-8')
+                        target_body=re.sub(r'^```[^\n]*\n.*?^```[^\n]*$', '', target_body, flags=re.M|re.S)
+                        explicit=set(re.findall(r'<a\s+(?:id|name)="([^"]+)"',target_body))
+                        # Linked headings here use unique plain English or Korean text.
+                        headings=re.findall(r'^#{1,6}\s+([^\n]+)$',target_body,re.M)
+                        slugs={re.sub(r'[^\w -]','',heading.strip().lower()).replace(' ','-') for heading in headings}
+                        self.assertIn(unquote(url.fragment),explicit|slugs,(name,link))
             entry=archive.read('README.md').decode('utf-8')
             self.assertIn('(manual/en/README.md)',entry)
             self.assertIn('(manual/ko/README.md)',entry)

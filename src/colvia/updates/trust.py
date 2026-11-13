@@ -4,11 +4,12 @@ The only bootstrap call is explicit creation of an absent trust directory with
 an externally pinned root. Existing installations never fall back to bootstrap.
 Fixed test clocks belong to the test updater factory, not a user option.
 """
-import hashlib,os,stat,time,datetime
+import hashlib,os,stat,sys,time,datetime
 from pathlib import Path,PurePosixPath
 from urllib.parse import urlsplit
 from ..codec import require,RecordError,canonical_bytes,decode_canonical
 from ..storage.files import platform_files
+from .space import require_space, write_space
 
 PINNED_TUF='7.0.1'
 ROLES=('root','timestamp','snapshot','targets')
@@ -110,20 +111,23 @@ class Trust:
                 expires_ns=expiry,metadata=self.metadata_digests(versions))
             if already_present(description):
                 return dict(description,staged=None)
+            if sys.platform == 'win32':
+                require_space(destination.parent, info.length, 'target-download')
             name=target
             if updater._trusted_set.root.consistent_snapshot:
                 parent,sep,base=name.rpartition('/');name=parent+sep+next(iter(info.hashes.values()))+'.'+base
             count=0
-            with self.files.create_stream(destination) as stream:
-                chunks=iter(self.fetcher.fetch(self.target_url+name))
-                try:
-                    for chunk in chunks:
-                        require(not cancelled(),'update-cancelled')
-                        require(type(chunk) is bytes and len(chunk)<=1024*1024,'update-chunk-limit')
-                        count+=len(chunk);require(count<=info.length,'update-target-limit');stream.write(chunk)
-                finally:
-                    if hasattr(chunks,'close'):chunks.close()
-                stream.flush();stream.seek(0);info.verify_length_and_hashes(stream)
+            with write_space(destination.parent, 'target-download'):
+                with self.files.create_stream(destination) as stream:
+                    chunks=iter(self.fetcher.fetch(self.target_url+name))
+                    try:
+                        for chunk in chunks:
+                            require(not cancelled(),'update-cancelled')
+                            require(type(chunk) is bytes and len(chunk)<=1024*1024,'update-chunk-limit')
+                            count+=len(chunk);require(count<=info.length,'update-target-limit');stream.write(chunk)
+                    finally:
+                        if hasattr(chunks,'close'):chunks.close()
+                    stream.flush();stream.seek(0);info.verify_length_and_hashes(stream)
 
             # Return a verified staging description, never an installed release.
             return dict(description,staged=str(destination))

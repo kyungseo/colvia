@@ -60,6 +60,71 @@ class WindowsObservationTests(unittest.TestCase):
         os.link(path,self.root/'alias')
         with self.assertRaisesRegex(RecordError,'unsafe-metadata-file'):self.port.read_file(path,100)
 
+    def test_both_git_launch_paths_hold_the_selected_executable_guard(self):
+        from dataclasses import asdict
+        from colvia.adapters import git
+        from colvia.platforms.git_candidate import GitCandidate
+
+        raw = bytearray(128)
+        raw[:2] = b'MZ'
+        raw[60:64] = (80).to_bytes(4, 'little')
+        raw[80:84] = b'PE\x00\x00'
+        executable = self.root / 'selected.exe'
+        executable.write_bytes(raw)
+        os.link(executable, self.root / 'other-name.exe')
+        tool = git.Git.__new__(git.Git)
+        tool.executable, tool.env = executable, {}
+        native_guard = self.port.opened_git_executable
+        with native_guard(executable) as observed:
+            tool.stamp, tool.sha256 = observed
+
+        active = []
+        launches = []
+
+        @contextmanager
+        def tracked(path):
+            with native_guard(path) as observed:
+                active.append(observed)
+                try:
+                    yield observed
+                finally:
+                    active.pop()
+
+        def launch(argv, **_):
+            self.assertEqual([(tool.stamp, tool.sha256)], active)
+            self.assertEqual(str(executable), argv[0])
+            launches.append(argv)
+            return SimpleNamespace(code=0)
+
+        candidate = GitCandidate()
+        candidate.root, candidate.scratch, candidate.git = self.root, self.base / 'scratch', tool
+        candidate.env = {}
+        candidate.children = SimpleNamespace(run=launch)
+        (candidate.scratch / 'hooks').mkdir(parents=True)
+        root_location = self.port.location(self.root)
+        candidate.root_identity = asdict(root_location)
+
+        with (patch.object(git.sys, 'platform', 'win32'),
+              patch('colvia.platforms.windows_observation.Observer', return_value=self.port),
+              patch.object(self.port, 'opened_git_executable', side_effect=tracked),
+              patch.object(git, 'file_stamp', return_value=tool.stamp),
+              patch.object(git, 'run', side_effect=launch),
+              patch('colvia.platforms.git_candidate.location', return_value=root_location)):
+            tool._run(self.root, ('--version',))
+            candidate.command(['--version'])
+            self.assertEqual(2, len(launches))
+            self.assertFalse(active)
+
+            replacement = self.root / 'replacement.exe'
+            replacement.write_bytes(raw)
+            os.replace(replacement, executable)
+            for command in (lambda: tool._run(self.root, ('--version',)),
+                            lambda: candidate.command(['--version'])):
+                with self.assertRaisesRegex(RecordError, 'git-executable-changed'):
+                    command()
+            self.assertEqual(2, len(launches))
+            self.assertFalse(active)
+
     def test_ignore_cannot_hide_previously_protected_path(self):
         self.assertEqual((),self.snapshot(admit=lambda _:False).entries)
         self.assertEqual(1,len(self.snapshot(admit=lambda _:False,protected={'report.md'}).entries))

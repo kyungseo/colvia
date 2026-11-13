@@ -1,6 +1,8 @@
 # Agent Entry
 
-For explicitly requested record-foundation source work, start with [CONTRIBUTING](CONTRIBUTING.md) and the [owning record](docs/development/FEAT-20261106-002-record-foundation.md). Its current contracts and checkpoints govern that source task. The retained profile instructions below do not install or activate the new candidate. An installed project always uses its verified launcher and bundled guide.
+These are entry instructions for the Colvia source repository. For explicitly requested SQLite record-foundation source work, start with [CONTRIBUTING](CONTRIBUTING.md) and the [owning record](docs/development/FEAT-20261106-002-record-foundation.md). Its contracts and checkpoints govern that source task. For ordinary work in an installed SQLite project, use that project's verified launcher: `./colvia guide` on macOS or the project’s `colvia.cmd` on Windows (`.\colvia.cmd guide` in PowerShell). Then follow its bundled guide and project rules.
+
+**Earlier profile only.** Follow the retained instructions below only for work on the earlier `.hrn/` profile or in a project verified to use it. Otherwise, do not run the commands below. General human approval, preservation and disclosure requirements still apply to source work; see [the source workflow](CONTRIBUTING.md#source-development-workflow).
 
 Windows-2 candidate: follow [entry and boundaries](docs/README.md#windows-2-integration-candidate).
 
@@ -21,7 +23,7 @@ These instructions describe the `continuation-1` profile; in an installed projec
 ## Start
 
 1. When explicitly asked to develop Colvia itself in its trusted source checkout, read source-only `CONTRIBUTING.md`, then its Development Workflow, [document and artifact placement](docs/development/document-ownership.md), and existing task record. Do not install a runtime or create typed Work to begin source development.
-2. In an installed project use the verified launcher for that platform: on macOS run `./colvia view --details`; on Windows use the [native launcher procedure](docs/OPERATIONS.md#onboarding-windows-2-entry) with the same `view --details` arguments. Use that platform launcher for every command below, including candidate lookup and resuming a Work. Then follow project-owned rules and read the verified manual/adapter paths in its technical details. The default `./colvia view` is the concise human screen. Stable project-owned entry instructions may start there and follow its guidance to the current adapter. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
+2. In a verified earlier-profile project use the verified launcher for that platform: on macOS run `./colvia view --details`; on Windows use the [native launcher procedure](docs/OPERATIONS.md#onboarding-windows-2-entry) with the same `view --details` arguments. Use that platform launcher for every command below, including candidate lookup and resuming a Work. Then follow project-owned rules and read the verified manual/adapter paths in its technical details. The default `./colvia view` is the concise human screen. Stable project-owned entry instructions may start there and follow its guidance to the current adapter. Being inside this managed manual does not make the task source development. Source-only files are absent here; never require them or pin a release directory in the project entry.
 3. For setup or broken-launcher diagnosis, use an independent trusted source with explicit `--source-checkout`; see [Getting Started](docs/GETTING-STARTED.md) and [Operations](docs/OPERATIONS.md).
 4. Propose scope and evidence. Obtain human acceptance of the exact intent and result. Keep one editing Work at a time during serial use.
 
@@ -55,4 +57,4 @@ At Harness source closeout, follow [Adopter Impact At Development Closeout](docs
 
 ## Official Execution Candidate
 
-An explicitly installed `official-execution-2` release adds bounded document execution. Read `docs/OFFICIAL-EXECUTION.md` in that release only when that verified window is active. The default source declaration remains `continuation-1`; installation, execution, and Owner result acceptance are separate.
+This is an earlier-profile reference. Direct agent execution is disabled in the first SQLite Preview. An explicitly installed `official-execution-2` release adds bounded document execution. Read `docs/OFFICIAL-EXECUTION.md` in that release only when that verified window is active. The default source declaration remains `continuation-1`; installation, execution, and Owner result acceptance are separate.

@@ -32,20 +32,29 @@ class ManagedAuthority(Authority):
     def store(self,*,readonly=False):
         return open_managed_store(self,self.slots,readonly=readonly,expected_pointer=self.runtime_pointer)
 
-def configured_git(home):
-    path = home.root / 'tools.json'
+def read_git_registration(home):
     try:
-        tools = decode_canonical(home.files.read(path))
+        raw = home.files.read(home.root / 'tools.json', 32 * 1024)
     except FileNotFoundError:
-        return None
-    require(type(tools) is dict and set(tools) == {'version', 'git'} and tools['version'] == 1,
-            'managed-tools-invalid')
-    if tools['git'] is None:
-        return None
+        return None, None
+    tools = decode_canonical(raw)
+    require(type(tools) is dict and set(tools) == {'version', 'git'} and
+            type(tools['version']) is int and tools['version'] == 1, 'managed-tools-invalid')
     tool = tools['git']
-    require(type(tool) is dict and set(tool) == {'path', 'sha256', 'version'}, 'managed-git-invalid')
-    git = Git(Path(tool['path']))
-    require(git.sha256 == tool['sha256'] and git.version == tool['version'], 'managed-git-changed')
+    if tool is not None:
+        require(type(tool) is dict and set(tool) == {'path', 'sha256', 'version'} and
+                all(type(value) is str for value in tool.values()) and
+                len(tool['sha256']) == 64 and all(c in '0123456789abcdef' for c in tool['sha256']) and
+                tool['version'].startswith('git version '), 'managed-git-invalid')
+    return raw, tool
+
+
+def configured_git(home):
+    _, tool = read_git_registration(home)
+    if tool is None:
+        return None
+    git = Git(tool['path'], expected_sha256=tool['sha256'])
+    require(git.version == tool['version'], 'managed-git-changed')
     return git
 
 

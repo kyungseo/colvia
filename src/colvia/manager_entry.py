@@ -6,14 +6,30 @@ never edits host grants, searches PATH, requests OS privileges or creates keys.
 """
 import argparse,json,uuid,sys
 from pathlib import Path
-from .codec import decode_canonical,require,RecordError
+from .codec import canonical_bytes,decode_canonical,require,RecordError
 from .managed_entry import ManagedEntry
 from .project_setup import ProjectSetup
 from .connection_boundary import ConnectionBoundaryError
 from .updates.release import ReleaseUpdate
 from .updates.trust import Trust,_url,_target
 from .updates.fetch import https_fetcher
+from .updates.space import SpaceError
 from .presentation import failure
+
+
+def space_message(error, message):
+    if not isinstance(error, SpaceError):
+        return message
+    detail = error.diagnostic
+    phase = {'target-download': '배포 파일 다운로드', 'slot-expand': '배포 파일 풀기'}[detail['phase']]
+    parts = [message, f"단계 {phase}"]
+    if detail['volume']:
+        parts.append(f"볼륨 {detail['volume']}")
+    if 'available_bytes' in detail:
+        parts.append(f"사용 가능 {detail['available_bytes']:,}바이트")
+    if 'required_bytes' in detail:
+        parts.append(f"필요 {detail['required_bytes']:,}바이트")
+    return ' · '.join(parts)
 
 
 def trust_failure(error):
@@ -47,6 +63,12 @@ def parser(*,bound=False):
     p.add_argument('--json',action='store_true')
     commands=p.add_subparsers(dest='command',required=True)
     commands.add_parser('status')
+    git_preview = commands.add_parser('git-register-preview')
+    git_preview.add_argument('executable')
+    git_register = commands.add_parser('git-register')
+    git_register.add_argument('--plan', type=Path, required=True)
+    git_register.add_argument('--receipt', required=True)
+    git_register.add_argument('--replace', action='store_true')
     detail=commands.add_parser('notice-detail');detail.add_argument('--event',required=True)
     for name in ('notice-enable','notice-disable','notice-check','notice-registration-resume','notice-identity','notice-registration-status'):commands.add_parser(name)
     notice=commands.add_parser('notice-send');notice.add_argument('project');notice.add_argument('delivery')
@@ -109,6 +131,14 @@ def run(args,entry):
         _,selected=home.slots.selection()
         return dict(state='ready',release=entry.lease.verified.release,projects=len(home.projects()),
                     recovery_available=selected['recovery'] is not None)
+    if args.command in ('git-register-preview', 'git-register'):
+        from .git_registration import preview_registration, register_git
+        if args.command == 'git-register-preview':
+            return preview_registration(home, entry.lease, args.executable)
+        envelope = decode_canonical(home.files.read(args.plan, 32 * 1024))
+        require(type(envelope) is dict and envelope.get('receipt') == args.receipt and
+                'plan' in envelope, 'git-registration-review-changed')
+        return register_git(home, entry.lease, envelope['plan'], args.receipt, replace=args.replace)
     if args.command.startswith('restore-'):
         from .restore_manager import RestoreManager
         service=RestoreManager(home,lease=entry.lease)
@@ -223,7 +253,7 @@ def main(argv=None,*,entry=None):
                 print(json.dumps(result,ensure_ascii=False,sort_keys=True));return 0
             print('Colvia 실행환경을 복구했습니다. 기존 기록과 설정은 그대로 유지했습니다.' if repairing else 'Colvia 실행환경을 준비했습니다. 사용할 프로젝트 폴더를 연결해 주세요.');return 0
         except (RecordError,OSError,ValueError,TypeError,KeyError) as exc:
-            message=failure(exc.code if isinstance(exc,RecordError) else 'installation-unavailable')
+            message=space_message(exc, failure(exc.code if isinstance(exc,RecordError) else 'installation-unavailable'))
             operation=getattr(exc,'operation',getattr(a,'operation',None))
             if operation:message+=' 확인할 실행: '+operation
             print(message);return 2
@@ -248,7 +278,13 @@ def main(argv=None,*,entry=None):
             require(args.command not in ('repair-preview','repair-apply'),'explicit-recovery-entry-required')
             if entry is None:entry=ManagedEntry(args.management_root,pointer=pointer)
             result=run(args,entry)
-        if args.json:print(json.dumps(result,ensure_ascii=False,sort_keys=True))
+        if args.command=='git-register-preview' or (args.json and args.command=='connect-preview'):
+            raw = canonical_bytes(result)
+            if hasattr(sys.stdout, 'buffer'):
+                sys.stdout.buffer.write(raw)
+            else:
+                sys.stdout.write(raw.decode('utf-8'))
+        elif args.json:print(json.dumps(result,ensure_ascii=False,sort_keys=True))
         elif args.command=='notice-detail':
             from .notice_routes import detail_text
             print(detail_text(result))
@@ -260,6 +296,8 @@ def main(argv=None,*,entry=None):
         elif args.command=='notice-disable':print('새 Colvia 알림을 껐습니다. 기존 작업 기록과 알림은 그대로 남습니다.')
         elif args.command=='notice-check':print('현재 설치본의 알림 연결을 확인했습니다. 운영체제의 알림 허용 여부는 별도입니다.')
         elif args.command=='status':print(f"Colvia {result['release']} 준비됨 · 연결된 프로젝트 {result['projects']}개")
+        elif args.command=='git-register':
+            print('Colvia Git 등록 확인: '+result['version'])
         elif args.command=='connect-preview':
             print('변경할 파일: '+', '.join(result['files']));print(result['question'])
         elif args.command=='detach-preview':print('Colvia가 추가한 연결과 안내를 제거하고 작업 기록은 보존합니다. 해제할까요?')
@@ -275,9 +313,11 @@ def main(argv=None,*,entry=None):
         return 0
     except (RecordError,OSError,ValueError,TypeError,KeyError) as exc:
         code=exc.code if isinstance(exc,RecordError) else 'manager-access-unavailable'
-        message=failure(code);operation=getattr(args,'operation',None)
+        message=space_message(exc, failure(code));operation=getattr(args,'operation',None)
         if operation:message+=' 확인할 실행: '+operation
         result=dict(error=code,message=message,operation=operation)
+        if isinstance(exc, SpaceError):
+            result['diagnostic']=exc.diagnostic
         if isinstance(exc, ConnectionBoundaryError) and exc.directory is not None:
             result['directory'] = exc.directory
             message += ' 확인할 폴더: ' + repr(exc.directory)

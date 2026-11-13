@@ -2,17 +2,19 @@
 
 [User manual](README.md)
 
-This guide is for the next Preview, which uses the new record structure. Source checks are in progress; distribution instructions will follow verification of the installed product and its host apps. Automatic migration of `.hrn/` records from earlier trial builds is not included.
+This guide is for the new Preview, which stores Work records in SQLite. It does not migrate `.hrn/` records from earlier trial builds automatically.
 
 ## Install and connect a project
 
-The public distribution is being prepared so that one platform-specific command starts installation or an update. The tool downloads and verifies the required files, prepares dedicated Python and selects the version. Users should not have to select a Python ZIP or adjust pyenv or PATH. A public download address and installation command are not yet available.
+The public installation or update starts with one command for your platform. Colvia downloads and verifies the required files, prepares dedicated Python and selects the version. You do not need to choose a Python ZIP or adjust pyenv or PATH. The public address and command will be published with the Preview.
+
+On Windows, open ordinary PowerShell from the Start menu as a standard user. If Colvia reports that it cannot verify the installation location from an app shell, continue in ordinary PowerShell. If it reports a lack of disk space, check the required and available space shown in the message.
 
 After installation, open the project folder in Codex or Claude Code and ask:
 
 > I want to apply Colvia to this folder. Show me the changes needed while preserving existing files.
 
-Both empty folders and existing projects can be connected. For a Git project, start at the repository root. Before connecting, review the launcher, agent guidance and record location. Existing instructions are preserved; only the Colvia guidance is added.
+Both empty folders and existing projects can be connected. For a Git project, [register the Git executable](#working-with-git) before connecting at the repository root. Before connecting, review the launcher, agent guidance and record location. Existing instructions are preserved; only the Colvia guidance is added. In a connected project, use `./colvia guide` on macOS or the project’s `colvia.cmd` on Windows (`.\colvia.cmd guide` in PowerShell). The agent then runs `ordinary list` through the same launcher to see the current Work.
 
 Each project's records are kept separately in the operating system's user-data directory. The project folder contains connection information and entry guidance. Apps and CLIs use the same dedicated launcher. If access is blocked, first identify whether the launcher needs to run or a file or record folder needs read or write access. Allow only the necessary path when the host provides a supported way to do so. If that option is unavailable, stop the affected changes; the agent should briefly explain what is blocked and any confirmed next step. Full filesystem access and trial features are not the default remedy.
 
@@ -50,7 +52,7 @@ Keeping several Works is different from letting several agents edit the same fil
 
 When applying a result from another work folder, review the exact result and destination separately. Once that application is approved and reserved, Colvia uses only the retained result, even if the source folder later disappears or its files change. Later edits are not included in that acceptance. The destination and its project connection must remain valid; removing shared Git data can still block completion. If you delete only a worktree folder and Git retains a stale registration, inspect the Git worktree state before continuing. Ordinary result acceptance continues checking the current files.
 
-This prepared foundation entry does not yet run the optional document-execution feature. Enabling it is refused; retained settings and execution history remain readable, and the setting can be disabled.
+Colvia’s direct agent execution for document tasks is disabled in the first Preview. Working in the ordinary Codex or Claude Code CLI or desktop app is separate from this feature.
 
 To revise an earlier result after working on something else, tell the agent what to change. It resumes from the recorded request, approved scope and differences since the last submission without asking you to approve the same scope again. Files added and submitted by another Work can be accounted for when its retained evidence and current content agree. Unattributed changes and outside-scope modifications or deletions are reported with the causal files. Your draft is preserved; you decide whether to accept the result after review.
 
@@ -64,11 +66,34 @@ The first release does not provide selective deletion of retained contents. Expo
 
 A Git commit or clone does not back up Colvia records. Use Colvia export and restore to move records, retained contents, settings and acceptance history. Keep project files separately as well. A recovery copy on the same device does not protect against device failure.
 
-Before updating, Colvia creates recovery copies of registered records and compares their required capabilities with those declared by the new runtime. This compatibility check does not run every user workflow. Returning to a compatible previous runtime does not roll work history back. If an update stops, inspect that operation instead of overwriting the installation. Resuming requires the exact prepared release, matching current state and still-valid verification. An interrupted first download can continue as an explicit new attempt while retaining the failed attempt. A prepared installation resumes the same files. If verification expires, reauthenticate the exact release or restore the interrupted update files while the previous runtime is still selected. Changed release targets and externally edited files are not overwritten. These recovery paths have source-test evidence; installed-release validation remains separate. Do not erase retained files to bypass recovery checks. If a first installation stopped after publishing some files and its original release is no longer available, inspect the installation status and quarantine preview. Files proven to belong to that attempt can be retained in quarantine before preparing a new release with the existing trust state. Resume the same quarantine if it stops. Unknown or externally changed files are not automatically cleaned up.
+Before updating, Colvia creates recovery copies of registered records and compares their required capabilities with those declared by the new runtime. This compatibility check does not run every user workflow. Returning to a compatible previous runtime does not roll work history back. If an update stops, inspect that operation instead of overwriting the installation. Resuming requires the exact prepared release, matching current state and still-valid verification. An interrupted first download can continue as an explicit new attempt while retaining the failed attempt. A prepared installation resumes the same files. If verification expires, reauthenticate the exact release or restore the interrupted update files while the previous runtime is still selected. Changed release targets and externally edited files are not overwritten. The private HTTPS checks below did not exercise interruption recovery, reauthentication or quarantine. Quarantine of a partial first installation was checked in synthetic source tests. Do not erase retained files to bypass recovery checks. If a first installation stopped after publishing some files and its original release is no longer available, inspect the installation status and quarantine preview. Files proven to belong to that attempt can be retained in quarantine before preparing a new release with the existing trust state. Resume the same quarantine if it stops. Unknown or externally changed files are not automatically cleaned up.
 
 A backup containing unfinished external operations is not restored as immediately executable work. First establish what the original execution actually changed.
 
 ## Working with Git
+
+Plain folders can be connected without registering Git. Before connecting a Git repository, register the executable from the Git installation you trust. In Windows PowerShell, `(Get-Command git).Source` shows the path. Use ordinary PowerShell to install Colvia, but use Command Prompt (cmd.exe) to save the registration preview. Windows PowerShell 5.1 can re-encode output written with `>` or `Out-File`.
+
+In Command Prompt, use a local NTFS folder that does not already contain `git-registration.json`. Replace the example Git path with the absolute path you found.
+
+```cmd
+"%LOCALAPPDATA%\Colvia\bin\colvia.exe" manage git-register-preview "C:\Path\To\Git\cmd\git.exe" > git-registration.json
+```
+
+This preview does not run Git. Read the file to check the path, file hash and `receipt` value. The receipt is the confirmation value returned in the preview. Do not edit or re-save the file. If the preview reports an error, do not apply the output file. Address the reported cause and use a fresh filename for another preview. Once you approve the registration, replace `RECEIPT_FROM_PREVIEW` with that value and apply it in the same Command Prompt. Add `--replace` only if you have confirmed that you want to replace an existing registration.
+
+```cmd
+"%LOCALAPPDATA%\Colvia\bin\colvia.exe" manage git-register --plan git-registration.json --receipt "RECEIPT_FROM_PREVIEW"
+```
+
+On macOS, open a terminal in a local folder that does not already contain `git-registration.json`. Replace `/path/to/git` with the absolute path to the Git executable you use. Save the preview, review it as above, then replace `RECEIPT_FROM_PREVIEW` with the value in the approved preview and apply it.
+
+```sh
+"$HOME/Library/Application Support/Colvia/bin/colvia" manage git-register-preview "/path/to/git" > git-registration.json
+"$HOME/Library/Application Support/Colvia/bin/colvia" manage git-register --plan git-registration.json --receipt "RECEIPT_FROM_PREVIEW"
+```
+
+When applying a registration, the manager verifies the selected executable’s hash and checks its version. The hash covers that executable; you still need to trust the Git installation and its dependencies.
 
 Accepting a report and committing it to Git are separate decisions. Acceptance records that you accept the result. Git integration separately checks the entire proposed commit and the current staging state.
 
@@ -86,11 +111,13 @@ Disconnection removes Colvia-managed connection information and guidance after c
 
 The first-release targets are macOS Apple Silicon ARM64 and Windows 11 ARM64 and x64, with Codex and Claude Code in CLI and desktop form. Windows means native Windows processes; WSL belongs to follow-up Linux support. The current filesystem boundary is local APFS on macOS and local NTFS on Windows. Network shares, synchronized record stores and Windows ReFS/Dev Drive are not qualified.
 
-Current source checks do not verify the actual distribution path, installed product, host permissions or notification clicks. Support claims will follow verification for each OS, architecture and host combination. Linux and additional agents remain follow-up candidates.
+First installation over private HTTPS was verified on fixed candidates. On a Windows x64 device, sequence 6 installed and updated to 7, keeping work records, settings and the previous recovery slot. On Windows ARM64 and macOS ARM64 test VMs, standard accounts installed sequences 14 and 11 respectively and confirmed that their installed launchers were ready. Offline ARM64 updates and restore were checked on other candidates. Checking a recovery slot does not establish that rollback was performed.
+
+Those tests used a private address and test trust. They did not cover the public address, first public trust or the full range of app permissions and notifications. A new Windows Codex chat in Request approval mode does not yet have a verified path for granting write access to only the record folder. Available permission controls depend on the host. Linux and additional agents remain follow-up candidates.
 
 Accumulation checks covered 300 Works with 100 input files and a small report. A separate content-retention check covered three versions of a 64 MiB file. Storage and processing time vary with file count, content size and changed bytes. New contents and backups keep consuming space; records are not pruned automatically. These measurements are not a long-term capacity limit or performance guarantee.
 
 
 ### Check document execution availability
 
-With the managed launcher, `execution readiness` checks the bundled document execution files without opening project records or starting a model. Document execution also requires a registered runtime combination that has passed qualification. This candidate has none registered yet. Once a qualified combination is registered, the project must opt in and each concrete run must be approved. A retained setting alone never starts a new task. General Work and result review remain available. If files are missing or changed, the check reports a damaged configuration rather than asking you to change Python or retry execution.
+Colvia does not call agents directly in the first Preview. The installed launcher’s `execution readiness` inspects the configuration without opening project records or starting a model. A successful inspection does not enable execution. Retained settings and history can still be read, and the setting can be disabled. If the check reports missing or changed files, inspect the reported state. Do not change Python or retry execution to bypass it.

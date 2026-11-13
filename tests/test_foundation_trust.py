@@ -78,6 +78,73 @@ class TrustTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(out.read_bytes()).hexdigest(),r['sha256'])
         self.assertEqual(dict(root=1,timestamp=1,snapshot=1,targets=1),t.state()[1]['versions'])
         self.assertEqual(100,t.state()[1]['verified_ns']);self.assertEqual({'file_permissions':'0644'},r['custom'])
+    def test_windows_signed_length_blocks_target_before_fetch_or_file_creation(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from colvia.updates.space import SpaceError
+        trust = self.initialize()
+        required = (FIXTURE/'targets/file1.txt').stat().st_size
+        destination = self.base/'asset'
+        with patch('colvia.updates.trust.sys', SimpleNamespace(platform='win32')), \
+             patch('colvia.updates.space.shutil.disk_usage', return_value=SimpleNamespace(free=required-1)) as usage:
+            with self.assertRaisesRegex(SpaceError, 'update-space-insufficient') as raised:
+                trust.stage('file1.txt', destination=destination)
+            usage.assert_called_once_with(destination.parent)
+            self.assertEqual(required, raised.exception.diagnostic['required_bytes'])
+            self.assertEqual(required-1, raised.exception.diagnostic['available_bytes'])
+        self.assertEqual(1, trust.state()[1]['versions']['targets'])
+        self.assertFalse(destination.exists())
+        self.assertFalse(any(url.startswith(TARGET) for url in self.fetch.calls))
+
+    def test_windows_exact_target_skips_space_and_exact_free_space_can_download(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        trust = self.initialize()
+        destination = self.base/'asset'
+        payload = (FIXTURE/'targets/file1.txt').read_bytes()
+        with patch('colvia.updates.trust.sys', SimpleNamespace(platform='win32')), \
+             patch('colvia.updates.space.shutil.disk_usage', return_value=SimpleNamespace(free=len(payload))) as usage:
+            present = trust.stage('file1.txt', destination=destination, already_present=lambda _: True)
+            self.assertIsNone(present['staged'])
+            usage.assert_not_called()
+            self.assertFalse(any(url.startswith(TARGET) for url in self.fetch.calls))
+            self.assertFalse(destination.exists())
+            downloaded = trust.stage('file1.txt', destination=destination)
+            usage.assert_called_once_with(destination.parent)
+        self.assertEqual(str(destination), downloaded['staged'])
+        self.assertEqual(payload, destination.read_bytes())
+
+    def test_windows_target_disk_full_retains_partial_bytes_and_counters(self):
+        from contextlib import contextmanager
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        import errno
+        from colvia.updates.space import SpaceError
+        trust = self.initialize()
+        destination = self.base/'asset'
+        original = trust.files.create_stream
+        payload = (FIXTURE/'targets/file1.txt').read_bytes()
+
+        @contextmanager
+        def limit_write(path, *args, **kwargs):
+            with original(path, *args, **kwargs) as stream:
+                if path != destination:
+                    yield stream
+                    return
+                def write_partial(data):
+                    stream.write(data[:1])
+                    raise OSError(errno.ENOSPC, 'simulated disk exhausted')
+                yield SimpleNamespace(write=write_partial)
+
+        with patch('colvia.updates.trust.sys', SimpleNamespace(platform='win32')), \
+             patch('colvia.updates.space.shutil.disk_usage', return_value=SimpleNamespace(free=len(payload))), \
+             patch.object(trust.files, 'create_stream', side_effect=limit_write):
+            with self.assertRaisesRegex(SpaceError, 'update-disk-full') as raised:
+                trust.stage('file1.txt', destination=destination)
+        self.assertEqual('target-download', raised.exception.diagnostic['phase'])
+        self.assertEqual(payload[:1], destination.read_bytes())
+        self.assertEqual(1, trust.state()[1]['versions']['targets'])
+
     def test_prepared_activation_reuses_exact_unexpired_metadata(self):
         t=self.initialize();download=t.stage('file1.txt',destination=self.base/'asset')
         t.activation_check(download)

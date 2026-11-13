@@ -4,6 +4,7 @@ No PATH fallback, fetch, index refresh, hook, checkout or Git metadata writes.
 A future managed launcher resolves the qualified executable; this adapter never
 starts an OS developer-tools installer to discover it.
 """
+from contextlib import contextmanager, nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 import hashlib,os,stat,sys
@@ -66,14 +67,33 @@ class IndexEntry:
     oid:str
 
 
+def inspect_executable(executable):
+    """Read the selected executable without launching it."""
+    if sys.platform == 'win32':
+        from ..platforms.windows_observation import Observer
+        from ..storage.windows import local_path
+
+        path = Path(local_path(executable))
+        with Observer().opened_git_executable(path) as (observed, digest):
+            canonical = Path(local_path(os.path.realpath(path, strict=True)))
+            require(str(canonical).casefold() == str(path).casefold() and
+                    file_stamp(canonical) == observed, 'git-executable-changed')
+            return canonical, observed, digest
+
+    path = Path(executable)
+    require(path.is_absolute(), 'qualified-git-required')
+    before = file_stamp(path)
+    raw = read_file(path, 128 * 1024 * 1024)
+    require(file_stamp(path) == before, 'git-executable-changed')
+    require(bool(before.mode & 0o111), 'git-not-executable')
+    return path, before, hashlib.sha256(raw).hexdigest()
+
+
 class Git:
-    def __init__(self,executable:Path,*,environment=None):
-        self.executable=Path(executable)
-        require(self.executable.is_absolute(),'qualified-git-required')
-        raw=read_file(self.executable,128*1024*1024)
-        info=self.executable.stat()
-        require((sys.platform=='win32' and self.executable.suffix.lower()=='.exe') or (sys.platform!='win32' and info.st_mode&0o111),'git-not-executable')
-        self.stamp=file_stamp(self.executable);self.sha256=hashlib.sha256(raw).hexdigest()
+    def __init__(self,executable:Path,*,environment=None,expected_sha256=None,expected_stamp=None):
+        self.executable, self.stamp, self.sha256 = inspect_executable(executable)
+        require(expected_sha256 is None or self.sha256 == expected_sha256, 'managed-git-changed')
+        require(expected_stamp is None or self.stamp == expected_stamp, 'git-registration-review-changed')
         self.env={k:v for k,v in (os.environ if environment is None else environment).items() if not k.startswith('GIT_')}
         self.env.update(GIT_OPTIONAL_LOCKS='0',GIT_NO_LAZY_FETCH='1',GIT_TERMINAL_PROMPT='0',GIT_PAGER='cat',LC_ALL='C')
         # A fixture may explicitly remove only user/system configuration, never
@@ -81,18 +101,33 @@ class Git:
         if environment is not None and environment.get('GIT_CONFIG_NOSYSTEM')=='1':
             self.env.update(GIT_CONFIG_NOSYSTEM='1',GIT_CONFIG_GLOBAL=os.devnull,GIT_CONFIG_SYSTEM=os.devnull)
         result=self._run(self.executable.parent,('--version',),limit=4096)
-        self.version=_text(result.stdout.rstrip(b'\n'))
+        self.version=_text(result.stdout.removesuffix(b'\n').removesuffix(b'\r'))
         require(self.version.startswith('git version '),'git-version-unavailable')
 
     @property
     def identity(self):return self.version+' sha256:'+self.sha256
 
+    @contextmanager
+    def guard_executable(self):
+        guard = nullcontext()
+        if sys.platform == 'win32':
+            from ..platforms.windows_observation import Observer
+
+            # Hold the selected name and ancestor handles through child execution.
+            # Other hard-link names may change while this handle is held.
+            guard = Observer().opened_git_executable(self.executable)
+        with guard as observed:
+            if observed is not None:
+                require(observed == (self.stamp, self.sha256), 'git-executable-changed')
+            require(file_stamp(self.executable) == self.stamp, 'git-executable-changed')
+            yield
+            require(file_stamp(self.executable) == self.stamp, 'git-executable-changed')
+
     def _run(self,root,args,*,allowed=(0,),input_bytes=b'',limit=64*1024*1024):
-        require(file_stamp(self.executable)==self.stamp,'git-executable-changed')
-        result=run([str(self.executable),'--no-optional-locks','-c','core.fsmonitor=false',
-                    '-c','core.untrackedCache=false','-C',str(root),*args],cwd=root,env=self.env,
-                   input_bytes=input_bytes,output_limit=limit)
-        require(file_stamp(self.executable)==self.stamp,'git-executable-changed')
+        with self.guard_executable():
+            result=run([str(self.executable),'--no-optional-locks','-c','core.fsmonitor=false',
+                        '-c','core.untrackedCache=false','-C',str(root),*args],cwd=root,env=self.env,
+                       input_bytes=input_bytes,output_limit=limit)
         require(result.code in allowed,'git-observation-unavailable')
         return result
 

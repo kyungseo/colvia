@@ -10,7 +10,7 @@ import hashlib,os,stat
 from ..adapters.git import read_file,_absolute
 from ..codec import RecordError,canonical_bytes,decode_canonical,require
 from ..git_index import Entry,Index,parse,emit,integrate,LIMIT
-from .observation_port import location,file_stamp,selected
+from .observation_port import location,selected
 from ..storage.sqlite import _token
 
 def digest(raw):return hashlib.sha256(raw).hexdigest()
@@ -29,7 +29,6 @@ class GitCandidate:
             finally:self.locked=False
 
     def command(self,args,*,input_bytes=b'',input_path=None,index=None,identity=None,allowed=(0,),event=lambda *_:None):
-        require(file_stamp(self.git.executable)==self.git.stamp,'git-executable-changed')
         require(asdict(location(self.root))==self.root_identity,'git-workspace-moved')
         require(not any((self.scratch/'hooks').iterdir()),'git-hooks-staging-not-empty')
         env=dict(self.env)
@@ -44,8 +43,8 @@ class GitCandidate:
         command=[str(self.git.executable),'--no-optional-locks','-c','core.fsmonitor=false',
             '-c','core.untrackedCache=false','-c','core.hooksPath='+str(self.scratch/'hooks'),
             '-c','gc.auto=0','-c','maintenance.auto=false','-c','core.fsync=all','-c','core.fsyncMethod=fsync','-C',str(self.root),*args]
-        result=self.children.run(command,cwd=self.root,env=env,input_bytes=input_bytes,input_path=input_path,event=event)
-        require(file_stamp(self.git.executable)==self.git.stamp,'git-executable-changed')
+        with self.git.guard_executable():
+            result=self.children.run(command,cwd=self.root,env=env,input_bytes=input_bytes,input_path=input_path,event=event)
         require(result.code in allowed,'git-integration-command-failed')
         return result
 

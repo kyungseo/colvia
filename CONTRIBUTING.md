@@ -1,6 +1,6 @@
 # Contributing to Colvia
 
-[English README](README.md)
+[English README](README.md) · [한국어 기여 안내](CONTRIBUTING.ko.md)
 
 Small changes are welcome for review. If you found a bug, describe what you expected, what happened, the operating system and the asset name or version you received. A short example in a clean project helps. Leave out account details, private paths and project files.
 
@@ -14,7 +14,7 @@ Colvia’s own code and documentation in this revision use Apache-2.0. Contribut
 
 Use the [next Preview guide](manual/en/foundation-preview.md) to see the SQLite candidate’s user flow. The earlier `.hrn/` profile has its own [user guide](manual/en/README.md).
 
-For the source check below, use a standard GIL-enabled CPython 3.14.7 in a POSIX shell. The check ran in the development worktree on macOS 27.2 ARM64 with SQLite 3.54.0. Colvia’s installed runtime uses its own dedicated Python.
+To reproduce the verified developer setup for this representative check, use GIL-enabled CPython 3.14.7 in a POSIX shell. The check passed in a clean local clone at `448b581` on macOS ARM64 with SQLite 3.54.0. This is a single developer test; the installed product uses its own dedicated Python.
 
 From the repository root, run this command before opening a PR for a change to the ordinary Work flow.
 
@@ -36,7 +36,7 @@ This file locates the rules for developing Colvia itself. Start with [Source Pro
 
 Reorganization and effective-state record: [DR-0006](docs/decisions/DR-0006-source-contributor-document-structure.md). Until the Owner accepts and activates its exact amendment, the [retained source procedures](docs/DECISION-GUIDE.md#retained-source-procedures) remain effective. After that recorded activation, the identified guides own the relocated rules. This entry does not activate them.
 
-An installed-project agent starts with `./colvia view --details`, its verified manual/adapter and that project's own rules. The human overview remains `./colvia view`. Developing Colvia from its trusted source checkout does not require installing the runtime or creating a typed Work. The source rules here do not define a public contribution or licensing policy.
+Developing Colvia in its trusted source checkout does not require installing the product or creating an installed-project Work. For ordinary work in a connected SQLite project, follow its installed launcher (`./colvia guide` on macOS, `.\colvia.cmd guide` in Windows PowerShell) and project rules. `view --details` belongs to the earlier `.hrn/` profile. These source rules do not replace the contribution and licensing terms above.
 
 The headings below retain historical links. Their destinations follow the effective-state boundary above.
 
@@ -85,7 +85,7 @@ Read [Resume And Handoff](docs/development/WORKFLOW.md#resume-and-handoff) and [
 
 ## Preparing source for lifecycle checks
 
-The repository README introduces the product. The installed bilingual entry is maintained in `distribution/README-installed.md`; its links are relative to its destination, `README.md` in the prepared tree. Do not pass the raw developer checkout as a lifecycle candidate.
+This procedure is for the earlier `.hrn/` profile. Its installed bilingual entry comes from `distribution/README-installed.md`; links resolve from `README.md` in that prepared tree. For the SQLite candidate, follow the separate procedure below. Do not pass the raw checkout as a lifecycle candidate.
 
 Prepare an ordinary managed source tree in a new directory outside the checkout:
 
@@ -97,4 +97,4 @@ Then use that prepared directory as the explicit `--source` for a source lifecyc
 
 ### Record-foundation candidate preparation
 
-For the SQLite candidate, [`foundation_bundle.assemble`](distribution/foundation_bundle.py) builds an unsigned archive from prepared inputs. Reproducing an identical release archive from a clone alone remains unverified. Assembly requires the pinned platform runtime, verifier dependencies and native launcher, plus the channel configuration, trust root and notices for that candidate. See [the supply and candidate procedure](docs/development/record-foundation/runtime-and-extension.md#supply-candidate-and-vm-reuse) and [verified results](docs/development/product-evidence-and-followups.md#record-foundation-verification).
+For the SQLite candidate, [`foundation_bundle.assemble`](distribution/foundation_bundle.py) builds an unsigned archive from prepared inputs. Reproducing an identical release archive from a clone alone remains unverified. Assembly requires the pinned platform runtime, verifier dependencies and native launcher, plus the channel configuration, trust root and notices for that candidate. It maps the SQLite entry from `distribution/foundation-guides/README.md` and includes its own guides and Work adapter. The current Git registration examples were checked against the frozen trial manager. Before distributing a new bundle, verify the examples against its actual manager; a bare `448b581` checkout lacks the trial’s Git and installer corrections. See [the supply and candidate procedure](docs/development/record-foundation/runtime-and-extension.md#supply-candidate-and-vm-reuse) and [verified results](docs/development/product-evidence-and-followups.md#record-foundation-verification).
