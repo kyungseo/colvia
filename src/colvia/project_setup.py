@@ -8,7 +8,7 @@ from dataclasses import asdict
 from contextlib import contextmanager,nullcontext
 import base64,hashlib,os,shlex,uuid,sys
 from .codec import canonical_bytes,decode_canonical,require
-from .binding import Locator,ProjectBinding,WorkspaceRegistration,require_connection_root,same_plain_location
+from .binding import persistent,Locator,ProjectBinding,WorkspaceRegistration,require_connection_root,same_plain_location
 from .connection import Connections,PROJECT_KEY,workspace_key,workspace_payload
 from .connection_boundary import check_connection_boundary, verified_reservation
 from .adapters.git import discover,read_file
@@ -39,6 +39,12 @@ class ProjectSetup:
             with self.runtime_lease.hold() if self.runtime_lease else nullcontext():yield
     def preview(self,root):
         with self.runtime_lease.hold() if self.runtime_lease else nullcontext():return self._preview(root)
+    def require_identity_capability(self,top):
+        if self.runtime_lease is not None and persistent(top.root):
+            slot=self.runtime_lease.verified
+            required={'schema:connection.identity:1','schema:observation.snapshot:2'}
+            require(required<=slot.read_capabilities and required<=slot.write_capabilities,
+                    'runtime-capability-unavailable')
     def _entry(self):
         require(sys.platform in ('darwin','win32'),'connect-platform-port-unavailable')
         registry=decode_canonical(self.home.files.read(self.home.root/'entry.json'))
@@ -49,6 +55,7 @@ class ProjectSetup:
         return entry,registry
     def _plan(self,root,project,instance,workspace,nonce):
         root=Path(root);top=discover(root,self.git);require_connection_root(location(root),top)
+        self.require_identity_capability(top)
         check_connection_boundary(self.home, self.git, top, overlap_code='connect-project-overlap', historical=True)
         entry,inventory=self._entry();launcher_name,launcher_mode,launcher=project_launcher(entry,self.home.root,self.home.os_name);locator=Locator(project,instance,1,nonce,workspace if top.kind=='plain' else None)
         locator_root=Path(top.common.path) if top.kind=='git' else root
@@ -170,7 +177,8 @@ class ProjectSetup:
             obj=application_registry().inspect(ref,store.load(ref),required=True)
             require(link(obj,'binding')==binding_ref,'managed-integration-stale')
             registered=application_registry().inspect(link(obj,'workspace'),store.load(link(obj,'workspace')),required=True)
-            registered_root=workspace_payload(registered.payload).root
+            _,effective,_=connections.workspace(workspace_payload(registered.payload).workspace)
+            registered_root=effective.root
             require(registered_root==top.root if top.kind=='git' else
                     same_plain_location(registered_root,top.root),'integration-owner-workspace-required')
             locations=dict(project=Path(root),locator=Path(top.common.path) if top.kind=='git' else Path(root));changes=[]

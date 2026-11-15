@@ -10,7 +10,49 @@ def _diagnostic_item(item):
     return line+(' — '+requirement if requirement else '')
 
 
+def _printable(value):
+    return ''.join(c if c.isprintable() else '\\u%04x' % ord(c) for c in str(value))
+
+
+def display_path(value):
+    """Preserve native backslashes while escaping terminal control characters."""
+    return '"'+_printable(value)+'"'
+
+
+_RELATION_STATES = {
+    'planned':'계획', 'approved':'범위 승인됨', 'active':'작업 중', 'review':'결과 검토 중',
+    'completed':'수락 완료', 'open':'검토 후보', 'dismissed':'후보에서 제외됨',
+    'unavailable':'현재 상태 확인 불가', 'plan-changed':'이전 계획에 대한 연결',
+    'record-changed':'이후 후보 기록이 변경됨',
+}
+
+
+def _relation(title,identifier,state):
+    return display_path(title)+' ('+identifier+') · '+_RELATION_STATES.get(state,'상태 확인 필요')
+
+
+def _followup_text(value):
+    choice=value['choice']
+    if not value['recorded']:return '후속 선택을 기록한 적이 없습니다.'
+    if choice=='none':line='후속 작업 없음으로 기록했습니다.'
+    elif choice=='undecided':line='후속 결정을 미뤘습니다.'
+    else:
+        label={'candidate':'후속 후보', 'work':'후속 Work'}[choice]
+        line=label+' '+_relation(value['target_title'],value['target'],value['target_state'])
+    if value.get('source_state')=='plan-changed':line='이전 계획에 남긴 선택 · '+line
+    elif value.get('source_state')=='unavailable':line='현재 원래 Work를 확인할 수 없음 · '+line
+    if choice=='candidate':line+=' 이 후보를 진행하려면 Work와 승인 범위를 먼저 확인하세요.'
+    if choice=='work':line+=' 실행할 때는 해당 Work의 승인 기록을 확인하세요.'
+    return line
+
+
 def human(value):
+    if 'followup_detail' in value:
+        detail=_followup_text(value['followup_detail'])
+        if 'work_view' not in value:return detail
+        work=dict(value['work_view'])
+        work['title']=_printable(work['title'])
+        return human(work).rstrip()+'\n'+detail
     if 'error' in value:
         lines=[value['message']];details=value.get('details')
         if details:
@@ -121,7 +163,14 @@ def human(value):
             lines.append('파일 없음' if not body['exists'] else body['text'] if body['text'] is not None else '본문을 보존했습니다. 이 화면에서는 크기 또는 파일 형식 때문에 표시하지 않습니다.')
         return '\n'.join(lines)
     if 'items' in value:
-        lines=[item.get('title',item.get('work',item.get('candidate','항목')))+' — '+item.get('state','') for item in value['items']]
+        lines=[]
+        for item in value['items']:
+            title=item.get('title',item.get('work',item.get('candidate','항목')))
+            lines.append(_printable(title)+' — '+item.get('state',''))
+            if 'followup_detail' in item:
+                lines.append('  '+_followup_text(item['followup_detail']))
+            if 'linked_title' in item:
+                lines.append('  관련 Work '+_relation(item['linked_title'],item['linked_work'],item['linked_state']))
         if value.get('next') is not None:lines.append('더 있습니다. 다음 목록을 요청해 주세요.')
         return '\n'.join(lines) or '등록된 항목이 없습니다.'
     if 'choice' in value:
@@ -159,6 +208,13 @@ MESSAGES={
  'git-integration-context-changed':'검토 후 Git 상태나 파일이 바뀌었습니다. 기존 변경을 보존하고 현재 차이부터 확인해 주세요.',
  'wsl-native-interop-unqualified':'이 경로는 아직 검증되지 않았습니다. Windows PowerShell이나 Windows 데스크톱 앱에서 같은 프로젝트를 열어 주세요.',
  'git-integration-platform-unavailable':'이 플랫폼의 Git 자동 반영은 아직 연결되지 않았습니다. 수락한 결과는 보존되며 Git 반영은 별도로 진행할 수 있습니다.',
+ 'git-index-lock-present':'이 프로젝트의 Git 잠금(index.lock)이 이미 있습니다. 다른 Git 작업이 실행 중인지 확인하고 그 작업이 끝난 뒤 통합 상태를 확인해 주세요. 잠금 파일을 직접 지우지 마세요.',
+ 'git-gate-foreign-lock':'현재 Git 잠금이 Colvia가 기록한 파일과 다릅니다. 다른 Git 작업의 종료 여부와 통합 상태를 확인해 주세요. Colvia는 이 잠금을 인수하거나 삭제하지 않았습니다.',
+ 'git-gate-intent-invalid':'Git 잠금의 복구 근거를 확인하지 못했습니다. 잠금과 중단 기록을 보존하고 진단을 요청해 주세요. 파일이나 기록을 직접 편집하지 마세요.',
+ 'git-gate-intent-changed':'Git 잠금을 준비한 뒤 복구 근거가 달라졌습니다. 같은 적용을 반복하지 말고 통합 상태와 중단 기록을 먼저 확인해 주세요.',
+ 'git-gate-attempt-already-recorded':'이 잠금 준비는 이미 기록됐습니다. 같은 적용을 반복하지 말고 통합 상태를 조회한 뒤 기존 복구 경로로 이어가 주세요.',
+ 'git-gate-intent-ambiguous':'현재 작업에 대응하는 잠금 근거가 여러 개입니다. 자동으로 선택하지 않았습니다. 잠금과 기록을 보존하고 진단을 요청해 주세요.',
+ 'git-lock-owner-still-live':'이 잠금을 만든 실행이 아직 종료되지 않았습니다. 해당 Git 작업의 종료를 확인한 뒤 통합 상태를 조회해 주세요. 잠금을 강제로 해제하지 마세요.',
  'git-index-lock-unrecorded':'중단 당시 Git 잠금의 소유 정보를 확정하지 못했습니다. index.lock을 지우거나 commit하지 말고, 보존한 중단 기록과 Git 상태의 점검을 요청해 주세요.',
  'git-index-lock-not-owned':'다른 실행이 사용하는지 확인할 수 없는 Git 잠금이 있습니다. index.lock을 지우거나 commit하지 말고 중단 기록을 먼저 점검해 주세요.',
  'feature-not-enabled':'이 프로젝트에서는 문서 실행 기능이 꺼져 있습니다. 필요한 경우 기능 설정을 먼저 확인해 주세요.',
@@ -216,6 +272,7 @@ MESSAGES={
  'access-denied':'파일 또는 폴더 접근이 차단돼 진행을 멈췄습니다. 차단된 경로와 필요한 접근 권한(읽기·쓰기·실행)을 확인해 주세요. 변경 요청 중이었다면 다시 실행하기 전에 현재 상태를 확인해 주세요.',
  'list-changed-or-invalid-cursor':'목록이 바뀌었거나 이어보기 정보가 맞지 않습니다. 목록을 다시 열어 주세요.',
  'list-changed':'목록을 읽는 동안 상태가 바뀌었습니다. 목록을 다시 열어 주세요.',
+ 'followup-view-changed':'후속 기록을 읽는 동안 상태가 바뀌었습니다. 작업을 다시 조회해 주세요.',
  'stale-plan-receipt':'계획이 바뀌었습니다. 현재 계획을 확인한 뒤 진행해 주세요.',
  'stale-result-receipt':'검토 대상이 바뀌었습니다. 현재 결과를 확인한 뒤 결정해 주세요.',
  'reviewed-files-changed':'검토 후 파일이 바뀌었습니다. 바뀐 부분을 확인한 뒤 수락해 주세요.',
@@ -244,11 +301,29 @@ MESSAGES={
 
 def failure(code):
     recovery={
+        'workspace-parent-project':'상위 폴더에 Colvia 프로젝트가 있습니다. 이 하위 폴더를 별도 프로젝트로 연결하지 않았습니다. 원래 프로젝트를 계속하려면 표시된 상위 폴더에서 실행해 주세요. 별도로 이동한 프로젝트라면 현재 파일과 기록을 보존하고 연결 상태를 확인해 주세요.',
+        'workspace-boundary-unavailable':'상위 프로젝트 경계를 확인하지 못해 진행을 멈췄습니다. 표시된 폴더와 Git 정보의 접근·상태를 확인해 주세요. 파일과 연결 정보를 임의로 지우거나 바꾸지 마세요.',
+        'workspace-connection-kind-changed':'일반 폴더의 Colvia 연결 표식과 Git 저장소가 함께 발견됐습니다. 어느 연결을 사용할지 확인할 수 없어 중단했습니다. 현재 파일과 두 연결 정보를 보존하고 기존 연결 상태를 확인해 주세요.',
+        'unregistered-nested-git':'등록되지 않은 하위 Git 저장소를 발견해 작업을 멈췄습니다. 같은 프로젝트의 worktree인지 별도 프로젝트인지 확인해 주세요. 별도 프로젝트는 겹치지 않는 위치에 보존하고, 연결 정보나 DB를 지우지 마세요.',
+        'workspace-ancestor-project':'다른 Colvia 프로젝트 아래에 있는 폴더입니다. 연결을 변경하지 않았습니다. 두 프로젝트의 파일과 기록을 보존하고, 안쪽 프로젝트를 겹치지 않는 위치로 옮긴 뒤 연결 상태를 확인해 주세요. 연결 파일이나 DB를 지우지 마세요.',
+        'workspace-nested-project':'이 폴더 안에서 다른 Colvia 연결 표식을 발견해 작업을 멈췄습니다. 안쪽 프로젝트나 사본을 겹치지 않는 위치에 보존한 뒤 연결 상태를 확인해 주세요. 연결 파일이나 DB를 지우지 마세요.',
+        'connection-move-review-required':'기존 프로젝트가 이동한 것으로 보입니다. 관리 명령 move-preview에서 기존 프로젝트 ID와 새 폴더를 확인하세요. 확인 전 작업 상태는 바뀌지 않습니다.',
+        'connection-move-original-present':'기존 위치가 아직 사용 중입니다. 두 폴더를 보존하고 기존 위치를 확인해 주세요.',
+        'connection-move-work-pending':'기존 경로를 사용하는 준비나 실행이 남아 있습니다. 원래 위치에서 그 실행 상태를 확인한 뒤 이동을 다시 확인해 주세요.',
+        'connection-move-review-changed':'연결이나 기록이 달라졌습니다. 기록을 보존하고 현재 상태에서 새 미리보기를 확인해 주세요.',
+        'connection-move-policy-changed':'이전 작업의 Git 관측 설정을 새 폴더에서 동일하게 확인할 수 없습니다. 기존 작업과 파일을 보존해 주세요.',
+        'project-location-changed':'등록된 프로젝트와 같은 폴더인지 확인할 수 없어 연결을 열지 않았습니다. 연결 파일이나 DB를 지우지 말고 두 위치의 파일과 기록을 보존해 주세요. 원래 폴더가 남아 있으면 그곳에서 이어가세요. 폴더를 옮겼다면 에이전트에게 이동 확인을 요청해 주세요.',
+        'workspace-location-changed':'등록된 작업 위치가 달라졌습니다. 파일을 보존해 주세요. 승인한 이동을 이미 적용했다면 새 폴더에서 Colvia를 다시 여세요. 위치가 불명확하면 기존 연결과 두 폴더를 확인해 주세요.',
         'connect-project-overlap':'기존 Colvia 연결과 작업 영역 또는 Git 저장소가 겹칩니다. 기존 연결을 사용하거나 다른 폴더를 선택해 주세요.',
         'rebind-project-overlap':'복원 대상의 작업 영역 또는 Git 저장소에 기존 Colvia 연결이 있습니다. 겹치지 않는 폴더에서 새 복원 연결 미리보기를 확인해 주세요.',
         'connect-resume-project-overlap':'중단된 연결이 다른 Colvia 연결과 충돌합니다. 기존 연결을 확인하고 충돌을 해소한 뒤 이 연결을 재개해 주세요.',
         'connect-ancestor-marker':'상위 폴더에 Colvia 연결 정보가 있습니다. 상위 연결 상태를 확인하거나 겹치지 않는 폴더를 선택해 주세요.',
-        'connect-boundary-unavailable':'기존 연결의 폴더 범위를 확인하지 못했습니다. 연결 상태와 폴더 접근을 확인한 뒤 다시 진행해 주세요.',
+        'connection-creation-identity-changed':'같은 위치에서 폴더의 생성 시각 정보가 달라졌습니다. 기존 폴더인지 확인할 수 없어 연결을 멈췄습니다.',
+        'connection-identity-review-required':'기존 폴더의 위치 식별 정보를 다시 확인해야 합니다. 관리 명령 identity-preview에서 대상 프로젝트를 확인하세요.',
+    'persistent-location-unavailable':'이 볼륨에서 폴더를 안전하게 식별할 수 없습니다. 현재 위치와 접근 권한을 확인해 주세요.',
+    'identity-project-overlap':'서로 다른 프로젝트의 작업 폴더가 겹칩니다. 현재 연결을 유지하고 대상을 확인해 주세요.',
+    'identity-review-changed':'미리보기 이후 연결 정보가 바뀌었습니다. 현재 상태에서 미리보기를 다시 확인해 주세요.',
+    'connect-boundary-unavailable':'기존 연결의 폴더 범위를 확인하지 못했습니다. 연결 상태와 폴더 접근을 확인한 뒤 다시 진행해 주세요.',
         'connect-reservation-changed':'중단된 연결의 대상이 기존 기록과 일치하지 않습니다. 현재 연결 상태를 확인해 주세요.',
         'store-io-unavailable':'기록 저장소를 읽거나 쓰는 중 오류가 발생했습니다. 원인은 아직 확정되지 않았습니다. 같은 작업을 반복하기 전에 현재 Work 상태와 진단 코드를 확인해 주세요.',
         'initial-publication-extra-path':'이 설치가 만든 것으로 확인할 수 없는 파일이 있습니다. 파일은 보존했으니 설치 상태와 현재 폴더를 확인해 주세요.',

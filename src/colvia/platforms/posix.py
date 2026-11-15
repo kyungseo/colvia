@@ -6,6 +6,7 @@ import base64
 import hashlib
 import os
 import stat
+import sys
 
 from ..binding import NativeLocation
 from ..codec import RecordError, canonical_bytes, require
@@ -31,12 +32,25 @@ def open_directory(path: Path):
         os.close(fd);raise
 
 
-def location(path: Path) -> NativeLocation:
+def descriptor_location(path, fd):
+    before=os.fstat(fd)
+    live=identity(before)
+    pair=live
+    if sys.platform=='darwin':
+        from .darwin_location import persistent_identity
+        pair=persistent_identity(fd,before)
+    require(identity(os.fstat(fd))==live,'directory-replaced')
+    return NativeLocation(str(path),*pair),live
+
+
+def directory_location(path):
     fd=open_directory(path)
-    try:
-        volume,file_id=identity(os.fstat(fd))
-        return NativeLocation(str(path),volume,file_id)
+    try:return descriptor_location(path,fd)
     finally:os.close(fd)
+
+
+def location(path: Path) -> NativeLocation:
+    return directory_location(path)[0]
 
 
 @dataclass(frozen=True)
@@ -73,7 +87,7 @@ class Snapshot:
 
 def snapshot(root: Path, budget: ObservationBudget, *, admit=lambda _:True,
              protected=frozenset(), boundaries=None, cancelled=lambda:False,
-             reject_nested_git=False, git_algorithm=None, opaque_entries=None) -> Snapshot:
+             reject_nested_git=False, reject_nested_colvia=False, git_algorithm=None, opaque_entries=None) -> Snapshot:
     """Prune only caller-proved native structural boundaries, not name guesses.
 
     The caller owns Git/policy verification. `boundaries` maps exact native relative
@@ -87,8 +101,10 @@ def snapshot(root: Path, budget: ObservationBudget, *, admit=lambda _:True,
     boundaries=dict(boundaries or {})
     for path,pair in boundaries.items():
         require(logical_path(path)==path and type(pair) is tuple and len(pair)==2,'invalid-boundary')
-    root=Path(root);rootfd=open_directory(root);rootinfo=os.fstat(rootfd)
-    root_location=NativeLocation(str(root),*identity(rootinfo))
+    root=Path(root);rootfd=open_directory(root)
+    try:root_location,root_live=descriptor_location(root,rootfd)
+    except BaseException:
+        os.close(rootfd);raise
     entries=[];stamps=[];inventory=[];git_blobs=[];visited=0;read_bytes=0;metadata_bytes=0;aliases=set()
     def listing(fd,limit):
         names=[]
@@ -114,7 +130,12 @@ def snapshot(root: Path, budget: ObservationBudget, *, admit=lambda _:True,
                 require(not any(p==logical or p.startswith(logical+'/') for p in protected),'boundary-swallows-protected')
                 require(identity(info)==boundaries[native] and not stat.S_ISLNK(info.st_mode),'structural-boundary-changed')
                 continue
-            require(not reject_nested_git or name!='.git','unregistered-nested-git')
+            if reject_nested_git and name=='.git':
+                from ..connection_boundary import ConnectionBoundaryError
+                raise ConnectionBoundaryError('unregistered-nested-git',str(root.joinpath(*parts)),str(root))
+            if reject_nested_colvia and name.casefold()=='.colvia-link.json' and (parts or name!='.colvia-link.json'):
+                from ..connection_boundary import ConnectionBoundaryError
+                raise ConnectionBoundaryError('workspace-nested-project',str(root.joinpath(*parts)),str(root))
             inventory.append(stamp(native,info))
             if native in opaque_entries:
                 pair,entry=opaque_entries[native]
@@ -169,7 +190,7 @@ def snapshot(root: Path, budget: ObservationBudget, *, admit=lambda _:True,
                 stamp('',before)==stamp('',os.fstat(fd)),'directory-observation-changed')
     try:
         visit(rootfd,(),0)
-        require(location(root)==root_location,'root-observation-changed')
+        require(directory_location(root)==(root_location,root_live),'root-observation-changed')
         result=canonical_entries(entries)
         return Snapshot(root_location,tuple(result),tuple(stamps),read_bytes,tuple(inventory),tuple(git_blobs))
     finally:os.close(rootfd)

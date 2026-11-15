@@ -9,7 +9,7 @@ import base64,hashlib,os,stat
 
 from ..codec import require
 from ..platforms.posix import ObservationBudget
-from ..platforms.observation_port import location,snapshot,entry_identity
+from ..platforms.observation_port import directory_location,snapshot,entry_identity
 from ..tree import canonical_entries
 from .git import _text,read_file
 
@@ -30,12 +30,12 @@ def placeholders(git,root,index,result):
 
 def inspect_gitlink(git,parent,indexed,budget):
     path=parent/indexed.native_path
-    here=location(path);directory_id=(here.volume,here.file_id)
+    here,directory_id=directory_location(path)
     entry=dict(path=indexed.path,kind='gitlink',mode='160000',algorithm='sha1' if len(indexed.oid)==40 else 'sha256',oid=indexed.oid)
     marker=path/'.git'
     if not os.path.lexists(marker):
         require(not any(path.iterdir()),'uninitialized-gitlink-not-empty')
-        require(location(path)==here,'opaque-entry-changed')
+        require(directory_location(path)==(here,directory_id),'opaque-entry-changed')
         return (directory_id,entry),('uninitialized',),0
     info=marker.lstat()
     require(not stat.S_ISLNK(info.st_mode),'unsafe-git-marker')
@@ -75,5 +75,5 @@ def inspect_gitlink(git,parent,indexed,budget):
         require(actual[key]['mode']==item.mode and blobs.get(key)==item.oid,'gitlink-content-changed')
     require(git.policy(topology,result.inventory)==policy and git.index(path)==index and
             git._run(path,('rev-parse','--verify','HEAD'),limit=256).stdout.strip().decode('ascii')==head and
-            location(path)==here,'gitlink-observation-changed')
+            directory_location(path)==(here,directory_id),'gitlink-observation-changed')
     return (directory_id,entry),('initialized',head,policy.digest),result.bytes_read

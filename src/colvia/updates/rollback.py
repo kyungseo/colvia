@@ -69,8 +69,10 @@ class ReleaseRollback:
             before=None if prepared['before'] is None else prepared['before'].encode()
             require(prepared['version']==1 and prepared['target']==plan['target'] and before==c['before'] and prepared['after'].encode()==c['after'],
                     'rollback-description-not-authenticated')
-            old={row['path']:row for row in c['old']};new={row['path']:row for row in c['new']}
-            expected=[dict(path=n,pre=old.get(n),post=new[n]) for n in sorted(new)]
+            old={row['path']:row for row in c['old']}
+            # Each producer owns the journal order. Windows native aliases
+            # are product then manager, which differs from lexical order.
+            expected=[dict(path=row['path'],pre=old.get(row['path']),post=row) for row in c['new']]
             require([{key:i[key] for key in ('path','pre','post')} for i in manifest['items']]==expected,'rollback-effects-not-authenticated')
             actual=self.files.read(self.home.root/c['description']) if self.files.exists(self.home.root/c['description']) else None
             require(actual in (c['before'],c['after']),'rollback-description-changed')

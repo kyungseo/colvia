@@ -10,6 +10,15 @@ def location(path):
     return native(path)
 
 
+def directory_location(path):
+    """Persistent location and a live pair from one native observation."""
+    if sys.platform=='win32':
+        current=location(path)
+        return current,(current.volume,current.file_id)
+    from .posix import directory_location as native
+    return native(path)
+
+
 def snapshot(root,budget,**options):
     if sys.platform=='win32':
         from .windows_observation import Observer

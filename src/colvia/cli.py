@@ -122,7 +122,7 @@ def effect_authority(args,authority):
     return Path(args.authority)
 
 
-def dispatch(args,store,workspace,authority=None,*,available_features=None):
+def dispatch(args,store,workspace,authority=None,*,available_features=None,display=False):
     if args.group=='operation':
         value=store.operation_result(args.identifier)
         return dict(operation=args.identifier,recorded=value is not None,
@@ -160,6 +160,12 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None):
         if action=='plan':return service.plan(operation=operation,work=args.work,title=args.title,goal=args.goal,scope=args.path,checks=args.check,excludes=args.exclude,replace_receipt=args.replace_receipt)
         if action in ('approve','accept','revise'):return getattr(service,action)(operation=operation,work=args.work,receipt=args.receipt,statement=args.statement)
         if action=='start':return service.start(operation=operation,work=args.work)
+        if action=='view' and display:
+            root=store.root().ref
+            value=service.view(args.work)
+            detail=planning.followup(args.work,display=True)
+            require(store.root().ref==root,'followup-view-changed')
+            return dict(work_view=value,followup_detail=detail)
         if action in ('review','view','plan-review'):return getattr(service,action.replace('-','_'))(args.work)
         if action=='content':return service.result_content(args.work,args.path,revision=args.revision)
         if action=='archive':return service.archive(operation=operation,work=args.work,archived=not args.restore)
@@ -175,7 +181,12 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None):
         items=[]
         for key,ref in values:
             head,_,_,_=head_summary(ref,store.load)
-            items.append(dict(work=head.payload['work'],title=head.payload['title'],state=head.payload['phase'],workspace=head.payload['workspace'],archived=head.payload['archived']))
+            work=head.payload['work']
+            item=dict(work=work,title=head.payload['title'],state=head.payload['phase'],workspace=head.payload['workspace'],archived=head.payload['archived'])
+            if display:
+                detail=planning.followup(work,display=True,source_head=ref)
+                if detail['recorded']:item['followup_detail']=detail
+            items.append(item)
         require(store.root().ref==root,'list-changed')
         return dict(items=items,next=cursor)
     if args.group=='execution':
@@ -238,11 +249,16 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None):
         if args.action=='execute':return worker.execute(operation=operation,application=args.application,receipt=args.receipt,statement=args.statement,actor=args.actor,authority=args.authority_kind)
         return getattr(worker,args.action)(operation=operation,application=args.application)
     if args.group=='candidate':
-        if args.action=='list':return planning.candidates(limit=args.limit,cursor=parse_cursor(args.cursor))
+        if args.action=='list':return planning.candidates(limit=args.limit,cursor=parse_cursor(args.cursor),display=display)
         from .planning import candidate_key
         return planning.save_candidate(operation=operation,candidate=args.candidate,title=args.title,reason=args.reason,
             work=args.work,state='dismissed' if args.dismiss else 'open',expected=store.head(candidate_key(args.candidate)))
-    if args.choice is None:return planning.followup(args.work)
+    if args.choice is None:
+        if not display:return planning.followup(args.work)
+        root=store.root().ref
+        detail=planning.followup(args.work,display=True)
+        require(store.root().ref==root,'followup-view-changed')
+        return dict(followup_detail=detail)
     require(args.statement is not None,'followup-statement-required')
     from .planning import followup_key
     return planning.choose_followup(operation=operation,work=args.work,choice=args.choice,target=args.target,statement=args.statement,expected=store.head(followup_key(args.work)))
@@ -311,14 +327,25 @@ def main(argv=None,*,entry=None):
             request=DeliveryService(WorkService(store,workspace)).read(args.delivery)[1]
             if request.payload['action']=='execute':value=entry.run_document_delivery(args,store,workspace,authority)
             else:value=dispatch(args,store,workspace,authority,available_features=available_features)
-        else:value=dispatch(args,store,workspace,authority,available_features=available_features)
+        else:value=dispatch(args,store,workspace,authority,available_features=available_features,display=not args.json)
         print(json.dumps(value,ensure_ascii=False,sort_keys=True) if args.json else human(value))
         return 0
     except (RecordError,OSError,ValueError,TypeError) as exc:
         code=exc.code if isinstance(exc,RecordError) else ('invalid-command-input' if isinstance(exc,(ValueError,TypeError)) else 'access-denied' if isinstance(exc,PermissionError) else 'workspace-access-unavailable')
         if entry is not None and args.group=='execution' and args.action=='readiness' and isinstance(exc,OSError) and not isinstance(exc,PermissionError):code='document-assets-inspection-failed'
         if not isinstance(exc,(RecordError,PermissionError)) and ((args.group=='execution' and args.action in ('start','resolve')) or (args.group=='delivery' and args.action in ('run','finish-execution'))):code=args.group+'-outcome-unknown'
+        from .presentation import display_path
         value=dict(error=code,message=failure(code))
+        for name in ('directory','workspace','preparation_state'):
+            if getattr(exc,name,None) is not None:value[name]=getattr(exc,name)
+        if value.get('directory') is not None:
+            value['message']+=' 확인할 폴더: '+display_path(value['directory'])
+        if value.get('workspace') is not None:
+            value['message']+=' 실행한 폴더: '+display_path(value['workspace'])
+        if value.get('preparation_state')=='published':
+            value['message']+=' 이 요청의 저장은 확인됐습니다. 같은 요청을 반복하지 말고 현재 작업 상태를 확인해 주세요.'
+        if value.get('preparation_state')=='unconfirmed':
+            value['message']+=' 준비 기록의 종료 상태는 확인되지 않았습니다. 기록을 보존하고 진단해 주세요.'
         from .storage.sqlite import StorageError
         if isinstance(exc,StorageError):value['storage_diagnostic']=dict(exc.diagnostic)
         from .rework import SubmissionBlocked

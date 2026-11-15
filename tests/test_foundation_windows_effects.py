@@ -33,7 +33,7 @@ class Files(PosixFiles):
 
 class Move:
     def __init__(self,api):self.api=api;self.count=0
-    def move(self,source,target,*,expected,before_effect,event):
+    def move(self,source,target,*,expected,before_effect,event,inherited_creation=None,gate_intent=None):
         source,target=Path(source),Path(target);raw=source.read_bytes();s=self.api.state(source,source)
         require(expected==dict(identity=list(s['identity']),size=len(raw),sha256=hashlib.sha256(raw).hexdigest()),'windows-rename-source-changed')
         before_effect();event('before-native-move');self.count+=1
@@ -41,6 +41,8 @@ class Move:
         try:rename(a,source.name,b,target.name)
         finally:os.close(a);os.close(b)
         event('after-native-move')
+        if gate_intent is not None:
+            current=self.api.state(target,target);return dict(identity=list(current['identity']),size=len(raw),sha256=hashlib.sha256(raw).hexdigest())
 
 class WindowsEffectsTests(unittest.TestCase):
     def setUp(self):
@@ -54,6 +56,18 @@ class WindowsEffectsTests(unittest.TestCase):
         if before is not None:(self.root/path).write_bytes(before)
         with self.port.exclusion():
             return self.port.prepare('apply',[dict(path=path,pre=self.entry(path,before),post=self.entry(path,after))],lambda _:iter([after]))
+    def test_creation_time_exception_is_scoped_to_native_alias_with_exact_id(self):
+        port=WindowsEffects(self.root,self.authority,files=self.files,observer=Observer(files=self.files),
+                            mover=self.mover,native_entries=True)
+        before=[4,'a'*32,70];after=[4,'b'*32,80];inherited=[4,'b'*32,70]
+        for name in ('colvia.exe','colvia-manage.exe'):
+            item=dict(path=name,pre_native=before,post_native=after)
+            self.assertTrue(port.published_identity(item,inherited))
+            self.assertFalse(self.port.published_identity(item,inherited))
+            self.assertFalse(port.published_identity(item,[4,'a'*32,70]))
+            self.assertFalse(port.published_identity(item,[5,'b'*32,70]))
+            self.assertFalse(port.published_identity(dict(item,path='nested/'+name),inherited))
+            self.assertFalse(port.published_identity(dict(item,pre_native=None),inherited))
     def test_replace_preserves_original_and_repeated_inspection_does_not_move(self):
         m=self.prepare()
         with self.port.exclusion():

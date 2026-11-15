@@ -55,7 +55,7 @@ def update_configuration(home):
 
 
 def parser(*,bound=False):
-    p=argparse.ArgumentParser(prog='colvia manage')
+    p=argparse.ArgumentParser(prog='colvia manage',allow_abbrev=False)
     if not bound:
         p.add_argument('--management-root',required=True);p.add_argument('--runtime-slot',required=True);p.add_argument('--receiver-source',type=Path)
         p.add_argument('--runtime-manifest-sha256',required=True);p.add_argument('--repair',action='store_true')
@@ -80,6 +80,18 @@ def parser(*,bound=False):
     restored=commands.add_parser('rebind');restored.add_argument('--plan',type=Path,required=True);restored.add_argument('--receipt',required=True)
     restored.add_argument('--statement',required=True);restored.add_argument('--operation',required=True)
     restored=commands.add_parser('rebind-resume');restored.add_argument('operation')
+    identity=commands.add_parser('identity-preview');identity.add_argument('projects',nargs='+')
+    identity=commands.add_parser('identity-apply');identity.add_argument('--plan',type=Path,required=True)
+    identity.add_argument('--receipt',required=True);identity.add_argument('--statement',required=True)
+    identity.add_argument('--operation',required=True)
+    for name in ('identity-status','identity-resume'):
+        commands.add_parser(name).add_argument('operation')
+    preview=commands.add_parser('move-preview');preview.add_argument('project');preview.add_argument('root',type=Path)
+    apply=commands.add_parser('move-apply');apply.add_argument('--plan',type=Path,required=True)
+    apply.add_argument('--receipt',required=True);apply.add_argument('--statement',required=True)
+    apply.add_argument('--operation',required=True)
+    for name in ('move-status','move-resume'):
+        commands.add_parser(name).add_argument('operation')
     commands.add_parser('repair-preview')
     repair=commands.add_parser('repair-apply');repair.add_argument('--receipt',required=True);repair.add_argument('--operation',required=True)
     connect=commands.add_parser('connect-preview');connect.add_argument('root',type=Path)
@@ -146,6 +158,26 @@ def run(args,entry):
         if args.command=='restore-apply':return service.apply(operation=args.operation,receipt=args.receipt)
         if args.command=='restore-resume':return service.resume(operation=args.operation,receipt=args.receipt)
         return service.inspect(args.operation)
+    if args.command.startswith('identity-'):
+        from .identity_setup import IdentitySetup
+        setup=IdentitySetup(home,entry.git(),runtime_lease=entry.lease)
+        if args.command=='identity-preview':return setup.preview(args.projects)
+        if args.command=='identity-apply':
+            value=decode_canonical(home.files.read(args.plan,8*1024*1024))
+            require(type(value) is dict and 'plan' in value and value.get('receipt')==args.receipt,
+                    'identity-review-changed')
+            return setup.start(operation=args.operation,plan=value['plan'],receipt=args.receipt,statement=args.statement)
+        return setup.status(args.operation) if args.command=='identity-status' else setup.resume(args.operation)
+    if args.command.startswith('move-'):
+        from .move_setup import MoveSetup
+        setup=MoveSetup(home,entry.git(),runtime_lease=entry.lease)
+        if args.command=='move-preview':return setup.preview(args.project,args.root)
+        if args.command=='move-apply':
+            value=decode_canonical(home.files.read(args.plan,8*1024*1024))
+            require(type(value) is dict and value.get('receipt')==args.receipt and 'plan' in value,
+                    'connection-move-review-changed')
+            return setup.start(operation=args.operation,plan=value['plan'],receipt=args.receipt,statement=args.statement)
+        return setup.status(args.operation) if args.command=='move-status' else setup.resume(args.operation)
     if args.command.startswith('rebind'):
         from .restored_setup import RestoredSetup
         setup=RestoredSetup(home,entry.git(),runtime_lease=entry.lease)
@@ -278,7 +310,7 @@ def main(argv=None,*,entry=None):
             require(args.command not in ('repair-preview','repair-apply'),'explicit-recovery-entry-required')
             if entry is None:entry=ManagedEntry(args.management_root,pointer=pointer)
             result=run(args,entry)
-        if args.command=='git-register-preview' or (args.json and args.command=='connect-preview'):
+        if args.command=='git-register-preview' or (args.json and args.command in ('connect-preview','move-preview')):
             raw = canonical_bytes(result)
             if hasattr(sys.stdout, 'buffer'):
                 sys.stdout.buffer.write(raw)
@@ -301,6 +333,22 @@ def main(argv=None,*,entry=None):
         elif args.command=='connect-preview':
             print('변경할 파일: '+', '.join(result['files']));print(result['question'])
         elif args.command=='detach-preview':print('Colvia가 추가한 연결과 안내를 제거하고 작업 기록은 보존합니다. 해제할까요?')
+        elif args.command=='identity-preview':
+            for row in result['plan']['census']:
+                if row['selected']:
+                    for root in row['roots']:print(repr(root['path']))
+            print(result['question'])
+        elif args.command in ('identity-apply','identity-status','identity-resume'):
+            print(f"연결 재검증: 완료 {len(result['completed'])}개 · 남음 {len(result['remaining'])}개")
+        elif args.command=='move-preview':
+            from .presentation import display_path
+            plan=result['plan']
+            print('기존 위치 '+display_path(plan['before']['root']['path']))
+            print('새 위치 '+display_path(plan['after']['root']['path']))
+            print(result['question'])
+        elif args.command in ('move-apply','move-status','move-resume'):
+            print({'moved':'프로젝트의 새 위치를 확인했습니다.', 'pending':'이동 승인이 기록됐습니다. 같은 실행을 재개할 수 있습니다.',
+                   'subsequently-changed':'이동을 완료한 뒤 연결 상태가 달라졌습니다.'}[result['state']])
         elif args.command in ('restore-prepare','rebind-preview'):print(result['question'])
         elif args.command=='restore-apply':print('기록을 복원했습니다. 작업 파일은 변경하지 않았습니다. 이어서 프로젝트 연결을 확인해 주세요.')
         elif args.command=='repair-preview':print(result['question'])

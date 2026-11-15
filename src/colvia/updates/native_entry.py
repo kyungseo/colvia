@@ -15,9 +15,12 @@ LIMIT=64*1024*1024
 from ..platforms.effects_port import effects as effect_port
 
 class NativeEntryUpdate:
-    def __init__(self,home,target,operation,*,port=effect_port):
-        _token(operation);self.home=home;self.files=home.files;self.target=target;self.operation=operation;self.port=port
+    def __init__(self,home,target,operation,*,port=None):
+        _token(operation);self.home=home;self.files=home.files;self.target=target;self.operation=operation
+        self.port=port if port is not None else self.native_port
         self.area=home.root/'operations'/(operation+'-entry');self.pending=home.root/'native-update.json'
+    @staticmethod
+    def native_port(root,authority):return effect_port(root,authority,native_entries=True)
     def pending_token(self):
         self.area,raw=pending_area(self.files,self.pending,self.home.root/'operations',self.operation+'-entry',self.operation,self.target)
         return raw

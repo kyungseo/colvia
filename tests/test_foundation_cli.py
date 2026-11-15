@@ -136,15 +136,17 @@ with patch('colvia.platforms.posix.os.open',side_effect=guarded):
                 self.assertIn('조회·수락',message);self.assertNotIn('현재 상태를 확인하지 못해',message)
                 self.assertFalse(self.call('operation',operation)['recorded'])
                 self.assertEqual('active',self.call('ordinary','view','report')['state'])
-        # A confirmed refusal keeps staged preparation, so its operation ID is
-        # deliberately not reusable. A corrected new command succeeds below.
-        refused=self.call('--operation','missingTrue','ordinary','submit','report','--summary','수정한 검사 결과',
-                          '--failed','원본 보존::검사 실패','--unavailable','집계 대조::미실행',code=2)
-        self.assertEqual('import-already-exists',refused['error'])
-        self.assertFalse(self.call('operation','missingTrue')['recorded'])
-        self.assertEqual('active',self.call('ordinary','view','report')['state'])
-        review=self.call('ordinary','submit','report','--summary','검사 결과를 확인해 주세요',
+        # Invalid report input now refuses before creating an import. Prove
+        # there is nothing to abandon, then reuse that never-started ID.
+        store=Authority(self.authority,project=P).store(readonly=True)
+        try:
+            for label in ('missingTrue','missingFalse','extraTrue','extraFalse'):
+                self.assertIsNone(store.db.execute('SELECT id FROM imports WHERE id=?',(label,)).fetchone())
+                self.assertEqual(0,store.db.execute('SELECT count(*) FROM claims WHERE import_id=?',(label,)).fetchone()[0])
+        finally:store.close()
+        review=self.call('--operation','missingTrue','ordinary','submit','report','--summary','수정한 검사 결과',
                          '--failed','원본 보존::검사 실패','--unavailable','집계 대조::미실행')
+        self.assertTrue(self.call('operation','missingTrue')['recorded'])
         self.assertEqual('review',review['state'])
         self.assertEqual(['failed','unavailable'],[check['status'] for check in review['checks']])
         human=self.call('ordinary','review','report',machine=False)
@@ -156,5 +158,124 @@ with patch('colvia.platforms.posix.os.open',side_effect=guarded):
         value=self.call('ordinary','view','missing',code=2);self.assertEqual('work-not-found',value['error'])
         value=self.call('ordinary','list','--cursor','not-json',code=2)
         self.assertEqual('list-changed-or-invalid-cursor',value['error'])
+
+    def test_followup_display_distinguishes_recorded_choices_and_preserves_read_state(self):
+        self.plan()
+        command=('followup','report')
+        missing={'work':'report','choice':'undecided','recorded':False,'target':None}
+        self.assertEqual(missing,self.call(*command))
+        self.assertIn('기록한 적이 없습니다',self.call(*command,machine=False))
+        store=Authority(self.authority,project=P).store(readonly=True)
+        self.addCleanup(store.close)
+        prior=store.root().ref
+        for choice,label in [('none','후속 작업 없음'),('undecided','후속 결정을 미뤘습니다')]:
+            self.assertEqual(dict(missing,choice=choice,recorded=True,statement='확인'),
+                             self.call(*command,'--choice',choice,'--statement','확인'))
+            current=store.root().ref
+            self.assertNotEqual(prior,current)
+            schema=(store.db.execute('PRAGMA schema_version').fetchone()[0],
+                    store.db.execute('PRAGMA user_version').fetchone()[0])
+            self.assertIn(label,self.call(*command,machine=False))
+            self.assertIn(label,self.call('ordinary','view','report',machine=False))
+            self.assertIn(label,self.call('ordinary','list',machine=False))
+            self.assertEqual(current,store.root().ref)
+            self.assertEqual(schema,(store.db.execute('PRAGMA schema_version').fetchone()[0],
+                                     store.db.execute('PRAGMA user_version').fetchone()[0]))
+            prior=current
+        from colvia.codec import RecordError
+        from colvia.planning import _followup
+        with self.assertRaisesRegex(RecordError,'invalid-followup-choice'):
+            _followup(dict(work='report',choice='future',target=None,statement='확인',links={}))
+
+    def test_followup_and_candidate_show_recorded_target_and_refuse_false_current_status(self):
+        source=self.plan()
+        target=self.plan('next')
+        self.call('candidate','save','option','--title','당시 후보\n\x1b[31m','--reason','검토')
+        self.call('followup','report','--choice','candidate','--target','option','--statement','기록')
+        shown=self.call('followup','report',machine=False)
+        self.assertIn('당시 후보\\u000a\\u001b[31m',shown)
+        self.assertEqual(1,len(shown.splitlines()))
+        self.call('candidate','save','option','--title','수정된 후보','--reason','변경','--work','next')
+        shown=self.call('ordinary','view','report',machine=False)
+        self.assertIn('이후 후보 기록이 변경됨',shown)
+        self.assertNotIn('수정된 후보',shown)
+        self.assertIn('관련 Work "회의 보고서" (next) · 계획',self.call('candidate','list',machine=False))
+        self.call('followup','report','--choice','work','--target','next','--statement','선택 변경')
+        self.assertEqual({'work':'report','choice':'work','target':'next','recorded':True,'statement':'선택 변경'},
+                         self.call('followup','report'))
+        self.assertIn('후속 Work "회의 보고서" (next) · 계획',self.call('ordinary','list',machine=False))
+        # Replacing either recorded plan invalidates the
+        # association to its newer plan without losing the old decision.
+        def replace(work,plan):
+            return self.call('ordinary','plan',work,'--title','다른 범위','--goal','보강','--path',work+'.md',
+                             '--check','검사','--replace-receipt',plan['receipt'])
+        replace('next',target)
+        replace('report',source)
+        shown=self.call('followup','report',machine=False)
+        self.assertIn('이전 계획에 남긴 선택',shown)
+        self.assertIn('후속 Work "회의 보고서" (next) · 이전 계획',shown)
+        self.assertNotIn('다른 범위',shown)
+        self.assertIn('이전 계획에 대한 연결',self.call('candidate','list',machine=False))
+
+    def test_followup_projection_refuses_changed_page_before_printing(self):
+        from contextlib import redirect_stderr,redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+        from colvia.cli import main
+        from colvia.planning import Planning
+        self.plan()
+        self.plan('second')
+        self.call('followup','report','--choice','none','--statement','현재 결정')
+        first=self.call('ordinary','list','--limit','1')
+        self.assertEqual({'items','next'},set(first))
+        self.assertEqual({'work','title','state','workspace','archived'},set(first['items'][0]))
+        self.assertEqual({'root','offset'},set(first['next']))
+        self.assertEqual('second',self.call('ordinary','list','--cursor',json.dumps(first['next']))['items'][0]['work'])
+        lookup=Planning.followup
+        out,err=StringIO(),StringIO()
+        def edit_during_read(planning,*args,**kwargs):
+            result=lookup(planning,*args,**kwargs)
+            self.call('candidate','save','other','--title','다른 후보','--reason','상태 변경')
+            return result
+        with patch.object(Planning,'followup',edit_during_read),redirect_stdout(out),redirect_stderr(err):
+            status=main(self.prefix[6:]+['ordinary','list','--limit','1'])
+        self.assertEqual(2,status)
+        self.assertEqual('목록을 읽는 동안 상태가 바뀌었습니다. 목록을 다시 열어 주세요.',out.getvalue().strip())
+        self.assertEqual('',err.getvalue())
+
+
+    def test_followup_detail_and_corrupt_relation_refuse_without_partial_output(self):
+        from contextlib import redirect_stderr,redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+        from colvia.cli import main
+        from colvia.codec import RecordError
+        from colvia.planning import Planning
+        self.plan()
+        self.call('followup','report','--choice','none','--statement','확인')
+        lookup=Planning.followup
+
+        def advance_root(planning,*args,**kwargs):
+            value=lookup(planning,*args,**kwargs)
+            self.call('candidate','save','new','--title','후보','--reason','상태 변경')
+            return value
+
+        def invalid_relation(*args,**kwargs):
+            raise RecordError('wrong-followup-target')
+
+        cases=[
+            (['followup','report'],advance_root,'후속 기록을 읽는 동안 상태가 바뀌었습니다.'),
+            (['ordinary','view','report'],advance_root,'후속 기록을 읽는 동안 상태가 바뀌었습니다.'),
+            (['ordinary','list'],invalid_relation,None),
+        ]
+        for args,resolve,message in cases:
+            out,err=StringIO(),StringIO()
+            with self.subTest(args=args),patch.object(Planning,'followup',resolve),redirect_stdout(out),redirect_stderr(err):
+                status=main(self.prefix[6:]+args)
+            self.assertEqual(2,status)
+            if message is not None:self.assertIn(message,out.getvalue())
+            self.assertNotIn('회의 보고서',out.getvalue())
+            self.assertNotIn('등록된 항목이 없습니다',out.getvalue())
+            self.assertEqual('',err.getvalue())
 
 if __name__=='__main__':unittest.main()

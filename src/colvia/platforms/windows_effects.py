@@ -15,9 +15,13 @@ from .windows_observation import Observer
 from .windows_rename import ExactMove,RenameAPI
 
 
+NATIVE_ALIASES=frozenset(('colvia.exe','colvia-manage.exe'))
+
+
 class WindowsEffects:
-    def __init__(self,root,authority,*,files=None,observer=None,mover=None):
+    def __init__(self,root,authority,*,files=None,observer=None,mover=None,native_entries=False):
         self.root=Path(root);self.authority=Path(authority);self.locked=False
+        self.native_entries=native_entries
         self.files=files or WindowsFiles(api=RenameAPI());self.api=self.files.api
         self.observer=observer or Observer(files=self.files);self.mover=mover or ExactMove(api=self.api,files=self.files)
         self.files.private_directory(self.authority)
@@ -31,6 +35,7 @@ class WindowsEffects:
     def verify_roots(self):
         require(self.identity(self.root)==self.root_identity and self.identity(self.authority)==self.authority_identity,'effect-root-changed')
         self.files.private_directory(self.authority)
+        if self.native_entries:self.files.private_directory(self.root)
     @contextmanager
     def exclusion(self,*,create=True):
         require(not self.locked,'effect-lock-reentry');self.verify_roots();lock=self.authority/'effect.lock'
@@ -124,6 +129,18 @@ class WindowsEffects:
             items.append({**item,'post_name':post_name,'evacuated_name':saved_name,'pre_native':pre_native,'post_native':post_native})
         self.files.sync_directory(stage)
         return dict(application=application,root=self.root_identity,authority=self.authority_identity,stage=native,ancestors=ancestors,items=items)
+    def inherited_creation(self,item):
+        # Only an authenticated lifecycle caller may opt in, and only for
+        # publishing a managed alias at its original name (never evacuation).
+        if self.native_entries and item['path'] in NATIVE_ALIASES and item['pre_native'] is not None:
+            return item['pre_native'][2]
+        return None
+    def published_identity(self,item,native):
+        expected=item['post_native']
+        if native==expected:return True
+        prior=self.inherited_creation(item)
+        return (prior is not None and native is not None and expected is not None and
+                native[:2]==expected[:2] and native[2]==prior)
     def inspect_state(self,manifest,index):
         require(self.locked,'effect-lock-required');self.verify_roots();item=manifest['items'][index];path=item['path']
         require(manifest['root']==self.root_identity and manifest['authority']==self.authority_identity,'effect-port-identity-mismatch')
@@ -135,7 +152,7 @@ class WindowsEffects:
         if post is not None:require(post==item['post'] and post_native==item['post_native'],'effect-staged-file-changed')
         if current==item['pre'] and native==item['pre_native'] and saved is None:
             require(post==item['post'] and post_native==item['post_native'],'effect-staged-file-missing');return dict(state='pre',retained_original_modified=False)
-        if current==item['post'] and native==item['post_native'] and post is None:
+        if current==item['post'] and self.published_identity(item,native) and post is None:
             require(saved_native==item['pre_native'] and (saved is None)==(item['pre'] is None),'effect-evacuated-file-missing')
             return dict(state='post',retained_original_modified=modified)
         if current is None and item['pre'] is not None and saved is not None:
@@ -149,9 +166,10 @@ class WindowsEffects:
         return saved==item['pre'] and native==item['pre_native']
 
     def state(self,manifest,index):return self.inspect_state(manifest,index)['state']
-    def _move(self,source,target,entry,identity,before_effect,event):
+    def _move(self,source,target,entry,identity,before_effect,event,*,inherited_creation=None):
+        options={} if inherited_creation is None else dict(inherited_creation=inherited_creation)
         return self.mover.move(source,target,expected=dict(identity=identity,size=entry['size'],sha256=entry['sha256']),
-                               before_effect=before_effect,event=event)
+                               before_effect=before_effect,event=event,**options)
     def apply_one(self,manifest,index,*,before_effect=lambda:None,event=lambda _:None):
         state=self.inspect_state(manifest,index);item=manifest['items'][index]
         require(not state['retained_original_modified'],'effect-evacuated-file-changed')
@@ -163,7 +181,8 @@ class WindowsEffects:
                 if state['state']=='pre' and item['pre'] is not None:
                     self._move(target,stage/item['evacuated_name'],item['pre'],item['pre_native'],before_effect,event)
                 if item['post'] is not None:
-                    self._move(stage/item['post_name'],target,item['post'],item['post_native'],before_effect,event)
+                    self._move(stage/item['post_name'],target,item['post'],item['post_native'],before_effect,event,
+                               inherited_creation=self.inherited_creation(item))
                 self.files.sync_directory(target.parent);self.files.sync_directory(stage)
         self.sync(manifest,index)
     def sync(self,manifest,index):

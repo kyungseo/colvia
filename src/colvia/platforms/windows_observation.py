@@ -101,7 +101,7 @@ class Observer:
         return entry,blob
 
     def snapshot(self,root,budget,*,admit=lambda _:True,protected=frozenset(),boundaries=None,
-                 cancelled=lambda:False,reject_nested_git=False,git_algorithm=None,opaque_entries=None,modes=None):
+                 cancelled=lambda:False,reject_nested_git=False,reject_nested_colvia=False,git_algorithm=None,opaque_entries=None,modes=None):
         require(type(budget.entries) is int and 0<budget.entries<=1000000 and type(budget.read_bytes) is int and budget.read_bytes>=0,'invalid-observation-budget')
         require(git_algorithm in (None,'sha1','sha256'),'unsupported-git-object-format')
         root=Path(root);root_location=self.location(root);boundaries=dict(boundaries or {});opaque_entries=dict(opaque_entries or {});modes=dict(modes or {})
@@ -122,7 +122,12 @@ class Observer:
                         if native in boundaries:
                             require(not any(p==logical or p.startswith(logical+'/') for p in protected),'boundary-swallows-protected')
                             require(not info.get('symlink') and self.identity(info)==boundaries[native],'structural-boundary-changed');continue
-                        require(not reject_nested_git or name!='.git','unregistered-nested-git')
+                        if reject_nested_git and name=='.git':
+                            from ..connection_boundary import ConnectionBoundaryError
+                            raise ConnectionBoundaryError('unregistered-nested-git',str(root.joinpath(*parts)),str(root))
+                        if reject_nested_colvia and name.casefold()=='.colvia-link.json' and (parts or name!='.colvia-link.json'):
+                            from ..connection_boundary import ConnectionBoundaryError
+                            raise ConnectionBoundaryError('workspace-nested-project',str(root.joinpath(*parts)),str(root))
                         itemstamp=self.stamp(native,info);inventory.append(itemstamp)
                         if native in opaque_entries:
                             pair,entry=opaque_entries[native]

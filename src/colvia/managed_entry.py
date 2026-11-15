@@ -11,7 +11,7 @@ from .management import ManagerHome
 from .storage.authority import Authority
 from .updates.lease import RuntimeLease,open_managed_store
 from .adapters.git import Git,discover
-from .binding import WorkspaceRegistration,resolve,require_registered
+from .binding import WorkspaceRegistration,resolve,require_registered,revalidates,creation_identity_changed
 from .connection import Connections
 from .workspace import LocalWorkspace
 
@@ -141,7 +141,8 @@ class ManagedEntry:
         return configured_git(self.home)
     def workspace(self,root,*,readonly):
         from .cli import read_locator
-        self.lease.check();git=self.git();topology=discover(root,git)
+        from .connection_boundary import workspace_topology
+        self.lease.check();git=self.git();topology=workspace_topology(root,git)
         root=Path(topology.root.path);locator=read_locator(root,git)
         authority=ManagedAuthority(self.home.root/'authorities'/locator.project,project=locator.project,
             slots=self.home.slots,pointer=self.pointer,files=self.home.files)
@@ -149,13 +150,40 @@ class ManagedEntry:
         store=authority.store(readonly=readonly)
         try:
             connections=Connections(store);_,binding=connections.binding()
+            current=topology.common if topology.kind=='git' else topology.root
+            if locator==binding.locator and topology.kind==binding.kind and revalidates(binding.location,current):
+                from .connection_boundary import ConnectionBoundaryError
+                raise ConnectionBoundaryError('connection-identity-review-required',topology.root.path)
+            if locator==binding.locator and topology.kind==binding.kind and creation_identity_changed(binding.location,current):
+                from .connection_boundary import ConnectionBoundaryError
+                raise ConnectionBoundaryError('connection-creation-identity-changed',topology.root.path)
+            from .binding import same_plain_location
+            from .connection_identity import same_directory
+            unchanged = (same_plain_location(binding.location, current) if topology.kind == 'plain'
+                         else binding.location == current)
+            if (locator == binding.locator and topology.kind == binding.kind and not unchanged
+                    and same_directory(binding.location, current)):
+                from .connection_boundary import ConnectionBoundaryError
+                raise ConnectionBoundaryError('connection-move-review-required',topology.root.path)
             registrations=connections.registrations(topology);resolution=resolve(locator,binding,topology,registrations)
             if resolution.registration_required:
                 require(not readonly,'workspace-registration-required')
-                registration=WorkspaceRegistration(str(uuid.uuid4()),topology.root,topology.gitdir)
-                connections.register(operation='register-'+uuid.uuid4().hex,locator=locator,observed=topology,
-                    workspace=registration,registrations=registrations,verify_topology=lambda:discover(root,git))
-                workspace_id=registration.workspace
+                from .project_setup import ProjectSetup
+                from .connection_boundary import check_connection_boundary
+                with ProjectSetup(self.home,git,runtime_lease=self.lease).management():
+                    fresh=discover(root,git)
+                    require(fresh==topology and read_locator(root,git)==locator,'workspace-observation-changed')
+                    bref,binding=connections.binding()
+                    registrations=connections.registrations(fresh,current_only=True,complete=True)
+                    resolution=resolve(locator,binding,fresh,registrations)
+                    if resolution.registration_required:
+                        check_connection_boundary(self.home,git,fresh,overlap_code='connect-project-overlap',
+                                                  own=(store.project,store.instance,bref))
+                        registration=WorkspaceRegistration(str(uuid.uuid4()),fresh.root,fresh.gitdir)
+                        connections.register(operation='register-'+uuid.uuid4().hex,locator=locator,observed=fresh,
+                            workspace=registration,registrations=registrations,verify_topology=lambda:discover(root,git))
+                        workspace_id=registration.workspace
+                    else:workspace_id=require_registered(resolution)
             else:workspace_id=require_registered(resolution)
             workspace=LocalWorkspace(store,root,workspace_id,git=git,locator_reader=lambda:read_locator(root,git))
             workspace.verify();self.lease.check();return authority,store,workspace

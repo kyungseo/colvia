@@ -2,11 +2,8 @@
 package main
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
-	"io"
-	"os/exec"
 	"runtime"
 	"strings"
 	"syscall"
@@ -82,36 +79,6 @@ func utf(s string) *uint16 {
 		panic(e)
 	}
 	return p
-}
-
-// Run only the verified bootstrap's fixed read command. Its Python child also uses hidden windows.
-func noticeRead(self string, args ...string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-	args = append([]string{"manage", "--management-root", noticeRoot, "--receiver-source", self}, args...)
-	cmd := exec.CommandContext(ctx, self, args...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x08000000}
-	pipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return "", err
-	}
-	if err = cmd.Start(); err != nil {
-		return "", err
-	}
-	// Kill on overflow and close the pipe on timeout even when a descendant inherited it.
-	stop := context.AfterFunc(ctx, func() { pipe.Close() })
-	defer stop()
-	data, err := io.ReadAll(io.LimitReader(pipe, 131073))
-	if err != nil || len(data) > 131072 {
-		cancel()
-		pipe.Close()
-		cmd.Wait()
-		return "", errors.New("알림 내용을 확인해 주세요.")
-	}
-	if err = cmd.Wait(); err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(string(data)), nil
 }
 
 // Use a top-level window class with standard close and paint handling.
@@ -197,6 +164,7 @@ func noticeWindow(self string, root string) error {
 	}
 	results := make(chan rendered, 4)
 	var sequence uint64
+	busy := false
 	deadline := time.Now().Add(time.Minute)
 	for window != 0 || time.Now().Before(deadline) {
 		for {
@@ -213,8 +181,13 @@ func noticeWindow(self string, root string) error {
 				return nil
 			}
 		}
+		incoming := inbox
+		if busy {
+			incoming = nil
+		}
 		select {
-		case id := <-inbox:
+		case id := <-incoming:
+			busy = true
 			sequence++
 			if window == 0 {
 				window, _, _ = user.NewProc("CreateWindowExW").Call(0, ptr(class), ptr(utf("Colvia · 맡긴 작업")), 0x10ca0000, 100, 100, 640, 380, 0, 0, module, 0)
@@ -236,11 +209,12 @@ func noticeWindow(self string, root string) error {
 			go func(n uint64, key string) {
 				text, err := noticeRead(self, "notice-detail", "--event", key)
 				if err != nil || text == "" {
-					text = "이 알림의 기록을 열 수 없습니다. 프로젝트 채팅에서 맡긴 작업의 결과를 확인해 주세요."
+					text = noticeFailureText(err)
 				}
 				results <- rendered{n, strings.ReplaceAll(strings.ReplaceAll(text, "\x00", "�"), "\n", "\r\n")}
 			}(sequence, id)
 		case data := <-results:
+			busy = false
 			if data.sequence == sequence {
 				user.NewProc("SetWindowTextW").Call(editor, ptr(utf(data.text)))
 			}

@@ -185,6 +185,31 @@ class Git:
             require(len(values)<=1_000_000,'index-entry-limit')
         return values
 
+    def _global_ignore_path(self,root):
+        def line(raw):
+            require(raw.endswith(b'\0'),'git-path-encoding-unavailable')
+            return raw[:-1]
+        def variable(name):
+            values={v for k,v in self.env.items()
+                    if (k.upper() if sys.platform=='win32' else k)==name}
+            require(len(values)<=1,'git-global-ignore-location-unavailable')
+            return next(iter(values),'')
+        configured=self._run(root,('config','-z','--path','--get','core.excludesfile'),allowed=(0,1),limit=32768)
+        if configured.code==0:
+            return _absolute(root,line(configured.stdout))
+        home,xdg=variable('HOME'),variable('XDG_CONFIG_HOME')
+        if sys.platform=='win32' and not home and not xdg:
+            # Git for Windows resolves its own home when the parent has no HOME.
+            # Query the pinned Git with the same environment; do not inject one.
+            expanded=self._run(root,('config','-z','--path','--default','~/.config/git/ignore',
+                                    '--get','core.excludesfile'),limit=32768)
+            path=Path(_text(line(expanded.stdout)))
+            require(path.is_absolute(),'git-global-ignore-location-unavailable')
+            return path
+        base=xdg or str(Path(home)/'.config')
+        require(Path(base).is_absolute(),'git-global-ignore-location-unavailable')
+        return Path(base)/'git/ignore'
+
     def policy(self,topology,inventory):
         from ..observation import Policy,PolicySource
         root=Path(topology.root.path)
@@ -205,13 +230,7 @@ class Git:
                 require(value.lower() in ('false','no','off','0'),'sparse-worktree-not-supported')
             if key=='extensions.partialclone':raise RecordError('partial-clone-not-supported')
         config.extend((('forced:core.fsmonitor','false'),('forced:core.untrackedcache','false')))
-        configured=self._run(root,('config','--path','--get','core.excludesfile'),allowed=(0,1),limit=32768)
-        if configured.code==0:
-            global_path=_absolute(root,configured.stdout.rstrip(b'\n'))
-        else:
-            base=self.env.get('XDG_CONFIG_HOME') or str(Path(self.env.get('HOME',''))/'.config')
-            require(Path(base).is_absolute(),'git-global-ignore-location-unavailable')
-            global_path=Path(base)/'git/ignore'
+        global_path=self._global_ignore_path(root)
         info=self._run(root,('rev-parse','--path-format=absolute','--git-path','info/exclude'),limit=32768)
         info_path=_absolute(root,info.stdout.rstrip(b'\n'))
         sources=[PolicySource('global:'+str(global_path),read_file(global_path,4*1024*1024,missing=b'')),

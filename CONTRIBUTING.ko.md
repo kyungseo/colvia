@@ -34,7 +34,7 @@ Colvia 자체를 개발한다면 [개발 절차(영문)](docs/development/WORKFL
 
 [사용자 문서 작성 기준 · 영문](docs/development/user-documentation.md)
 
-소스 체크아웃에서 설치 흐름을 검사할 때는 [설치용 소스 준비](CONTRIBUTING.md#preparing-source-for-lifecycle-checks)를 먼저 확인하세요. 공개 README와 설치본에 들어가는 README는 서로 다른 원본으로 관리합니다.
+소스 체크아웃에서 설치 흐름을 검사할 때는 [설치용 소스 준비](CONTRIBUTING.md#preparing-source-for-lifecycle-checks)를 먼저 확인하세요. 공개 README와 설치본 README는 각각 원본이 있습니다. SQLite 배포본을 준비할 때는 안내의 링크와 Git 등록·폴더 이동 예를 실제 ZIP과 관리자 명령에 대조하세요.
 
 ### 새 기록 구조의 후보 준비
 

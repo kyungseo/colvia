@@ -1,8 +1,7 @@
 """Concrete workspace port; domain Work services receive this as an interface."""
 from pathlib import Path
 import sys
-from .adapters.git import discover
-from .binding import resolve,require_registered,same_plain_location
+from .binding import resolve,require_registered,same_plain_location,revalidates,creation_identity_changed
 from .bodies import submission_size
 from .codec import require
 from .connection import Connections
@@ -20,10 +19,23 @@ class LocalWorkspace:
         self.connections=Connections(store)
 
     def verify(self):
+        from .connection_identity import PROJECT_IDENTITY
+        self.store.pin_workspace_location(PROJECT_IDENTITY, self.store.head(PROJECT_IDENTITY))
         reference,registration,bound=self.connections.workspace(self.workspace)
-        topology=discover(self.root,self.git)
+        from .connection_boundary import workspace_topology
+        topology=workspace_topology(self.root,self.git)
+        current=topology.common if topology.kind=='git' else topology.root
+        locator=self.locator_reader()
+        if locator==bound.locator and topology.kind==bound.kind and revalidates(bound.location,current):
+            from .connection_boundary import ConnectionBoundaryError
+            raise ConnectionBoundaryError('connection-identity-review-required',topology.root.path)
+        if locator==bound.locator and topology.kind==bound.kind and any(
+                creation_identity_changed(old,new) for old,new in (
+                    (bound.location,current),(registration.root,topology.root),(registration.gitdir,topology.gitdir))):
+            from .connection_boundary import ConnectionBoundaryError
+            raise ConnectionBoundaryError('connection-creation-identity-changed',topology.root.path)
         registrations=self.connections.registrations(topology)
-        resolved=resolve(self.locator_reader(),bound,topology,registrations)
+        resolved=resolve(locator,bound,topology,registrations)
         require(require_registered(resolved)==self.workspace,'wrong-workspace')
         require(same_plain_location(topology.root,registration.root) if topology.kind=='plain' else
                 topology.root==registration.root,'workspace-location-changed')

@@ -6,15 +6,18 @@ shown record and local authority instance; they are not human authentication.
 """
 from __future__ import annotations
 import hashlib
+from contextlib import contextmanager
 
 from .bodies import descriptor,submission_size
 from .codec import RecordError,decode_envelope,canonical_bytes,require
 from .connection import PROJECT_KEY,workspace_key
 from .graph import validate_closure
 from .maps import read_map
-from .observation import verify_scope,policy_transition
-from .records import (application_registry,operation_closure,record,link,encode_observation,
-                      decode_policy,text,head_summary)
+from .observation import verify_scope,policy_transition,relocated_policy
+from .connection_identity import contexts_match, ROLES
+from .connection import Connections
+from .records import (observation_identity, application_registry,operation_closure,record,link,encode_observation,
+                      decode_policy,text,head_summary,submission_input)
 from .storage.sqlite import _token
 from .tree import read_tree
 
@@ -115,14 +118,17 @@ class WorkService:
         before_sizes=self._body_map(scope,original,link(plan,'before'),load);sizes=[]
         observed=self._object(link(result,'observation'),load)
         require(link(observed,'workspace')==link(baseline,'workspace'),'submission-workspace-mismatch')
-        for key in ('root','kind','common','gitdir','opaque'):
-            require(observed.payload[key]==baseline.payload[key],'observation-context-changed')
+        require(contexts_match(baseline.payload,observed.payload,(*ROLES,'kind','opaque'),load=load,
+                               workspace=link(baseline,'workspace'),
+                               anchors=(observation_identity(baseline),observation_identity(observed))),
+                'observation-context-changed')
         after=read_tree(link(observed,'tree'),load)
         changed=verify_scope(entries,after,scope)
         require(list(changed)==result.payload['changed'],'submission-change-mismatch')
         require({c['name'] for c in result.payload['checks']}==set(plan.payload['checks']) and
                 len(result.payload['checks'])==len(plan.payload['checks']),'check-report-mismatch')
         old_policy=decode_policy(link(baseline,'policy'),load);new_policy=decode_policy(link(observed,'policy'),load)
+        old_policy=relocated_policy(old_policy,baseline.payload['common'],observed.payload['common'])
         policy_transition(old_policy,new_policy,verified_structural=frozenset(observed.payload['containers']+observed.payload['nested']),
             protected=frozenset(e['path'] for e in entries)|scope,approved_policy_paths=scope)
         sizes+=self._body_map(scope,after,link(result,'after'),load)
@@ -208,12 +214,18 @@ class WorkService:
 
     def _observe_from_plan(self,plan,extra=()):
         baseline,entries=self._baseline(plan)
-        _,current=self.workspace.observe(protected=frozenset(e['path'] for e in entries)|frozenset(plan.payload['scope'])|frozenset(extra),
-            previous_containers=frozenset(baseline.payload['containers']),previous_policy=decode_policy(link(baseline,'policy'),self.store.load),
+        registration,current=self.workspace.observe(protected=frozenset(e['path'] for e in entries)|frozenset(plan.payload['scope'])|frozenset(extra),
+            previous_containers=frozenset(baseline.payload['containers']))
+        from dataclasses import asdict
+        now={k:asdict(v) if (v:=getattr(current.topology,k)) is not None else None for k in ROLES}
+        require(contexts_match(baseline.payload,now,ROLES,load=self.store.load,
+                               workspace=link(baseline,'workspace'),
+                               anchors=(Connections(self.store).identity(registration),)),
+                'workspace-location-changed')
+        previous=relocated_policy(decode_policy(link(baseline,'policy'),self.store.load),baseline.payload['common'],now['common'])
+        policy_transition(previous,current.policy,verified_structural=current.structural.containers|current.structural.nested,
+            protected=frozenset(e['path'] for e in entries)|frozenset(plan.payload['scope'])|frozenset(extra),
             approved_policy_paths=frozenset(plan.payload['scope']))
-        for key,actual in [('root',current.topology.root),('common',current.topology.common),('gitdir',current.topology.gitdir)]:
-            from dataclasses import asdict
-            require(baseline.payload[key]==(asdict(actual) if actual else None),'workspace-location-changed')
         require([[p,list(v)] for p,v in current.opaque]==baseline.payload['opaque'],'opaque-context-changed')
         return baseline,entries,current
 
@@ -232,6 +244,7 @@ class WorkService:
         self._publish(operation,work,ref,newhead,recheck=lambda:self._recheck_observation(current,frozenset(plan.payload['scope'])))
         return dict(work=work,state='active')
 
+    @contextmanager
     def _prepare_submission(self,*,operation,work,summary,checks):
         ref,head=self._head(work);require(head.payload['phase']=='active','work-not-active')
         planref=link(head,'plan');plan=self._object(planref);scope=frozenset(plan.payload['scope'])
@@ -241,26 +254,29 @@ class WorkService:
         _,entries,current=self._observe_from_plan(plan,carried)
         entries,adopted,pinned,pinned_root=select(self,head,plan,current)
         changed=verify_scope(entries,current.snapshot.entries,scope)
-        if adopted:require(bool(checks) and all(c.get('status')=='passed' for c in checks),'attribution-checks-required')
-        self.store.begin_import(operation,'ordinary-result')
-        after,objects,total=self.workspace.capture(scope,current,operation)
-        workspace_ref,_,_=self.workspace.verify()
-        observed,extra=encode_observation(current,workspace_ref,self.store,operation);objects.extend(extra)
-        previous=link(head,'result');revision=1 if previous is None else self._object(previous).payload['revision']+1
-        links={'plan':('decision',planref),'approval':('decision',link(head,'approval')),
-               'observation':('integrity',observed),'after':('integrity',after),'previous':('provenance',previous)}
-        if adopted:
-            from .maps import build_map
-            proof=build_map(adopted.items());objects.extend(proof.objects);links['attribution']=('decision',proof.root)
-        result,raw=record('work.submission',dict(work=work,workspace=self.workspace.workspace,revision=revision,summary=summary,
-            checks=checks,changed=list(changed)),links,version=2 if adopted else 1)
-        objects.append((result,raw));newhead=self._head_record(planref,plan.payload,'review',approval=link(head,'approval'),result=result,previous=ref)
-        return dict(expected=ref,head=newhead,objects=objects,current=current,scope=scope,pinned=pinned,pinned_root=pinned_root)
+        submission_input(summary,checks)
+        require({c['name'] for c in checks}==set(plan.payload['checks']) and
+                len(checks)==len(plan.payload['checks']),'check-report-mismatch')
+        if adopted:require(bool(checks) and all(c['status']=='passed' for c in checks),'attribution-checks-required')
+        with self.store.import_attempt(operation,'ordinary-result'):
+            after,objects,total=self.workspace.capture(scope,current,operation)
+            workspace_ref,_,_=self.workspace.verify()
+            observed,extra=encode_observation(current,workspace_ref,self.store,operation);objects.extend(extra)
+            previous=link(head,'result');revision=1 if previous is None else self._object(previous).payload['revision']+1
+            links={'plan':('decision',planref),'approval':('decision',link(head,'approval')),
+                   'observation':('integrity',observed),'after':('integrity',after),'previous':('provenance',previous)}
+            if adopted:
+                from .maps import build_map
+                proof=build_map(adopted.items());objects.extend(proof.objects);links['attribution']=('decision',proof.root)
+            result,raw=record('work.submission',dict(work=work,workspace=self.workspace.workspace,revision=revision,summary=summary,
+                checks=checks,changed=list(changed)),links,version=2 if adopted else 1)
+            objects.append((result,raw));newhead=self._head_record(planref,plan.payload,'review',approval=link(head,'approval'),result=result,previous=ref)
+            yield dict(expected=ref,head=newhead,objects=objects,current=current,scope=scope,pinned=pinned,pinned_root=pinned_root)
 
     def submit(self,*,operation,work,summary,checks):
-        prepared=self._prepare_submission(operation=operation,work=work,summary=summary,checks=checks)
-        self._publish(operation,work,prepared['expected'],prepared['head'],prepared['objects'],import_id=operation,
-            recheck=lambda:self._recheck_observation(prepared['current'],prepared['scope']),pinned=prepared['pinned'],pinned_root=prepared['pinned_root'])
+        with self._prepare_submission(operation=operation,work=work,summary=summary,checks=checks) as prepared:
+            self._publish(operation,work,prepared['expected'],prepared['head'],prepared['objects'],import_id=operation,
+                recheck=lambda:self._recheck_observation(prepared['current'],prepared['scope']),pinned=prepared['pinned'],pinned_root=prepared['pinned_root'])
         return self.review(work)
 
     def _result_agrees(self,plan,result):

@@ -23,8 +23,21 @@ class ProjectLauncherTests(unittest.TestCase):
         name,mode,raw=project_launcher(home+'\\bin\\colvia.exe',home,'windows',
             known_local_appdata=base,environment_local_appdata=base)
         self.assertTrue(raw.isascii());self.assertIn(b'"%LOCALAPPDATA%\\Colvia\\bin\\colvia.exe"',raw)
-        self.assertNotIn(b'--management-root',raw)
+        self.assertIn(b'--management-root "%LOCALAPPDATA%\\Colvia"',raw)
         for forbidden in (b'python',b'powershell',b'chcp'):self.assertNotIn(forbidden,raw)
+    def test_standard_profile_uses_trusted_userprofile_with_redirected_environment(self):
+        profile=r'C:\Users\홍길동'
+        base=profile+r'\AppData\Local'
+        home=base+r'\Colvia'
+        arguments=dict(known_local_appdata=base,environment_local_appdata=r'C:\app-cache',
+                       known_user_profile=profile,environment_user_profile=profile)
+        _,_,raw=project_launcher(home+r'\bin\colvia.exe',home,'windows',**arguments)
+        self.assertIn(b'"%USERPROFILE%\\AppData\\Local\\Colvia\\bin\\colvia.exe"',raw)
+        self.assertIn(b'--management-root "%USERPROFILE%\\AppData\\Local\\Colvia"',raw)
+        self.assertTrue(raw.isascii());self.assertNotIn(b'LOCALAPPDATA',raw)
+        arguments['environment_user_profile']=r'C:\different'
+        with self.assertRaisesRegex(RecordError,'windows-user-profile-environment-mismatch'):
+            project_launcher(home+r'\bin\colvia.exe',home,'windows',**arguments)
     def test_standard_location_rejects_environment_or_entry_drift(self):
         base=r'C:\Users\demo\AppData\Local';home=base+r'\Colvia'
         with self.assertRaisesRegex(RecordError,'environment-mismatch'):

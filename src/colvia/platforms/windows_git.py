@@ -6,7 +6,7 @@ cross-platform protocol tests; they are not CLI or project configuration options
 """
 from dataclasses import asdict
 from pathlib import Path
-import os
+import os,uuid
 from ..codec import canonical_bytes,require
 from ..git_index import LIMIT
 from ..storage.windows import WindowsFiles
@@ -32,6 +32,13 @@ class WindowsGit(GitCandidate):
         require(not any((self.scratch/'hooks').iterdir()),'git-hooks-staging-not-empty')
         self.children=children or WindowsGitChild(self.scratch/'children',files=self.files)
         self.env={**git.env,'GIT_NO_REPLACE_OBJECTS':'1','GIT_NO_LAZY_FETCH':'1'}
+    def command(self,*args,**kwargs):
+        from .windows_git_objects import environment_digest
+        environment_digest(self.env)
+        return super().command(*args,**kwargs)
+    def verify_objects(self,m):
+        from .windows_git_objects import verify
+        verify(self,m)
     def file_id(self,path):
         with self.observer.opened(path) as (_,info):
             require(not info['directory'] and not info.get('symlink') and info['links']==1,'git-unsafe-effect-file')
@@ -55,18 +62,26 @@ class WindowsGit(GitCandidate):
                 'git-index-preimage-changed')
         prepared=port.prepare(before,self.files.read(self.scratch/m['operation']/'i1',LIMIT))
         m['context']['native_index']=dict(roots=port.roots,manifest=prepared)
+        from .windows_git_objects import prepare
+        m['context']['native_objects']=prepare(self,m)
         self.files.replace(self.scratch/m['operation']/'manifest',canonical_bytes(m),original)
         return m
     def check(self,m,*,index='old',ref='old'):
         require(index=='old' and ref=='old','windows-git-admission-phase')
-        self.verify_manifest(m);now,_,_=self.snapshot(m['paths']);expected=dict(m['context']);expected.pop('native_index')
+        self.verify_manifest(m);now,_,_=self.snapshot(m['paths']);expected=dict(m['context']);expected.pop('native_index');expected.pop('native_objects')
         require(now==expected and self.index_port(m).state(m['context']['native_index']['manifest'])=='old','git-integration-context-changed')
     def owner(self,path):
         birth=self.birth(os.getpid());require(birth is not None,'git-lock-owner-unavailable')
         return dict(native=self.file_id(path),pid=os.getpid(),birth=birth)
-    def acquire_index(self,m):
+    def create_index_gate(self,m,*,attempt,live):
+        from .windows_git_gate import create
+        return create(self,m,attempt=attempt,live=live)
+    def acquire_index(self,m,*,attempt,live):
         self.verify_manifest(m);require(all(absent(p) for p in self.locks(m)),'git-child-lock-present')
-        path=self.lock_path(m);self.files.create(path,b'');return self.owner(path)
+        return self.create_index_gate(m,attempt=attempt,live=live)
+    def reconcile_owner(self,m,owner,*,attempt,live):
+        from .windows_git_gate import reconcile
+        return reconcile(self,m,owner,attempt=attempt,live=live)
     def owned_lock(self,m,owner):
         path=self.lock_path(m)
         require(owner is not None and not absent(path) and self.file_id(path)==owner['native'] and
@@ -104,14 +119,16 @@ class WindowsGit(GitCandidate):
     def release_owned(self,m,owner):
         self.require_owner_closed(owner);self.retain_lock(m,owner,'index-lock-not-applied',live=lambda:None)
     def recovery_ready(self,m,owner,child):
+        # Old or incomplete durability evidence never authorizes recovery effects.
+        self.verify_objects(m)
         require(all(absent(p) for p in self.locks(m)),'git-child-lock-present')
         if child is not None:require(self.children.closed(self.scratch/'children'/child),'git-child-closure-unavailable')
         if owner is not None:self.require_owner_closed(owner)
-    def recover_index(self,m,owner,*,live):
+    def recover_index(self,m,owner,*,live,attempt):
         require(self.inspect_outcome(m) in (('new','old'),('new','evacuated')),'git-index-preimage-changed');live()
         path=self.lock_path(m)
-        if absent(path):self.files.create(path,b'')
-        else:self.owned_lock(m,owner)
+        if absent(path):return self.create_index_gate(m,live=live,attempt=attempt)
+        self.owned_lock(m,owner)
         return self.owner(path)
     def flush_native(self,path):
         # Fail closed on a sharing/read-only/durability refusal. The actual

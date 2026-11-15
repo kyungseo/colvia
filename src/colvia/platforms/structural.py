@@ -6,7 +6,7 @@ import os,stat,sys
 from ..binding import Topology,WorkspaceRegistration
 from ..codec import RecordError,require
 from ..tree import logical_path
-from .posix import identity,location,open_directory,stamp
+from .posix import descriptor_location,directory_location,identity,location,open_directory,stamp
 
 
 @dataclass(frozen=True)
@@ -31,12 +31,13 @@ def prove(topology:Topology,registrations:tuple[WorkspaceRegistration,...],*,pre
         relative=path.relative_to(root).as_posix()
         require(logical_path(relative)==relative,'noncanonical-structural-path')
         require((member.root,member.gitdir) in registered,'nested-workspace-registration-required')
-        require(location(path)==member.root,'structural-boundary-changed')
+        current,live=directory_location(path)
+        require(current==member.root,'structural-boundary-changed')
         require(not any(p==relative or p.startswith(relative+'/') for p in protected),'boundary-swallows-protected')
-        nested[relative]=(member.root.volume,member.root.file_id)
+        nested[relative]=live
     # Nested workspaces cannot contain one another in a single outer observation.
     require(not any(a!=b and b.startswith(a+'/') for a in nested for b in nested),'ambiguous-nested-workspace')
-    containers=set()
+    containers={}
     candidates={str(Path(p).parent) for p in nested}|set(previous_containers)
     for relative in sorted(candidates):
         if relative=='.':continue  # Never classify the whole project as a container.
@@ -63,14 +64,14 @@ def prove(topology:Topology,registrations:tuple[WorkspaceRegistration,...],*,pre
             require(valid or relative not in previous_containers,'structural-container-changed')
             if valid and (children or relative in previous_containers):
                 require(not any(p==relative or p.startswith(relative+'/') for p in protected),'boundary-swallows-protected')
-                containers.add(relative)
+                containers[relative]=descriptor_location(path,fd)
             with os.scandir(fd) as scan:after=sorted(i.name for i in scan)
             require(sorted(children)==after and stamp('',before)==stamp('',os.fstat(fd)),'structural-observation-changed')
         finally:os.close(fd)
     boundaries=dict(nested)
-    for relative in containers:
-        here=location(root/relative)
-        boundaries[relative]=(here.volume,here.file_id)
+    for relative,observed in containers.items():
+        require(directory_location(root/relative)==observed,'structural-boundary-changed')
+        boundaries[relative]=observed[1]
         for child in tuple(boundaries):
             if child.startswith(relative+'/'):del boundaries[child]
     marker=root/'.git';info=marker.lstat()

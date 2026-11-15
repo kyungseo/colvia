@@ -81,20 +81,29 @@ class Planning:
         self.store.commit_heads(operation=operation,expected={key:current},changes={key:ref},objects=[(ref,raw)],validate=validate)
         return self.candidate(candidate)
 
-    def candidate(self,candidate):
+    def _work_link_state(self,work,plan):
+        current=self.store.head(work_key(work))
+        if current is None:return 'unavailable'
+        head,_,_,_=head_summary(current,self.store.load)
+        require(head.payload['work']==work,'wrong-linked-work')
+        if link(head,'plan')!=plan:return 'plan-changed'
+        if head.payload['phase']=='completed':
+            decision=self._obj(link(head,'decision'))
+            require(decision.payload['action']=='accept' and link(decision,'result')==link(head,'result'),'linked-acceptance-unavailable')
+        return head.payload['phase']
+
+    def candidate(self,candidate,*,display=False):
         ref=self.store.head(candidate_key(candidate));require(ref is not None,'candidate-not-found')
         obj=self._obj(ref);require(obj.ref.kind=='planning.candidate' and obj.payload['candidate']==candidate,'wrong-candidate')
-        result=dict(candidate=candidate,title=obj.payload['title'],reason=obj.payload['reason'],state=obj.payload['state'],linked_work=obj.payload['work'])
-        if obj.payload['work'] is not None:
-            current=self.store.head(work_key(obj.payload['work']))
-            if current is None:result['linked_state']='unavailable'
-            else:
-                head,_,_,_=head_summary(current,self.store.load)
-                require(head.payload['work']==obj.payload['work'],'wrong-linked-work')
-                result['linked_state']=head.payload['phase'] if link(head,'plan')==link(obj,'work') else 'plan-changed'
-                if result['linked_state']=='completed':
-                    decision=self._obj(link(head,'decision'))
-                    require(decision.payload['action']=='accept' and link(decision,'result')==link(head,'result'),'linked-acceptance-unavailable')
+        work=obj.payload['work']
+        result=dict(candidate=candidate,title=obj.payload['title'],reason=obj.payload['reason'],state=obj.payload['state'],linked_work=work)
+        if work is not None:
+            plan=link(obj,'work')
+            result['linked_state']=self._work_link_state(work,plan)
+            if display:
+                selected=self._obj(plan)
+                require(selected.ref.kind=='work.plan' and selected.payload['work']==work,'wrong-linked-work')
+                result['linked_title']=selected.payload['title']
         return result
 
     def choose_followup(self,*,operation,work,choice,target=None,statement,expected=None):
@@ -117,15 +126,43 @@ class Planning:
         self.store.commit_heads(operation=operation,expected={key:current},changes={key:ref},objects=[(ref,raw)],validate=validate)
         return self.followup(work)
 
-    def followup(self,work):
+    def followup(self,work,*,display=False,source_head=None):
         ref=self.store.head(followup_key(work))
         if ref is None:return dict(work=work,choice='undecided',recorded=False,target=None)
         obj=self._obj(ref);require(obj.ref.kind=='planning.followup' and obj.payload['work']==work,'wrong-followup')
-        return dict(work=work,choice=obj.payload['choice'],recorded=True,target=obj.payload['target'],statement=obj.payload['statement'])
+        choice,target=obj.payload['choice'],obj.payload['target']
+        value=dict(work=work,choice=choice,recorded=True,target=target,statement=obj.payload['statement'])
+        if not display:return value
 
-    def candidates(self,*,limit=20,cursor=None):
+        source=self._obj(link(obj,'source'))
+        require(source.ref.kind=='work.head' and source.payload['work']==work,'wrong-followup-source')
+        current=source_head if source_head is not None else self.store.head(work_key(work))
+        if current is None:
+            value['source_state']='unavailable'
+        else:
+            head=self._obj(current)
+            require(head.ref.kind=='work.head' and head.payload['work']==work,'wrong-followup-source')
+            if link(head,'plan')!=link(source,'plan'):
+                value['source_state']='plan-changed'
+
+        # Resolve the selected record, never a newer relationship sharing its ID.
+        if choice=='candidate':
+            selected_ref=link(obj,'target')
+            selected=self._obj(selected_ref)
+            require(selected.ref.kind=='planning.candidate' and selected.payload['candidate']==target,'wrong-followup-target')
+            current=self.store.head(candidate_key(target))
+            value.update(target_title=selected.payload['title'],
+                         target_state=(selected.payload['state'] if current==selected_ref else
+                                       'unavailable' if current is None else 'record-changed'))
+        elif choice=='work':
+            selected,plan,_,_=head_summary(link(obj,'target'),self.store.load)
+            require(selected.payload['work']==target,'wrong-followup-target')
+            value.update(target_title=selected.payload['title'],target_state=self._work_link_state(target,plan.ref))
+        return value
+
+    def candidates(self,*,limit=20,cursor=None,display=False):
         root=self.store.root().ref
         values,next_cursor=page_heads(self.store,'candidate:',limit=limit,cursor=cursor)
-        items=[self.candidate(key[len('candidate:'):]) for key,ref in values]
+        items=[self.candidate(key[len('candidate:'):],display=display) for key,ref in values]
         require(self.store.root().ref==root,'list-changed')
         return dict(items=items,next=next_cursor)

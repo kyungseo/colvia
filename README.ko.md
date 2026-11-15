@@ -45,13 +45,15 @@ Colvia는 AI에게 맡긴 범위, 에이전트가 Colvia에 검토용으로 등�
 
 ## 설치와 첫 작업
 
-<p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-dark.png"><img src="manual/assets/gallery/overview-light.png" width="900" alt="처음 연결 미리보기를 확인한 뒤, 후보를 고르고 Work의 범위를 승인하고 결과를 검토해 다음 작업으로 이어갑니다."></picture>
-</p>
+SQLite Preview에는 작업 범위 승인부터 제출과 수락까지 Work 한 건의 기록이 남습니다. 예를 들어 에이전트에게 `문의.csv`의 문의 유형을 비교해 달라고 요청하세요. 보고서 파일과 검사 범위를 승인하고, 제출한 판본을 검토해 수락할지 정합니다. 이어 할 일을 남겨 두거나 이번 작업에서 마무리할 수 있습니다. 새 대화에서는 무엇을 수락했고 다음에 무엇을 하기로 했는지 물어보세요. [Preview의 Work와 후속 결정](manual/ko/foundation-preview.md#기록한-후속-작업-찾기)
 
 [SQLite Preview 안내](manual/ko/foundation-preview.md)에서 설치, 프로젝트 연결, 첫 작업을 확인하세요. 운영체제별 공개 설치 명령은 Preview 배포와 함께 안내합니다. Windows x64 실기기와 Windows·macOS ARM64 시험 VM에서 비공개 HTTPS 설치를 확인했습니다. 어떤 후보를 어디까지 확인했는지는 [검증 근거](docs/development/product-evidence-and-followups.md#record-foundation-verification)에 정리했습니다.
 
 ### 이전 프로필의 설치 예
+
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-dark.png"><img src="manual/assets/gallery/overview-light.png" width="900" alt="이전 프로필의 연결, 후보 선택, 범위 승인과 결과 검토 흐름"></picture>
+</p>
 
 [이전 프로필의 설치·갱신 안내](manual/ko/project-setup.md)와 [고객 문의 12건 예제](manual/ko/getting-started.md)는 이전 `.hrn/` 배포본용입니다. SQLite Preview에는 위의 안내를 따르세요.
 
@@ -103,6 +105,6 @@ Colvia는 AI에게 맡긴 범위, 에이전트가 Colvia에 검토용으로 등�
 
 ## 내 프로젝트와 기록
 
-SQLite Preview는 작업 기록을 운영체제의 사용자 데이터 폴더에 프로젝트별로 보관합니다. 기록·본문·설정·수락 이력은 [Colvia에서 내보내고 복원](manual/ko/foundation-preview.md#본문과-백업)할 수 있습니다. Git commit이나 clone으로는 이 기록을 백업할 수 없습니다. [연결을 해제](manual/ko/foundation-preview.md#알림과-연결-해제)해도 사용자 파일과 작업 기록은 남습니다.
+SQLite Preview는 작업 기록을 운영체제의 사용자 데이터 폴더에 프로젝트별로 보관합니다. 기록·본문·설정·수락 이력은 [Colvia에서 내보내고 복원](manual/ko/foundation-preview.md#본문과-백업)할 수 있습니다. Git commit이나 clone으로는 이 기록을 백업할 수 없습니다. [연결을 해제](manual/ko/foundation-preview.md#알림과-연결-해제)해도 사용자 파일과 작업 기록은 남습니다. 연결한 폴더를 옮겼다면 [새 위치를 확인하는 방법](manual/ko/foundation-preview.md#프로젝트-폴더를-옮긴-뒤-이어가기)을 살펴보세요.
 
 [이전 프로필 설명서](manual/ko/README.md) · [SQLite Preview의 사용 환경](manual/ko/foundation-preview.md#지원-목표와-확인-상태) · [한국어 기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)

@@ -44,7 +44,8 @@ class RenameAPI(API):
 class ExactMove:
     def __init__(self,*,api=None,files=None):
         self.api=api or RenameAPI();self.files=files or WindowsFiles(api=self.api)
-    def move(self,source,target,*,expected,limit=128*1024*1024,before_effect=lambda:None,event=lambda _:None):
+    def move(self,source,target,*,expected,limit=128*1024*1024,before_effect=lambda:None,event=lambda _:None,
+             inherited_creation=None,gate_intent=None):
         source=PureWindowsPath(local_path(source));target=PureWindowsPath(local_path(target));a=self.api
         require(source!=target and source.parent!=source and target.parent!=target,'windows-rename-path-invalid')
         require(type(limit) is int and 0<=limit<=1024**3,'windows-rename-byte-limit')
@@ -66,6 +67,10 @@ class ExactMove:
             actual=dict(identity=list(info['identity']),size=size,sha256=digest.hexdigest())
             require(size==info['size'] and actual==expected and a.state(handle,str(source))==info,
                     'windows-rename-source-changed')
+            if gate_intent is not None:
+                require(inherited_creation is None and type(gate_intent) is list and
+                        gate_intent==actual['identity'] and actual['size']==0 and
+                        actual['sha256']==hashlib.sha256(b'').hexdigest(),'windows-rename-gate-intent-invalid')
             before_effect();event('before-native-move')
             require(a.state(parent,str(target.parent))['identity']==parent_info['identity'] and
                     a.state(handle,str(source))==info,'windows-rename-source-changed')
@@ -73,7 +78,21 @@ class ExactMove:
             # An exception after rename is an unknown effect, never a license
             # to repeat it or replace a competing destination.
             after=a.state(handle,str(target))
-            require(after['identity']==info['identity'] and after['size']==info['size'] and
-                    after['write']==info['write'] and after['links']==1,'windows-rename-result-changed')
+            same=after['identity']==info['identity']
+            tunneled=(inherited_creation is not None and after['identity'][:2]==info['identity'][:2]
+                      and after['identity'][2]==inherited_creation)
+            gate_match=(gate_intent is not None and list(after['identity'][:2])==gate_intent[:2])
+            require((same or tunneled or gate_match) and after['size']==info['size'] and after['write']==info['write'] and
+                    after['links']==1 and not after['directory'] and not after.get('symlink'),'windows-rename-result-changed')
+            if not same:
+                # The known old name can contribute its creation time, not its
+                # bytes or file ID. Re-read the same locked handle at offset 0.
+                digest=hashlib.sha256();size=0
+                with self.files._stream_handle(handle) as stream:
+                    stream.seek(0)
+                    while raw:=stream.read(1024*1024):
+                        size+=len(raw);require(size<=limit,'windows-rename-byte-limit');digest.update(raw)
+                require(size==expected['size'] and digest.hexdigest()==expected['sha256'] and
+                        a.state(handle,str(target))==after,'windows-rename-result-changed')
             require(a.state(parent,str(target.parent))['identity']==parent_info['identity'],'windows-rename-parent-changed')
-            return actual
+            return dict(identity=list(after['identity']),size=size,sha256=digest.hexdigest()) if gate_intent is not None else actual

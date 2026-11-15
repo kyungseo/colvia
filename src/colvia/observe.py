@@ -36,7 +36,7 @@ def observe(root:Path,budget:ObservationBudget,*,git=None,registrations:tuple[Wo
     if topology.kind=='plain':
         proof=StructuralProof({},frozenset(),frozenset())
         policy=Policy((),(),'plain-observation-v1')
-        result=snapshot(actual_root,budget,protected=protected,cancelled=cancelled,reject_nested_git=True)
+        result=snapshot(actual_root,budget,protected=protected,cancelled=cancelled,reject_nested_git=True,reject_nested_colvia=True)
         require(discover(root,git)==topology,'project-topology-changed')
     else:
         proof=prove(topology,registrations,previous_containers=previous_containers,protected=protected)
@@ -47,13 +47,13 @@ def observe(root:Path,budget:ObservationBudget,*,git=None,registrations:tuple[Wo
                     git,actual_root,indexed,ObservationBudget(budget.entries,budget.read_bytes-opaque_bytes))
                 opaque_bytes+=used
         inventory=snapshot(actual_root,ObservationBudget(budget.entries,0),admit=lambda _:False,
-            boundaries=proof.boundaries,cancelled=cancelled,reject_nested_git=True,opaque_entries=opaque)
+            boundaries=proof.boundaries,cancelled=cancelled,reject_nested_git=True,reject_nested_colvia=True,opaque_entries=opaque)
         native=[s.native_path for s in inventory.inventory if not stat.S_ISDIR(s.mode)]
         policy=git.policy(topology,inventory.inventory)
         ignored=git.ignored(actual_root,native)
         admitted={logical_path(p) for p in native}-ignored|set(index)|set(protected)
         result=snapshot(actual_root,ObservationBudget(budget.entries,budget.read_bytes-opaque_bytes),admit=lambda p:p in admitted,protected=protected,
-                        boundaries=proof.boundaries,cancelled=cancelled,reject_nested_git=True,opaque_entries=opaque,
+                        boundaries=proof.boundaries,cancelled=cancelled,reject_nested_git=True,reject_nested_colvia=True,opaque_entries=opaque,
                         modes={p:e.mode for p,e in index.items() if e.mode in ('100644','100755')})
         require(inventory.inventory==result.inventory,'observation-inventory-changed')
         result=placeholders(git,actual_root,index,result)

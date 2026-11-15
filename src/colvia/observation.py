@@ -1,5 +1,6 @@
 """Pure observation policy and scope decisions; display never grants write scope."""
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from pathlib import PurePosixPath, PureWindowsPath
 import hashlib
 
 from .codec import canonical_bytes, require
@@ -45,6 +46,19 @@ class Policy:
         return hashlib.sha256(canonical_bytes(dict(
             sources=[dict(origin=s.origin,sha256=s.digest,size=len(s.raw)) for s in self.sources],
             config=[list(p) for p in self.config],tool=self.tool))).hexdigest()
+
+
+def relocated_policy(policy, before, after):
+    # Called after checking the registration's sealed location evidence.
+    # Translate only the repository's own config origin. Values, order,
+    # global exclusions and other origins keep their exact comparisons.
+    if before is None or after is None or before['path'] == after['path']:
+        return policy
+    cls = PurePosixPath if before['path'].startswith('/') else PureWindowsPath
+    old = 'file:' + str(cls(before['path']) / 'config') + ' '
+    new = 'file:' + str(cls(after['path']) / 'config') + ' '
+    return replace(policy, config=tuple((new+k[len(old):] if k.startswith(old) else k, v)
+                                        for k, v in policy.config))
 
 
 def literal_root_directory(raw:bytes) -> str:

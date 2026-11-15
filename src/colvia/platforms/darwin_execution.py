@@ -61,11 +61,14 @@ class DarwinExecutionObservation:
         require(self.effects.locked,'effect-lock-required')
         contract=grant.payload['contract']
         require(contract['capability']['observation_format']=='posix-document-process-1','execution-observation-unavailable')
-        registration=self.journal.obj(link(grant,'registration')).payload['root']
-        require(str(self.effects.root)==registration['path']==contract['target'],'execution-observer-root-mismatch')
+        from ..connection import Connections
+        from .posix import descriptor_location
+        ref,registration,_=Connections(self.journal.store).workspace(grant.payload['workspace'])
+        require(ref==link(grant,'registration') and str(self.effects.root)==registration.root.path==contract['target'],
+                'execution-observer-root-mismatch')
         with self.effects._root() as fd,self.effects._authority():
-            info=os.fstat(fd)
-            require(str(info.st_dev)==registration['volume'] and str(info.st_ino)==registration['file_id'],'execution-observer-root-changed')
+            current,_=descriptor_location(self.effects.root,fd)
+            require(current==registration.root,'execution-observer-root-changed')
     def process_absent(self,pid,birth,*,group):
         schema.birth(birth)
         # A present reused PID is ambiguous. Do not infer absence from its new

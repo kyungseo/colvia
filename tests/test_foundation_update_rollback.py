@@ -5,6 +5,35 @@ from colvia.updates.release import ReleaseUpdate,inspect_release
 import test_foundation_native_entry_update as native_fixture
 import test_foundation_notice_app as app_fixture
 
+class WindowsRollbackOrderTests(unittest.TestCase):
+    def test_reversed_native_journal_has_no_authority(self):
+        from pathlib import Path
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from colvia.codec import canonical_bytes
+        from colvia.updates.rollback import ReleaseRollback
+
+        home=Path('/synthetic-manager')
+        area=home/'operations/entry'
+        pending=home/'native-update.json'
+        rows=[dict(path=name,size=1) for name in ('colvia.exe','colvia-manage.exe')]
+        components=dict(name='entry',forward=SimpleNamespace(pending=pending,area=area,
+                        pending_token=lambda: b'journal-token'),old=rows,new=rows,
+                        before=b'before',after=b'after',description='entry.json')
+        items=[dict(path=row['path'],pre=row,post=row) for row in rows]
+        prepared=dict(version=1,target='current',before='before',after='after',effects=dict(items=items))
+        manifest=area/'prepared.json'
+        contents={pending:b'journal-token',manifest:canonical_bytes(prepared),home/'entry.json':b'before'}
+        files=SimpleNamespace(exists=lambda path: path in contents,read=lambda path,*_:contents[path])
+        service=ReleaseRollback(SimpleNamespace(home=SimpleNamespace(root=home,files=files)))
+        with patch.object(service,'components',side_effect=lambda _: [components.copy()]):
+            self.assertEqual(items,service.bind(dict(target='current'))[0]['manifest']['items'])
+            prepared['effects']['items']=list(reversed(items))
+            contents[manifest]=canonical_bytes(prepared)
+            with self.assertRaisesRegex(RecordError,'rollback-effects-not-authenticated'):
+                service.bind(dict(target='current'))
+
+
 class RollbackTests(unittest.TestCase):
     setUp=native_fixture.NativeEntryTests.setUp
     tearDown=native_fixture.NativeEntryTests.tearDown

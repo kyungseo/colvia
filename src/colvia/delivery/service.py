@@ -5,6 +5,7 @@ validated submit request below can publish its retained prepared result while
 owning its exact delivery attempt. Execution delegation is validated separately.
 """
 import time,uuid
+from contextlib import nullcontext
 from ..codec import require
 from ..records import record,link,head_summary,text
 from ..connection import workspace_key,PROJECT_KEY
@@ -92,25 +93,27 @@ class DeliveryService:
         require(action in ('inspect','submit','execute') and type(deadline_ns) is int and
             time.time_ns()<deadline_ns<=time.time_ns()+86400*10**9,'delivery-request-bound')
         ref,head=self.service._head(work);registration,_,_=self.service.workspace.verify()
-        objects=[];prepared=None;capture=None
-        if action=='submit':
-            capture=self.service._prepare_submission(operation=operation,work=work,summary=summary,checks=checks)
-            require(capture['expected']==ref,'delivery-dependency-changed')
-            prepared=capture['head'][0];objects=[*capture['objects'],capture['head']]
-        else:require(summary is None and checks is None,'delivery-unexpected-input')
         require((grant is not None)==(action=='execute'),'delivery-action-input')
-        pair=record('delivery.request',dict(delivery=delivery,work=work,workspace=head.payload['workspace'],action=action,
-            deadline_ns=deadline_ns,steps=1,receiver=receiver),{'head':('decision',ref),'registration':('decision',registration),
-            'prepared':('decision',prepared),'grant':('decision',grant)})
-        require(len(pair[1])<=1048576,'delivery-request-size')
-        def validate(view):
-            guard(view);request=self.request(pair[0],view);self.live(request,view)
+        require(action=='submit' or (summary is None and checks is None),'delivery-unexpected-input')
+        preparation=(self.service._prepare_submission(operation=operation,work=work,summary=summary,checks=checks)
+                     if action=='submit' else nullcontext(None))
+        with preparation as capture:
+            objects=[];prepared=None
             if capture:
-                for key,value in capture['pinned'].items():require(view.head(key)==value,'attribution-peer-changed')
-                if capture['pinned_root'] is not None:require(view.root().ref==capture['pinned_root'],'attribution-heads-changed')
-                self.service._recheck_observation(capture['current'],capture['scope'])
-        self.store.commit_heads(operation=operation,expected={prepared_key(delivery):None},changes={prepared_key(delivery):pair[0]},
-            objects=[*objects,pair],import_id=operation if capture else None,validate=validate)
+                require(capture['expected']==ref,'delivery-dependency-changed')
+                prepared=capture['head'][0];objects=[*capture['objects'],capture['head']]
+            pair=record('delivery.request',dict(delivery=delivery,work=work,workspace=head.payload['workspace'],action=action,
+                deadline_ns=deadline_ns,steps=1,receiver=receiver),{'head':('decision',ref),'registration':('decision',registration),
+                'prepared':('decision',prepared),'grant':('decision',grant)})
+            require(len(pair[1])<=1048576,'delivery-request-size')
+            def validate(view):
+                guard(view);request=self.request(pair[0],view);self.live(request,view)
+                if capture:
+                    for key,value in capture['pinned'].items():require(view.head(key)==value,'attribution-peer-changed')
+                    if capture['pinned_root'] is not None:require(view.root().ref==capture['pinned_root'],'attribution-heads-changed')
+                    self.service._recheck_observation(capture['current'],capture['scope'])
+            self.store.commit_heads(operation=operation,expected={prepared_key(delivery):None},changes={prepared_key(delivery):pair[0]},
+                objects=[*objects,pair],import_id=operation if capture else None,validate=validate)
         return dict(delivery=delivery,work=work,title=head.payload['title'],deadline_ns=deadline_ns,action=action,receiver=receiver,
             receipt=self.service._receipt('delivery-start',work,pair[0]),state='prepared')
     def start(self,*,operation,delivery,receipt,statement):

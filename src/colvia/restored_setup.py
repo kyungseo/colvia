@@ -32,6 +32,7 @@ class RestoredSetup(ProjectSetup):
                 require(link(previous,'binding')==old_ref,'managed-integration-stale')
                 owned={(e['root'],e['path']):e for e in previous.payload['entries']}
             root=Path(root);top=discover(root,self.git);require_connection_root(location(root),top)
+            self.require_identity_capability(top)
             require(top.kind==old.kind,'restore-topology-kind-changed')
             check_connection_boundary(self.home, self.git, top, overlap_code='rebind-project-overlap')
             entry,entry_inventory=self._entry()

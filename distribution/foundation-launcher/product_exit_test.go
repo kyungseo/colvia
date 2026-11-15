@@ -22,7 +22,12 @@ const childStderr = "synthetic diagnostic\n"
 // Re-exec the test binary as both launcher main and the verified child, without
 // depending on a shell or Python. Only the child kills its own PID in the
 // abnormal-end case; the launcher remains alive to classify the outcome.
+var noticeReadTestEntry func()
+
 func TestMain(m *testing.M) {
+	if noticeReadTestEntry != nil {
+		noticeReadTestEntry()
+	}
 	switch os.Getenv(helperMode) {
 	case "launcher":
 		os.Setenv(helperMode, "child")

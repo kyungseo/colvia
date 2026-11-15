@@ -6,7 +6,9 @@ only regular additions with a v1 submitted peer proof can augment comparison.
 from dataclasses import asdict
 from .codec import RecordError,require
 from .maps import read_map,scan_map
-from .records import link,head_summary,decode_policy
+from .records import link,head_summary,decode_policy,observation_identity
+from .connection import Connections
+from .connection_identity import contexts_match
 from .tree import read_tree,canonical_entries
 from .observation import changed_paths
 
@@ -51,13 +53,14 @@ class ProofMismatch(RecordError):
     def __init__(self,code,paths=()):super().__init__(code);self.paths=tuple(sorted(set(paths)))
 
 
-def _proof_entries(service,plan,adopted,load,baseline,entries,after_entries,registration,policy,context):
+def _proof_entries(service,plan,adopted,load,baseline,entries,after_entries,registration,policy,context,anchor=None):
     """One semantic proof for sealed audit/import and current live diagnosis."""
     def check(ok,code,paths=()):
         if not ok:raise ProofMismatch(code,paths)
     check(registration==link(baseline,'workspace'),'attribution-registration-mismatch')
     check(policy==decode_policy(link(baseline,'policy'),load),'attribution-policy-changed')
-    check(all(context[k]==baseline.payload[k] for k in CONTEXT),'attribution-context-changed')
+    check(contexts_match(context,baseline.payload,CONTEXT,load=load,workspace=registration,
+                         anchors=(anchor,observation_identity(baseline))),'attribution-context-changed')
     check(0<len(adopted)<=MAX_PATHS and len(set(adopted.values()))<=MAX_PEERS,'attribution-limit')
     before={e['path']:e for e in entries};after={e['path']:e for e in after_entries}
     baseline_index=PathIndex(before);scope_index=PathIndex(plan.payload['scope'])
@@ -81,7 +84,7 @@ def _proof_entries(service,plan,adopted,load,baseline,entries,after_entries,regi
         pb,pentries=service._baseline(pp,load);po=service._object(link(peer,'observation'),load)
         check(link(pb,'workspace')==link(po,'workspace')==link(baseline,'workspace'),'attribution-registration-mismatch',paths)
         check(link(pb,'policy')==link(po,'policy')==link(baseline,'policy'),'attribution-policy-changed',paths)
-        check(all(po.payload[k]==pb.payload[k]==baseline.payload[k] for k in CONTEXT),'attribution-context-changed',paths)
+        check(_peer_context(po,pb,baseline,load),'attribution-context-changed',paths)
         pbefore={e['path'] for e in pentries};pafter={e['path']:e for e in read_tree(link(po,'tree'),load)}
         mismatches=[p for p in pp.payload['scope'] if after.get(p)!=pafter.get(p)]
         check(not mismatches,'attribution-peer-scope-changed',mismatches)
@@ -93,6 +96,13 @@ def _proof_entries(service,plan,adopted,load,baseline,entries,after_entries,regi
             check(not baseline_index.overlaps(path) and not scope_index.overlaps(path),'attribution-path-overlap',[path])
             added.append(entry)
     return canonical_entries([*entries,*added])
+
+
+def _peer_context(observed,peer,baseline,load):
+    return all(contexts_match(item.payload,baseline.payload,CONTEXT,load=load,
+                             workspace=link(baseline,'workspace'),
+                             anchors=(observation_identity(item),observation_identity(baseline),
+                                      observation_identity(observed))) for item in (observed,peer))
 
 
 def effective_entries(service,plan,result,load):
@@ -107,7 +117,7 @@ def effective_entries(service,plan,result,load):
     require(all(adopted.get(p)==ref for p,ref in carried.items()),'attribution-protection-removed')
     observation=service._object(link(result,'observation'),load)
     return _proof_entries(service,plan,adopted,load,baseline,entries,read_tree(link(observation,'tree'),load),
-                          link(observation,'workspace'),decode_policy(link(observation,'policy'),load),observation.payload)
+                          link(observation,'workspace'),decode_policy(link(observation,'policy'),load),observation.payload,observation_identity(observation))
 
 
 def changes(before,after,scope=None):
@@ -152,7 +162,7 @@ def _live_proof(service,plan,adopted,baseline,original,current):
     context={k:(asdict(getattr(current.topology,k)) if getattr(current.topology,k) else None) for k in ('root','common','gitdir')}
     context.update(kind=current.topology.kind,containers=sorted(current.structural.containers),nested=sorted(current.structural.nested),opaque=[[p,list(v)] for p,v in current.opaque])
     try:
-        return _proof_entries(service,plan,adopted,service.store.load,baseline,original,current.snapshot.entries,registration,current.policy,context)
+        return _proof_entries(service,plan,adopted,service.store.load,baseline,original,current.snapshot.entries,registration,current.policy,context,Connections(service.store).identity(registration))
     except ProofMismatch as exc:
         if exc.code=='attribution-policy-changed':items=_policy_items(decode_policy(link(baseline,'policy'),service.store.load),current.policy)
         elif exc.code=='attribution-context-changed':items=_context_items(baseline.payload,context)
@@ -222,7 +232,7 @@ def select(service,head,plan,current):
         pb,pentries=service._baseline(pp);pbase={e['path'] for e in pentries}
         if link(pb,'policy')!=link(po,'policy') or link(pb,'policy')!=link(baseline,'policy'):continue
         if link(pb,'workspace')!=link(baseline,'workspace') or link(po,'workspace')!=link(baseline,'workspace'):continue
-        if any(po.payload[k]!=pb.payload[k] or po.payload[k]!=baseline.payload[k] for k in CONTEXT):
+        if not _peer_context(po,pb,baseline,load):
             causes=_context_items(pb.payload,po.payload)+_context_items(baseline.payload,po.payload)
             for path in candidates:structural_skips[path]=causes
             continue

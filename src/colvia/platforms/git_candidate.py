@@ -16,7 +16,19 @@ from ..storage.sqlite import _token
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 def absent(path):return not os.path.lexists(path)
 
+def validate_git_author(identity):
+    require(type(identity) is dict and set(identity)=={'name','email','date'},'git-author-required')
+    for value in identity.values():
+        require(type(value) is str and 0<len(value)<=256 and not any(c in value for c in '\0\n\r'),'invalid-git-author')
+    require(not any(c in identity['name']+identity['email'] for c in '<>'),'invalid-git-author')
+
+def validate_candidate_input(message, identity):
+    require(type(message) is str and 0<len(message.encode())<=65536 and '\0' not in message,'invalid-git-message')
+    validate_git_author(identity)
+
+
 class GitCandidate:
+    child_pending=False
     @contextmanager
     def exclusion(self):
         require(not self.locked,'git-integration-lock-reentry')
@@ -28,23 +40,26 @@ class GitCandidate:
             try:yield
             finally:self.locked=False
 
-    def command(self,args,*,input_bytes=b'',input_path=None,index=None,identity=None,allowed=(0,),event=lambda *_:None):
+    def command(self,args,*,input_bytes=b'',input_path=None,index=None,identity=None,allowed=(0,),event=lambda *_:None,invocation=lambda *_:None):
         require(asdict(location(self.root))==self.root_identity,'git-workspace-moved')
         require(not any((self.scratch/'hooks').iterdir()),'git-hooks-staging-not-empty')
         env=dict(self.env)
         if index is not None:
             require(Path(index).is_relative_to(self.scratch),'git-private-index-required');env['GIT_INDEX_FILE']=str(index)
         if identity is not None:
-            require(set(identity)=={'name','email','date'},'git-author-required')
-            for value in identity.values():require(type(value) is str and 0<len(value)<=256 and not any(c in value for c in '\0\n\r'),'invalid-git-author')
-            require(not any(c in identity['name']+identity['email'] for c in '<>'),'invalid-git-author')
+            validate_git_author(identity)
             for prefix in ('GIT_AUTHOR_','GIT_COMMITTER_'):
                 env.update({prefix+'NAME':identity['name'],prefix+'EMAIL':identity['email'],prefix+'DATE':identity['date']})
         command=[str(self.git.executable),'--no-optional-locks','-c','core.fsmonitor=false',
             '-c','core.untrackedCache=false','-c','core.hooksPath='+str(self.scratch/'hooks'),
             '-c','gc.auto=0','-c','maintenance.auto=false','-c','core.fsync=all','-c','core.fsyncMethod=fsync','-C',str(self.root),*args]
         with self.git.guard_executable():
+            invocation(command,env)
+            # Both native runners return only after verifying child closure.
+            require(not self.child_pending,'git-child-outcome-unknown')
+            self.child_pending=True
             result=self.children.run(command,cwd=self.root,env=env,input_bytes=input_bytes,input_path=input_path,event=event)
+            self.child_pending=False
         require(result.code in allowed,'git-integration-command-failed')
         return result
 
@@ -139,7 +154,7 @@ class GitCandidate:
 
     def prepare(self,operation,changes,body,*,message,identity):
         require(self.locked,'git-integration-lock-required');_token(operation)
-        require(type(message) is str and 0<len(message.encode())<=65536 and '\0' not in message,'invalid-git-message')
+        validate_candidate_input(message, identity)
         paths=sorted(changes);require(0<len(paths)<=100000,'git-selection-limit')
         context,i0,index=self.snapshot(paths);head=self.tree(context['ref'],context['algorithm'])
         area=self.scratch/operation;self.files.create_directory(area);after={}
@@ -237,7 +252,7 @@ class GitCandidate:
         require(self.inspect_outcome(m)==('new','new'),'git-integration-postcondition-unconfirmed')
         self.verify_objects(m);self.flush_ref(m)
 
-    def verify_objects(self,m):
+    def object_inventory(self,m):
         args=['rev-list','--objects','--no-object-names','--missing=error',m['new']]
         if m['context']['ref'] is not None:args+=['--not',m['context']['ref']]
         raw=self.command(args).stdout;oids=raw.splitlines();size=hashlib.new(m['context']['algorithm']).digest_size*2
@@ -246,6 +261,10 @@ class GitCandidate:
         require(len(result)==len(oids),'git-object-walk-unavailable')
         for oid,line in zip(oids,result,strict=True):
             parts=line.split();require(len(parts)==3 and parts[0]==oid and parts[1] in (b'commit',b'tree',b'blob',b'tag') and parts[2].isdigit(),'git-candidate-object-missing')
+        return raw,result
+
+    def verify_objects(self,m):
+        raw,_=self.object_inventory(m);oids=raw.splitlines()
         common=Path(m['context']['topology']['common']['path']);packed=False
         for oid in oids:
             value=oid.decode();path=common/'objects'/value[:2]/value[2:]

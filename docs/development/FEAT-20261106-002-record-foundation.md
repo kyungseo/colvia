@@ -1524,3 +1524,161 @@ The independent ordinary check on Windows sequence 12 completed under the standa
 The Owner accepted the prior installed qualification and approved one Windows-origin restore for the two remaining rebind checks. The Driver used the standard-user Windows console on the retained ARM64 sequence 12 installation. The native project launcher exported a new synthetic project, and the installed manager restored that backup once with the archive root and source project files preserved.
 
 A controlled interruption left a rebind journal without publishing a binding. After a conflicting child connection, the installed manager returned the expected overlap error on resume. The refusal preserved the journal, restored records, operation set and fixture files. A fresh preview and apply connected the restored instance to a disjoint folder. The original blocked journal, earlier failure evidence and protected records remained intact. The selected sequence and recovery slot were unchanged. These results qualify the two remaining same-platform rebind cases. The earlier cross-platform review requirement remains recorded.
+
+
+### Persistent Connection Identity Design — 2026-11-13
+
+A macOS installed connection preview stopped because existing registered roots retained different device numbers from the current observation, with unchanged inode numbers in six checked registrations. The cause of the device-number change is unconfirmed. New connection and representative Work execution did not begin; original records and failed evidence were preserved. This is a persistent-identity availability issue exposed before overlap classification, not demonstrated loss of overlap protection.
+
+The Owner authorized a bounded design only. The [persistent identity and legacy revalidation proposal](record-foundation/connection-identity-revalidation.md) separates operation-local guards from persisted identity, preserves original objects and Work baselines, and proposes an exact Owner-authorized revalidation record plus mandatory runtime capability. It includes overlap/race/refusal tests, restored-instance boundaries and a staged installed application plan. The new contract, product implementation and installed record writes are not activated. The fixed source checkpoint remains intact; the design and this progress entry are uncommitted.
+
+
+### Submission Refusal And Nested Relocation Protection — 2026-11-14
+
+Owner authorized source corrections and focused verification, with two bounded static reviews. Actual historical import cleanup, installed-candidate updates, commits and publication remain withheld. Early submission input validation must precede staging; only a newly created, confirmed unpublished attempt may be marked abandoned, preserving all chunks and claims. Unknown outcomes remain active. Both ordinary and delivery submission preparation share this boundary.
+
+A connected project moved under an independent project must refuse from the child; the parent must refuse ordinary observation of its nested locator, including ignored paths. Existing verified same-project worktrees and opaque gitlinks retain their established boundaries. Moving a folder does not authorize overwriting a binding or advancing Work baselines. General relocation/reconnection remains unsupported; copies, original locations and pending records must be preserved. Native installed qualification is pending.
+
+Focused source verification passed 87 distinct checks (overlapping reruns are not added). A preserved pre-fix synthetic refusal left one active import/claim; the same input now leaves none. The same nested plain-project fixture that was previously included in its parent now refuses. New cases preserve unknown outcomes and all body claims, distinguish confirmed publication from unconfirmed close, cover ordinary/delivery paths, and report both conflict locations for nested plain/Git roots. Windows path rendering and the Windows observation algorithm were checked with a portable API double; this is not native installed qualification.
+
+Two static Claude review rounds completed within their individual bounds. Result findings were corrected and verified by the Driver without an additional review invocation. The first regression run had two fixture attribute errors, and one existing CLI test expected the old staging residue; those failure logs remain preserved. The latter now checks zero import/claims before corrected submission and still verifies truthful failed/unavailable checks and unchanged source files.
+
+Historical active imports and non-submission import owners remain unchanged. Marking a current known refusal abandoned does not reclaim disk space. Unknown storage outcomes, any storage-engine error, interruptions and a failed close guard retain evidence and do not authorize retry. A late abandoned operation ID is not reusable; invalid input rejected before begin has no recorded attempt. The normal CLI generates a fresh operation ID unless one is explicitly supplied.
+
+The next x64 qualification is a separately authorized candidate integration/update and focused synthetic run, preserving existing launcher/NTFS fixes. Earlier CLI writing/submission/new-conversation and installation/Git connection successes are reused. Source implementation does not qualify all Windows permission modes or general folder relocation. Owner result acceptance, candidate update, commit and publication remain separate.
+
+## Windows notification receiver bounded reads
+
+2026-11-14 소스 보정 중. 정상 상세 조회의 관측 구간이 기존 수신기의 20초 제한보다 길었으나 이전 GUI 실패 원인은 로그 부재로 확정하지 않는다. 수신기 고정 조회를 60초로 제한하고, 실행 전 소유 Job에 편입한 자식과 자손만 정리하며 종료 확인과 출력 회수를 유한하게 수행한다. 시작·종료·오류·종료 상태는 검증한 비공개 관리 홈의 실행별 제한된 진단 기록에 남긴다. 본문·전체 환경은 복제하지 않는다. 등록·receiver-source·서명·Work 읽기 보호는 유지한다.
+
+집중 검사는 느린 정상 응답, 비정상 종료, 시간 초과, 자손의 파이프 유지, 출력 초과 및 입력 거부에 한정한다. 두 Windows 아키텍처의 빌드와 실제 실행, 설치본의 알림 클릭은 서로 별도 근거다. 기존 emitted/unknown 발송 상태를 지우거나 재발송하지 않으며 미발송 이벤트의 실제 상세 창은 검증 뒤에만 완료로 기록한다.
+
+수신기 후속 검증은 검사 helper의 옵션 구분자 누락으로 첫 Windows 합성 사례에서 중단됐다. 교차 빌드는 통과했지만 실제 조회·시간 초과·자손 정리의 통과 근거는 아니다. 정적 리뷰에서 새 Win32 호출의 포인터 수명과 명시적 비공개 로그 생성·검증을 보강할 필요를 확인했다. 설치본 반영과 새 알림은 실행하지 않았고, 이전 수락과 unknown 상태는 유지한다.
+
+
+### Windows notification receiver qualification — 2026-11-14
+
+The Owner authorized a bounded resumption after the preserved helper-argument and test-constant failures. The Driver corrected the test constant and verified the existing review corrections before rebuilding. Native focused checks passed on Windows x64 under the standard installation account and on Windows ARM64 through the VM service account: eight owned-process cases, input rejection and explicit private-audit creation. The ARM64 service run does not qualify a standard-user installed notification flow.
+
+The x64 isolated sequence 11 installation was updated once to sequence 12 using the retained trial trust; sequence 11 remains the recovery slot. The candidate changed the native executable and manifest while retaining 476 other archive members byte-for-byte. Both installed launcher aliases matched the new native digest. Existing Work heads, approvals, submissions, checked project files and prior emitted/unknown notification states matched before and after.
+
+One previously unattempted Claude Work notification was emitted and clicked by the Owner. With no existing receiver process at registration, the new receiver opened the actual detail window and showed the expected Work title, result filename and review state. The detail child finished in 23.485 seconds with exit code 0, confirmed closure and zero active descendants. This supports the bounded-read correction; it does not retroactively prove the exact cause of the older uninstrumented window failure.
+
+Temporary registration was disabled successfully: its target is null, the registration pending file is absent and all three owned user registry keys are absent. Diagnostic records and existing failure evidence remain preserved. No prior unknown notification was re-emitted, no Work was accepted by clicking, and no product commit or publication occurred. Windows ARM64 received focused native boundary qualification only; this x64 installed result does not claim ARM64 GUI qualification.
+
+The test controller was checked against the actual diagnostic schema and loading message before execution. Future user instructions must state the current phase, the wait for that phase and the next concrete action. Candidate checks and an update must not be presented as an immediately displayed test notification.
+
+## Windows Git 기본 ignore 경로 보정 · 2026-11-14
+
+Owner가 Git 보정·후속 x64 격리 갱신 1회·정상 통합과 ref/index 중단 복구의 75분 묶음을 승인했다. 기존 Git 등록·연결 및 호스트·알림 검사는 재사용한다. 제품 커밋·공개는 보류하며 새 실패는 재시도하지 않는다.
+
+기존 설치본은 일반 Windows 콘솔에서 Git 버전을 조회했지만, 전역 ignore 설정이 없는 합성 작업 준비에서 기본 경로를 결정하지 못해 중단됐다. 적용·복구까지 도달하지 않았다. Windows Git의 읽기 전용 조회는 HOME/XDG_CONFIG_HOME이 없는 환경에서도 자체 홈 확장으로 절대 경로를 반환했다. 최초 실패 프로세스의 환경 값은 기록되지 않아 그 값을 소급 확정하지 않는다.
+
+보정은 명시적 core.excludesfile과 기존 HOME/XDG 우선순위를 유지하면서, Windows에 두 값이 없을 때 같은 고정 Git/환경으로 기본 경로를 조회한다. 최종 경로는 절대 경로여야 한다. NUL 구분 출력으로 경로 끝 CR을 잘못 제거하지 않으며, Windows 환경변수 이름은 대소문자를 구분하지 않고 충돌 값은 거부한다. 사용자 설정과 권한은 바꾸지 않는다.
+
+Claude 구독 CLI의 도구 없는 계획·결과 리뷰를 수행했다. 계획 리뷰의 이스케이프 모호함을 실제 소스와 대조했고, 결과 리뷰의 NUL 출력·Windows 경로 판정·환경변수 대소문자 지적을 반영했다. 결과 리뷰 입력 이후 그 지적을 반영한 최종 보정은 Driver가 검사했으며 추가 리뷰를 받았다고 주장하지 않는다. 실제 Windows 통합 증적은 아직 미확인이다.
+
+집중 검사 17건(새 경로 검사 12건과 기존 ignore 정책 5건) 및 변경분 공백 검사가 통과했다. Windows 경로 단위 검사는 PureWindowsPath를 사용하며 실제 Windows 실행을 대신하지 않는다. 기존 12번 공급물에서 어댑터와 명세만 바꾼 13번 시험 후보를 기존 시험키로 서명했고, 나머지 476개 멤버는 바이트가 같다. x64 격리 설치본 적용·정상 통합·중단 복구는 다음 실행 결과로 구분한다. ARM64와 공개 최종 후보의 변경 영향은 이 결과를 자동 일반화하지 않고 기존 증적과 함께 판정한다.
+
+### 같은 묶음 실기기 결과
+
+x64 12→13 갱신과 Git 기본 ignore 경로는 실제 설치본에서 통과했다. 정상 Git 통합의 후보 준비 중 Windows 객체 내구성 처리에서 WinError5가 발생해 적용·ref/index 중단 복구는 실행하지 않았다. 관련 후보 객체들은 읽기 전용·링크수1이고, 현재 구현은 쓰기 접근으로 열어 FlushFileBuffers를 호출한다. 정확한 최초 거부 객체는 로그에 없어 특정하지 않는다. 기존 HEAD/index·무관 파일 staging, 기존 프로젝트 파일·Work 보존을 확인했다. 새 실패 재시도는 없다. 읽기 전용 속성을 해제하거나 내구성 검사를 생략하는 우회는 하지 않았다. 이 Windows 객체 내구성 경계는 별도 최소 보정 판단으로 남기며 정상 적용·복구 통과로 보고하지 않는다. 실제 후보·원본 실패·복구 슬롯은 보존한다.
+
+### Windows Git 객체 저장 보장 — 2026-11-14 제한 검증
+
+읽기 전용 Git 객체를 쓰기용으로 다시 여는 대신, 승인된 후보의 객체 집합을 후보 객체만 담은 새 pack/idx에 저장하고 Git 생성 단계의 동기화 옵션·자식 종료·체크섬·파일 식별·디렉터리 동기화를 확인하도록 보정했습니다. 저장 근거는 기존 통합 명세의 플랫폼 문맥에 함께 기록합니다. 기존 객체의 읽기 전용 속성이나 NTFS 권한을 완화하지 않습니다. 근거가 없는 과거 명세, 사라진 pack, 종료가 확인되지 않은 자식은 실제 적용과 복구 진입에서 거부합니다.
+
+[집중 검사](../../tests/test_foundation_windows_git_objects.py)와 기존 Windows 구성 검사의 고유 23건이 통과했습니다. 합성 환경에서 정상 통합, ref 반영·index 원본 이동·index 교체 뒤 중단 복구, 기존 스테이징 보존, 객체 전체의 0바이트 읽기 전용 중복본과 기존 MIDX가 있는 조회·체크아웃을 확인했습니다. 반복 실행 수는 고유 검사 수에 합산하지 않습니다. 두 정적 리뷰의 지적 중 실제 자식 명령·환경 결속을 보강했고, 적용 전 객체 검사 경로는 진입점 검사로 확인했습니다.
+
+Windows x64 실기기의 미설치 소스 사본 시험에서 후보 객체 저장·검증과 적용 전 상태 조회는 통과했습니다. 첫 적용은 일반 Git 디렉터리에 기록 저장소 전용의 비공개 DACL 조건을 요구하여 `windows-private-dacl-not-protected`로 중단됐습니다. 정상 통합 완료와 실제 중단 복구는 아직 확인하지 못했습니다. 새 실패 후 재실행과 후보 서명·갱신은 진행하지 않았습니다. 기존 설치본·복구 슬롯과 원 실패 근거를 유지했습니다.
+
+다음 보정 후보는 일반 Git 디렉터리의 ACL을 바꾸지 않고, 비공개 시험 영역에 준비한 잠금 파일을 보호된 이동으로 배치하는 경로입니다. 최초 획득과 복구 시 재획득을 함께 대조하며, 타인이 만든 잠금 파일은 덮어쓰거나 삭제하지 않습니다. 실제 구현·재검증은 별도 재개 결정 후 진행합니다. Windows ARM64의 변경 경계 확인과 물리 전원 장애 내구성은 이번 결과에 포함하지 않습니다.
+
+### Windows Git Index Gate — 2026-11-14 Resume
+
+Owner가 기존 누적 한도 안에서 잠금 생성·복구 보정과 실기기 재개 1회를 승인했다. 실제 Git 디렉터리는 DACL 상속을 유지하므로 비공개 기록 저장소의 직접 생성 조건을 적용하지 않는다. 비공개 준비 폴더에서 빈 잠금 파일을 만들고, 기존 동일 볼륨·무대체 이동으로 배치한 뒤 식별·내용·부모와 동기화를 확인한다. 일반 저장소 보호 규칙과 사용자 ACL은 바꾸지 않는다. 최초 획득과 복구 재획득은 같은 경로를 사용한다.
+
+집중 합성 검사 16개가 통과했다. 일반 Git 부모에서 비공개 생성을 거부하는 대역, 정상 통합, 기존 스테이징 보존, 잠금 소실 후 재획득, 경쟁 잠금·공유 거부·이동 직후 미기록 잠금 거부와 index 중단 복구를 포함한다. 이전 객체 읽기 반례 검사는 재실행하지 않았다. 추가 Claude 정적 리뷰 1회는 차단 지적 없음이며, 생성 경로의 공유 잠금 검사 보완 1건도 통과했다(16개에 포함된 동일 사례의 강화이며 합산하지 않음).
+
+이동 직후 소유 기록을 남기기 전에 중단된 잠금은 자동으로 인수하지 않는다. 해당 실패 상태와 준비 파일을 보존하는 기존 계약을 유지한다. 실기기 사전 검증·서명·격리 갱신 및 설치본 확인은 이 소스 검사와 별개이며 현재 대기 상태다. 이전 실패를 성공으로 소급하지 않는다.
+
+
+### Windows Git Index Gate 실기기 중단 — 2026-11-15
+
+짧은 시험 경로로 승인된 재개에서 준비와 잠금 생성은 통과했으나, 인덱스 이동 후 결과 검사에서 중단됐다. 새 인덱스의 볼륨·파일 ID·크기·SHA-256은 준비본과 같고 생성 시각만 보존된 이전 인덱스 값으로 바뀐 것을 Windows API로 확인했다. 실행 후보에 있는 알려진 생성 시각 처리 보정이 Git 인덱스 경로에는 적용되지 않았으며, 합성 대역도 이 조건을 재현하지 못했다.
+
+합성 저장소는 후보 ref와 새 인덱스가 배치됐지만 진행 기록이 index-intent이고 잠금이 남은 부분 적용 상태다. 이전 인덱스는 원래 식별·내용으로 보존됐다. 정상 통합 완료와 중단 복구는 미확인으로 유지한다. 기존 설치 선택·복구 슬롯과 활성 기록 루트는 변경되지 않았다. 새 실패 후 재시도·복구·서명·갱신은 하지 않았다.
+
+다음 보정은 실제 후보의 수락된 이동 helper를 소스와 정렬하고, 보존 원본의 알려진 생성 시각만 허용하는 인덱스 발행·상태 판정 및 복구 잠금 경계를 함께 검사하는 것으로 한정한다. 임의 식별 변화나 바이트 차이를 무시하지 않는다. 실제 구현과 재개는 별도 결정 전까지 보류한다.
+
+### Windows Git 알려진 생성 시각 처리 — 2026-11-15
+
+Owner가 인덱스 교체·중단 판정·복구 잠금 보정과 결합 정적 리뷰 1회를 승인했다. 실제 후보에 포함된 수락된 이동 helper를 소스에 정렬하고, 보존 원본의 기록된 생성 시각만 인덱스 발행과 결과 판정에 허용했다. 새 파일의 볼륨·파일 ID·크기·해시와 원본·부모·잠금 소유 검사는 유지한다. 사라진 잠금을 재획득할 때는 이전 소유 기록의 시각만 후보로 사용하고, 실제 새 잠금 식별을 확인한 뒤 소유 기록을 남긴다.
+
+집중 검사 32개와 리뷰 지적 후 집중 검사 4개가 통과했다. 후자 중 1개는 재검사이므로 고유 35개다. 실제 NTFS가 아닌 대역 검사이며, 알려진 생성 시각 변화와 잘못된 시각·ID·내용, 원본 변조, 이동 후 응답 유실과 복구를 구분한다. Claude 정적 리뷰는 차단 지적이 없었고, 입력 검증 순서와 ASCII 검사를 Driver가 추가 보정·확인했다. 추가 리뷰를 받은 것으로 계산하지 않는다.
+
+외부 Git 작업이 만든 뒤 지운 이름의 알려지지 않은 생성 시각과, 잠금 이동 후 DB 소유 기록 전에 중단되는 경우는 계속 자동 인수하지 않는다. 미기록 잠금 때문에 일반 Git 작업이 막힐 수 있는 사용성·복구 공백은 공개 전 판단 항목으로 남긴다. 이를 숨기려고 시험에 대기 시간을 넣거나 OS 설정을 바꾸지 않는다. 일반적인 staged-gate intent 계약 확대는 이번 보정에 포함하지 않는다.
+
+실기기 재개는 기존 실패 저장소를 보존한 새 시험 사본에서 수행하며, 사전 검증 전체 통과 후에만 기존 시험키 서명·격리 갱신을 허용한다. 소스 통과와 실제 통합·복구 결과는 별도로 기록한다.
+
+### Windows Git 인덱스 보정 실기기 완료 — 2026-11-15
+
+새 합성 사본에서 정상 통합과 ref 반영 후 중단, 잠금 재획득, 원본 인덱스 이동 직후 중단, 새 인덱스 교체 직후 중단의 5개 경계가 통과했다. 계획된 중단 이외의 종료는 0이며, 모든 자식 종료와 시간 초과 부재를 확인했다. 기존 읽기 전용 객체의 내용·속성과 무관한 스테이징을 유지했다. 이전 실패 사본에는 복구나 재실행을 하지 않았다.
+
+검증한 소스와 바이트가 같은 시험 후보를 기존 시험키로 서명하고 Windows x64 격리 설치본을 13→14로 한 번 갱신했다. 실제 14번 설치본의 정상 통합·원본 인덱스 이동 후 중단 복구도 통과했다. 선택은 14번, 복구 슬롯은 13번이며 기존 실행기·runtime은 그대로다. 기존 Work·승인·제출본과 시험 프로젝트 파일의 전후 대조가 일치했다. 결과 회수와 종료 코드 0까지 확인했다.
+
+소스·리뷰·준비·실기기·회수의 이번 정상 진행 예상은 40–60분이었고 약 34분이 소요됐다. 실기기 실행에는 서명 전달 대기를 포함해 16분35초가 걸렸다. 이전 누적 상한 안에서 완료했으며 반복 검사 수를 고유 검사 수에 더하지 않았다.
+
+알려지지 않은 외부 이름 캐시와 소유 기록 이전 중단에 대한 자동 잠금 복구는 앞서 명시한 별도 계약 판단으로 유지한다. 이번 성공은 그 경계나 Windows ARM64의 해당 변경 경계, 최종 공개 후보를 대신 검증하지 않는다. 제품 커밋·공개와 결과 수락은 수행하지 않았다.
+
+### Windows Git 잠금 사전 기록 보강 — 집중 검사 중단 (2026-11-15)
+
+Owner는 앞선 x64 정상 통합·복구 결과를 수락하고, 미기록 잠금의 최소 복구 보강 및 Windows 두 아키텍처 확인을 승인했다. 계획 리뷰의 네 지적을 반영해 현재 통합 상태와 준비 파일 식별정보를 이동 전에 결속하고, 중단 후 같은 파일만 기존 복구 절차로 인계하도록 보정했다. 이전 근거 없는 잠금과 경쟁 파일은 계속 거부한다. SQLite 스키마는 바꾸지 않았다.
+
+집중 검사 한 번에서38건 중37건 통과·1건 오류가 났다. 기존 인덱스 이동 중단 시험의 래퍼가 이동 helper의 반환값을 버려, 새 잠금 소유 확인이 None을 받는 시험 도구 오류다. 의도한 중단 지점 전에 거부됐으므로 해당 복구 검사는 미확인이다. 원본 실패 로그와 수정본을 보존했으며, 새 실패 시 중단 조건에 따라 보정 재실행·후보 서명·x64/ARM64 갱신은 하지 않았다. 실행기에 fail-fast 옵션이 없어 같은 검사 묶음의 나머지 사례는 계속 실행됐지만 추가 호출은 없었다. 다음 승인된 재개에는 해당 옵션을 적용한다. 변경분 공백 검사에서 시험 파일 끝 빈 줄도 남아 있음을 확인했다.
+
+남은 범위는 시험 래퍼 반환값·공백 보정, 해당 중단 경로 한 번과 공통 조정자 영향·안내 검사, 잔여 결과 리뷰1회, 두 플랫폼의 변경 경계 및 격리 갱신이다. 기존 통과를 반복하지 않는다. 이번 부분 수행은 약15분이며 전체 완료 시간으로 계산하지 않는다. x64 기준점14/13은 읽기로 확인됐고 유지했다. ARM64는 사전 파일 전달만 확인했다. 제품 커밋·push·공개는 보류한다.
+
+
+### Windows Git 잠금 사전 기록 보강 — 단일 검사 재개와 결과 리뷰 (2026-11-15)
+
+승인된 래퍼 반환값·공백 보정 후 실패했던 인덱스 이동 중단 복구 검사 한 건이 10.169초에 통과했다. 최초 로그와 수정 전 사본을 보존했고, 나머지 37건은 기존 결과를 재사용했다.
+
+결과 리뷰는 잠금 사전 기록이 쓰기 도중 남을 가능성을 지적했다. WindowsFiles.create는 준비 파일을 완전히 쓰고 동기화한 후 최종 이름으로 이동하므로 그 과정에서 최종 이름에 일부 바이트만 공개되지 않는다. 다만 이동 전에 종료되면 남는 .prepared-* 파일을 복구 코드가 최종 기록과 같은 접두사로 선택한 다음 이름 검사에서 거부한다. ref를 반영하고 잠금을 다시 만드는 시점에 이 상태가 생기면 다음 복구도 멈춘다. 소스에서 이 경로를 확인했으며 Windows에서 해당 중단을 실행하지 않았다.
+
+새 실패 시 재시도하지 않는 조건에 따라 결과 리뷰, 원래 실패, 보정본을 보존하고 후보 서명과 두 플랫폼 갱신 전에 멈췄다. 남은 최소 보정은 저장소가 만드는 정확한 임시 파일 이름만 소유권 판정에서 건너뛰고 파일을 보존하는 것이다. 완성된 기록의 내용·작업 상태·파일 식별자 검사는 유지해야 한다. 기존 리뷰 2회를 사용했다.
+
+
+### Windows Git 잠금 사전 기록 보강 — 임시 파일 경계와 x64 통과 (2026-11-15)
+
+Windows 저장 도구가 만드는 정확한 임시 이름만 잠금 소유 판정에서 건너뛴다. 최종 기록의 이름·내용·작업 상태·파일 식별자 확인은 유지했다. ref 반영 뒤 재획득 기록의 쓰기를 중단한 합성 사례에서 임시 바이트 보존과 복구 완료를 확인했다. 한 건만 실행했고 10.782초였다.
+
+x64 실기기는 변경된 경계 세 건을 통과했다. 임시 기록 쓰기 중단, 잠금 이동 후 소유 저장 전 중단, 외부 잠금 거부를 새 합성 저장소에서 확인했다. 이후 기존 시험키로 서명한 15번을 오프라인으로 한 번 갱신하고, 설치본에서 임시 기록 중단과 복구를 다시 검증했다. 선택 15번·복구 14번, 기존 기록 비교 일치, 사전 검사·갱신·설치본 검사 각 종료 코드 0과 남은 프로세스 0을 확인했다. Mac에서 받은 결과 ZIP의 바이트·CRC·해시와 내부 증거를 독립 검증했다.
+
+ARM64 19번 후보와 검증 도구는 조립 및 VM 전달을 마쳤고, 표준 사용자 세션에서의 시험 시작을 기다리고 있다. ARM64 서명과 갱신은 해당 사전 검사 통과 뒤에 진행한다.
+
+
+ARM64는 UTM 재시작과 표준 계정 로그인 뒤 런북의 공식 입력 순서로 한 번 시작했다. 첫 진행 안내를 리디렉션된 cp1252 출력으로 쓰다가 UnicodeEncodeError로 종료됐다. Git 사전 검사 전이며 서명과 갱신은 미시작이다. 종료 코드 1, 원본 오류 로그와 결과 ZIP, 기존 41개 기록 전후 일치를 보존했다. 새 실패 재시도 금지에 따라 멈췄다. 다음 실행이 승인되면 별도 시도 경로에서 시험 실행기와 각 격리 자식의 UTF-8 모드를 명시하고 ARM64 후보만 검증한다. 이미 완료한 x64는 반복하지 않는다.
+
+
+### Windows Git 잠금 사전 기록 보강 — ARM64 UTF-8 통과와 후보 보정 누락 (2026-11-15)
+
+기존 19번 후보를 그대로 두고, 새 경로의 시험 실행기와 격리 Python 자식에 UTF-8을 명시해 ARM64에서 한 번 재개했다. 한글 표준 출력과 오류의 리디렉션을 실제 VM에서 확인했다. 그다음 첫 합성 Work 계획에서 `git-global-ignore-location-unavailable`로 종료됐다. 19번에 포함된 Git 어댑터에는 현재 수락 소스와 통과한 x64 15번에 반영된 Windows 기본 제외 파일 경로 보정이 빠져 있다. 공식 Git에 제외 파일이 따로 설정되지 않은 환경에서 드러났다. ZIP 멤버와 명세를 대조해 누락을 확인했다.
+
+새 결과와 첫 실패 기록을 모두 보존했다. 기존 기록 41개의 전후 바이트가 일치하고 종료 후 남은 시험 자식은 0개다. 잠금 중단·복구 검사는 미도달 상태이고 19번 서명·갱신·재실행은 미시작이다. 후속 조립 전에 기존 수락 보정과 후보 구성의 차이를 대조한다. x64 통과 근거를 재사용하며 제품 커밋·push·공개는 보류한다.
+
+
+### Windows Git 잠금 사전 기록 보강 — ARM64 20번 사전 검사 통과 (2026-11-15)
+
+19번의 Python 모듈 146개를 대조해 Git 기본 제외 파일 경로를 포함한 수락 보정 13개를 반영했다. 이미 검증한 Windows 실행기·복구 관련 시험 배포 파일과 ARM64 공급물은 재사용했다. 20번 후보의 파일과 명세를 검증했고, Windows ARM64 사전 검사에서 실제 Git 기본 제외 파일 조회, 임시 기록 중단 복구, 잠금 이동 직후 중단 복구, 외부 잠금 거부가 통과했다. 기존 기록 41개는 사전 검사 전후 일치했다. 기존 시험키로 서명 후 서명 메타데이터 체인까지 검증했다.
+
+오프라인 전달 도구가 기존 라이브러리의 비밀키 경계 문자열을 키 본문으로 오인해 전달 전에 멈췄다. 서명본과 세 번의 ARM64 시험 기록을 보존했다. 기존 대기 실행은 취소했고, 갱신용 파일을 보내거나 갱신을 호출하지 않았다. ARM64 18번에서 20번으로의 격리 갱신과 설치본의 중단·복구 확인이 남았다. 통과한 x64 시험과 소스 검사는 반복하지 않았다.
+
+
+### Windows Git 잠금 사전 기록 보강 — ARM64 설치본 통과 (2026-11-15)
+
+전달 도구의 비밀키 경계 문자열 오탐을 보정했다. 고정된 배포 파일 목록과 해시, 서명 체인과 실제 키 본문을 검사하고, 기존 서명본을 ARM64 시험 VM에 전달한 뒤 전체 바이트를 확인했다. 이전 사전 검사 세 건의 증적을 재사용했다.
+
+표준 사용자로 18번에서 서명된 20번으로 오프라인 격리 갱신 1회를 마쳤다. 선택 20번·복구 슬롯 18번, 기존 기록 41개의 전후 일치, 설치본의 임시 잠금 기록 쓰기 중단 후 Git 통합 복구를 확인했다. 복구에서 임시 기록의 바이트, 기존 읽기 전용 객체와 무관한 스테이징을 보존했고 진행 중 표시와 활성 잠금은 정리됐다. 갱신·설치본 검사와 배치는 모두 종료 0이며 남은 시험 자식은 0개다.
+
+이전 실패 기록은 보존했다. x64의 기존 결과를 재사용했으며, 검증 범위는 이 격리 후보와 변경 경계다. 제품 커밋·push·공개는 보류 상태다.

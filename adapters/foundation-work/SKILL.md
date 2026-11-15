@@ -105,7 +105,13 @@ For existing Work:
    `./colvia --json ordinary review WORK_ID`. Keep these fields in tool calls;
    do not paste them in the human response. Use the ID from `list`, not a guessed
    slug or the visible title. A normal resume needs list, the selected view/review,
-   and the relevant content; do not repeat both views without a specific need.
+   and the relevant content. When the request is about the next decision, use
+   `followup WORK_ID` to read the selected Work’s saved choice, or `candidate list`
+   for saved candidates. Distinguish no record, explicitly none, and deferred.
+   Use these commands without `--json` when explaining whether a choice or
+   link refers to an earlier plan or candidate. The structured follow-up read
+   gives the saved choice and target ID without the current display details. A saved
+   relationship carries no permission to start the target Work.
 4. Read `./colvia <group> --help` only for the next needed action. Do not inspect
    implementation source or generate serialization scripts to perform ordinary
    planning, submission or acceptance.
@@ -126,6 +132,12 @@ Use the actual command result, not an assumed permission setting:
 `workspace-registration-required` needs the manager's connection preview; it is
 not an empty Work list. A non-null `next` means there are more pages. A new folder
 without a verified connection must use that preview before any record writes.
+For `connection-move-review-required`, use the installed manager's
+`move-preview` with the existing project ID and new absolute root. Review the
+verified old and new locations. Use the exact canonical preview and receipt
+only after the person approves the move. Inspect `move-status` before resuming
+an interrupted operation with the same ID. Keep the connection file and
+record store intact. A copy, overlap or unverified identity requires diagnosis.
 
 Use the host's actual denial details and verified connection information to locate
 the required path and read/write/execute access. Colvia's generic error does not
@@ -151,15 +163,22 @@ establish this host's permissions.
 
 ## Ordinary work
 
-- Prepare the concrete plan with `ordinary plan`: goal, affected files, checks and
-  exclusions. Use existing authorization when it covers this exact plan and the
-  command contract permits it; otherwise ask once using the concrete scope.
+- Before `ordinary plan`, agree on the goal, exact files, checks and exclusions.
+  Recording the plan saves the existing contents of its listed files, even
+  before the user approves the plan. Submitting keeps the result contents.
+  Both can enter backups, and the Preview has no selective content deletion.
+  Exclude secrets and unrelated files before the capture. Reuse existing
+  authorization for this exact action when it covers those facts. Ask once
+  when a decision is needed.
 - Keep the receipt and machine identifiers in tool calls. Explain the practical
   reason for any new decision. Follow a host-required disclosure when applicable,
   but do not repeat internal rules and paths in routine status or completion text.
 - After approval, record it and start the work. Edit within scope and perform the
   checks that establish the requested result. Preserve source materials and leave
   business choices such as prioritization to the person unless explicitly delegated.
+  If a new file is needed outside the approved Work, preserve its existing edits and
+  checks. Show the additional files, why they are needed and any check changes.
+  Record an approved separate Work for that scope before editing those files.
 - In reports, distinguish source-supported facts, interpretations and proposed
   actions. Counts or categories in supplied data alone do not establish gaps in
   the project's existing documents (such as customer guides or help documents),

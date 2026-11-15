@@ -5,7 +5,7 @@ reserve a durable effect, and validate whole-tree dependencies around each step.
 Unknown outcomes preserve every remaining file. No cleanup or rollback API exists.
 """
 from contextlib import contextmanager
-import ctypes,fcntl,hashlib,os,stat,sys
+import fcntl,hashlib,os,stat,sys
 from pathlib import Path
 from ..codec import RecordError,require
 from ..storage.sqlite import _token
@@ -14,21 +14,12 @@ from .posix import open_directory
 from .exclusive import available,rename
 
 
-class _Statfs(ctypes.Structure):
-    # Darwin SDK sys/mount.h, __DARWIN_STRUCT_STATFS64.
-    _fields_=[('bsize',ctypes.c_uint32),('iosize',ctypes.c_int32),
-        *[(name,ctypes.c_uint64) for name in ('blocks','bfree','bavail','files','ffree')],
-        ('fsid',ctypes.c_int32*2),('owner',ctypes.c_uint32),('type',ctypes.c_uint32),
-        ('flags',ctypes.c_uint32),('subtype',ctypes.c_uint32),('fstype',ctypes.c_char*16),
-        ('mount',ctypes.c_char*1024),('source',ctypes.c_char*1024),
-        ('flags_ext',ctypes.c_uint32),('reserved',ctypes.c_uint32*7)]
+from .darwin_location import filesystem
 
 
 def local_apfs(fd):
     require(sys.platform=='darwin' and available(),'effect-writer-unavailable')
-    info=_Statfs();fn=ctypes.CDLL(None,use_errno=True).fstatfs
-    fn.argtypes=[ctypes.c_int,ctypes.POINTER(_Statfs)];fn.restype=ctypes.c_int
-    if fn(fd,ctypes.byref(info))!=0:raise OSError(ctypes.get_errno(),'fstatfs failed')
+    info=filesystem(fd)
     # MNT_LOCAL from the native SDK; do not infer local semantics from a path.
     require(info.fstype==b'apfs' and info.flags&0x1000,'effect-filesystem-unqualified')
 

@@ -98,4 +98,50 @@ class WindowsRenameTests(unittest.TestCase):
         for name in ('','..','a/b','a\\b','a\0b'):
             with self.subTest(name=name),self.assertRaises(RecordError):rename_info(name)
 
+
+    def test_only_recorded_creation_change_is_allowed_and_bytes_are_reread(self):
+        rename=self.api.rename
+        def tunnel(h,target):
+            rename(h,target);self.api.nodes[target]['identity']=(1,'source',7)
+        self.api.rename=tunnel
+        self.assertEqual(self.expected,self.move(inherited_creation=7))
+
+    def test_unknown_creation_and_changed_bytes_are_not_excused(self):
+        for creation,raw,identity in ((8,b'old','source'),(7,b'new','source'),(7,b'old','foreign')):
+            with self.subTest(creation=creation,raw=raw,identity=identity):
+                self.setUp();rename=self.api.rename
+                def changed(h,target):
+                    rename(h,target);self.api.nodes[target].update(identity=(1,identity,creation),raw=raw)
+                self.api.rename=changed
+                with self.assertRaises(RecordError):self.move(inherited_creation=7)
+                self.assertNotIn(SOURCE,self.api.nodes)
+
+    def empty_gate(self):
+        self.api.nodes[SOURCE].update(raw=b'',size=0)
+        self.expected.update(size=0,sha256=hashlib.sha256(b'').hexdigest())
+    def test_journaled_empty_gate_returns_held_tunneled_identity(self):
+        self.empty_gate();rename=self.api.rename
+        def tunnel(h,target):
+            rename(h,target);self.api.nodes[target]['identity']=(1,'source',123)
+        self.api.rename=tunnel
+        actual=self.move(gate_intent=list(self.expected['identity']))
+        self.assertEqual([1,'source',123],actual['identity']);self.assertEqual(0,actual['size'])
+    def test_gate_option_cannot_relax_nonempty_or_wrong_identity(self):
+        for gate,known in (([1,'source',1],None),([1,'foreign',1],None),([1,'source',1],7)):
+            with self.subTest(gate=gate,known=known):
+                self.setUp()
+                with self.assertRaisesRegex(RecordError,'gate-intent-invalid'):
+                    self.move(gate_intent=gate,inherited_creation=known)
+                self.assertFalse(any(c[0]=='rename' for c in self.api.calls))
+    def test_empty_gate_wrong_bytes_fileid_or_write_after_move_refuse(self):
+        for field,value in (('identity',(1,'foreign',123)),('raw',b'x'),('write',77)):
+            with self.subTest(field=field):
+                self.setUp();self.empty_gate();rename=self.api.rename
+                def change(h,target):
+                    rename(h,target);self.api.nodes[target]['identity']=(1,'source',123)
+                    self.api.nodes[target][field]=value
+                self.api.rename=change
+                with self.assertRaises(RecordError):self.move(gate_intent=list(self.expected['identity']))
+
+
 if __name__=='__main__':unittest.main()

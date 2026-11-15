@@ -9,7 +9,7 @@ from .codec import Edge,encode_envelope,canonical_bytes,require
 from .graph import Schema,validate_closure
 from .records import record,link,fields,text,application_registry,operation_closure
 from .work import WorkService,work_key
-from .connection import PROJECT_KEY,workspace_key
+from .connection import Connections,PROJECT_KEY,workspace_key
 from .effects import PENDING,guard
 from .bodies import ingest_body,body_bytes,descriptor
 from .maps import map_get
@@ -84,10 +84,12 @@ class GitIntegration:
     def _validate(self,plan,view):
         m=plan.payload['manifest']
         registration=self.obj(link(plan,'workspace'),view);binding=self.obj(link(plan,'binding'),view)
-        require(plan.payload['workspace']==self.workspace.workspace==registration.payload['workspace'] and
-                m['context']['topology']['root']==registration.payload['root'] and
-                m['context']['topology']['gitdir']==registration.payload['gitdir'] and
-                binding.payload['kind']=='git' and m['context']['topology']['common']==binding.payload['location'],
+        from dataclasses import asdict
+        ref,effective,current=Connections(self.store).workspace(self.workspace.workspace)
+        top=m['context']['topology']
+        require(ref==registration.ref and plan.payload['workspace']==self.workspace.workspace==registration.payload['workspace'] and
+                current.kind==binding.payload['kind']=='git' and top['root']==asdict(effective.root) and
+                effective.gitdir is not None and top['gitdir']==asdict(effective.gitdir) and top['common']==asdict(current.location),
                 'git-workspace-manifest-mismatch')
         selected={}
         require(view.head(PROJECT_KEY)==link(plan,'binding') and view.head(workspace_key(self.workspace.workspace))==link(plan,'workspace'),
@@ -112,27 +114,33 @@ class GitIntegration:
     def _receipt(self,ref):return hashlib.sha256(canonical_bytes(dict(project=self.store.project,instance=self.store.instance,plan=ref.as_dict()))).hexdigest()
     def prepare(self,*,operation,works,message,identity):
         _token(operation);require(type(works) is list and 0<len(works)<=128 and len(works)==len(set(works)),'git-work-selection-invalid')
+        from .platforms.git_candidate import validate_candidate_input
+        validate_candidate_input(message, identity)
         require(self.store.head(PENDING) is None,'external-effect-pending');require(self.store.head(key(operation)) is None,'git-integration-already-exists')
         with self.port.exclusion():
             registration,_,_=self.workspace.verify();binding=self.store.head(PROJECT_KEY)
             heads,changes,bodies=self._selected(works)
-            m=self.port.prepare(operation,changes,lambda path:body_bytes(bodies[path],self.store.load),message=message,identity=identity)
-            area=self.port.verify_manifest(m);self.store.begin_import(operation,'git-candidate');objects=[];refs={}
-            for name in ('i0','i1','diff'):
-                raw=self.port.files.read(area/name,128*1024*1024)
-                pair=ingest_body(io.BytesIO(raw),self.store,operation,expected_size=len(raw),expected_sha256=hashlib.sha256(raw).hexdigest())
-                objects.append(pair);refs[name]=pair[0]
-            edges=[Edge('decision',binding),Edge('decision',registration),*[Edge('decision',h) for h in heads],
-                   *[Edge('integrity',refs[n]) for n in ('i0','i1','diff')]]
-            n=len(heads);links=dict(binding=[0],workspace=[1],accepted=list(range(2,2+n)),i0=[2+n],i1=[3+n],diff=[4+n])
-            plan=encode_envelope('git.integration-plan',1,dict(operation=operation,manifest=m,works=works,workspace=self.workspace.workspace,links=links),tuple(edges))
-            state=record('git.integration-state',dict(operation=operation,phase='prepared',sequence=0,owner=None,child=None,child_phase=None,statement='Candidate prepared; not approved'),
-                         {'plan':('decision',plan[0]),'previous':('provenance',None)})
-            def validate(view):
-                guard(view);self._validate(self.obj(plan[0],view),view)
-                validate_closure([state[0]],view,self.registry,self.closure)
-            self.port.check(m)
-            self.store.commit_heads(operation=operation+'-prepare',expected={key(operation):None},changes={key(operation):state[0]},objects=[*objects,plan,state],import_id=operation,validate=validate)
+            # Git object writes precede the ref/index reservation. Keep the
+            # attempt active until a known refusal or this exact publication.
+            attempt=operation+'-prepare'
+            with self.store.import_attempt(attempt,'git-candidate',can_abandon=lambda: not self.port.child_pending):
+                m=self.port.prepare(operation,changes,lambda path:body_bytes(bodies[path],self.store.load),message=message,identity=identity)
+                area=self.port.verify_manifest(m);objects=[];refs={}
+                for name in ('i0','i1','diff'):
+                    raw=self.port.files.read(area/name,128*1024*1024)
+                    pair=ingest_body(io.BytesIO(raw),self.store,attempt,expected_size=len(raw),expected_sha256=hashlib.sha256(raw).hexdigest())
+                    objects.append(pair);refs[name]=pair[0]
+                edges=[Edge('decision',binding),Edge('decision',registration),*[Edge('decision',h) for h in heads],
+                       *[Edge('integrity',refs[n]) for n in ('i0','i1','diff')]]
+                n=len(heads);links=dict(binding=[0],workspace=[1],accepted=list(range(2,2+n)),i0=[2+n],i1=[3+n],diff=[4+n])
+                plan=encode_envelope('git.integration-plan',1,dict(operation=operation,manifest=m,works=works,workspace=self.workspace.workspace,links=links),tuple(edges))
+                state=record('git.integration-state',dict(operation=operation,phase='prepared',sequence=0,owner=None,child=None,child_phase=None,statement='Candidate prepared; not approved'),
+                             {'plan':('decision',plan[0]),'previous':('provenance',None)})
+                def validate(view):
+                    guard(view);self._validate(self.obj(plan[0],view),view)
+                    validate_closure([state[0]],view,self.registry,self.closure)
+                self.port.check(m)
+                self.store.commit_heads(operation=attempt,expected={key(operation):None},changes={key(operation):state[0]},objects=[*objects,plan,state],import_id=attempt,validate=validate)
         return self.preview(operation)
     def preview(self,operation):
         _,state,plan=self._state(operation);m=plan.payload['manifest']
@@ -158,7 +166,10 @@ class GitIntegration:
             require(state.payload['phase']=='prepared','git-integration-recovery-required')
             require(receipt==self._receipt(plan.ref),'git-integration-review-changed');self.port.check(m)
             ref,state=self._advance(ref,state,plan,'lock-intent',statement=statement,reserve=True);event('lock-intent')
-            owner=self.port.acquire_index(m)
+            if hasattr(self.port,'reconcile_owner'):
+                def live_gate():require(self.store.head(PENDING)==ref and self.store.head(key(operation))==ref,'git-effect-authority-changed')
+                owner=self.port.acquire_index(m,attempt=dict(head=ref.as_dict(),sequence=state.payload['sequence']),live=live_gate)
+            else:owner=self.port.acquire_index(m)
             ref,state=self._advance(ref,state,plan,'locked',owner=owner);event('lock-created');event('locked')
             self.port.check(m)
             ref,state=self._advance(ref,state,plan,'ref-intent');event('ref-intent')
@@ -185,6 +196,13 @@ class GitIntegration:
             if p['phase']=='not-applied':return dict(integration=operation,operation=operation,state='not-applied')
             require(self.store.head(PENDING)==ref,'git-pending-mismatch')
             self.port.recovery_ready(m,p['owner'],p['child'])
+            reconcile=getattr(self.port,'reconcile_owner',None)
+            if reconcile is not None and p['phase'] in ('lock-intent','relock-intent'):
+                def live_gate():require(self.store.head(PENDING)==ref and self.store.head(key(operation))==ref,'git-effect-authority-changed')
+                owner=reconcile(m,p['owner'],attempt=dict(head=ref.as_dict(),sequence=p['sequence']),live=live_gate)
+                if owner is not None:
+                    ref,state=self._advance(ref,state,plan,'locked' if p['phase']=='lock-intent' else 'index-intent',owner=owner)
+                    ref,state,plan=self._state(operation);m=plan.payload['manifest'];p=state.payload
             # A missing child reference precedes Popen. A referenced area with
             # no started identity remains unknown, even if its phase lagged.
             outcome=self.port.inspect_outcome(m)
@@ -198,8 +216,11 @@ class GitIntegration:
                 if outcome[1]=='evacuated':require(p['phase'] in ('index-intent','relock-intent'),'git-index-phase-mismatch')
                 require(p['owner'] is not None,'git-index-lock-not-owned')
                 ref,state=self._advance(ref,state,plan,'relock-intent',statement=statement)
-                def live():require(self.store.head(PENDING)==ref,'git-effect-authority-changed')
-                owner=self.port.recover_index(m,p['owner'],live=live);event('lock-reacquired')
+                def live():require(self.store.head(PENDING)==ref and self.store.head(key(operation))==ref,'git-effect-authority-changed')
+                if reconcile is not None:
+                    owner=self.port.recover_index(m,p['owner'],live=live,attempt=dict(head=ref.as_dict(),sequence=state.payload['sequence']))
+                else:owner=self.port.recover_index(m,p['owner'],live=live)
+                event('lock-reacquired')
                 ref,state=self._advance(ref,state,plan,'index-intent',owner=owner)
                 self.port.flush_ref(m)
                 self.port.replace_index(m,owner,live=live);event('index-replaced')

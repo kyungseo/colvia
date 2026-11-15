@@ -14,6 +14,13 @@ from ..storage.windows import WindowsFiles
 from .windows_observation import Observer
 from .windows_rename import ExactMove,RenameAPI
 
+def matches_published(actual,expected,inherited_creation=None):
+    if actual==expected:return True
+    if actual is None or expected is None or type(inherited_creation) is not int:return False
+    a,e=actual['identity'],expected['identity']
+    return (a[:2]==e[:2] and a[2]==inherited_creation and
+            actual['size']==expected['size'] and actual['sha256']==expected['sha256'])
+
 
 class WindowsIndex:
     def __init__(self,gitdir,area,*,files=None,observer=None,mover=None):
@@ -56,7 +63,8 @@ class WindowsIndex:
         require(after is not None,'git-index-manifest-invalid')
         if current==before and saved is None and staged==after:return 'old'
         if before is not None and current is None and saved==before and staged==after:return 'evacuated'
-        if current==after and saved==before and staged is None:return 'new'
+        if saved==before and staged is None and matches_published(current,after,
+                before['identity'][2] if before is not None else None):return 'new'
         return 'other'
     def publish(self,manifest,*,assert_owned,live,event=lambda _:None):
         assert_owned();live();state=self.state(manifest)
@@ -67,7 +75,8 @@ class WindowsIndex:
             require(self.state(manifest)=='evacuated','git-index-external-divergence')
         if state!='new':
             guard();require(self.state(manifest) in ('old','evacuated'),'git-index-external-divergence')
-            self.mover.move(self.area/'index-prepared',self.gitdir/'index',expected=manifest['after'],before_effect=guard,event=event)
+            self.mover.move(self.area/'index-prepared',self.gitdir/'index',expected=manifest['after'],before_effect=guard,event=event,
+                inherited_creation=manifest['before']['identity'][2] if manifest['before'] is not None else None)
         require(self.state(manifest)=='new','git-index-publication-unconfirmed')
         self.files.sync_directory(self.gitdir);self.files.sync_directory(self.area)
         require(self.state(manifest)=='new','git-index-publication-unconfirmed')

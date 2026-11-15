@@ -143,8 +143,11 @@ class StoragePublicationRefused(StorageError, PublicationRefused):
 
 
 def _refused(exc):
-    return (StoragePublicationRefused(exc.code, exc.diagnostic)
-            if isinstance(exc, StorageError) else PublicationRefused(exc.code))
+    refused=(StoragePublicationRefused(exc.code, exc.diagnostic)
+             if isinstance(exc, StorageError) else PublicationRefused(exc.code))
+    for name in ('directory','workspace','preparation_state'):
+        if hasattr(exc,name):setattr(refused,name,getattr(exc,name))
+    return refused
 
 
 _SQL_BASES = ('ERROR', 'INTERNAL', 'PERM', 'ABORT', 'BUSY', 'LOCKED', 'NOMEM',
@@ -227,6 +230,7 @@ class GenerationStore:
         self.writer_capabilities=frozenset(runtime_capabilities() if writer_capabilities is None else writer_capabilities)
         require(_retirement_operation is None or readonly, "retired-read-only")
         self._retirement_operation = _retirement_operation
+        self._workspace_location = None
         self.identity = _identity(self.path)
         self.process_lock = _process_lock(self.identity)
         uri = self.path.as_uri() + ('?mode=ro' if readonly else '?mode=rw')
@@ -293,6 +297,12 @@ class GenerationStore:
         try: self.db.close()
         finally: self.process_lock.release()
 
+    def pin_workspace_location(self, key, ref):
+        expected = (key, ref)
+        if self._workspace_location is None:
+            self._workspace_location = expected
+        require(self._workspace_location == expected, 'workspace-location-changed')
+
     def _guard(self, *, write=False, lifecycle=False, permitted_fence=None):
         require(_identity(self.path) == self.identity, 'store-file-replaced')
         self.active_check()
@@ -308,6 +318,9 @@ class GenerationStore:
         if write and not lifecycle:
             require(not row['needs_rebind'],'instance-rebind-required')
             self.write_check()
+        if write and self._workspace_location is not None:
+            key, ref = self._workspace_location
+            require(map_get(self._root().heads, key, self._load) == ref, 'workspace-location-changed')
 
     @contextmanager
     def _transaction(self, *, write=False, lifecycle=False, retiring=None):
@@ -408,12 +421,61 @@ class GenerationStore:
         if view is not None: return view.head(key)
         with self._transaction(): return map_get(self._root().heads,key,self._load)
 
+    def has_active_imports(self):
+        with self._transaction():
+            return self.db.execute("SELECT 1 FROM imports WHERE state='active' LIMIT 1").fetchone() is not None
+
     def begin_import(self, import_id: str, owner: str):
         _token(import_id); _token(owner)
         with self._transaction(write=True):
             require(self.db.execute('SELECT 1 FROM imports WHERE id=?',(import_id,)).fetchone() is None,
                     'import-already-exists')
             self.db.execute('INSERT INTO imports VALUES(?,?,?)',(import_id,owner,'active'))
+
+    @contextmanager
+    def import_attempt(self, import_id: str, owner: str, *, can_abandon=lambda: True):
+        """Close only this newly created attempt on a confirmed refusal.
+
+        Not a historic cleanup API. Unknown storage outcomes and interruptions
+        retain their active import. A caller may also withhold abandonment
+        until its subprocess outcome is known. Chunks and claims are never reclaimed here.
+        """
+        _token(import_id);_token(owner)
+        # Check operation identity and create together. A failed/replayed begin
+        # is outside the handler and cannot abandon somebody else's import.
+        with self._transaction(write=True):
+            require(map_get(self._root().operations,import_id,self._load) is None and
+                    self.db.execute('SELECT 1 FROM operations WHERE id=?',(import_id,)).fetchone() is None,
+                    'operation-already-recorded')
+            require(self.db.execute('SELECT 1 FROM imports WHERE id=?',(import_id,)).fetchone() is None,
+                    'import-already-exists')
+            self.db.execute('INSERT INTO imports VALUES(?,?,?)',(import_id,owner,'active'))
+        try:
+            yield
+        except RecordError as exc:
+            # Even a pre-publication engine refusal can report corruption or
+            # replaced storage: never attempt another write to close it here.
+            known=exc.code!='store-outcome-unknown' and not isinstance(exc,StorageError) and can_abandon()
+            if known:
+                try:
+                    if self.operation_result(import_id) is not None:
+                        exc.preparation_state='published'
+                    else:
+                        self._abandon_current_import(import_id,owner)
+                except Exception as closing:
+                    exc.preparation_state='unconfirmed'
+                    exc.add_note('Preparation state not confirmed: '+type(closing).__name__)
+            raise
+
+    def _abandon_current_import(self,import_id,owner):
+        # Private to the live context above; not a recovery command.
+        with self._transaction(write=True):
+            require(map_get(self._root().operations,import_id,self._load) is None and
+                    self.db.execute('SELECT 1 FROM operations WHERE id=?',(import_id,)).fetchone() is None,
+                    'import-outcome-already-published')
+            changed=self.db.execute("UPDATE imports SET state='abandoned' WHERE id=? AND owner=? AND state='active'",
+                                    (import_id,owner))
+            require(changed.rowcount==1,'import-attempt-changed')
 
     def stage(self, import_id: str, objects: Iterable[tuple[ObjectRef,bytes]]):
         batch=[]; size=0
@@ -430,7 +492,7 @@ class GenerationStore:
 
     def commit_heads(self, *, operation: str, expected: dict[str,ObjectRef|None],
                      changes: dict[str,ObjectRef|None], objects: Iterable[tuple[ObjectRef,bytes]]=(),
-                     import_id: str|None=None, validate: Callable[[Callable[[ObjectRef],bytes]],None], _rebind=False):
+                     import_id: str|None=None, validate: Callable[[Callable[[ObjectRef],bytes]],None], _rebind=False, _no_active_imports=False):
         """Rebase unrelated heads, but refuse any changed expected/shared dependency.
 
         The application supplies one fixed operation validator; it must validate
@@ -487,6 +549,9 @@ class GenerationStore:
                 row=self.db.execute('SELECT needs_rebind,quiescent,fence FROM generation').fetchone()
                 require(row['needs_rebind']==1 and row['quiescent'] is None and row['fence'] is None,'instance-rebind-not-pending')
                 self.write_check()
+            if _no_active_imports:
+                require(self.db.execute("SELECT 1 FROM imports WHERE state='active' LIMIT 1").fetchone() is None,
+                        'identity-import-pending')
             old=self._root()
             require(not view.full_root_read or old.ref==observed.ref,'validation-root-conflict')
             for key,ref in view.reads.items():

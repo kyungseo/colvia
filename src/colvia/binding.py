@@ -11,6 +11,29 @@ import uuid
 from .codec import decode_canonical, require
 
 LOCATOR_LIMIT = 16 * 1024
+DARWIN_VOLUME = 'darwin-volume-uuid-v1:'
+
+
+def persistent(value):
+    return value is not None and value.volume.startswith(DARWIN_VOLUME)
+
+
+def legacy_darwin(value):
+    return (value is not None and value.path.startswith('/') and
+            all(part.isascii() and part.isdecimal() for part in (value.volume, value.file_id)))
+
+
+def revalidates(old, current):
+    return (legacy_darwin(old) and persistent(current) and old.path == current.path and
+            old.file_id == current.file_id.split(':', 1)[0])
+
+
+
+def creation_identity_changed(old, current):
+    """Diagnose a change, without treating a reused inode as continuity."""
+    return (persistent(old) and persistent(current) and old.path==current.path and
+            old.volume==current.volume and old.file_id!=current.file_id and
+            old.file_id.split(':',1)[0]==current.file_id.split(':',1)[0])
 
 
 def _uuid(value):
@@ -35,6 +58,13 @@ class NativeLocation:
     def __post_init__(self):
         for text,limit in ((self.path,32768),(self.volume,256),(self.file_id,256)):
             require(type(text) is str and 0<len(text)<=limit and '\x00' not in text,'invalid-native-identity')
+        if persistent(self):
+            ident=self.volume[len(DARWIN_VOLUME):];_uuid(ident)
+            parts=self.file_id.split(':')
+            require(uuid.UUID(ident).int!=0 and self.path.startswith('/') and len(parts)==3 and
+                    all(p.isascii() and p.isdecimal() and p==str(int(p)) for p in parts) and
+                    int(parts[0])>0 and int(parts[1])>0 and int(parts[2])<1_000_000_000,
+                    'invalid-persistent-location')
 
 
 _ASCII_CASE = str.maketrans('ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')

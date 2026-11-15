@@ -48,13 +48,15 @@ Once you approve the scope, the agent edits and checks the files, then asks Colv
 
 ## Install and start
 
-<p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-en-dark.png"><img src="manual/assets/gallery/overview-en-light.png" width="900" alt="Connect once, then choose a candidate, approve the scope, review the result and continue with the next Work."></picture>
-</p>
+The SQLite Preview keeps a Work from scope approval through submission and acceptance. For example, ask your agent to compare inquiry types in `inquiries.csv`. Approve the report files and checks, inspect the submitted revision, and decide whether to accept it. You can also record a follow-up or leave the work complete. In a new chat, ask what you accepted and what you decided to do next. [Work and follow-up in the Preview](manual/en/foundation-preview.md#find-a-recorded-next-step)
 
 The [SQLite Preview guide](manual/en/foundation-preview.md) covers installation, connecting a project and starting your first Work. The public installation command for each platform will be published with the Preview. Installation over private HTTPS was verified on one Windows x64 device and on Windows and macOS ARM64 test VMs. See [what was verified](docs/development/product-evidence-and-followups.md#record-foundation-verification) for the exact candidates and limits.
 
 ### Installation examples for the earlier profile
+
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-en-dark.png"><img src="manual/assets/gallery/overview-en-light.png" width="900" alt="Earlier profile: connect, choose a candidate, approve the scope, and review the result."></picture>
+</p>
 
 The [earlier profile’s setup guide](manual/en/project-setup.md) and [twelve-inquiry exercise](manual/en/getting-started.md) apply to earlier `.hrn/` builds. For the SQLite Preview, follow the guide above.
 
@@ -106,6 +108,6 @@ You can also appoint a delegate to accept one specific result on your behalf. Th
 
 ## Your project and its records
 
-The SQLite Preview keeps each project’s work records in your operating system’s user-data folder. [Export and restore through Colvia](manual/en/foundation-preview.md#retained-contents-and-backups) to back up records, retained contents, settings and acceptance history. A Git commit or clone does not back up those records. [Disconnecting](manual/en/foundation-preview.md#notifications-and-disconnection) preserves your files and work history.
+The SQLite Preview keeps each project’s work records in your operating system’s user-data folder. [Export and restore through Colvia](manual/en/foundation-preview.md#retained-contents-and-backups) to back up records, retained contents, settings and acceptance history. A Git commit or clone does not back up those records. [Disconnecting](manual/en/foundation-preview.md#notifications-and-disconnection) preserves your files and work history. If you move a connected folder, see [how to check its new location](manual/en/foundation-preview.md#continue-after-moving-a-project-folder).
 
 [Earlier profile guide](manual/en/README.md) · [SQLite Preview environments](manual/en/foundation-preview.md#target-platforms-and-verification-status) · [Contribute](CONTRIBUTING.md) · [Apache License 2.0](LICENSE)

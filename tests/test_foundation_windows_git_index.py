@@ -6,11 +6,33 @@ from colvia.platforms.windows_git_index import WindowsIndex
 from colvia.platforms.windows_observation import Observer
 from test_foundation_windows_effects import Files,Move
 
+
+class TunnelingMove(Move):
+    def __init__(self,api):
+        super().__init__(api);self.names={};self.creations={};state=api.state
+        def observed(h,path,**kw):
+            result=state(h,path,**kw);identity=result['identity']
+            if identity[:2] in self.creations:
+                result['identity']=(*identity[:2],self.creations[identity[:2]])
+            return result
+        api.state=observed
+    def move(self,source,target,*,expected,before_effect,event,inherited_creation=None,gate_intent=None):
+        source,target=Path(source),Path(target)
+        previous=self.api.state(source,source)
+        self.names[source]=previous['identity'][2]
+        def moved(phase):
+            if phase=='after-native-move' and target in self.names:
+                now=self.api.state(target,target)
+                self.creations[now['identity'][:2]]=self.names[target]
+                require(inherited_creation==self.names[target] or (gate_intent==expected['identity'] and expected['size']==0),'windows-rename-result-changed')
+            event(phase)
+        return super().move(source,target,expected=expected,before_effect=before_effect,event=moved,gate_intent=gate_intent)
+
 class WindowsIndexTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(prefix='windows-index-');self.root=Path(self.tmp.name)
         self.gitdir=self.root/'gitdir';self.area=self.root/'private';self.gitdir.mkdir();self.area.mkdir(mode=0o700)
-        self.files=Files();self.mover=Move(self.files.api)
+        self.files=Files();self.mover=TunnelingMove(self.files.api)
         self.port=WindowsIndex(self.gitdir,self.area,files=self.files,observer=Observer(files=self.files),mover=self.mover)
         self.lock=self.gitdir/'index.lock';self.lock.write_bytes(b'');self.lock_identity=self.port.observe(self.lock)
     def tearDown(self):self.tmp.cleanup()
@@ -51,5 +73,36 @@ class WindowsIndexTests(unittest.TestCase):
     def test_initially_absent_index_needs_one_move(self):
         m=self.prepare(None);self.assertEqual('new',self.publish(m));self.assertEqual(1,self.mover.count)
         self.assertFalse((self.area/'index-original').exists())
+
+
+    def test_tunneled_publication_lost_ack_is_classified_without_second_move(self):
+        m=self.prepare()
+        def lost(phase):
+            if phase=='after-native-move' and (self.gitdir/'index').exists():raise RuntimeError('lost ack')
+        with self.assertRaisesRegex(RuntimeError,'lost ack'):self.publish(m,event=lost)
+        current=self.port.observe(self.gitdir/'index')
+        self.assertEqual(m['after']['identity'][:2],current['identity'][:2])
+        self.assertEqual(m['before']['identity'][2],current['identity'][2])
+        self.assertEqual('new',self.port.state(m));count=self.mover.count
+        self.publish(m);self.assertEqual(count,self.mover.count)
+
+    def test_published_match_requires_id_hash_size_and_known_creation(self):
+        from colvia.platforms.windows_git_index import matches_published
+        expected=dict(identity=[1,'prepared',2],sha256='approved',size=8)
+        actual={**expected,'identity':[1,'prepared',1]}
+        self.assertTrue(matches_published(actual,expected,1))
+        for bad in ({**actual,'identity':[2,'prepared',1]},
+                    {**actual,'identity':[1,'foreign',1]},
+                    {**actual,'identity':[1,'prepared',9]},
+                    {**actual,'sha256':'foreign'},{**actual,'size':9}):
+            self.assertFalse(matches_published(bad,expected,1))
+        self.assertFalse(matches_published(actual,expected,None))
+
+    def test_tunneled_current_does_not_hide_changed_saved_original(self):
+        m=self.prepare();self.publish(m)
+        (self.area/'index-original').write_bytes(b'changed original')
+        self.assertEqual('other',self.port.state(m))
+        with self.assertRaisesRegex(RecordError,'external-divergence'):self.publish(m)
+
 
 if __name__=='__main__':unittest.main()

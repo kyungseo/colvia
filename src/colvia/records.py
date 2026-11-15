@@ -58,6 +58,32 @@ def _observation(payload):
     for name in ('tree','policy','workspace'):one(payload,name)
 
 
+def _observation_v1(payload):
+    from .binding import persistent
+    _observation(payload)
+    require(not any(persistent(native(payload[k])) for k in ('root','common','gitdir') if payload[k] is not None),
+            'connection-identity-required')
+
+
+def observation_identity(obj):
+    return link(obj,'identity') if obj.ref.version==2 else None
+
+
+def _observation_v2(payload):
+    _observation({**payload,'links':{k:v for k,v in payload['links'].items() if k!='identity'}})
+    one(payload,'identity')
+
+
+def _observation_identity_content(ref,load):
+    from .connection_identity import evidence,ROLES
+    obj=decode_envelope(ref,load(ref))
+    _observation_v2(obj.payload)
+    _,workspace,binding,_,_,locations=evidence(observation_identity(obj),load)
+    require(workspace==link(obj,'workspace') and obj.payload['kind']==binding.kind and
+            all(obj.payload[k]==(asdict(locations[k]) if locations[k] is not None else None) for k in ROLES),
+            'observation-identity-mismatch')
+
+
 def _plan(payload):
     fields(payload,{'work','workspace','title','goal','scope','checks','excludes'})
     identity(payload);text(payload['title'],256);text(payload['goal'])
@@ -75,16 +101,23 @@ def _approval(payload):
     fields(payload,{'work','workspace','statement'});identity(payload);text(payload['statement']);one(payload,'plan')
 
 
+def submission_input(summary,checks):
+    """Validate caller input before a submission can stage body bytes."""
+    text(summary)
+    require(type(checks) is list and len(checks)<=100,'invalid-check-report')
+    for item in checks:
+        require(type(item) is dict and set(item)=={'name','status','detail'} and
+                item['status'] in ('passed','failed','unavailable'),'invalid-check-report')
+        text(item['name'],2048);text(item['detail'],4096)
+
+
 def _submission(payload):
     fields(payload,{'work','workspace','revision','summary','checks','changed'})
     identity(payload);text(payload['summary'])
     require(type(payload['revision']) is int and payload['revision']>0,'invalid-result-revision')
     require(type(payload['changed']) is list and payload['changed']==sorted(set(payload['changed'])),'invalid-changed-paths')
     for path in payload['changed']:require(logical_path(path)==path,'invalid-changed-paths')
-    require(type(payload['checks']) is list and len(payload['checks'])<=100,'invalid-check-report')
-    for item in payload['checks']:
-        require(type(item) is dict and set(item)=={'name','status','detail'} and item['status'] in ('passed','failed','unavailable'),'invalid-check-report')
-        text(item['name'],2048);text(item['detail'],4096)
+    submission_input(payload['summary'],payload['checks'])
     for name in ('plan','approval','observation','after'):one(payload,name)
     one(payload,'previous',True)
 
@@ -130,8 +163,12 @@ def application_registry():
     from .git_integration import schemas as git_schemas
     return foundation_registry([*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
         Schema('observation.policy',1,{'sources':'integrity'},_policy,{'sources':frozenset({'body.complete'})}),
-        Schema('observation.snapshot',1,{'tree':'integrity','policy':'integrity','workspace':'decision'},_observation,
+        Schema('observation.snapshot',1,{'tree':'integrity','policy':'integrity','workspace':'decision'},_observation_v1,
                {'tree':TREE_KINDS,'policy':frozenset({'observation.policy'}),'workspace':frozenset({'workspace.registration'})}),
+        Schema('observation.snapshot',2,{'tree':'integrity','policy':'integrity','workspace':'decision','identity':'decision'},
+               _observation_v2,{'tree':TREE_KINDS,'policy':frozenset({'observation.policy'}),
+                'workspace':frozenset({'workspace.registration'}),'identity':frozenset({'connection.identity'})},
+               content=_observation_identity_content),
         Schema('work.plan',1,{'baseline':'integrity','before':'integrity'},_plan,
                {'baseline':frozenset({'observation.snapshot'}),'before':MAP_KINDS}),
         Schema('work.approval',1,{'plan':'decision'},_approval,{'plan':frozenset({'work.plan'})}),
@@ -173,11 +210,18 @@ def encode_observation(observed,workspace_ref,store,import_id):
         sources.append(dict(origin=source.origin,sha256=source.digest,size=len(source.raw)))
     pref,praw=encode_envelope('observation.policy',1,dict(sources=sources,config=[list(p) for p in observed.policy.config],
         tool=observed.policy.tool,links={'sources':list(range(len(edges)))}),tuple(edges));objects.append((pref,praw))
+    from .binding import persistent
+    from .connection import Connections
     top=observed.topology
+    links={'tree':('integrity',tree.root),'policy':('integrity',pref),'workspace':('decision',workspace_ref)}
+    anchor=Connections(store).identity(workspace_ref)
+    if (anchor is not None and anchor.version == 2) or any(persistent(v) for v in (top.root,top.common,top.gitdir)):
+        require(anchor is not None,'connection-identity-required')
+        links['identity']=('decision',anchor)
     ref,raw=record('observation.snapshot',dict(root=asdict(top.root),kind=top.kind,
         common=asdict(top.common) if top.common else None,gitdir=asdict(top.gitdir) if top.gitdir else None,
         containers=sorted(observed.structural.containers),nested=sorted(observed.structural.nested),opaque=[[p,list(value)] for p,value in observed.opaque]),
-        {'tree':('integrity',tree.root),'policy':('integrity',pref),'workspace':('decision',workspace_ref)})
+        links,version=2 if 'identity' in links else 1)
     objects.append((ref,raw));return ref,objects
 
 
