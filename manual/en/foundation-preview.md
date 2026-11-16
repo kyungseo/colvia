@@ -111,6 +111,14 @@ preserve the existing work and checks. Ask for approval of the additional files,
 the reason and any new checks, and record that scope as a separate Work before
 editing those files.
 
+#### Try it · Pick up a meeting report in a new chat
+
+If you’ve submitted a meeting report in the same connected project, open a new chat and ask:
+
+> Find the meeting report Work and show me its latest submission status and any recorded follow-up decision. Just look it up.
+
+If the record says “No follow-up,” you recorded a decision to leave it without a follow-up. If there’s no recorded choice or you deferred the decision, the next step is still open. If you see a candidate or a Work, check whether the work you would continue already has an approved scope.
+
 ## Retained contents and backups
 
 When a Work plan is recorded, Colvia keeps the existing contents of the listed files. It also keeps submitted contents so you can return to the version you reviewed. List only the files the work needs. Colvia keeps information about out-of-scope changes separately from retained file contents.
