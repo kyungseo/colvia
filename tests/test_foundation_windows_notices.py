@@ -57,6 +57,19 @@ class WindowsNoticeTests(unittest.TestCase):
         port=self.port();port.change(enable=True);path=port.executable(port.current())
         self.assertEqual('disabled',port.change(enable=False)['state']);self.assertIsNone(port.current());self.assertTrue(path.exists())
         self.assertEqual([None,None,None],port.state());self.assertEqual(2,len(list((self.home.root/'operations').glob('notice-*'))))
+    def test_uninstall_disable_is_bound_to_its_operation_and_preserves_foreign_keys(self):
+        port=self.port()
+        port.change(enable=True)
+        target=port.current()
+        self.registry.values['foreign-key']=dict(children=[],values={'foreign':['keep',1]})
+        with self.home.files.exclusion(self.home.root/'management.lock'):
+            port.disable_for_uninstall('remove-test',target)
+            before=self.registry.writes
+            port.disable_for_uninstall('remove-test',target)
+            self.assertEqual(before,self.registry.writes)
+        self.assertIsNone(port.current())
+        self.assertEqual(['keep',1],self.registry.values['foreign-key']['values']['foreign'])
+
     def test_changed_receiver_or_foreign_source_never_opens_identity(self):
         port=self.port();port.change(enable=True);path=port.executable(port.current())
         with self.assertRaisesRegex(RecordError,'source-mismatch'):port.identity(self.base/'foreign.exe')

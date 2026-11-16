@@ -95,6 +95,33 @@ class WindowsNotices:
             raw=canonical_bytes(plan);self.files.create(area/'intent.json',raw)
             self.files.create(self.home.root/'notice-registration.pending',raw)
             return self._complete(plan,raw)
+    def disable_for_uninstall(self, operation, previous):
+        """Called under the uninstall operation's management exclusion."""
+        if previous is None:
+            require(self.current() is None and not self.files.exists(self.home.root/'notice-registration.pending'),
+                    'notice-registration-foreign')
+            return
+        name='notice-'+hashlib.sha256(('uninstall:'+operation).encode()).hexdigest()[:32]
+        pending=self.home.root/'notice-registration.pending'
+        area=self.home.root/'operations'/name
+        intent=area/'intent.json'
+        completion=area/'completed.json'
+        plan=dict(version=1,operation=name,previous=previous,target=None)
+        raw=canonical_bytes(plan)
+        if self.files.exists(pending):
+            require(self.files.read(pending)==raw and self.files.read(intent)==raw,'notice-registration-intent-changed')
+        elif self.files.exists(completion):
+            require(self.files.read(intent)==raw and self.files.read(completion)==canonical_bytes(dict(version=1,state=self.expected(None)))
+                    and self.current() is None,'notice-registration-completion-changed')
+            return
+        else:
+            require(self.current()==previous,'notice-registration-changed')
+            if not self.files.exists(area):self.files.create_directory(area)
+            if not self.files.exists(intent):self.files.create(intent,raw)
+            else:require(self.files.read(intent)==raw,'notice-registration-intent-changed')
+            self.files.create(pending,raw)
+        self._complete(plan,raw)
+
     def resume(self):
         with self.files.exclusion(self.home.root/'management.lock'):
             raw=self.files.read(self.home.root/'notice-registration.pending');plan=decode_canonical(raw)

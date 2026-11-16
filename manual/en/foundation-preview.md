@@ -1,31 +1,56 @@
-# Installation and records in the new Preview
+# Installation and Work records in Colvia Preview
 
-This guide is for the new Preview, which stores Work records in SQLite. It does not migrate `.hrn/` records from earlier trial builds automatically.
+Install Colvia, connect a project folder, and start your first task. This guide also covers keeping the results you review and picking up the work in a new chat.
+
+[First task](#start-with-the-work-you-want-to-do) · [Review and revise](#delegate-and-review) · [Updates and recovery](#updating-and-recovering-an-interrupted-update) · [Supported environments](#supported-environments)
+
+[Register Git](#register-git) · [Put a result into Git](#put-an-accepted-result-into-git) · [Set up notifications](#set-up-notifications) · [Disconnect a project](#disconnect-a-project)
 
 ## Install and connect a project
 
-The planned public installer uses the same command for a first installation and for updating an existing one. Colvia downloads and verifies the required files, prepares dedicated Python and selects the version. You do not need to choose a Python ZIP or adjust pyenv or PATH. The public address and command will be published with the Preview.
+Install Codex or Claude Code and sign in first. Run the installation command for your operating system. Colvia downloads and verifies the release files and prepares its own Python runtime. When setup completes, [check the installed version](#check-installed-version). See [updates and recovery](#updating-and-recovering-an-interrupted-update) for what to do after installation.
 
 On Windows, open ordinary PowerShell from the Start menu as a standard user. If Colvia reports that it cannot verify the installation location from an app shell, continue in ordinary PowerShell. If it reports a lack of disk space, check the required and available space shown in the message.
 
 After installation, open the project folder in Codex or Claude Code and ask:
 
-> I want to apply Colvia to this folder. Show me the changes needed while preserving existing files.
+> Connect this folder to Colvia.
 
-Both empty folders and existing projects can be connected. For a Git project, [register the Git executable](#working-with-git) before connecting at the repository root. Before connecting, review the launcher, agent guidance and record location. Existing instructions are preserved; only the Colvia guidance is added. In a connected project, use `./colvia guide` on macOS or the project’s `colvia.cmd` on Windows (`.\colvia.cmd guide` in PowerShell). The agent then runs `ordinary list` through the same launcher to see the current Work.
+Connect an empty folder to start something new, such as writing a report or building a web app. You can also connect a project you already work in. If the project uses Git, [ask the agent to register Git](#register-git) before connecting the repository root. In the connection preview, check the folder, the launcher and guidance Colvia will add, and where it will store records. Then approve the connection. Colvia uses your existing project rules and appends its guidance to the agent instructions where applicable. In a connected project, use `./colvia guide` on macOS or the project’s `colvia.cmd` on Windows (`.\colvia.cmd guide` in PowerShell). The agent then runs `ordinary list` through the same launcher to see the current Work.
 
-Each project's records are kept separately in the operating system's user-data directory. The project folder contains connection information and entry guidance. Apps and CLIs use the same dedicated launcher. If access is blocked, first identify whether the launcher needs to run or a file or record folder needs read or write access. Allow only the necessary path when the host provides a supported way to do so. If that option is unavailable, stop the affected changes; the agent should briefly explain what is blocked and any confirmed next step. Full filesystem access and trial features are not the default remedy.
+Colvia keeps Work records for each project in a local SQLite database in the operating system’s user-data directory. The project folder contains connection information and entry guidance. Apps and CLIs use the same dedicated launcher.
+
+If work stops, ask the agent where it got blocked. A launcher that won’t start, a folder the agent can’t read or write, and a change Colvia refuses because it’s outside the approved scope each need a different next step. If the app or CLI lets you grant access to just the path you need, use that option. If you can’t verify a way to grant access to that path alone, pause the affected changes and check what is blocked and what you can do next. Keep filesystem access limited to the necessary paths and leave trial features disabled while you check.
 
 You may need to approve OS execution or notifications and sign in to your Codex or Claude subscription yourself. These steps are separate from preparing dedicated Python.
 
+<a id="check-installed-version" name="check-installed-version"></a>
+
+### Check the installed version
+
+Once setup completes, run the following command to see the version next to `Colvia`.
+
+macOS Terminal
+
+```sh
+"$HOME/Library/Application Support/Colvia/bin/colvia-manage" status
+```
+
+Regular PowerShell on Windows
+
+```powershell
+& (Join-Path ([Environment]::GetFolderPath("LocalApplicationData")) "Colvia\bin\colvia-manage.exe") status
+```
+
 ## Start with the work you want to do
+
+Once the folder is connected, tell the agent what you want to do here in the current chat. A sentence or two is enough. The agent may ask:
+
+> The folder is connected. Tell me briefly what you’d like to work on here.
 
 > I’d like to set up a small project to track action items from our team meetings.
 
-In a folder without project material, the agent explains what it sees and helps
-turn an idea into a goal and a first task. A sentence or two is enough to start.
-If you have a brief, README or existing rules, point to them and the agent
-builds on what you have already decided.
+In a folder without project material, the agent can explain what it sees and help turn an idea into a goal and a first task. You might say, “I’d like to summarize the meeting in one page.” If you have already shared a goal or task, the agent can use that request and any existing brief, README, or project rules to propose a plan.
 
 For a document, ask for an outline and a way to check it. For a new app, ask for
 a first version, a recommended stack and a way to run and test it. For example,
@@ -33,26 +58,40 @@ a personal to-do list that runs in one browser can start with a small web page
 and browser storage. For a team list, review the proposed way to share the data
 and control access as part of the first version.
 
-If you already know what to do, ask for it directly. The agent can answer a short question or inspect files within the access already allowed. For changes you want to review and retain, the agent can propose a Work. You can discuss project goals and rules later, or
+If you already know what to do, ask for it directly. The agent can answer a short question or inspect files within the access already allowed.
+
+You can skip creating a Work for a typo, spacing, or punctuation correction you explicitly request. The edit must follow your project rules and granted access, preserve meaning and behavior, and need no separate result review, retention, or handoff. If the edit belongs to an existing Work, check that Work’s approved scope and continue with its records.
+
+You can discuss project goals and rules later, or
 include them when you review the proposed scope. Check the file names and changes before approving that scope. Before recording the plan, review [what Colvia keeps](#retained-contents-and-backups).
 
 ## Delegate and review
 
-> Use inquiries.csv to write a meeting report. Compare inquiry types and possible improvements to our guidance. I will decide the priorities.
+> Summarize the types of customer inquiries and the complaints that come up most often in a report for our meeting. I’ll decide which improvements to prioritize.
 
-The agent proposes the output files and checks. If the scope is right, tell it to proceed. When the approved work is ready, the agent records the check results and submits for review. You decide whether to accept that result or request changes. A host permission prompt controls access. The Work scope and result each need your own decision.
+The agent proposes files to work on and how to check the result. If you agree with the scope, tell it to proceed. When the work is ready, the agent records the check results and submits it for review. Read the submission and decide whether to accept it or ask for changes. Colvia records which plan you approved and which submission you accepted.
 
-In a new conversation, open the same project and ask, “Show me only what I need to review in the report I assigned earlier.” The design lets another agent read the same project's records. That agent needs access to both the connected folder and its record directory. A worktree created by an app must first be matched to the original project.
+The app or CLI’s permission prompts control which files the agent can read or write and which tools it can run. Review the Work scope and its submission separately.
+
+In a new conversation, open the same project and ask, “Show me only what I need to review in the report I assigned earlier.” If you use both Codex and Claude Code, you can switch between them in the same project. The new agent can find the records when it can read both the connected folder and the Colvia record folder. If the app created a Git worktree, first confirm which project it belongs to.
 
 Keeping several Works is different from letting several agents edit the same files concurrently. Do not assume actual concurrent execution is supported in the first release. Overlapping changes or an unresolved interruption require checking the current state before proceeding.
 
-When applying a result from another work folder, review the exact result and destination separately. Once that application is approved and reserved, Colvia uses only the retained result, even if the source folder later disappears or its files change. Later edits are not included in that acceptance. The destination and its project connection must remain valid; removing shared Git data can still block completion. If you delete only a worktree folder and Git retains a stale registration, inspect the Git worktree state before continuing. Ordinary result acceptance continues checking the current files.
-
 Colvia’s direct agent execution for document tasks is disabled in the first Preview. Working in the ordinary Codex or Claude Code CLI or desktop app is separate from this feature.
 
-To revise an earlier result after working on something else, tell the agent what to change. It resumes from the recorded request, approved scope and differences since the last submission without asking you to approve the same scope again. Files added and submitted by another Work can be accounted for when its retained evidence and current content agree. Unattributed changes and outside-scope modifications or deletions are reported with the causal files. Your draft is preserved; you decide whether to accept the result after review.
+To revise an earlier result after working on something else, tell the agent what to change. The agent checks the recorded request, approved scope, and changes since the last submission. If the approval is still valid and the requested changes fit the scope, continue in the same Work. Files added and submitted by another Work can be accounted for when its retained evidence and current content agree. Unattributed changes and outside-scope modifications or deletions are reported with the causal files. Your draft is preserved; you decide whether to accept the result after review.
 
 Applying a revision that accounts for another Work’s added files to a different workspace is not yet available. You can review and accept it in its own workspace.
+
+### Child Works and results from isolated folders
+
+If you split a larger goal into direct child Works in the same folder, review and accept each submission. For an isolated folder (a registered Git worktree of the same repository), check the exact submission and destination. If the submission is still under review, use the preview to approve both applying and accepting it. Colvia records acceptance after applying the files and checking the destination. If you already accepted the submission, approve the application alone. Check the destination before applying. Colvia blocks the application if any other Work in that folder is approved, in progress, or under review. Apply one submission at a time, then review the combined result and checks before accepting the parent Work separately.
+
+If applying an approved submission is interrupted, check whether Colvia recorded its preparation. When that record is available, resume the application with the approved submission. The destination connection and shared Git data must remain valid. If you can’t verify the preparation record or the destination connection, pause and ask for help diagnosing the issue.
+
+To delegate applying and accepting a specific isolated Work, check the source, destination, file scope, named delegate, and a valid grant. The grant applies to the specified isolated Work. You decide whether to accept other Work and the final parent result.
+
+If Git still lists a worktree whose folder has been removed, inspect its registration before continuing. For ordinary Work acceptance, Colvia still checks the current files in that Work’s own folder.
 
 ### Find a recorded next step
 
@@ -72,37 +111,53 @@ preserve the existing work and checks. Ask for approval of the additional files,
 the reason and any new checks, and record that scope as a separate Work before
 editing those files.
 
-#### Try it · Pick up a meeting report in a new chat
-
-If you’ve submitted a meeting report in the same connected project, open a new chat and ask:
-
-> Find the meeting report Work and show me its latest submission status and any recorded follow-up decision. Just look it up.
-
-If the record says “No follow-up,” you recorded a decision to leave it without a follow-up. If there’s no recorded choice or you deferred the decision, the next step is still open. If you see a candidate or a Work, check whether the work you would continue already has an approved scope.
-
 ## Retained contents and backups
 
-When a Work plan is recorded, Colvia captures the existing contents of its listed files. It also keeps the submitted contents of changes within the approved scope. Exclude passwords, API keys and unnecessary files before recording the plan. Information used to detect changes outside that scope is kept distinct.
+When a Work plan is recorded, Colvia keeps the existing contents of the listed files. It also keeps submitted contents so you can return to the version you reviewed. List only the files the work needs. Colvia keeps information about out-of-scope changes separately from retained file contents.
 
-Captured contents are retained even if you leave the plan unapproved. Exported backups include them. The Preview provides no way to delete selected contents. Consider this when choosing what to record and where to keep backups.
+### Back up and restore records
+
+Backups include contents kept when a plan is recorded, whether or not you approved it, as well as submissions. Store the backup as you would your project data. The Preview provides no way to delete selected retained contents, so review what you want to keep before recording the plan.
 
 A Git commit or clone does not back up Colvia records. Use Colvia export and restore to move records, retained contents, settings and acceptance history. Keep project files separately as well. A recovery copy on the same device does not protect against device failure.
 
-Before updating, Colvia creates recovery copies of registered records and compares their required capabilities with those declared by the new runtime. This compatibility check does not run every user workflow. Returning to a compatible previous runtime does not roll work history back. If an update stops, inspect that operation instead of overwriting the installation. Resuming requires the exact prepared release, matching current state and still-valid verification. An interrupted first download can continue as an explicit new attempt while retaining the failed attempt. A prepared installation resumes the same files. If verification expires, reauthenticate the exact release or restore the interrupted update files while the previous runtime is still selected. Changed release targets and externally edited files are not overwritten. The private HTTPS checks below did not exercise interruption recovery, reauthentication or quarantine. Quarantine of a partial first installation was checked in synthetic source tests. Do not erase retained files to bypass recovery checks. If a first installation stopped after publishing some files and its original release is no longer available, inspect the installation status and quarantine preview. Files proven to belong to that attempt can be retained in quarantine before preparing a new release with the existing trust state. Resume the same quarantine if it stops. Unknown or externally changed files are not automatically cleaned up.
+### Updating and recovering an interrupted update
+
+To update an existing installation of the official Colvia Preview, run the same command for your operating system from the [installation page](https://colvia.github.io/downloads/). Colvia checks for a newer version at the address verified during installation. If you are already on the current release, Colvia keeps using that runtime.
+
+Before updating, Colvia creates recovery copies of registered records and compares their required capabilities with those declared by the new runtime. This compatibility check does not run every user workflow. Returning to a compatible previous runtime does not roll work history back.
+
+If an update stops, check where it stopped before changing any installed files. Resuming requires the exact prepared release, matching current state and still-valid verification.
+
+If the first download was interrupted, keep the failed attempt’s record and start a new download explicitly. A prepared installation resumes the same files. If verification expires, reauthenticate the exact release or restore the interrupted update files while the previous runtime is still selected. Changed release targets and externally edited files are not overwritten. Do not erase retained files to bypass recovery checks.
+
+If a first installation stopped after putting some files in place and the original release is no longer available, check the installation status and the quarantine preview. Files proven to belong to that attempt can be retained in quarantine before preparing a new release with the existing trust state. Resume the same quarantine if it stops. Unknown or externally changed files are not automatically cleaned up.
 
 A backup containing unfinished external operations is not restored as immediately executable work. First establish what the original execution actually changed.
 
-On macOS, an older connection can ask you to confirm its working folder again. Preview the listed projects and check the exact folders against your backup before applying the confirmation. This preserves the original Work scopes, retained contents and decisions. If the operation stops, inspect its status and resume the same operation for the remaining folders. If the folder was moved or replaced, check the [move conditions](#continue-after-moving-a-project-folder) before using any connection confirmation. A previous runtime that cannot read the new connection record cannot reopen it.
+On macOS, if Colvia asks you to confirm a working folder, first identify the project and the folder it uses. Preview the listed projects and check the exact folders against your backup before applying the confirmation. This preserves the original Work scopes, retained contents and decisions. If the operation stops, inspect its status and resume the same operation for the remaining folders. If the folder was moved or replaced, check the [move conditions](#continue-after-moving-a-project-folder) before using any connection confirmation. Use a runtime that can read the project’s connection records when resuming.
+
+### Remove Colvia and keep your records
+
+Save the [official installer script](https://colvia.github.io/downloads/) as a file. Use the standard account that installed Colvia, with its default management folder. Finish any ongoing Git operation or update, and close Colvia work and notification windows.
+
+1. **Preview removal.** Run the saved script in ordinary PowerShell with `-UninstallPreview <operation ID>` on Windows or with `--uninstall-preview <operation ID>` on macOS. Choose an unused short ID such as `remove-colvia`.
+2. **Remove the reviewed installation.** Check which launchers and runtime files will be removed and what will be retained. Run the script with `-Uninstall <operation ID> -Receipt <receipt>` on Windows or `--uninstall <operation ID> <receipt>` on macOS. Work, approvals, submissions, project links, settings and update trust stay in the default management folder. The removal operation keeps verified installation files separately for recovery. If interrupted, use the same ID and receipt with `-ResumeUninstall` on Windows or `--resume-uninstall` on macOS.
+3. **Reinstall when needed.** Run the usual install command in the same account. Open the same project to review its existing Work and submissions. If the installer reports that a reinstall is pending, resume with `-ResumeReinstall` on Windows or `--resume-reinstall` on macOS. Keep the management folder and its records.
+
+To undo an interrupted removal before starting a reinstall, use `-RestoreUninstall <operation ID> -Receipt <receipt>` on Windows or `--restore-uninstall <operation ID> <receipt>` on macOS. If you used Windows notifications before removing Colvia, enable them again after restoring or reinstalling.
 
 ## Continue after moving a project folder
 
-Finish or resolve any pending execution, delivery, Git integration or recovery
-at the original location. Keep a current Colvia backup and a separate copy of
-the project files. Close the project's agent sessions and launchers, then move
-the folder itself on the same local volume. Reopen the project only after
-Colvia has verified the new location. In case you already moved the folder,
-start by asking “I moved this project. Check whether I can continue with its
-existing records.”
+### Ask your agent to check the move
+
+If you’ve already moved the folder, open a new chat outside the project folder and ask:
+
+> I moved this project folder. Help me continue with its existing Colvia records.
+
+Give the agent the new path if it asks. With the access it needs, the agent can use the installed Colvia manager to prepare a move preview. Review the old and new paths. Once Colvia verifies it is the same folder, approve updating the existing connection. The agent can apply that preview, and you can open the project at its new location and check your earlier Work.
+
+If you haven’t moved the folder yet, ask the agent to check the move conditions first. At the original location, finish any pending execution, delivery, Git integration, or recovery, or resolve its interrupted state. Keep a current Colvia backup and a separate copy of the project files. Close any chats and launchers that have the folder open, move the folder itself on the same local volume, and make the request above.
 
 This flow covers an ordinary folder or a single Git checkout with its own
 `.git` directory, with no linked worktrees, submodules or overlapping Colvia
@@ -110,10 +165,12 @@ project. The old location must be absent and Colvia must verify the same folder
 identity. A copy, another volume or a folder inside another Colvia project can
 fail these checks. If folders overlap, use a non-overlapping location. Preserve
 both sets of files and records, and leave the connection file and database
-intact. An older macOS connection may first need the same-location confirmation
-described [above](#retained-contents-and-backups).
+intact. On macOS, if Colvia asks you to confirm the folder, follow the
+[connection check and recovery guide](#updating-and-recovering-an-interrupted-update).
 
-Use the installed manager outside the project with the existing project ID and
+### Check a move from the command line
+
+If you prefer commands or the agent can’t get the needed access, use the installed manager outside the project with the existing project ID and
 the new absolute path. For example, on macOS, save the preview under a new name
 in a private local directory:
 
@@ -138,13 +195,25 @@ the earlier location is still present, keep the records and ask for diagnosis.
 Once the move completes, reopen the new folder. The move updates the connection
 and keeps the Work records, decisions and retained file contents.
 
-Source tests verified ordinary and Git folder moves on local APFS. Windows NTFS movement and the
-interaction with an older launcher or recovery runtime still need final
-candidate checks. Use a compatible runtime to open records after a move.
+The verified scope for moves covers ordinary and Git folders on local APFS on macOS.
+If you’ve already moved a folder on Windows NTFS, keep the connection information and records and ask for help diagnosing the issue.
+Use a compatible launcher to open records after a move.
 
 ## Working with Git
 
-Plain folders can be connected without registering Git. Before connecting a Git repository, register the executable from the Git installation you trust. In Windows PowerShell, `(Get-Command git).Source` shows the path. Use ordinary PowerShell to install Colvia, but use Command Prompt (cmd.exe) to save the registration preview. Windows PowerShell 5.1 can re-encode output written with `>` or `Out-File`.
+### Register Git
+
+You can connect a plain folder right away. If your project uses Git, ask in your usual chat before connecting the repository:
+
+> Register the Git executable I use for this project with Colvia.
+
+The agent can find the executable in its current environment and prepare a registration preview. If it finds several paths, choose the Git installation you use. Check the path in the preview and approve the registration. The agent then applies the original preview. To change an existing registration, review the replacement path and approve the replacement separately. Once registration is confirmed, ask to connect the repository root. You can reuse the registered Git executable when connecting other projects in the same Colvia installation.
+
+If the app or CLI blocks the command or a required path, ask the agent what access it needs. If the host lets you grant only that access, use that option. To register Git yourself, follow the [commands below](#register-git-from-the-command-line).
+
+#### Register Git from the command line
+
+Use the executable from a Git installation you trust. In Windows PowerShell, `(Get-Command git).Source` shows the path. Use ordinary PowerShell to install Colvia, but use Command Prompt (cmd.exe) to save the registration preview. Windows PowerShell 5.1 can re-encode output written with `>` or `Out-File`.
 
 In Command Prompt, use a local NTFS folder that does not already contain `git-registration.json`. Replace the example Git path with the absolute path you found.
 
@@ -167,31 +236,42 @@ On macOS, open a terminal in a local folder that does not already contain `git-r
 
 When applying a registration, the manager verifies the selected executable’s hash and checks its version. The hash covers that executable; you still need to trust the Git installation and its dependencies.
 
+### Put an accepted result into Git
+
 Accepting a report and committing it to Git are separate decisions. Acceptance records that you accept the result. Git integration separately checks the entire proposed commit and the current staging state.
 
 Changing branches, pulling or rebasing during a Work does not automatically approve a new baseline. Colvia keeps changes outside the scope visible and requires checking how to continue. Independently connecting a repository subfolder, or automatically converting a folder between Git and non-Git operation, is outside the first-release path. Symlinks and submodules can remain protected, but are not editable targets.
 
 If hooks are present or automatic integration conditions are not met, Colvia does not disable hooks or reset the index on its own. When continuing through manual Git operations, compare the accepted result with the contents you intend to commit. During an interrupted Colvia Git integration, do not delete `index.lock` or make another commit: the index may be temporarily absent while its original is retained. Inspect the integration and use its recovery path; an unconfirmed lock owner needs diagnosis. On Windows, Git integration requires staging on the same volume, and a hook file is treated as active even without a POSIX execute bit.
 
-If Colvia Git integration stops on Windows, ask your agent to show the interrupted integration state and lock location. Recovery can recognize a gate recorded before its move when the current file matches that evidence. A pre-commit interruption closes as not applied; after publication starts, recovery checks completion of the already-approved change. Colvia does not adopt or remove another Git program's lock, a changed file, or an older lock without prior evidence. If the blockage remains after other Git activity ends, preserve the interruption records and request diagnosis. Recovery does not accept a Work or authorize a new Git change.
+If Colvia Git integration stops on Windows, ask your agent to show the interrupted integration state and lock location. Recovery can continue if the current lock file matches the record Colvia made before moving it. A pre-commit interruption closes as not applied; after publication starts, recovery checks completion of the already-approved change. Colvia does not adopt or remove another Git program's lock, a changed file, or a lock whose ownership cannot be verified. If the blockage remains after other Git activity ends, preserve the interruption records and request diagnosis. Recovery does not accept a Work or authorize a new Git change.
 
 ## Notifications and disconnection
 
-To use notifications, connect the current installation's receiver and allow notifications in the operating system. After a Windows receiver update, reconnect notifications with the current installation before sending another event. A notification is a shortcut to the result. Clicking it never accepts the result automatically. If delivery cannot be confirmed, Colvia does not automatically resend it; the result remains available through the project conversation.
+### Set up notifications
 
-Disconnection removes Colvia-managed connection information and guidance after checking them. It preserves your files and work records. Reconnection, or binding restored records to a new folder, also checks the folder's identity and proposed changes. Disconnecting a project is not the same as deleting all its records.
+Connect the current installation’s receiver and allow notifications in the operating system. Where notifications are supported, click one to open the Work. Read the submission and decide whether to accept it.
 
-## Target platforms and verification status
+After a Windows receiver update, reconnect notifications with the current installation before sending another event. If delivery is uncertain, Colvia keeps that event’s record and leaves any resend to a separate decision. In the project chat, ask, “Is anything waiting for my review?”
 
-The first-release targets are macOS Apple Silicon ARM64 and Windows 11 ARM64 and x64, with Codex and Claude Code in CLI and desktop form. Windows means native Windows processes; WSL belongs to follow-up Linux support. The current filesystem boundary is local APFS on macOS and local NTFS on Windows. Network shares, synchronized record stores and Windows ReFS/Dev Drive are not qualified.
+To stop new notifications, ask your agent, “Turn off Colvia notifications for this account.” The installed manager uses `notice-disable`. Existing Work records remain available.
 
-First installation over private HTTPS was verified on fixed candidates. On a Windows x64 device, sequence 6 installed and updated to 7, keeping work records, settings and the previous recovery slot. On Windows ARM64 and macOS ARM64 test VMs, standard accounts installed sequences 14 and 11 respectively and confirmed that their installed launchers were ready. Offline ARM64 updates and restore were checked on other candidates. Checking a recovery slot does not establish that rollback was performed.
+### Disconnect a project
 
-The private HTTPS installation and update trials used a private address and trial trust. The official address, first public trust and rerunning the same installation command to update still require final-candidate checks. Earlier Windows x64 trials also verified a Codex app custom profile with user approval and access to one additional record folder (sequence 11), and scoped writes in Codex CLI 0.167.1 using MXC (sequence 10). The profile is a specific tested setup. The ordinary approval menu, other permission modes and the final candidate have separate verification. Linux and additional agents remain follow-up candidates.
+Ask the agent in that project, “Show me how Colvia would disconnect this folder while keeping my files and records.” Review the managed connection and guidance changes before approving them. Your files and Work records remain. If you plan to resume the Work later, [back up the records](#back-up-and-restore-records) before disconnecting. Review the folder identity and proposed changes when connecting restored records to a folder. To remove the installation, use [the record-preserving removal procedure](#remove-colvia-and-keep-your-records).
 
-Accumulation checks covered 300 Works with 100 input files and a small report. A separate content-retention check covered three versions of a 64 MiB file. Storage and processing time vary with file count, content size and changed bytes. New contents and backups keep consuming space; records are not pruned automatically. These measurements are not a long-term capacity limit or performance guarantee.
+<a id="target-platforms-and-verification-status"></a>
 
+## Supported environments
+
+Colvia Preview targets macOS on Apple Silicon and Windows 11 on x64 and ARM64, with the Codex and Claude Code CLI and desktop apps. On Windows, this covers native Windows apps and CLIs. We’ll consider WSL as part of Linux support. The current filesystem boundary is local APFS on macOS and local NTFS on Windows. Network shares, synchronized record stores and Windows ReFS/Dev Drive are not qualified.
+
+Use the official command for your operating system to start installation or an update. If setup or an update stops, see [updates and recovery](#updating-and-recovering-an-interrupted-update) for the procedure that matches its state. To resume applying a submission from an isolated folder, first check the preparation record and the destination connection.
+
+Depending on the agent, you may need to grant access to the Colvia record folder in addition to the project folder. Tested Windows x64 setups include the Codex app with user approval and write access to one designated record folder, and Codex CLI 0.167.1 in MXC. Verification varies by app version and approval mode. Linux and additional agents are follow-up candidates.
+
+The space and processing time needed for records and backups depend on the number of files and how much changes. Records accumulate over time, so check available space in projects with large files.
 
 ### Check document execution availability
 
-Colvia does not call agents directly in the first Preview. The installed launcher’s `execution readiness` inspects the configuration without opening project records or starting a model. A successful inspection does not enable execution. Retained settings and history can still be read, and the setting can be disabled. If the check reports missing or changed files, inspect the reported state. Do not change Python or retry execution to bypass it.
+Direct agent invocation is disabled in the first Preview. Run the installed launcher’s `execution readiness` to inspect its current configuration. The check leaves project records closed and does not start a model. If the check reports missing or changed files, inspect the reported state.

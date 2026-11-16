@@ -238,3 +238,25 @@ func TestVerifiedCommandExactRuntimeVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestNativeVerifiedEntryRejectsDuplicates(t *testing.T) {
+	cases := [][]string{
+		{"--management-root", "one", "--management-root", "one", "guide"},
+		{"--management-root", "one", "guide", "--management-root=two"},
+		{"--management-root", "one", "manage", "--json", "--runtime-slot=other", "status"},
+		{"--management-root", "one", "--repair", "repair-preview", "--runtime-manifest-sha256", "other"},
+		{"--management-root", "one", "manage", "--json", "--repair", "repair-preview"},
+		{"--management-root", "one", "--repair", "--repair", "repair-preview"},
+		{"--management-root", "one", "--root", "a", "--root=b", "guide"},
+		{"--management-root", "one", "manage", "--receiver-source", "other", "notice-detail"},
+	}
+	for _, args := range cases {
+		err := run(args)
+		if err == nil || (!strings.Contains(err.Error(), "duplicate-") && err.Error() != "unexpected-forwarded-runtime-option") {
+			t.Errorf("%q did not stop at the argument boundary: %v", args, err)
+		}
+	}
+	if err := validateForwardedArgs([]string{"--root", "a", "--", "--runtime-slot", "literal"}); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -29,7 +29,16 @@ pending decision if there is one. For a general request to continue, pick up the
 only active or review Work if the list establishes there is exactly one. When
 the target is unclear, show the relevant titles and ask which one to continue.
 
-For a new request, use what the person has already said and what you can verify
+For a new request, an explicitly requested typo, spacing, or punctuation
+correction can proceed without a new Work if it preserves meaning and behavior,
+fits the requested change, project rules and granted access, and needs no
+separate review, retained result, or handoff. Check for a matching Work first.
+For a correction in an existing Work, follow that Work’s recorded approval,
+state and revision procedure. Edit only after confirming the applicable rules,
+access and Work context. If any cannot be confirmed, follow [Access failures](#access-failures).
+For other changes, use [Ordinary work](#ordinary-work).
+
+For a new request that needs a Work, use what the person has already said and what you can verify
 in the folder. Read relevant rules, README files, briefs or plans. Say what
 those documents describe and which files you actually found. If code, data or
 configuration needed for the work is missing, name it and keep the affected
@@ -269,7 +278,7 @@ bypass that refusal with a private file-copy script.
 Use the installed command's own help for candidates/follow-ups, composition,
 worker application, delivery, optional execution, backup and separate Git
 integration. Capability presence is not evidence that a host or OS path has been
-qualified. Direct agent execution is disabled in the first SQLite Preview; enabling it is
+qualified. Direct agent execution is disabled in the first Colvia Preview; enabling it is
 refused. Ordinary work in an agent’s own CLI or desktop app is separate.
 Retained execution settings and history remain
 readable, and disabling the setting remains possible. Preparing or inspecting an action does not execute it.

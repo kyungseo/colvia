@@ -40,14 +40,15 @@ def capture(files,path):
     require(_info(files,path)==before,'initial-node-changed')
     return dict(before,size=len(raw),sha256=hashlib.sha256(raw).hexdigest())
 
-def move(files,source,destination,expected,*,parent_identities=None):
+def move(files,source,destination,expected,*,parent_identities=None,verified_tree=False):
     source=Path(source);destination=Path(destination)
     require(source!=destination and capture(files,source)==expected,'initial-node-changed')
     parents={p:files.directory_identity(p) for p in (source.parent,destination.parent)}
     require(parent_identities is None or all(parents.get(p)==v for p,v in parent_identities.items()),'initial-parent-changed')
     require(all(v[0]==expected['identity'][0] for v in parents.values()),'initial-node-volume-mismatch')
     require(not present(destination),'initial-node-destination-exists')
-    if expected['kind']=='directory':require(not any(source.iterdir()),'initial-directory-not-empty')
+    if expected['kind']=='directory' and not verified_tree:
+        require(not any(source.iterdir()),'initial-directory-not-empty')
     if hasattr(files,'api'):
         from ..storage.windows import local_path
         a=files.api

@@ -176,16 +176,24 @@ class FirstInstall:
 
 
 
-def bootstrap(root,stage,digest,*,launch=os.execv,resume_operation=None,repair_operation=None,repair_resume=False,renewal=None,refresh_operation=None,refresh_receipt=None,retry_operation=None,rollback_operation=None,rollback_receipt=None,release_receipt=None,inspect_initial=False,quarantine_operation=None,quarantine_receipt=None):
+def bootstrap(root,stage,digest,*,launch=os.execv,resume_operation=None,repair_operation=None,repair_resume=False,renewal=None,refresh_operation=None,refresh_receipt=None,retry_operation=None,rollback_operation=None,rollback_receipt=None,release_receipt=None,inspect_initial=False,quarantine_operation=None,quarantine_receipt=None,maintenance=None):
     files=platform_files();os_name,architecture=current_platform();root=Path(root);stage=Path(stage)
     require(root.is_absolute() and stage.is_absolute(),'installation-absolute-path-required')
     require(type(inspect_initial) is bool and int(inspect_initial)+sum(v is not None for v in (resume_operation,repair_operation,refresh_operation,retry_operation,rollback_operation,quarantine_operation))<=1,'installation-repair-mode-conflict')
     require(quarantine_receipt is None or quarantine_operation is not None,'initial-quarantine-mode-conflict')
     require(renewal is None or resume_operation is not None or refresh_operation is not None,'installation-renewal-mode-conflict')
     require(type(repair_resume) is bool and (not repair_resume or repair_operation is not None),'installation-repair-mode-conflict')
+    from .uninstall import MARKER, Uninstall
+    maintenance_home=present(root/MARKER)
+    ordinary=not inspect_initial and all(v is None for v in
+        (resume_operation,repair_operation,refresh_operation,retry_operation,rollback_operation,quarantine_operation,maintenance))
+    require(not maintenance_home or ordinary or maintenance is not None,'uninstall-transition-pending')
+    require(maintenance is None or all(v is None for v in
+        (resume_operation,repair_operation,refresh_operation,retry_operation,rollback_operation,quarantine_operation)),
+        'installation-repair-mode-conflict')
     # A working installation never imports a new anchor, configuration or
     # executable from the bootstrap payload. Trust continues from its own root.
-    if present(root) and resume_operation is None and repair_operation is None and refresh_operation is None and retry_operation is None and rollback_operation is None and quarantine_operation is None and not inspect_initial:
+    if present(root) and ordinary and not maintenance_home:
         if files.exists(root/'initial-install.json') and not present(root/'runtime/runtime.json'):
             from ..codec import RecordError
             marker=decode_canonical(files.read(root/'initial-install.json'))
@@ -197,6 +205,32 @@ def bootstrap(root,stage,digest,*,launch=os.execv,resume_operation=None,repair_o
     manifest=decode_canonical(files.read(stage/'manifest.json',4*1024*1024))
     require(process_runtime()==(slot.python,manifest['python_version'],manifest['sqlite_version']),'dedicated-runtime-mismatch')
     config=configuration(files,stage);anchor=files.read(stage/config['anchor'],512*1024)
+    if maintenance_home or maintenance is not None:
+        from ..manager_entry import update_configuration
+        from .release import ReleaseUpdate
+        home=ManagerHome(root,os_name=os_name,architecture=architecture,files=files)
+        own=update_configuration(home)
+        require(all(own[k]==config[k] for k in ('channel','metadata_url','target_url','target')),'installation-channel-changed')
+        action,operation,receipt=maintenance or ('reinstall',None,None)
+        transition=Uninstall(home)
+        if action=='uninstall-preview':return transition.preview(operation)
+        if action in ('uninstall','uninstall-resume'):
+            return transition.apply(operation,receipt,resume=action=='uninstall-resume')
+        if action=='uninstall-restore':return transition.restore(operation,receipt)
+        require(action in ('reinstall','reinstall-resume'),'uninstall-maintenance-invalid')
+        with files.exclusion(root/'management.lock'), files.exclusion(home.slots.root/'runtime.lock'):
+            binding,run,resume=transition.prepare_reinstall(resume=action=='reinstall-resume')
+        fetcher=https_fetcher(metadata_url=own['metadata_url'],target_url=own['target_url'])
+        try:
+            trust=Trust(root/'trust',metadata_url=own['metadata_url'],target_url=own['target_url'],fetcher=fetcher,files=files)
+            service=ReleaseUpdate(home,trust,channel=own['channel'],replacement=True,reinstall=(transition,binding))
+            if resume:
+                plan,review=service._read(run)
+                return service.resume(operation=run,receipt=review)
+            preview=service.prepare(operation=run,target=own['target'])
+            return service.apply(operation=run,receipt=preview['receipt'])
+        finally:
+            fetcher.close()
     if resume_operation is not None or repair_operation is not None or refresh_operation is not None or retry_operation is not None or rollback_operation is not None or quarantine_operation is not None or inspect_initial:
         if not inspect_initial:_token(resume_operation or repair_operation or refresh_operation or retry_operation or rollback_operation or quarantine_operation)
         # The externally verified bootstrap runs the recovery, but imports no

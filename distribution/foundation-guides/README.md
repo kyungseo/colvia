@@ -1,11 +1,13 @@
 # Colvia
 
-AI가 일하고, 내가 결정하고, 프로젝트가 기억합니다.
+Colvia는 사람과 AI가 함께 일하는 로컬 워크플로 도구입니다.
+
+Colvia is a local workflow tool for working with AI agents.
 
 [한국어 안내](manual/ko/README.md) · [English guide](manual/en/README.md)
 
-이 안내는 SQLite Preview용입니다. 고정 후보로 비공개 HTTPS 설치를 확인했으며, 공개 설치 명령은 Preview 배포와 함께 안내합니다. 안내에서 프로젝트 연결, 첫 작업과 기록 재개를 따라갈 수 있습니다. 운영체제별로 확인한 범위도 함께 살펴보세요.
+Codex나 Claude Code와 작업을 계획하고, 맡길 범위를 승인하고, 결과를 검토해 받아들일지 결정합니다. 위에서 언어를 선택하면 설치와 연결, 첫 작업부터 새 대화에서 이어가기까지 순서대로 볼 수 있습니다. 업데이트와 연결 해제 방법도 같은 안내에 있습니다.
 
-These guides are for the SQLite Preview. Fixed candidates were tested over private HTTPS. Public installation commands will be published with the Preview. Open a guide above to connect a project, start a Work or pick up its records. Each guide shows what was verified on the target platforms.
+Plan work with Codex or Claude Code, approve scope, and decide which result to accept. Choose a language above for step-by-step help with setup, your first task, and picking up in a new chat. The same guide covers updates and disconnecting a project.
 
 [License](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

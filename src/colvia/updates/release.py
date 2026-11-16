@@ -50,13 +50,25 @@ def inspect_release(home,operation):
 
 
 class ReleaseUpdate:
-    def __init__(self,home,trust,*,channel,replacement=False):
+    def __init__(self,home,trust,*,channel,replacement=False,reinstall=None):
         self.home=home;self.trust=trust;_token(channel);self.channel=channel
-        require(type(replacement) is bool,'runtime-repair-mode-invalid');self.replacement=replacement
+        require(type(replacement) is bool and (reinstall is None or replacement),'runtime-repair-mode-invalid')
+        self.replacement=replacement
+        self.reinstall=reinstall
+    def _reinstall_guard(self, operation, plan=None):
+        marker=self.home.root/'uninstall.json'
+        if self.reinstall is None:
+            require(not self.home.files.exists(marker),'uninstall-transition-pending')
+            if plan is not None:require('uninstall' not in plan,'uninstall-reinstall-required')
+        else:
+            transition,binding=self.reinstall
+            transition.reinstall_guard(binding,operation)
+            if plan is not None:require(plan.get('uninstall')==binding,'uninstall-reinstall-intent-changed')
     def _read(self,operation):
         _token(operation);area=self.home.root/'operations'/operation
         plan=decode_canonical(self.home.files.read(area/'release.json',4*1024*1024))
         require(plan['operation']==operation and plan['channel']==self.channel,'release-operation-mismatch')
+        self._reinstall_guard(plan['operation'],plan)
         return plan,hashlib.sha256(canonical_bytes(plan)).hexdigest()
     def rollback_preview(self,*,operation,receipt):
         from .rollback import ReleaseRollback
@@ -74,6 +86,7 @@ class ReleaseUpdate:
     def prepare(self,*,operation,target,cancelled=lambda:False):
         _token(operation)
         with self.home.files.exclusion(self.home.root/'management.lock'):
+            self._reinstall_guard(operation)
             require(not self.home.files.exists(self.home.root/'native-update.json'),'native-entry-update-pending')
             require(not self.home.files.exists(self.home.root/'notice-app.pending'),'notice-app-update-pending')
             before,selection=self.home.slots.selection()
@@ -105,6 +118,10 @@ class ReleaseUpdate:
             if unchanged:self.home.slots.verify(selection['selected'])
             plan=dict(version=1,operation=operation,channel=self.channel,before=selection,
                 target=selection['selected'] if unchanged else pointer(verified),download=download,unchanged=unchanged,replacement=self.replacement)
+            if self.reinstall is not None:
+                transition,binding=self.reinstall
+                transition.verify_reinstall_download(binding,operation,download,verified)
+                plan['uninstall']=binding
             self.home.files.create(area/'release.json',canonical_bytes(plan))
             receipt=hashlib.sha256(canonical_bytes(plan)).hexdigest()
             return dict(operation=operation,state='current' if unchanged else 'prepared',release=verified.release,receipt=receipt,
@@ -124,20 +141,42 @@ class ReleaseUpdate:
                     return dict(state='current',records_preserved=True,settings_preserved=True)
         return self._activate(plan,operation+'-activate',checkpoint)
 
+    def _reinstall_publication(self, plan):
+        from .initial_files import InitialFiles
+        entries=NativeEntryUpdate(self.home,plan['target'],plan['operation'])
+        raw=entries.candidate()
+        require(raw is not None,'uninstall-native-entry-required')
+        return InitialFiles(self.home,plan['operation'],plan['target'],raw)
+
+    def _finish_entries(self, plan):
+        if self.reinstall is None:
+            NativeEntryUpdate(self.home,plan['target'],plan['operation']).finish()
+            MacNoticeFiles(self.home,plan['target'],plan['operation']).finish()
+        else:
+            self._reinstall_guard(plan['operation'],plan)
+            self._reinstall_publication(plan).verify_final(sync=True)
+            transition,binding=self.reinstall
+            transition.finish_reinstall(binding,plan['operation'])
+
     def _activate(self,plan,activation_operation,checkpoint):
-        entries=NativeEntryUpdate(self.home,plan['target'],plan['operation']);notices=MacNoticeFiles(self.home,plan['target'],plan['operation'])
         def guard():
+            self._reinstall_guard(plan['operation'],plan)
             forward_allowed(self.home,plan['operation']);self.trust.activation_check(plan['download'])
         def change_entries():
             guard()
-            entries.prepare();entries.apply(guard=guard,checkpoint=checkpoint)
-            notices.prepare();notices.apply(guard=guard,checkpoint=checkpoint)
+            if self.reinstall is not None:
+                self._reinstall_publication(plan).publish(guard=guard,checkpoint=checkpoint)
+            else:
+                entries=NativeEntryUpdate(self.home,plan['target'],plan['operation'])
+                notices=MacNoticeFiles(self.home,plan['target'],plan['operation'])
+                entries.prepare();entries.apply(guard=guard,checkpoint=checkpoint)
+                notices.prepare();notices.apply(guard=guard,checkpoint=checkpoint)
         result=self.home.update(operation=activation_operation,target=plan['target'],expected_selection=canonical_bytes(plan['before']),
             checkpoint=checkpoint,replacement=plan.get('replacement',False),activation_guard=guard,
             entry_activation=change_entries)
         with self.home.files.exclusion(self.home.root/'management.lock'):
             with self.home.files.exclusion(self.home.slots.root/'runtime.lock'):
-                forward_allowed(self.home,plan['operation']);entries.finish();notices.finish()
+                forward_allowed(self.home,plan['operation']);self._finish_entries(plan)
         return result
 
     def resume(self,*,operation,receipt,renewal=None,checkpoint=lambda _:None):
@@ -154,7 +193,7 @@ class ReleaseUpdate:
             with self.home.files.exclusion(self.home.slots.root/'runtime.lock'):
                 raw,state=self.home.slots.selection()
                 if state['selected']==plan['target']:
-                    self.home.slots.verify(plan['target']);NativeEntryUpdate(self.home,plan['target'],operation).finish();MacNoticeFiles(self.home,plan['target'],operation).finish()
+                    self.home.slots.verify(plan['target']);self._finish_entries(plan)
                     return dict(state='updated',records_preserved=True,settings_preserved=True,recovery_available=state['recovery'] is not None)
                 require(raw==canonical_bytes(plan['before']),'runtime-selection-changed')
                 plan=dict(plan,download=effective(self.home,self.trust,operation=operation,original=expected,download=plan['download'],renewal=renewal))

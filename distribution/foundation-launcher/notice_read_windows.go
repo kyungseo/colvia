@@ -62,7 +62,7 @@ func noticeRead(self string, args ...string) (string, error) {
 	if err = log.Sync(); err != nil {
 		return "", errors.New("notice-log-unavailable")
 	}
-	command := append([]string{self, "manage", "--management-root", noticeRoot, "--receiver-source", self}, args...)
+	command := append([]string{self, "manage", "--management-root", noticeRoot}, args...)
 	result := runNoticeProcess(command, noticeRoot, noticeReadLimit, 131072)
 	if result.Code == "ok" && strings.TrimSpace(result.Stdout) == "" {
 		result.Code = "empty-output"

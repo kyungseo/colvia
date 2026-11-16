@@ -245,6 +245,11 @@ func verifiedCommand(root string, manager, repair bool) ([]string, error) {
 	if err := privateRoot(root); err != nil {
 		return nil, err
 	}
+	if _, err := os.Lstat(filepath.Join(root, "uninstall.json")); err == nil {
+		return nil, errors.New("uninstall-transition-pending: use the Colvia installer to resume or reinstall")
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
 	runtimeRoot := filepath.Join(root, "runtime")
 	if err := privateRoot(runtimeRoot); err != nil {
 		return nil, err
@@ -427,21 +432,42 @@ func hostBoundary(goos string, getenv func(string) string) error {
 	return nil
 }
 
+// Runtime and recovery selection belongs to the verified native entry.
+func validateForwardedArgs(args []string) error {
+	projectRoot := false
+	for _, arg := range args {
+		if arg == "--" {
+			break
+		}
+		name, _, _ := strings.Cut(arg, "=")
+		switch name {
+		case "--management-root", "--runtime-slot", "--runtime-manifest-sha256", "--repair", "--receiver-source":
+			return errors.New("unexpected-forwarded-runtime-option")
+		case "--root":
+			if projectRoot {
+				return errors.New("duplicate-project-root")
+			}
+			projectRoot = true
+		}
+	}
+	return nil
+}
+
 func run(args []string) error {
 	if err := hostBoundary(runtime.GOOS, os.Getenv); err != nil {
 		return err
 	}
 
-	root, err := defaultRoot()
-	if err != nil {
-		return err
-	}
+	root := ""
 	manager, repair, inspect := false, false, false
 	for len(args) > 0 {
 		switch args[0] {
 		case "--management-root":
-			if len(args) < 2 {
+			if len(args) < 2 || args[1] == "" {
 				return errors.New("management-root-required")
+			}
+			if root != "" {
+				return errors.New("duplicate-management-root")
 			}
 			root = args[1]
 			args = args[2:]
@@ -449,6 +475,9 @@ func run(args []string) error {
 			manager = true
 			args = args[1:]
 		case "--repair":
+			if repair {
+				return errors.New("duplicate-runtime-recovery")
+			}
 			manager = true
 			repair = true
 			args = args[1:]
@@ -460,9 +489,31 @@ func run(args []string) error {
 		}
 	}
 prepared:
+	if err := validateForwardedArgs(args); err != nil {
+		return err
+	}
+	if root == "" {
+		var err error
+		root, err = defaultRoot()
+		if err != nil {
+			return err
+		}
+	}
 	command, err := verifiedCommand(root, manager, repair)
 	if err != nil {
 		return err
+	}
+	// The Windows notification receiver is bound to its own verified executable,
+	// not to an arbitrary source string from a command line.
+	if runtime.GOOS == "windows" && manager && !repair && len(args) > 0 &&
+		(args[0] == "notice-identity" || args[0] == "notice-detail") {
+		self, err := os.Executable()
+		if err != nil {
+			return err
+		}
+		if strings.EqualFold(filepath.Dir(self), filepath.Join(root, "notification-tools")) {
+			command = append(command, "--receiver-source", self)
+		}
 	}
 	command = append(command, args...)
 	if inspect {

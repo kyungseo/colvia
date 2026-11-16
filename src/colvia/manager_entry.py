@@ -7,7 +7,7 @@ never edits host grants, searches PATH, requests OS privileges or creates keys.
 import argparse,json,uuid,sys
 from pathlib import Path
 from .codec import canonical_bytes,decode_canonical,require,RecordError
-from .managed_entry import ManagedEntry
+from .managed_entry import ManagedEntry,RuntimeOptionOnce
 from .project_setup import ProjectSetup
 from .connection_boundary import ConnectionBoundaryError
 from .updates.release import ReleaseUpdate
@@ -57,8 +57,11 @@ def update_configuration(home):
 def parser(*,bound=False):
     p=argparse.ArgumentParser(prog='colvia manage',allow_abbrev=False)
     if not bound:
-        p.add_argument('--management-root',required=True);p.add_argument('--runtime-slot',required=True);p.add_argument('--receiver-source',type=Path)
-        p.add_argument('--runtime-manifest-sha256',required=True);p.add_argument('--repair',action='store_true')
+        p.add_argument('--management-root',required=True,action=RuntimeOptionOnce)
+        p.add_argument('--runtime-slot',required=True,action=RuntimeOptionOnce)
+        p.add_argument('--runtime-manifest-sha256',required=True,action=RuntimeOptionOnce)
+        p.add_argument('--repair',nargs=0,action=RuntimeOptionOnce)
+        p.add_argument('--receiver-source',type=Path,action=RuntimeOptionOnce)
     else:p.set_defaults(receiver_source=None,repair=False)
     p.add_argument('--json',action='store_true')
     commands=p.add_subparsers(dest='command',required=True)
@@ -231,9 +234,10 @@ def run(args,entry):
 def main(argv=None,*,entry=None):
     argv=list(sys.argv[1:] if argv is None else argv)
     if entry is None and argv and argv[0] in ('bootstrap-connect-repair-prepare','bootstrap-connect-repair-preview','bootstrap-connect-repair-apply','bootstrap-connect-repair-resume'):
-        p=argparse.ArgumentParser(prog='colvia connection recovery')
-        p.add_argument('--management-root',required=True,type=Path);p.add_argument('--bootstrap-stage',required=True,type=Path)
-        p.add_argument('--bootstrap-manifest-sha256',required=True);p.add_argument('--connection',required=True)
+        p=argparse.ArgumentParser(prog='colvia connection recovery',allow_abbrev=False)
+        p.add_argument('--management-root',required=True,type=Path,action=RuntimeOptionOnce)
+        p.add_argument('--bootstrap-stage',required=True,type=Path,action=RuntimeOptionOnce)
+        p.add_argument('--bootstrap-manifest-sha256',required=True,action=RuntimeOptionOnce);p.add_argument('--connection',required=True)
         p.add_argument('--release-operation',required=True);p.add_argument('--renewal')
         applying=argv[0] in ('bootstrap-connect-repair-apply','bootstrap-connect-repair-resume')
         if applying:p.add_argument('--operation',required=True);p.add_argument('--receipt',required=True)
@@ -257,10 +261,30 @@ def main(argv=None,*,entry=None):
             code=trust_failure(exc)
             if code is None:raise
             print(json.dumps(dict(error=code,message='복구 후보의 신뢰를 확인하지 못했습니다. 기존 기록과 설치본은 보존됩니다.'),ensure_ascii=False));return 2
+    if entry is None and argv and argv[0] in ('bootstrap-uninstall-preview','bootstrap-uninstall',
+                                               'bootstrap-uninstall-resume','bootstrap-uninstall-restore',
+                                               'bootstrap-reinstall-resume'):
+        command=argv[0].removeprefix('bootstrap-')
+        p=argparse.ArgumentParser(prog='colvia installation maintenance',allow_abbrev=False)
+        p.add_argument('--management-root',required=True,type=Path,action=RuntimeOptionOnce)
+        p.add_argument('--bootstrap-stage',required=True,type=Path,action=RuntimeOptionOnce)
+        p.add_argument('--bootstrap-manifest-sha256',required=True,action=RuntimeOptionOnce)
+        if command!='reinstall-resume':p.add_argument('--operation',required=True,action=RuntimeOptionOnce)
+        if command in ('uninstall','uninstall-resume','uninstall-restore'):
+            p.add_argument('--receipt',required=True,action=RuntimeOptionOnce)
+        a=p.parse_args(argv[1:])
+        try:
+            from .updates.installation import bootstrap
+            result=bootstrap(a.management_root,a.bootstrap_stage,a.bootstrap_manifest_sha256,
+                             maintenance=(command,getattr(a,'operation',None),getattr(a,'receipt',None)))
+            print(json.dumps(result,ensure_ascii=False,sort_keys=True));return 0
+        except (RecordError,OSError,ValueError,TypeError,KeyError) as exc:
+            print(failure(exc.code if isinstance(exc,RecordError) else 'installation-unavailable'));return 2
     if entry is None and argv and argv[0] in ('bootstrap-install-or-update','bootstrap-resume-install','bootstrap-repair-runtime','bootstrap-resume-repair','bootstrap-refresh-install','bootstrap-retry-install','bootstrap-rollback-preview','bootstrap-rollback','bootstrap-install-status','bootstrap-quarantine-preview','bootstrap-replace-install'):
-        p=argparse.ArgumentParser(prog='colvia install')
-        p.add_argument('--management-root',required=True,type=Path);p.add_argument('--bootstrap-stage',required=True,type=Path)
-        p.add_argument('--bootstrap-manifest-sha256',required=True)
+        p=argparse.ArgumentParser(prog='colvia install',allow_abbrev=False)
+        p.add_argument('--management-root',required=True,type=Path,action=RuntimeOptionOnce)
+        p.add_argument('--bootstrap-stage',required=True,type=Path,action=RuntimeOptionOnce)
+        p.add_argument('--bootstrap-manifest-sha256',required=True,action=RuntimeOptionOnce)
         resuming=argv[0]=='bootstrap-resume-install';repairing=argv[0] in ('bootstrap-repair-runtime','bootstrap-resume-repair')
         refreshing=argv[0]=='bootstrap-refresh-install';retrying=argv[0]=='bootstrap-retry-install';inspecting=argv[0]=='bootstrap-install-status'
         quarantining=argv[0] in ('bootstrap-quarantine-preview','bootstrap-replace-install')
@@ -296,6 +320,7 @@ def main(argv=None,*,entry=None):
             if operation:message+=' 확인할 실행: '+operation
             print(message);return 2
     args=parser(bound=entry is not None).parse_args(argv)
+    args.repair=args.repair is True
     if args.command=='update' and args.operation is None:args.operation='update-'+uuid.uuid4().hex
     try:
         pointer=None if entry is not None else dict(slot=args.runtime_slot,manifest_sha256=args.runtime_manifest_sha256)

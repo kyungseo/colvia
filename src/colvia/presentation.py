@@ -301,6 +301,12 @@ MESSAGES={
 
 def failure(code):
     recovery={
+        'uninstall-transition-pending':'Colvia 제거 또는 재설치가 진행 중입니다. 기존 기록은 보존되며 설치 스크립트에서 이어갈 수 있습니다.',
+        'uninstall-not-complete':'이전 제거가 완료되지 않았습니다. 같은 제거 작업을 재개해 주세요.',
+        'uninstall-resume-required':'중단된 제거 작업이 있습니다. 같은 작업 번호와 확인값으로 제거를 재개해 주세요.',
+        'uninstall-reinstall-resume-required':'재설치가 중단됐습니다. 설치 스크립트에서 재설치 재개를 선택해 주세요.',
+        'uninstall-owned-file-changed':'제거 대상의 파일이 바뀌었습니다. 파일과 기록은 보존했습니다.',
+        'uninstall-extra-installed-file':'설치한 파일로 확인할 수 없는 항목이 있습니다. 해당 폴더와 기록은 보존했습니다.',
         'workspace-parent-project':'상위 폴더에 Colvia 프로젝트가 있습니다. 이 하위 폴더를 별도 프로젝트로 연결하지 않았습니다. 원래 프로젝트를 계속하려면 표시된 상위 폴더에서 실행해 주세요. 별도로 이동한 프로젝트라면 현재 파일과 기록을 보존하고 연결 상태를 확인해 주세요.',
         'workspace-boundary-unavailable':'상위 프로젝트 경계를 확인하지 못해 진행을 멈췄습니다. 표시된 폴더와 Git 정보의 접근·상태를 확인해 주세요. 파일과 연결 정보를 임의로 지우거나 바꾸지 마세요.',
         'workspace-connection-kind-changed':'일반 폴더의 Colvia 연결 표식과 Git 저장소가 함께 발견됐습니다. 어느 연결을 사용할지 확인할 수 없어 중단했습니다. 현재 파일과 두 연결 정보를 보존하고 기존 연결 상태를 확인해 주세요.',

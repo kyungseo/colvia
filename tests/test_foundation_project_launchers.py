@@ -47,4 +47,30 @@ class ProjectLauncherTests(unittest.TestCase):
     def test_windows_block_points_to_its_actual_launcher(self):
         self.assertEqual(b'.\\colvia.cmd guide; .\\colvia.cmd ordinary list',project_block(b'./colvia guide; ./colvia ordinary list','windows'))
 
+class VerifiedEntryArgumentTests(unittest.TestCase):
+    def test_direct_python_entries_refuse_duplicate_selections_before_opening_a_home(self):
+        from contextlib import redirect_stderr
+        from io import StringIO
+        from unittest.mock import patch
+        from colvia import managed_entry, manager_entry
+
+        trusted = ['--management-root', '/synthetic', '--runtime-slot', 'one',
+                   '--runtime-manifest-sha256', 'a' * 64]
+        cases = (
+            (managed_entry.main, trusted + ['guide', '--runtime-slot=two']),
+            (manager_entry.main, trusted + ['--management-root=/synthetic', 'status']),
+            (manager_entry.main, trusted + ['--repair', '--repair', 'repair-preview']),
+            (manager_entry.main, ['bootstrap-install-or-update', '--management-root', '/synthetic',
+                                  '--bootstrap-stage', '/stage', '--bootstrap-manifest-sha256', '1' * 64,
+                                  '--bootstrap-manifest-sha256', '2' * 64]),
+        )
+        with patch.object(managed_entry, 'ManagerHome', side_effect=AssertionError('opened home')):
+            for entry, args in cases:
+                with self.subTest(args=args), redirect_stderr(StringIO()) as stderr:
+                    with self.assertRaises(SystemExit) as failure:
+                        entry(args)
+                    self.assertEqual(2, failure.exception.code)
+                    self.assertIn('duplicate runtime option', stderr.getvalue())
+
+
 if __name__=='__main__':unittest.main()

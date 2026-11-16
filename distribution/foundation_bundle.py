@@ -144,7 +144,7 @@ def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,
     for name,(path,digest) in captured.items():require(_identity(path)==identities[name] and hashlib.sha256(path.read_bytes()).hexdigest()==digest,'bundle-input-changed')
     caps=sorted(runtime_capabilities());manifest=canonical_bytes(dict(version=1,release=release,sequence=sequence,os=os_name,architecture=architecture,
         python='runtime/'+python_entry,python_version=python_version,sqlite_version=sqlite_version,
-        manager='manager.py',product='product.py',read_capabilities=caps,write_capabilities=caps,features=sorted(['official-execution']+(['native-notices'] if notice_app is not None or os_name=='windows' else [])),inventory=canonical_entries(inventory)))
+        manager='manager.py',product='product.py',read_capabilities=caps,write_capabilities=caps,features=sorted(['official-execution','managed-uninstall']+(['native-notices'] if notice_app is not None or os_name=='windows' else [])),inventory=canonical_entries(inventory)))
     require(len(manifest)<=4*1024**2,'bundle-manifest-limit')
     generated['manifest.json']=manifest;indexed={e['path']:e for e in inventory}
     # Preserve incomplete output on any failure for diagnosis; never publish an

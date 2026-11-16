@@ -7,6 +7,7 @@ from ..managed_entry import current_platform,process_runtime
 class RecoveryManager:
     def __init__(self,root,*,pointer):
         os_name,architecture=current_platform();self.home=ManagerHome(root,os_name=os_name,architecture=architecture)
+        require(not self.home.files.exists(self.home.root/'uninstall.json'),'uninstall-transition-pending')
         raw,state=self.home.slots.selection();require(state['recovery']==pointer,'runtime-recovery-target-mismatch')
         self.slot=self.home.slots.verify(pointer);self.expected=raw;self.target=pointer
         m=decode_canonical(self.home.files.read(self.home.slots.root/'slots'/self.slot.slot/'manifest.json',4*1024*1024))

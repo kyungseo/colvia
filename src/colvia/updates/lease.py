@@ -11,11 +11,14 @@ from ..storage.sqlite import GenerationStore
 
 class RuntimeLease:
     def __init__(self,slots,*,expected_pointer=None):
-        self.slots=slots;self.expected,self.selection=slots.selection()
+        self.slots=slots
+        require(not slots.files.exists(slots.root.parent/'uninstall.json'),'uninstall-transition-pending')
+        self.expected,self.selection=slots.selection()
         require(expected_pointer is None or self.selection['selected']==expected_pointer,'runtime-entry-selection-changed')
         self.verified=slots.verify(self.selection['selected'])
         self.check()
     def check(self):
+        require(not self.slots.files.exists(self.slots.root.parent/'uninstall.json'),'uninstall-transition-pending')
         require(self.slots.selection()[0]==self.expected,'runtime-selection-changed')
     @contextmanager
     def hold(self):

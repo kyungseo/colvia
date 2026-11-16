@@ -202,6 +202,9 @@ if [ "$command" = bootstrap-install-or-update ]; then
         [ "$(CDPATH= cd -P -- "$parent" && pwd -P)" = "$parent" ] || colvia_refuse_existing
     if [ -e "$root" ] || [ -L "$root" ]; then
         colvia_uid=$(/usr/bin/id -u)
+        if [ -e "$root/uninstall.json" ] || [ -L "$root/uninstall.json" ]; then
+            colvia_private_directory "$root" && colvia_private_file "$root/uninstall.json" || colvia_refuse_existing
+        else
         launcher="$root/bin/colvia-manage"
         identity="$root/entry.json"
         colvia_private_directory "$root" && colvia_private_directory "$root/bin" &&
@@ -223,6 +226,7 @@ if [ "$command" = bootstrap-install-or-update ]; then
             status=$?
             printf '%s\n' 'Colvia update stopped. Review the message above and use explicit recovery if requested.' >&2
             exit "$status"
+        fi
         fi
     fi
 fi
@@ -357,6 +361,8 @@ umask 077
 command=bootstrap-install-or-update
 if [ "$#" -eq 1 ] && [ "$1" = --install-status ]; then
     command=bootstrap-install-status; set --
+elif [ "$#" -eq 1 ] && [ "$1" = --resume-reinstall ]; then
+    command=bootstrap-reinstall-resume; set --
 elif [ "$#" -ne 0 ]; then
     action=$1
     [ "$#" -ge 2 ] || {{ echo 'An explicit recovery operation is required.' >&2; exit 2; }}
@@ -364,6 +370,13 @@ elif [ "$#" -ne 0 ]; then
     case "$operation" in ''|*[!A-Za-z0-9._-]*|[!A-Za-z0-9]*) echo 'Invalid installation operation.' >&2; exit 2;; esac
     [ "${{#operation}}" -le 160 ] || exit 2
     case "$action" in
+      --uninstall-preview)
+        [ "$#" -eq 2 ] || exit 2
+        command=bootstrap-uninstall-preview; set -- --operation "$operation";;
+      --uninstall|--resume-uninstall|--restore-uninstall)
+        [ "$#" -eq 3 ] || exit 2
+        case "$action" in --uninstall) command=bootstrap-uninstall;; --resume-uninstall) command=bootstrap-uninstall-resume;; *) command=bootstrap-uninstall-restore;; esac
+        set -- --operation "$operation" --receipt "$3";;
       --resume-install|--repair-runtime|--resume-repair|--retry-install)
         [ "$#" -eq 2 ] || {{ [ "$action" = --resume-install ] && [ "$#" -eq 3 ]; }} || exit 2
         case "$action" in --resume-install) command=bootstrap-resume-install;; --resume-repair) command=bootstrap-resume-repair;; --retry-install) command=bootstrap-retry-install;; *) command=bootstrap-repair-runtime;; esac
@@ -406,12 +419,30 @@ exec "$stage/runtime/{bundle.python}" -I -B "$stage/runtime/{bundle.manager}" "$
     require(bundle.os_name=='windows','bootstrap-platform-unavailable')
     machine = {'arm64': '0xAA64', 'x64': '0x8664'}[bundle.architecture]
     return f'''#requires -Version 5.1
-param([string]$ResumeInstall = '', [string]$RepairRuntime = '', [string]$ResumeRepair = '', [string]$RetryInstall = '', [string]$RefreshInstall = '', [string]$RollbackPreview = '', [string]$RollbackUpdate = '', [string]$Receipt = '', [string]$Renewal = '', [string]$RollbackReceipt = '', [string]$QuarantinePreview = '', [string]$ReplaceInstall = '', [switch]$InstallStatus)
+param([string]$ResumeInstall = '', [string]$RepairRuntime = '', [string]$ResumeRepair = '', [string]$RetryInstall = '', [string]$RefreshInstall = '', [string]$RollbackPreview = '', [string]$RollbackUpdate = '', [string]$Receipt = '', [string]$Renewal = '', [string]$RollbackReceipt = '', [string]$QuarantinePreview = '', [string]$ReplaceInstall = '', [switch]$InstallStatus, [string]$UninstallPreview = '', [string]$Uninstall = '', [string]$ResumeUninstall = '', [string]$RestoreUninstall = '', [switch]$ResumeReinstall)
 $managerArgs = @('bootstrap-install-or-update')
 if ($InstallStatus) {{
     if (@(@($ResumeInstall, $RepairRuntime, $ResumeRepair, $RetryInstall, $RefreshInstall, $RollbackPreview, $RollbackUpdate, $QuarantinePreview, $ReplaceInstall) | Where-Object {{ $_ -ne '' }}).Count -gt 0) {{ throw 'Choose one recovery action.' }}
     $managerArgs = @('bootstrap-install-status')
 }}
+$maintenance = @($UninstallPreview, $Uninstall, $ResumeUninstall, $RestoreUninstall) | Where-Object {{ $_ -ne '' }}
+$maintenanceCount = @($maintenance).Count + [int][bool]$ResumeReinstall
+$otherCount = @(@($ResumeInstall, $RepairRuntime, $ResumeRepair, $RetryInstall, $RefreshInstall, $RollbackPreview, $RollbackUpdate, $QuarantinePreview, $ReplaceInstall) | Where-Object {{ $_ -ne '' }}).Count + [int][bool]$InstallStatus
+if ($maintenanceCount -gt 1 -or ($maintenanceCount -gt 0 -and $otherCount -gt 0)) {{ throw 'Choose one maintenance action.' }}
+foreach ($name in $maintenance) {{
+    if ($name -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{{0,109}}$') {{ throw 'Invalid installation operation.' }}
+}}
+if ($UninstallPreview -ne '') {{ $managerArgs = @('bootstrap-uninstall-preview', '--operation', $UninstallPreview) }}
+if ($Uninstall -ne '' -or $ResumeUninstall -ne '') {{
+    if ($Receipt -eq '') {{ throw 'The uninstall preview receipt is required.' }}
+    if ($Uninstall -ne '') {{ $managerArgs = @('bootstrap-uninstall', '--operation', $Uninstall, '--receipt', $Receipt) }}
+    else {{ $managerArgs = @('bootstrap-uninstall-resume', '--operation', $ResumeUninstall, '--receipt', $Receipt) }}
+}}
+if ($RestoreUninstall -ne '') {{
+    if ($Receipt -eq '') {{ throw 'The uninstall preview receipt is required.' }}
+    $managerArgs = @('bootstrap-uninstall-restore', '--operation', $RestoreUninstall, '--receipt', $Receipt)
+}}
+if ($ResumeReinstall) {{ $managerArgs = @('bootstrap-reinstall-resume') }}
 if (@(@($ResumeInstall, $RepairRuntime, $ResumeRepair, $RetryInstall, $RefreshInstall, $RollbackPreview, $RollbackUpdate, $QuarantinePreview, $ReplaceInstall) | Where-Object {{ $_ -ne '' }}).Count -gt 1) {{ throw 'Choose one explicit recovery action.' }}
 if ($RepairRuntime -ne '') {{
     if ($RepairRuntime -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{{0,159}}$') {{ throw 'Invalid installation operation.' }}
@@ -448,13 +479,21 @@ if ($RollbackUpdate -ne '') {{
     $managerArgs = @('bootstrap-rollback', '--operation', $RollbackUpdate, '--receipt', $Receipt, '--rollback-receipt', $RollbackReceipt)
 }}
 {_WINDOWS_EXISTING}{_windows_parent_check(machine)}if ($managerArgs[0] -ceq 'bootstrap-install-or-update') {{
+    $removedHome = $false
     try {{
         $homeItem = Get-ColviaExistingHome (Join-Path $parent 'Colvia')
-        if ($null -ne $homeItem) {{ $installed = @(Get-ColviaInstalledCommand $homeItem $native '{bundle.architecture}') }}
+        if ($null -ne $homeItem) {{
+            Assert-ColviaPrivateEntry $homeItem $true
+            $marker = Get-Item -LiteralPath (Join-Path $homeItem.FullName 'uninstall.json') -Force -ErrorAction SilentlyContinue
+            if ($null -ne $marker) {{
+                Assert-ColviaPrivateEntry $marker $false
+                $removedHome = $true
+            }} else {{ $installed = @(Get-ColviaInstalledCommand $homeItem $native '{bundle.architecture}') }}
+        }}
     }} catch {{
         throw ('Existing Colvia installation cannot be verified. Keep its files and use the explicit Colvia installation recovery procedure. ' + $_.Exception.Message)
     }}
-    if ($null -ne $homeItem) {{
+    if ($null -ne $homeItem -and -not $removedHome) {{
         $installedPython = $installed[0]
         $installedArgs = @($installed[1..9]) + @('update')
         & $installedPython @installedArgs

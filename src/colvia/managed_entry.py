@@ -189,12 +189,20 @@ class ManagedEntry:
             workspace.verify();self.lease.check();return authority,store,workspace
         except BaseException:store.close();raise
 
+class RuntimeOptionOnce(argparse.Action):
+    def __call__(self, parser, namespace, value, option_string=None):
+        if getattr(namespace, self.dest, None) is not None:
+            parser.error(f'duplicate runtime option: {option_string}')
+        setattr(namespace, self.dest, True if self.nargs == 0 else value)
+
+
 def main(argv=None):
     from .cli import main as product
     from .presentation import failure
     p=argparse.ArgumentParser(add_help=False,allow_abbrev=False)
-    p.add_argument('--management-root',required=True);p.add_argument('--runtime-slot',required=True)
-    p.add_argument('--runtime-manifest-sha256',required=True)
+    p.add_argument('--management-root',required=True,action=RuntimeOptionOnce)
+    p.add_argument('--runtime-slot',required=True,action=RuntimeOptionOnce)
+    p.add_argument('--runtime-manifest-sha256',required=True,action=RuntimeOptionOnce)
     prefix,rest=p.parse_known_args(argv)
     try:
         entry=ManagedEntry(Path(prefix.management_root),pointer=dict(slot=prefix.runtime_slot,manifest_sha256=prefix.runtime_manifest_sha256))
