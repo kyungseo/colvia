@@ -1,5 +1,7 @@
 # Development Index
 
+- [개발 기록과 문서 검증 절차 보강](CHORE-20261117-003-development-record-and-documentation-checkpoints.md) — DR-0003 조항 개정 시행과 사례 대조.
+
 - [공개·설치 안내와 저장소 진입점 현행화](CHORE-20261117-002-manual-and-entry-alignment.md) — 실행 범위와 검증 기록.
 
 - [새 기록 기반과 공개 실행환경](FEAT-20261106-002-record-foundation.md) — 설계 보정·구현 준비.

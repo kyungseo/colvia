@@ -30,3 +30,19 @@ The earlier-profile builder uses `distribution/README-installed.md` and preserve
 ## Review before delivery
 
 Check both directions: no claim beyond the capability definitions, and no caveat that does not affect the reader’s decision or action. Check links and anchors from the file where readers open them, including installed copies. Check both languages against the capability definitions and current evidence before changing a support claim. Render Mermaid, light and dark SVG, and Korean Markdown emphasis. Keep a public support promise separate from a development build or an isolated observation.
+
+## Check affected guidance
+
+[DR-0008 acceptance and activation](../decisions/DR-0008-development-record-and-documentation-checkpoints.md#acceptance-and-activation) records the accepted scope and effective date of these checks. The table helps identify which guidance and artifacts a change affects. [Maintaining](../MAINTAINING.md#evidence-reuse-and-selection) determines the depth and selection of actual checks by behavior.
+
+Use the rows that match the affected surfaces.
+
+| If the change affects | What to compare |
+| --- | --- |
+| A source-only explanation or navigation route | Check the changed prose and its rendering. Check equivalent English and Korean instructions for paired pages. For moved pages or sections, check outgoing links at the new location and incoming addresses and anchors from the earlier location. |
+| A shipped guide or installed entry | Before freezing the candidate, compare the source with its generated guide, intended installed paths and per-platform packaging map. In each affected ZIP, verify the actual members, bytes and internal link destinations. Use Maintaining to select checks for the affected entry, update, repair or detach consumer. |
+| Release-facing guidance | Compare affected instructions and support claims with the release notes and any existing changelog for the same release. Record publication or installation when observed and authorized. |
+| A command, permission, recovery or support claim | Compare the implementation or actual help with the applicable evidence. Identify the architecture and build, filesystem and folder type, and command path when they affect the claim. For recovery, confirm the command and location of retained material. |
+| A changed host test tool or operator instructions | The maintainer or designated operator checks invocation, byte encoding, approval file permissions, exit codes and log capture against the applicable runbook. |
+
+Use the root `AGENTS.md` and `CLAUDE.md`, the instructions used by the actual project entry, and the installed guide or launcher help when a change affects agents. For people using the project, look at the paired root and manual pages, the documentation index, `CONTRIBUTING`, `SECURITY.md` and the applicable release guidance. Record the relevant surfaces, verified identities and any remaining limits in the owning development or release record. Store private environment details and original failures with the applicable evidence and runbook.

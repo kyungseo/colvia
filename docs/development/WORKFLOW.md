@@ -18,9 +18,9 @@ The document organization follows [Repository-Owned Rules](../REFERENCE.md#repos
 
 For Colvia source development, the explicitly supplied [CONTRIBUTING entry](../../CONTRIBUTING.md) or [Development Index](README.md) leads here. Source tasks use the plain development procedure below; runtime installation and typed Work creation are not prerequisites.
 
-In an installed project, agents start with `./colvia view --details`, read its currently verified manual/adapter and follow that project's own rules. This source-only workflow is not installed or required by that entry. The original protections for external contributors and adopter roles in this procedure remain applicable; this reorganization does not decide a licensing or public contribution policy.
+For a connected Colvia Preview project, follow its own rules and the [Preview project entry](../../AGENTS.md#work-in-a-connected-project). For an earlier profile, follow the entry documented for that release. This source-only workflow is not installed or required by that entry. The original protections for external contributors and adopter roles in this procedure remain applicable; this reorganization does not decide a licensing or public contribution policy.
 
-At the DR-0006 source-only relocation, the unchanged AGENTS/CLAUDE entry had no verified automatic route to these source rules. The separately accepted entry amendment identified in PATCH-20261018-002 adds a conditional route through source-only CONTRIBUTING when the agent is explicitly asked to develop Colvia itself in its trusted source checkout. An installed project still starts with its own rules and the verified manual/adapter from ./colvia view; presence inside a managed manual never selects source development. This route does not require runtime installation or typed Work creation, and adds no task-selection or execution authority. DR-0006's other relocated obligations and historical identities remain unchanged.
+At the DR-0006 source-only relocation, the unchanged AGENTS/CLAUDE entry had no verified automatic route to these source rules. The separately accepted entry amendment identified in PATCH-20261018-002 adds a conditional route through source-only CONTRIBUTING when the agent is explicitly asked to develop Colvia itself in its trusted source checkout. The earlier-profile entry described in that record uses its project rules and the verified manual or adapter from `./colvia view`. Presence inside a managed manual never selects source development. This route does not require runtime installation or typed Work creation, and adds no task-selection or execution authority. DR-0006's other relocated obligations and historical identities remain unchanged.
 
 ## Find Rules For The Task
 
@@ -43,6 +43,8 @@ The human Owner decides material scope, policy acceptance and result acceptance.
 A decision's acceptance does not start or transfer a task. The [Decision Guide's scope boundary](../DECISION-GUIDE.md#acceptance-records) remains effective: it does not establish a task tracker. The separately accepted source-development procedure below defines task selection and its single record. That approved record fulfills Maintaining's existing Work-narrative reference; no typed runtime Work is created.
 
 ## Start And Select
+
+When planning a change that affects guidance, use the [development record and documentation checkpoints](#development-record-and-documentation-checkpoints) to identify the affected surfaces in the owning record.
 
 Use the [Documentation Index](../README.md) for the product overview and the [Decision Guide](../DECISION-GUIDE.md#decision-catalog) for the exact current technical activation records. Read the [Development Index](README.md) and any existing record that owns the requested work. Explain the observed state and remaining authorization before selecting another task. A recommendation, candidate entry, ambiguous request to continue, or contract Draft does not authorize implementation. Do not infer an unrecorded choice from an empty list or a closed task.
 
@@ -74,6 +76,8 @@ For agent or CLI reviews, follow [Agent Collaboration](#agent-collaboration) bef
 
 ## Execute Within The Approved Boundary
 
+When a scope change, failure or new finding changes the next action, update the owning record under the [development record and documentation checkpoints](#development-record-and-documentation-checkpoints).
+
 For changed source, use Maintaining to choose checks and report actual results, inherited evidence and unverified limits separately. Preserve extra raw evidence only for an identified failure, qualification, reuse or delivery need and record its end condition. Avoid copying a whole source tree or adding a validation archive for every check.
 
 Execute the approved scope and checks under [Maintaining](../MAINTAINING.md). Stop the affected action for a safety discrepancy, unknown state, missing recovery input, exhausted bound or required scope/contract change. Preserve the state and essential failure facts, explain the next bounded recovery proposal and obtain any authorization it needs. Do not silently add new commands or retries, delete history, weaken a test, or raise a timeout to manufacture success.
@@ -82,11 +86,15 @@ Execute the approved scope and checks under [Maintaining](../MAINTAINING.md). St
 
 ## Resume And Handoff
 
+For an operator handoff on a host test, use the [development record and documentation checkpoints](#development-record-and-documentation-checkpoints).
+
 On resume, identify the exact checkout/branch, current changes, designated progress record, accepted scope and remaining time/attempt limits. Compare current inputs with the recorded checkpoint before acting. An approval restricted to different exact bytes does not authorize a changed result. A recorded scope authorization that explicitly covers bounded corrections remains applicable within those limits; verify its conditions rather than inferring or silently expanding them. Continue the existing record when it owns the task; do not duplicate it because the conversation or checkout changed. A suspended task states why it stopped, what remains and the concrete resumption condition. These are readable dispositions in a plain document, not a new runtime lifecycle enum.
 
 An exceptional task handoff identifies the remaining prospective scope, previous record and exact revision, new owner/record, preserved completed evidence, unmet criteria, checks and stop conditions. Activate the new owner only with the Owner's acceptance of that exact handoff and verification of both sides. Update the old location to a dated historical pointer in the same cutover; never keep two live progress owners. Sensitive provenance may remain private, but the new record must explain the remaining task without requiring private history. A candidate with no active development task needs candidate intake, not an invented task transfer.
 
 ## Close And Assess Adopter Impact
+
+At closeout, use the [development record and documentation checkpoints](#development-record-and-documentation-checkpoints) to record the checks for affected guidance and any remaining decisions.
 
 Close as completed only after the agreed completion criteria and required Owner acceptance are met. Report executed, inherited and unverified evidence separately, disposition review findings, preserve required inputs/results, and state any deferred work with its reason and reconsideration condition. A passing check, published release or merged PR alone does not close a task. Dropping work after it has started requires an explicit Owner decision: preserve the reason, unfinished criteria and required evidence, retire its ID, and do not report it as completed. Later work does not rewrite a closed result; create a separately authorized follow-up when needed. Update navigation under [Candidate And Navigation Changes](#candidate-and-navigation-changes), without a second progress ledger.
 
@@ -103,6 +111,8 @@ Obtain explicit Owner authorization for commit, push, PR creation, merge, public
 Commit, push, PR creation, merge, public release and actual adopter application retain the explicit authorization boundaries in this section. This procedure installs no runtime, grants no new command, changes no technical contract and launches no background scheduler or cross-repository synchronization.
 
 ### GitHub Release Procedure
+
+At the existing release preparation and archive review points, use the [documentation and package checks](user-documentation.md#check-affected-guidance) for the affected guidance.
 
 When preparing a Colvia release on GitHub, load `github-release-guide`. Use `first-public` when making the private source repository public and `version-release` for new releases from a public repository. Start with read-only Assess and reuse applicable evidence from the release record. In Guided mode, show the exact target and effect, recheck the preconditions, obtain the Owner's approval for the specific action, and verify the observed result before continuing. Source visibility, repository settings, Git refs and GitHub Release objects have separate approval boundaries.
 
@@ -131,3 +141,13 @@ The [Agent Collaboration](#agent-collaboration) authorization check applies to t
 The existing amendment route applies to these rules: [Candidate And Navigation Changes](#candidate-and-navigation-changes) requires an Owner-accepted amendment to DR-0003 for a development-procedure change. A change to the decision procedure accepted on 2026-10-07 likewise requires an Owner-accepted named amendment. [Decision Guide](../DECISION-GUIDE.md#document-identity-and-state) defines named amended/replaced clauses, preserved unaffected meaning and the decision states. Retirement follows that same applicable route; a heading change, newer source version or runtime update does not retire an accepted obligation.
 
 Compare the retained source basis, proposed change and local requirements, using the clause mapping in the named amendment. Preserve required historical bytes and identify the changed pointers, verification and unresolved policy choices in the existing task/decision record. These are pointers to the existing amendment, preservation and evidence duties, not a new rule lifecycle, acceptance mechanism or maintenance registry.
+
+## Development Record And Documentation Checkpoints
+
+[DR-0008 acceptance and activation](../decisions/DR-0008-development-record-and-documentation-checkpoints.md#acceptance-and-activation) records the accepted scope and effective date of these checkpoints. Follow the existing scope, review and publication authorization for each action.
+
+- **When selecting and planning.** Use the owning development record under [Start And Select](#start-and-select) for the scope, criteria and baseline. When the change reaches agent, user or installed guidance, identify the affected surfaces using the [guide checks](user-documentation.md#check-affected-guidance) and update that same entry at closeout.
+- **During execution and resumption.** Update that record at a checkpoint when scope, a material failure or a new finding changes the next action. Record the first relevant observation, its input and the condition for continuing. Keep the recoverable inputs and the applicable authorization linked. When a retry is authorized, identify the changed condition and affected check. Preserve original failures in the existing evidence location.
+- **During review and closeout.** In the same record, state how the affected guidance and each completion criterion were checked. Identify what ran for this candidate, what evidence was inherited, and what remains unverified. Record the Owner decision and the next check condition for any deferred item. The Development Index links to that record.
+- **When handing off a host test.** The maintainer or designated operator uses the applicable runbook and keeps the exact host procedure and original log with the test evidence. Contributors can use the shared source guidance and report which environment or evidence they can verify. Give the operator a consolidated instruction for the current stage in the designated channel, with the expected result, stop condition and when to report or hand back control. Keep public examples usable by contributors in equivalent environments.
+- **When preparing a release.** Use the [documentation and package checks](user-documentation.md#check-affected-guidance) at the existing freeze and archive inspection points. Verify the package against the source and manifest, then record observed publication and installed state in the release record when those stages are authorized and executed. Use the existing release and installation procedure for those actions.
