@@ -129,7 +129,7 @@ Apply one submission at a time. Check that the destination has no other Work tha
 | Codex and Claude Code | Read the project rules, propose a task, do the work, and run the checks. |
 | Colvia | Helps the agent find the project’s Work and keeps plans, approvals, submissions, and decisions on your device. |
 
-Colvia keeps plans, approvals, submissions, and decisions in the operating system’s user data folder. It puts the launcher, connection information, and guidance in the project folder.
+Colvia keeps plans, approvals, submissions, and decisions in the operating system’s user data folder. It puts the launcher, connection information, and guidance in the project folder. To see how the components and record storage fit together, read the [architecture guide](manual/en/architecture.md).
 
 To stop using Colvia in a project, ask your agent, “Show me how Colvia would disconnect this folder.” [Disconnecting the project](manual/en/maintenance.md#disconnect) preserves your files and Work records. If you plan to reconnect and continue the work later, [back up the records](manual/en/records.md#backup) before disconnecting. To remove the installation and keep your records, ask your agent to show a removal preview or follow the [removal and reinstall instructions](manual/en/maintenance.md#uninstall).
 
