@@ -144,4 +144,4 @@ Colvia는 운영체제의 사용자 데이터 폴더에 계획·승인·제출�
 - **큰 작업을 계속 이어가기.** 작업 중 새로 생긴 범위만 이어서 승인하고, 여러 Work의 결과를 모아 검토하는 흐름을 넓히고자 합니다. 기록이 오래 쌓인 프로젝트에서도 조회와 백업·복원이 잘 되는지 확인하고, 설치나 작업이 멈췄을 때 어디서부터 이어갈지 더 쉽게 안내할 계획입니다.
 - **사용 환경 넓히기.** Linux와 추가 에이전트, 팀의 동시 편집과 자동 병렬 실행은 검토 후보입니다. Colvia가 에이전트를 직접 호출하는 기능은 첫 Preview에서 비활성 상태입니다. 첫 Preview에서는 평소 쓰는 Codex·Claude Code 앱과 CLI에서 작업을 맡기고 검토하는 흐름에 집중합니다.
 
-[문의·버그 신고](CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](CONTRIBUTING.ko.md#보안-문제를-발견했다면) · [기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)
+[문제가 생겼을 때](manual/ko/reference.md#problems) · [문의·버그 신고](CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](CONTRIBUTING.ko.md#보안-문제를-발견했다면) · [기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)
