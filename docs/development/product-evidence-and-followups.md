@@ -105,6 +105,44 @@ Retain these findings when selecting that later work:
 
 Any later protected-copy proposal must bind the human-reviewed copy and request to the actual permitted input, separately cover other context/tool input, and distinguish ordinary chat attachments from the controlled route. The existing source protection contract remains the authority; these experiments do not add a new advertised protection guarantee. Exact comparison-engine identities, checkpoints and raw examples remain private research provenance, not required product input.
 
+## Follow-ups recorded on 2026-11-17
+
+The Owner requested these follow-ups on 2026-11-17 against source revision `58e8b1e44ef25f57b7fe9e73e9341560936d7262`.
+
+### P1: Short guide at the start of a new chat
+
+Keep the installed `adapters/colvia-work/SKILL.md` short at entry. It should help the agent confirm the project connection, find the relevant Work and identify the next action. Load submission and recovery instructions only at the steps where they are needed. The current Preview bundles the guide from [the foundation adapter](../../adapters/foundation-work/SKILL.md).
+
+When selecting this change, check that a new chat can resume an existing Work from the short guide and that the agent can still find and follow the full procedure when submitting or recovering. Preserve the existing approval and record protections.
+
+### P3: Retire earlier-generation code
+
+Inventory `src/hv2ref` and the remaining `.hrn`-era runtime, entry instructions, build inputs and checks. Before selecting removal, trace dependencies from the current SQLite Preview's build, install, update and recovery paths. Remove obsolete pieces from maintained source and build paths once that boundary is established. Preserve existing project records and the source and inputs needed to reproduce or recover earlier releases.
+
+## Work follow-ups approved for registration on 2026-11-17
+
+The Owner set the priorities below for candidate registration against source revision `58e8b1e44ef25f57b7fe9e73e9341560936d7262`. The [existing plain-folder-to-Git conversion candidate](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) keeps its P1 priority.
+
+### P1: Add paths to the same Work
+
+Start with read-only exploration when the affected paths are unknown. When the goal stays the same and additional edits become necessary, show the added files, why they are needed and what extra checks will run. Bind the user's approval to that scope change before editing the added paths. Keep the Work identity, prior approval history, exact boundaries and existing edits. If the original bytes of an already changed file cannot be verified, record that they are unavailable. Consider directory-wide approvals separately.
+
+### P1: Record progress before submission
+
+When asked to save progress, let the agent record what it did, what it checked, what remains and the immediate next action on the active Work. Saving a note keeps the Work active. A fresh chat should find the note and the approved scope, compare the note with the current files and distinguish recorded progress from any changes observed later. Keep the note separate from review submissions and their verification results.
+
+### P1: Pause, end or replace a Work
+
+Let the user pause a Work for later resumption or end it with a reason. When a changed goal calls for a different Work, confirm the disposition of the old Work, link it to the replacement and remove it from the active list. Preserve the old Work's approvals, submissions and files. Show how unfinished edits will be handled, and obtain approval for the replacement's own scope. Build on the [existing continuation](README.md#continuation-scope-and-remaining-criteria) and [successor criteria](README.md#verifiable-slicing).
+
+### P2: Candidate priority, project status and dependencies
+
+Add user-set priority to the existing candidate list. Derive the project view from Work and candidate records so it can show active, awaiting review and paused Work, the next action within a Work and any selected follow-up. Use a dependency only when one Work actually waits for another. Reuse the [existing priority and readiness criteria](README.md#continuation-scope-and-remaining-criteria), the [read-only view](README.md#human-readable-projection) and the [blocker criteria](README.md#verifiable-slicing).
+
+### P3: Milestones when needed
+
+Reconsider when users repeatedly need to track several Works against a shared outcome or date that the current direct parent-child relationship cannot represent. Assess that gap with the [existing work decomposition criteria](README.md#verifiable-slicing) before adding a separate milestone record.
+
 ## Historical material that stays internal
 
 Do not import entire audit archives, desktop transcripts, VM commands, reviewer packets or cross-product planning dossiers. Preserve the originals with their existing consumers and retention conditions. Product-level requirements already owned by the development index, lifecycle documents and foundation specifications are reused rather than copied here. Earlier proposals to rely only on user Git commits for historical content, or to auto-migrate private trial installations, do not override the current preservation design and Owner scope.

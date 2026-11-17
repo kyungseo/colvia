@@ -294,6 +294,20 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [일반 폴더를 Git 프로젝트로 전환](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — 첫 Preview 이후 P1. 연결된 일반 폴더를 같은 Colvia 프로젝트로 유지하면서 Git을 사용한다.
 
+- [새 대화의 Colvia 시작 안내 경량화](product-evidence-and-followups.md#p1-short-guide-at-the-start-of-a-new-chat) — P1. 새 대화에서는 짧은 시작 안내를 읽고, 제출·복구 절차는 해당 단계에서 찾아 읽는다.
+
+- [같은 Work에서 수정 범위 추가](product-evidence-and-followups.md#p1-add-paths-to-the-same-work) — P1. 조사 중 새로 드러난 파일과 검사만 추가로 승인받아 같은 Work에서 이어간다.
+
+- [제출 전 진행 메모와 새 대화 재개](product-evidence-and-followups.md#p1-record-progress-before-submission) — P1. Work에 한 일과 다음 행동을 남겨 첫 제출 전에도 새 대화에서 이어간다.
+
+- [Work 일시중단·종료와 대체 연결](product-evidence-and-followups.md#p1-pause-end-or-replace-a-work) — P1. 중단 이유와 대체 Work를 기록하고 기존 Work가 진행 중으로 남는 문제를 해결한다.
+
+- [후보 우선순위·프로젝트 현황·의존 관계](product-evidence-and-followups.md#p2-candidate-priority-project-status-and-dependencies) — P2. 기존 후보·Work 기록에서 우선순위와 다음 행동을 조회하고 실제 선행 관계를 표시한다.
+
+- [마일스톤](product-evidence-and-followups.md#p3-milestones-when-needed) — 조건부 P3. 기존 상·하위 Work로 해결되지 않는 묶음·일정 확인 수요가 반복될 때 검토한다.
+
+- [이전 세대 코드 정리](product-evidence-and-followups.md#p3-retire-earlier-generation-code) — P3. 현행 배포 경로의 의존성을 확인한 뒤 남아 있는 `src/hv2ref`와 `.hrn` 세대의 코드·조립 경로를 정리한다.
+
 - [Natural project entry without procedural prompts](FEAT-20261106-002-record-foundation.md#pre-publication-entry-and-connection-conditions--2026-11-10) — Pre-publication guide/behavior condition. Reuse existing context and decisions; qualify only missing first-request differences. No mandatory onboarding phase.
 - [Independent project overlap protection](FEAT-20261106-002-record-foundation.md#pre-publication-entry-and-connection-conditions--2026-11-10) — Pre-publication connection guard. Demonstrate both containment orders, recheck before apply, preserve sibling and same-project worktree paths. Separate from the current Windows storage/output correction.
 - [Guided onboarding for general and development projects](FEAT-20261111-001-guided-onboarding.md) — Selected. First project and first Work guidance.
