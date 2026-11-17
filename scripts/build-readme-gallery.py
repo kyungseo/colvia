@@ -10,9 +10,9 @@ NS='http://www.w3.org/2000/svg'
 ET.register_namespace('',NS)
 def tag(n):return '{'+NS+'}'+n
 def el(n,**attrs):return ET.Element(tag(n),{k.replace('_','-'):str(v) for k,v in attrs.items()})
-TRANSLATE={'나':'You','범위':'Scope','다시 고치기':'Revise','수락':'Accept','월요일':'Monday','수요일':'Wednesday','기록':'Records','범위 · 수락한 판본 · 다음 할 일':'Scope · accepted revision · next steps','수락한 판본':'Accepted revision','지금 파일':'Current file','달라짐':'Changed','어느 쪽으로?':'Which one?','알림':'Notice / inbox','알림 · 수신함':'Notice / inbox','상위 Work':'Parent','통합 결과':'Merged result','작업 공간 1':'Workspace 1','작업 공간 2':'Workspace 2','기준 공간':'Main copy','한 건씩 합치기':'One at a time','처음 한 번':'ONE-TIME SETUP','Colvia 설치':'Install Colvia','프로젝트 폴더':'Project folder','“Colvia 연결해 줘”':'“Connect Colvia”','미리보기':'Preview','그 뒤 매일':'EVERYDAY WORK','목표·계획':'Goals & plan','프로젝트 문서':'Project documents','후보 목록':'Candidates','큰 일은 하위 Work로':'Split into child Work','결과':'Result','다음 할 일':'Next steps','다음 Work로 계속':'Continue with the next Work','대조 요청':'Compare'}
-TITLES={'scope':('범위를 정하고 결과를 검토합니다','Agree on scope, then review the result'),'switch':('같은 프로젝트 기록에서 이어갑니다','Pick up from the same project records'),'drift':('수락한 판본과 현재 파일을 비교합니다','Compare the accepted revision with current files'),'notify':('준비한 결과를 알리고 사람이 검토합니다','Notify the owner and review the prepared result'),'split':('하위 결과와 통합 결과를 따로 검토합니다','Review child results and the combined result separately'),'parallel':('분리한 작업 공간의 결과를 한 건씩 통합합니다','Integrate separate working-copy results one at a time'),'overview':('처음 연결한 뒤 Work 단위로 이어갑니다','Connect once, then continue through Work')}
-DESC={'scope':('사람이 범위를 승인하고 에이전트가 Work를 준비합니다. 결과를 검토해 수정하거나 수락합니다.','You approve the scope; the agent prepares the Work. Review the result, request revisions or accept it.'),'switch':('월요일의 범위·수락한 판본·다음 할 일을 프로젝트에 기록합니다. 수요일의 에이전트가 같은 기록에서 이어갑니다.','Keep Monday’s scope, accepted revision and next steps in the project. Wednesday’s agent resumes from those records.'),'drift':('에이전트에게 수락한 판본과 현재 파일의 비교를 요청합니다. 달라진 내용을 보고 사람이 다음 변경을 결정합니다.','Ask the agent to compare the accepted revision with current files, then decide what to change.'),'notify':('확인한 단계와 기한 안에 준비된 결과를 제출합니다. 알림이나 수신함에서 결과를 찾고 사람이 수락합니다.','Submit the prepared result within the confirmed step and deadline. Find it through a notification or the inbox; acceptance stays with you.'),'split':('하위 Work 결과를 각각 수락한 뒤 통합 결과를 별도로 검토합니다.','Accept each child Work result, then review the integrated result separately.'),'parallel':('분리된 공간에서 준비한 결과를 각각 검토하고 기준 공간에 한 건씩 통합합니다.','Review results prepared in separate working copies and integrate them into the main copy one at a time.'),'overview':('처음에는 설치 후 연결 미리보기를 확인합니다. 이후 후보를 골라 Work의 범위와 결과를 결정하고 다음 작업으로 이어갑니다. 점선은 설치에서 일상 사용으로의 전환입니다.','After installation, confirm the project connection preview. Then select a candidate, approve the Work scope, review the result and continue. The dashed line marks the transition from setup to daily use.')}
+TRANSLATE={'나':'You','범위':'Scope','다시 고치기':'Revise','수락':'Accept','월요일':'Monday','수요일':'Wednesday','기록':'Records','범위 · 수락한 제출본 · 다음 할 일':'Scope · accepted submission · next steps','수락한 제출본':'Accepted submission','현재 파일':'Current file','변경 내용':'Changes','일정 항목 수정':'Schedule item edited','알림':'Notice / inbox','알림 · 수신함':'Notice / inbox','상위 Work':'Parent','전체 결과':'Combined result','격리 폴더 1':'Isolated folder 1','격리 폴더 2':'Isolated folder 2','대상 폴더':'Destination','한 건씩 합치기':'One at a time','처음 한 번':'ONE-TIME SETUP','Colvia 설치':'Install Colvia','프로젝트 폴더':'Project folder','“Colvia 연결해 줘”':'“Connect Colvia”','미리보기':'Preview','그 뒤 매일':'EVERYDAY WORK','목표·계획':'Goals & plan','프로젝트 문서':'Project documents','후보 목록':'Candidates','큰 일은 하위 Work로':'Split into child Work','결과':'Result','다음 할 일':'Next steps','다음 Work로 계속':'Continue with the next Work','대조 요청':'Compare'}
+TITLES={'scope':('범위를 정하고 결과를 검토합니다','Agree on scope, then review the result'),'switch':('같은 프로젝트 기록에서 이어갑니다','Pick up from the same project records'),'drift':('수락한 제출본과 현재 파일 비교하기','Compare the accepted submission with current files'),'notify':('준비한 결과를 알리고 사람이 검토합니다','Notify the owner and review the prepared result'),'split':('하위 결과와 전체 결과를 따로 검토합니다','Review child results and the combined result separately'),'parallel':('격리 폴더의 결과를 한 건씩 반영합니다','Apply results from isolated folders one at a time'),'overview':('처음 연결한 뒤 Work 단위로 이어갑니다','Connect once, then continue through Work')}
+DESC={'scope':('사람이 범위를 승인하고 에이전트가 Work를 준비합니다. 결과를 검토해 수정하거나 수락합니다.','You approve the scope; the agent prepares the Work. Review the result, request revisions or accept it.'),'switch':('월요일의 범위·수락한 제출본·다음 할 일을 프로젝트에 기록합니다. 수요일의 에이전트가 같은 기록에서 이어갑니다.','Keep Monday’s scope, accepted submission and next steps in the project. Wednesday’s agent resumes from those records.'),'drift':('수락한 제출본과 현재 파일을 비교해 바뀐 내용을 확인합니다.','Compare the accepted submission with current files to see what changed.'),'notify':('확인한 단계와 기한 안에 준비된 결과를 제출합니다. 알림이나 수신함에서 결과를 찾고 사람이 수락합니다.','Submit the prepared result within the confirmed step and deadline. Find it through a notification or the inbox; acceptance stays with you.'),'split':('하위 Work의 결과를 각각 수락한 뒤 전체 결과는 사람이 따로 검토하고 수락합니다.','Accept each child Work result, then review and accept the combined result separately.'),'parallel':('에이전트가 격리 폴더에서 준비한 결과를 검토하고, 승인한 제출본은 Colvia로 대상 폴더에 한 건씩 반영합니다.','Review the agent’s submissions from isolated folders. Use Colvia to apply approved submissions to the destination one at a time.'),'overview':('처음에는 설치 후 연결 미리보기를 확인합니다. 이후 후보를 골라 Work의 범위와 결과를 결정하고 다음 작업으로 이어갑니다. 점선은 설치에서 일상 사용으로의 전환입니다.','After installation, confirm the project connection preview. Then select a candidate, approve the Work scope, review the result and continue. The dashed line marks the transition from setup to daily use.')}
 
 def style_rules(css,theme):
     light,dark=css.split('@media',1)
@@ -52,7 +52,9 @@ def build(scene,lang,theme,fonts):
         old_symbol=kids[idx+1];old_text=kids[idx+2]
         assert old_symbol.tag==tag('g') and old_text.text=='Colvia'
         root.remove(old_symbol);root.remove(old_text)
-        sb,tb=g['symbol']['bounds'],g['colvia']['bounds'];th=10.5;sh=12.8;ss=sh/sb[3];ts=th/tb[3];gap=5.5;total=sb[2]*ss+gap+tb[2]*ts;left=cx-total/2
+        sb,tb=g['symbol']['bounds'],g['colvia']['bounds']
+        th,sh,gap=(8.5,10.4,4.5) if scene=='parallel' else (10.5,12.8,5.5)
+        ss=sh/sb[3];ts=th/tb[3];total=sb[2]*ss+gap+tb[2]*ts;left=cx-total/2
         a=el('path',d=g['symbol']['path'],fill=rules['colt']['fill'],transform=f'translate({left-sb[0]*ss} {cy-(sb[1]+sb[3]/2)*ss}) scale({ss})')
         b=el('path',d=g['colvia']['path'],fill=rules['colt']['fill'],transform=f'translate({left+sb[2]*ss+gap-tb[0]*ts} {cy-(tb[1]+tb[3]/2)*ts}) scale({ts})')
         root.insert(idx+1,a);root.insert(idx+2,b);alignments.append({'box':[x,y,w,h],'group_width':total,'center':[cx,cy]})
@@ -66,25 +68,18 @@ def build(scene,lang,theme,fonts):
         n.set('font-weight','700' if int(n.get('font-weight','400'))>=600 else '400')
         if scene=='notify' and n.text=='알림':n.text='알림 · 수신함'
         if scene=='overview' and n.text=='그 뒤 매일':n.set('y','160')
-        if scene=='split' and n.text=='통합 결과':n.set('x','332')
         if lang=='en' and n.text in TRANSLATE:n.text=TRANSLATE[n.text]
-        if scene=='split' and n.text=='Merged result':
-            n.set('y','130');n.text=None
-            a=ET.SubElement(n,tag('tspan'),{'x':'332','dy':'0'});a.text='Merged'
-            b=ET.SubElement(n,tag('tspan'),{'x':'332','dy':'13'});b.text='result'
-        if scene=='drift' and n.text=='Accepted revision':
+        if scene=='split' and n.text=='Combined result':
+            n.set('y','125');n.set('font-size','10.5');n.text=None
+            a=ET.SubElement(n,tag('tspan'),{'x':'332','dy':'0'});a.text='Combined'
+            b=ET.SubElement(n,tag('tspan'),{'x':'332','dy':'12'});b.text='result'
+        if scene=='drift' and n.text=='Accepted submission':
             n.set('y','84');n.text=None
             a=ET.SubElement(n,tag('tspan'),{'x':'46','dy':'0'});a.text='Accepted'
-            b=ET.SubElement(n,tag('tspan'),{'x':'46','dy':'12'});b.text='revision'
+            b=ET.SubElement(n,tag('tspan'),{'x':'46','dy':'12'});b.text='submission'
         # Sequence labels in circles share their circle center, not a baseline offset.
         if scene=='parallel' and n.text in ('1','2'):
             n.set('y','72' if n.text=='1' else '138');n.set('dominant-baseline','central')
-    if scene=='split':
-        for n in root:
-            if n.tag==tag('circle') and n.get('cx')=='332' and n.get('cy')=='156':n.set('cy','170')
-            if n.tag==tag('path') and n.get('d','').startswith('M327.5 156'):n.set('transform','translate(0 14)')
-    if scene=='drift':
-        n=el('text',x=160,y=139,fill=rules['mut']['fill'],font_size=10.5,text_anchor='middle',font_weight=400);n.text='대조 요청' if lang=='ko' else 'Compare';root.append(n)
     # Keep the revise icon above the return route; use a left-pointing undo arrow.
     if scene=='scope':
         for n in list(root):
@@ -104,18 +99,28 @@ def all_text():
 def main():
     ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('--output',type=Path,default=ROOT/'manual/assets/gallery');ap.add_argument('--text-file',type=Path);args=ap.parse_args()
     if args.text_file:args.text_file.write_text(all_text(),encoding='utf-8');return
-    dest=args.output;dest.mkdir(parents=True,exist_ok=True);fonts={w:(ROOT/f'manual/assets/gallery/fonts/SkinSans-{w}.woff2').read_bytes() for w in (400,700)}
-    coverage=json.loads((ROOT/'manual/assets/gallery/fonts/PROVENANCE.json').read_text(encoding='utf-8'))
-    for w,b in fonts.items():
-        if hashlib.sha256(b).hexdigest()!=coverage['subsets'][f'SkinSans-{w}.woff2']:raise ValueError('Font subset digest mismatch')
-    result={'schema':2,'basis':'Preserved original README diagrams; geometry and role labels retained.','sources':{},'files':{},'alignments':[]}
+    dest=args.output
+    dest.mkdir(parents=True,exist_ok=True)
+    font_root=ROOT/'manual/assets/gallery/fonts'
+    coverage=json.loads((font_root/'PROVENANCE.json').read_text(encoding='utf-8'))
+    checked_fonts={}
+    for name,digest in coverage['subsets'].items():
+        raw=(font_root/name).read_bytes()
+        if hashlib.sha256(raw).hexdigest()!=digest:raise ValueError('Font subset digest mismatch')
+        checked_fonts[name]=raw
+    result={'schema':2,'basis':'Editable originals with localized labels and theme-specific rendering.','sources':{},'files':{},'alignments':[]}
     for scene in TITLES:
+        variant=next((name for name,group in coverage['variants'].items() if scene in group['scenes']),None)
+        suffix=f'-{variant}' if variant else ''
+        fonts={weight:checked_fonts[f'SkinSans-{weight}{suffix}.woff2'] for weight in (400,700)}
+        additional=coverage['variants'][variant]['characters'] if variant else ''
+        characters=coverage['characters']+additional
         source=ROOT/f'manual/assets/readme-{scene}.ko.svg';result['sources'][str(source.relative_to(ROOT))]=hashlib.sha256(source.read_bytes()).hexdigest()
         for lang in ('ko','en'):
             for theme in ('light','dark'):
                 svg,a=build(scene,lang,theme,fonts)
                 visible=''.join(''.join(t.itertext()) for t in ET.fromstring(svg).iter(tag('text')))
-                missing=set(visible)-set(coverage['characters'])
+                missing=set(visible)-set(characters)
                 if missing:raise ValueError(f'Rebuild font subsets for missing glyphs: {sorted(missing)}')
                 if lang=='en' and re.search('[가-힣]',visible):raise ValueError('Untranslated English label')
                 name=f'{scene}{"-en" if lang=="en" else ""}-{theme}.svg';(dest/name).write_text(svg,encoding='utf-8');result['files'][name]=hashlib.sha256(svg.encode()).hexdigest();result['alignments']+= [{'file':name,**x} for x in a]

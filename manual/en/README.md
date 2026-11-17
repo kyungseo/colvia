@@ -2,11 +2,15 @@
 
 [한국어](../ko/README.md) · English · [About Colvia](../../README.md)
 
-For the next Preview, see [Installation and records in the new Preview](foundation-preview.md). The procedures below describe the earlier trial build.
+## Use Colvia Preview
 
-## Your first project
+Start with [installation and connection](foundation-preview.md#install-and-connect-a-project), or [follow a tutorial](tutorial.md). After setup, see [updates and recovery](foundation-preview.md#updating-and-recovering-an-interrupted-update), [disconnecting a project](foundation-preview.md#disconnect-a-project), [removing Colvia and keeping your records](foundation-preview.md#remove-colvia-and-keep-your-records), and [supported environments](foundation-preview.md#supported-environments).
 
-For a first installation or an existing project, start with [Install, update or disconnect](project-setup.md).
+## Earlier trial reference
+
+### Your first project
+
+This material applies to earlier trial builds. For Colvia Preview, follow [the current installation guide](foundation-preview.md#install-and-connect-a-project).
 
 1. [Write an inquiry report](getting-started.md). Connect a practice folder and draft a report from twelve sample inquiries.
 2. [Review a change in the brief](getting-started.md#today--make-the-decision). Check the figures after shipping inquiries are taken out.

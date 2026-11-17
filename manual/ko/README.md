@@ -2,11 +2,15 @@
 
 한국어 · [English](../en/README.md) · [제품 소개](../../README.ko.md)
 
-다음 Preview의 설치·기록 보관 방식은 [새 기록 구조의 Preview 안내](foundation-preview.md)에 정리했습니다. 아래 절차는 기존 시험본용입니다.
+## Colvia Preview 사용하기
 
-## 처음 쓰는 순서
+[설치와 연결](foundation-preview.md#설치하고-프로젝트에-적용하기)에서 시작하거나 [실습을 따라 해 보세요](tutorial.md). 설치한 뒤에는 [업데이트와 복구](foundation-preview.md#업데이트와-중단-복구), [프로젝트 연결 해제](foundation-preview.md#프로젝트-연결-해제하기), [기록을 보존하는 제거·재설치](foundation-preview.md#기록을-보존하면서-colvia-제거하기), [지원 환경](foundation-preview.md#지원-환경)을 참고하세요.
 
-기기에 처음 설치하거나 기존 프로젝트에 적용하려면 [설치·갱신·연결 해제](project-setup.md)부터 보세요.
+## 이전 시험본 참고 자료
+
+### 처음 쓰는 순서
+
+아래 자료는 이전 시험본을 위한 안내입니다. 지금 Colvia Preview를 설치하려면 [현재 설치 안내](foundation-preview.md#설치하고-프로젝트에-적용하기)에서 시작하세요.
 
 1. [고객 문의 보고서 쓰기](getting-started.md) — 연습 폴더에 Colvia를 적용하고 문의 12건으로 초안을 만드세요.
 2. [피드백을 받고 보고서 검토하기](getting-started.md#오늘--새-대화에서-결정하기) — 배송 문의를 뺐을 때 분모와 결론이 어떻게 달라지는지 확인하세요.
@@ -21,4 +25,4 @@
 
 [Colvia가 기억하는 것](understand.md) · [맡길 수 있는 일과 지원 범위](work-guide.md) · [구조와 역할](architecture.md) · [예약 안내 추가 실습](first-work.md) · [기술 자료와 과거 실습](reference.md)
 
-<!-- en_content_sha256: 02ff7934699d71ab33c9dba6118632129341a8427429c393175a75ba243e4c67 -->
+<!-- en_content_sha256: cf37f1d40083f87b99124b442bd11ef6790562cc0a92d44e90477254c26e362f -->

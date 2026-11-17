@@ -129,7 +129,23 @@ Git commit이나 clone만으로 Colvia 기록이 백업되지는 않습니다. �
 
 ### 업데이트와 중단 복구
 
-공식 Colvia Preview를 이미 설치한 계정에서 업데이트하려면 [설치 페이지](https://colvia.github.io/downloads/)의 운영체제별 설치 명령을 다시 실행하세요. Colvia는 설치할 때 확인한 배포 주소에서 새 버전을 확인합니다. 이미 최신 판이면 같은 실행기를 계속 사용합니다.
+에이전트에게 “Colvia를 업데이트해 주세요.”라고 요청하세요. Colvia를 설치한 계정에서 진행합니다. 에이전트가 설치된 관리 도구와 공식 배포 주소에 접근할 수 있으면 업데이트를 실행할 수 있습니다. 앱에서 실행 권한을 요청하면 명령을 확인한 뒤 승인하세요. 에이전트가 이 계정에서 실행할 수 없다면 터미널에서 직접 실행하세요.
+
+직접 업데이트하려면 [공식 설치 페이지](https://colvia.github.io/downloads/)에서 처음 설치할 때 사용한 명령을 다시 실행하세요. `PATH`에 관리 도구가 등록돼 있으면 `colvia-manage update`를 실행해도 됩니다. 기본 위치에 설치했다면 아래 명령을 사용해 `PATH` 설정 없이 실행할 수 있습니다.
+
+macOS 터미널
+
+```bash
+"$HOME/Library/Application Support/Colvia/bin/colvia-manage" update
+```
+
+Windows PowerShell
+
+```powershell
+& (Join-Path ([Environment]::GetFolderPath("LocalApplicationData")) "Colviain\colvia-manage.exe") update
+```
+
+Colvia는 설치할 때 확인한 배포 주소에서 새 버전을 확인합니다. 이미 최신 버전이면 현재 실행기를 계속 사용합니다.
 
 업데이트 전에 등록된 기록의 복구본을 남기고, 기록에 필요한 기능과 새 실행기가 선언한 기능을 대조합니다. 이 호환성 확인이 모든 사용자 작업을 실제로 실행해 보는 것은 아닙니다. 이전 실행기로 돌아갈 때도 작업 이력을 과거로 되돌리지 않습니다.
 
@@ -145,11 +161,43 @@ macOS에서 작업 폴더를 다시 확인하라는 안내가 나오면 해당 �
 
 ### 기록을 보존하면서 Colvia 제거하기
 
-설치에 사용한 표준 계정에서 [공식 설치 스크립트](https://colvia.github.io/downloads/)를 파일로 저장하세요. 열려 있는 Colvia 작업과 알림 창을 닫고, 진행 중인 Git 반영이나 갱신은 먼저 마무리하세요. 같은 계정의 기본 관리 폴더에서만 이 절차를 사용합니다.
+에이전트에게 “작업 기록을 보존하면서 Colvia를 제거하려고 해요. 무엇이 제거되고 무엇이 남는지 미리 보여 주세요.”라고 요청하세요. Colvia를 설치한 계정에서 필요한 접근 권한이 있으면 에이전트가 공식 설치 스크립트로 제거를 미리 볼 수 있습니다. 제거할 항목과 보존할 항목을 확인한 뒤 승인하면, 에이전트에게 제거를 이어서 맡길 수 있습니다. 프로젝트 파일, Work 기록, 승인, 제출본, 프로젝트 연결, 설정과 업데이트 신뢰 정보는 남습니다. 직접 실행하고 싶거나 앱에서 실행이 막히면 아래 명령을 사용하세요.
 
-1. **제거 범위를 확인하세요.** Windows에서는 일반 PowerShell에서 저장한 스크립트에 `-UninstallPreview <작업 ID>`를, macOS에서는 저장한 셸 스크립트에 `--uninstall-preview <작업 ID>`를 붙여 실행하세요. 작업 ID는 `remove-colvia`처럼 사용하지 않은 짧은 이름을 정하세요.
-2. **확인한 범위를 제거하세요.** 출력에 표시된 실행기·실행환경과 보존 항목을 검토하세요. Windows에서 `-Uninstall <작업 ID> -Receipt <확인값>`, macOS에서 `--uninstall <작업 ID> <확인값>`을 사용합니다. 기존 Work·승인·제출본·프로젝트 연결·설정과 갱신 신뢰는 기본 관리 폴더에 남습니다. 검증한 설치 파일의 복구 자료는 해당 제거 작업 폴더에 따로 남습니다. 중단됐다면 같은 ID와 확인값으로 Windows의 `-ResumeUninstall` 또는 macOS의 `--resume-uninstall`을 사용하세요.
-3. **필요할 때 다시 설치하세요.** 같은 계정에서 평소 설치 명령을 실행하세요. 같은 프로젝트를 열고 이전 Work와 제출본을 확인할 수 있습니다. 재설치가 중단되어 재개 안내가 뜨면 저장한 스크립트의 Windows `-ResumeReinstall` 또는 macOS `--resume-reinstall` 옵션으로 이어가세요. 기록이나 관리 폴더를 직접 지우지 마세요.
+Colvia를 설치한 표준 계정의 기본 관리 폴더에서 진행합니다. 진행 중인 Work·Git 반영·업데이트를 먼저 마무리하고 Colvia 작업 창과 알림 창을 닫으세요. [macOS ARM64](https://colvia.github.io/downloads/preview/macos-arm64/install.sh), [Windows x64](https://colvia.github.io/downloads/preview/windows-x64/install.ps1), [Windows ARM64](https://colvia.github.io/downloads/preview/windows-arm64/install.ps1) 중 내 환경에 맞는 공식 설치 스크립트를 파일로 저장하세요. 파일을 저장한 폴더에서 macOS 터미널이나 일반 Windows PowerShell을 사용하세요.
+
+**제거 범위를 미리 보세요.** 사용하지 않은 작업 ID를 고르세요. 예에서는 `remove-colvia`입니다.
+
+macOS 터미널
+
+```bash
+/bin/sh ./install.sh --uninstall-preview remove-colvia
+```
+
+Windows PowerShell
+
+```powershell
+$path = (Resolve-Path -LiteralPath .\install.ps1).Path
+$installer = [ScriptBlock]::Create([IO.File]::ReadAllText($path))
+& $installer -UninstallPreview remove-colvia
+```
+
+**미리보기를 확인한 뒤 제거하세요.** `RECEIPT_FROM_PREVIEW`를 미리보기의 확인값으로 바꾸세요. PowerShell에서는 앞서 사용한 창에서 이어서 실행하세요.
+
+macOS 터미널
+
+```bash
+/bin/sh ./install.sh --uninstall remove-colvia RECEIPT_FROM_PREVIEW
+```
+
+Windows PowerShell
+
+```powershell
+& $installer -Uninstall remove-colvia -Receipt RECEIPT_FROM_PREVIEW
+```
+
+확인값은 미리보기에서 확인할 수 있습니다. 중단됐다면 같은 작업 ID와 확인값으로 macOS의 `--resume-uninstall` 또는 Windows의 `-ResumeUninstall`을 사용하세요.
+
+**필요할 때 다시 설치하세요.** 같은 계정에서 평소 설치 명령을 실행하세요. 같은 프로젝트를 열고 이전 Work와 제출본을 확인할 수 있습니다. 재설치가 중단되어 재개 안내가 뜨면 저장한 스크립트의 macOS `--resume-reinstall` 또는 Windows `-ResumeReinstall` 옵션으로 이어가세요. 기록과 관리 폴더를 보존하세요.
 
 제거가 중단되고 아직 재설치를 시작하기 전이라면, Windows에서는 `-RestoreUninstall <작업 ID> -Receipt <확인값>`, macOS에서는 `--restore-uninstall <작업 ID> <확인값>`으로 설치 파일을 원래 위치에 복구하세요. Windows 알림을 사용했다면 제거를 되돌리거나 재설치한 뒤 다시 켜세요.
 
@@ -244,7 +292,7 @@ macOS에서는 아직 `git-registration.json`이 없는 로컬 폴더에서 터�
 
 ### Git에 결과 반영하기
 
-결과를 수락한 뒤 Git에 반영하려면 커밋에 들어갈 변경 전체와 현재 스테이징 상태를 확인하고 별도로 승인하세요.
+수락한 제출본은 임시 커밋(WIP 커밋) 없이도 Colvia에 남아 나중에 현재 파일과 비교할 수 있습니다. 수락한 결과를 Git에 반영하려면 커밋에 들어갈 변경 전체와 현재 스테이징 상태를 확인하고 별도로 승인하세요.
 
 작업 중 branch를 바꾸거나 pull·rebase로 기준이 바뀌면 자동으로 새 기준을 승인하지 않습니다. 범위 밖 변경을 숨기지 않고, 이어갈 방법을 확인합니다. 프로젝트 하위 폴더의 독립 연결이나 Git 사용 여부가 바뀐 폴더의 자동 전환은 첫 공개 경로에서 제외합니다. 심볼릭 링크와 submodule은 그대로 보호할 수 있지만 편집 대상으로 삼지 않습니다.
 

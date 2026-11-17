@@ -2,7 +2,7 @@
 
 [User guide](README.md)
 
-Keep team instructions separate from files managed by Colvia. The notes below describe an earlier installation. For current procedures, see [Install, update or disconnect](project-setup.md).
+Keep team instructions separate from files managed by Colvia. The notes below describe an earlier installation. For Colvia Preview, see [remove the installation and keep your records](foundation-preview.md#remove-colvia-and-keep-your-records) or [disconnect an individual project](foundation-preview.md#disconnect-a-project).
 
 ## 1. Identify Who Owns Each File
 

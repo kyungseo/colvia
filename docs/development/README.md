@@ -3,6 +3,7 @@
 - [새 기록 기반과 공개 실행환경](FEAT-20261106-002-record-foundation.md) — 설계 보정·구현 준비.
 - [Document and artifact placement](document-ownership.md) — existing source, installed-guide and private-evidence rules.
 - [Product evidence and retained follow-ups](product-evidence-and-followups.md) — contracts, observed limits and the small public-safe intake from private trials.
+- [기록을 보존하는 설치본 제거·재설치](record-preserving-uninstall-followup.md#첫-preview-반영--2026-11-17) — 첫 Preview에 반영. 같은 계정에서 설치 파일을 제거하고 기존 Work와 제출본을 유지해 재설치한다.
 
 - [사용자 문서 정리와 배포 후보 준비](CHORE-20261105-004-user-doc-tone-and-candidate.md) — 진행 중. 사용자 안내·작성 기준·후보 구성과 일반 사용자 검증 준비.
 
@@ -285,13 +286,17 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
+- [Git 반영 전 자격증명 차단](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — 첫 Preview 이후 후속 0순위. 선택한 제출본과 커밋 메시지에서 비밀번호·API 키 등을 검사해 Git 객체 생성 전에 차단한다. 첫 Preview 뒤 별도 범위 선택과 검증을 거쳐 착수한다.
+
+- [일반 폴더를 Git 프로젝트로 전환](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — 첫 Preview 이후 P1. 연결된 일반 폴더를 같은 Colvia 프로젝트로 유지하면서 Git을 사용한다.
+
 - [Natural project entry without procedural prompts](FEAT-20261106-002-record-foundation.md#pre-publication-entry-and-connection-conditions--2026-11-10) — Pre-publication guide/behavior condition. Reuse existing context and decisions; qualify only missing first-request differences. No mandatory onboarding phase.
 - [Independent project overlap protection](FEAT-20261106-002-record-foundation.md#pre-publication-entry-and-connection-conditions--2026-11-10) — Pre-publication connection guard. Demonstrate both containment orders, recheck before apply, preserve sibling and same-project worktree paths. Separate from the current Windows storage/output correction.
 - [Guided onboarding for general and development projects](FEAT-20261111-001-guided-onboarding.md) — Selected. First project and first Work guidance.
 
 - Future platforms and agents: Linux; agents using local models; Antigravity; other project-capable AI tools. Preserve the same Work/acceptance history through narrow platform and agent contracts. Deferred until a separate implementation selection and actual integration qualification. [Owner planning authorization and conditions](FEAT-20261106-002-record-foundation.md#후속-후보-연결).
 
-- [공개 전 필수 · 알림의 보기에서 해당 Work 결과 상세 열기](CHORE-20261103-005-notification-guidance.md#공개-전-필수-조건) — macOS와 공개 지원 대상 Windows에서 Codex·Claude Code로 각각 맡긴 작업의 알림을 실제 클릭해 해당 결과를 확인한다. 현재 후보에서는 먼저 채팅 조회 방법을 안내한다.
+- [알림을 눌러 해당 Work 결과 상세 열기](CHORE-20261103-005-notification-guidance.md#첫-preview-확인--2026-11-17) — 플랫폼별 실제 클릭 근거와 첫 Preview의 Windows 공통 경로 확인 결과를 남긴다. 알림으로 열기 어려우면 같은 프로젝트 대화에서 결과를 찾을 수 있다.
 
 - [공식 실행 보정의 제품 소스 반영](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — 2026-11-02 제품 소스 반영과 오프라인 검증 수락·완료. [수락 범위와 커밋 순서](PATCH-20261102-004-official-runtime-source-port.md#owner-판단과-보존).
 

@@ -4,110 +4,147 @@
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo-hero-dark.svg">
-    <img src="assets/brand/logo-hero-light.svg" width="320" alt="Colvia — AI Work Harness">
+    <img src="assets/brand/logo-hero-light.svg" width="320" alt="Colvia">
   </picture>
 
-**Your agent does the work. You decide what to keep. Your project remembers.**
+**Colvia is a local workflow tool for working with AI agents.**
 
 [한국어](README.ko.md) · English
 
-[SQLite Preview guide](manual/en/foundation-preview.md) · [Earlier profile guide](manual/en/README.md) · [Contribute](CONTRIBUTING.md#make-your-first-change) · [SQLite candidate evidence](docs/development/product-evidence-and-followups.md#record-foundation-verification)
+[Install and connect a project](manual/en/foundation-preview.md#install-and-connect-a-project) · [Follow along](manual/en/tutorial.md) · [User guide](manual/en/foundation-preview.md) · [Supported environments](manual/en/foundation-preview.md#supported-environments)
 
 </div>
 
+Approve the scope proposed by Codex or Claude Code, then review the result and decide whether to accept it. Colvia keeps approvals and submissions on your device. Open the same project to pick up the work in a new chat or with another agent.
 
-Colvia is a local tool that keeps the scope you agreed on, the revision your agent registered with Colvia for review, and the result you accepted for each project. Move from Codex yesterday to Claude Code today, compare those records with the current files, and decide where to pick up.
+You don’t need to know how to code to get started. Once Colvia is installed, you can ask in your usual chat to connect a folder and start a task. For software projects, you can use your existing repository and project rules.
 
-Chat messages and file contents you share with your agent follow that service’s settings.
+> [!NOTE]
+> Colvia combines *col*, a pass between mountain peaks, and *via*, Latin for a path. The name reflects how the purpose and decisions behind your work carry into what you do next.
 
-## What does it help with?
+## Install and start your first task
 
-<table>
-<tr>
-<td width="33%" align="center" valign="top">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/scope-en-dark.png"><img src="manual/assets/gallery/scope-en-light.png" width="100%" alt="You agree on a scope and review the agent’s result. Colvia records the agreement and your decision."></picture><br>
-<strong>Agree on the scope</strong><br>
-Agree with your agent on the files to change and the checks that matter. When a result is ready, you decide whether to accept it or ask for changes.
-</td>
-<td width="33%" align="center" valign="top">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/switch-en-dark.png"><img src="manual/assets/gallery/switch-en-light.png" width="100%" alt="A different chat tool can find the Colvia records in the same project."></picture><br>
-<strong>Pick up with another agent</strong><br>
-Open the same project and ask your new agent, “What did I review?” The agent uses the Colvia records to tell you about earlier decisions and unfinished work.
-</td>
-<td width="33%" align="center" valign="top">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/drift-en-dark.png"><img src="manual/assets/gallery/drift-en-light.png" width="100%" alt="Compare an accepted revision with the current files to find what changed."></picture><br>
-<strong>See what changed</strong><br>
-“What changed since my review?” Ask your agent to compare the recorded revision with the files you have now.
-</td>
-</tr>
-</table>
+Install Codex or Claude Code and sign in before starting.
 
-### Your role, the agent’s role, and Colvia
+1. Copy and run the command for your operating system from the [official installation page](https://colvia.github.io/downloads/). Colvia downloads and verifies the release files and prepares its own Python runtime. On Windows, open regular PowerShell from the Start menu as a standard user. When setup completes, [check the installed version](manual/en/foundation-preview.md#check-installed-version).
+2. Open the project folder in Codex or Claude Code. If it uses Git and you haven’t registered it with Colvia yet, [ask the agent to register Git](manual/en/foundation-preview.md#register-git) first and open the repository root. Then ask, “Connect this folder to Colvia.” Review the folder, the files Colvia will add, and where it will keep the records. Approve the connection if the preview looks right.
+3. Once the folder is connected, tell the agent what you want to do here in the current chat. In an empty folder, describe what you want to do, such as writing a report or building a web app, in a sentence or two. You can also connect a project you already work in. The agent uses any goal you’ve shared, along with the existing README and project rules, to propose a plan.
 
-Once you approve the scope, the agent edits and checks the files, then asks Colvia to register a revision for your review. You decide whether to accept that revision or ask the agent for changes. Colvia keeps the agreed scope, registered revision and your decision with the project’s records. Passing checks, accepting a result and committing to Git are separate steps. [Architecture and roles](manual/en/architecture.md)
+In a regular folder, you can assign a report, proposal, or meeting brief, then review the submitted version or compare it with the current files.
 
-## Install and start
+Already installed? Ask your agent to update Colvia, or rerun the same command from the official installation page using the account that installed it.
 
-The SQLite Preview keeps a Work from scope approval through submission and acceptance. For example, ask your agent to compare inquiry types in `inquiries.csv`. Approve the report files and checks, inspect the submitted revision, and decide whether to accept it. You can also record a follow-up or leave the work complete. In a new chat, ask what you accepted and what you decided to do next. [Work and follow-up in the Preview](manual/en/foundation-preview.md#find-a-recorded-next-step)
-
-The [SQLite Preview guide](manual/en/foundation-preview.md) covers installation, connecting a project and starting your first Work. The public installation command for each platform will be published with the Preview. Installation over private HTTPS was verified on one Windows x64 device and on Windows and macOS ARM64 test VMs. See [what was verified](docs/development/product-evidence-and-followups.md#record-foundation-verification) for the exact candidates and limits.
-
-### Installation examples for the earlier profile
+[Git registration guide](manual/en/foundation-preview.md#register-git) · [Updates and recovery](manual/en/foundation-preview.md#updating-and-recovering-an-interrupted-update) · [Disconnect a project](manual/en/foundation-preview.md#disconnect-a-project)
 
 <p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-en-dark.png"><img src="manual/assets/gallery/overview-en-light.png" width="900" alt="Earlier profile: connect, choose a candidate, approve the scope, and review the result."></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-en-dark.png"><img src="manual/assets/gallery/overview-en-light.png" width="900" alt="Install and review the connection, then agree on scope, accept a result, and choose what comes next."></picture><br>
+<em>Connect a folder, approve the work scope, then review the result and decide what comes next.</em>
 </p>
 
-The [earlier profile’s setup guide](manual/en/project-setup.md) and [twelve-inquiry exercise](manual/en/getting-started.md) apply to earlier `.hrn/` builds. For the SQLite Preview, follow the guide above.
+## Assign work and review the result
 
-## Step away and find the result in your inbox
+Here’s what you can ask when you have a file of customer inquiries.
 
-This example uses the earlier `.hrn/` profile. For notifications in the SQLite Preview, see [the current installation guide](manual/en/foundation-preview.md#notifications-and-disconnection).
+> Summarize the types of customer inquiries and the complaints that come up most often in a report for our meeting. I’ll decide which improvements to prioritize.
+
+1. **Approve the scope.** The agent proposes source material, files to create or change, and checks for the result. Colvia records which plan you approved. As soon as you save a plan, Colvia keeps the existing contents of the files in the plan and includes them in backups, even before you approve the plan. List only the files the work needs.
+2. **Review the submission and checks.** The agent submits the report and tells you which checks passed, failed, or could not be run. Colvia checks scope at submission and blocks results that include changes outside it. If Colvia blocks a submission, the changes already made stay in the work folder. Check those changes and resolve the issue before submitting again.
+3. **Accept the result or ask for changes.** Colvia records which submission you accepted. If the approval is still valid and the requested changes fit the approved scope, continue in the same Work. If more files need to change, approve a separate Work covering the extra files, the reason, and any new checks.
+4. **Record the next step when it helps.** For example, record a decision to draft sample replies for common inquiries. You can find that decision with the report in a new chat.
+
+Colvia keeps the goal, file scope, checks, submission, and decisions together in a **Work**, a single recorded task. You can ask short questions and look up files within the access already granted.
+
+You can skip creating a Work for a typo, spacing, or punctuation correction you explicitly request. The edit must follow your project rules and granted access, preserve meaning and behavior, and need no separate result review, retention, or handoff. If the edit belongs to an existing Work, check that Work’s approved scope and continue with its records. [Assign and review work](manual/en/foundation-preview.md#delegate-and-review)
+
+## Pick up in a new chat
+
+Open the same project and ask, “What do I need to review in the report I assigned earlier?” When the agent can access the project folder and Colvia records, it can find the approved scope, the last submission, differences from the current files, and any recorded next step.
+
+If you use both Codex and Claude Code, you can switch between them in the same project. For example, before picking up work from Codex in Claude Code, check that Claude Code can read the project folder and Colvia records. You can continue the same Work if its approval is still valid and the workspace and scope still match. [Find a recorded next step](manual/en/foundation-preview.md#find-a-recorded-next-step)
 
 <table>
 <tr>
-<td width="42%" align="center" valign="middle">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/notify-en-dark.png"><img src="manual/assets/gallery/notify-en-light.png" width="360" alt="Colvia submits a prepared revision to the project inbox and sends you a device notification. You return to review the result."></picture>
+<td width="33%" align="center" valign="top">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/scope-en-dark.png"><img src="manual/assets/gallery/scope-en-light.png" width="100%" alt="A person approves scope, the agent prepares the work, and the person asks for changes or accepts the result."></picture><br>
+<strong>Agree on scope and review the result</strong>
 </td>
-<td width="58%" valign="middle">
-<blockquote><p>The draft is ready. Submit it for review and notify me on this device.</p></blockquote>
-<p>Once you confirm the step and deadline, Colvia submits the prepared revision to the project inbox for your review. This submission step does not use an AI model.</p>
-<p>Keep the device awake and stay signed in. When you return, ask your agent, “Is anything ready for review?” You can find the result in the inbox even if you missed the notification or it did not open the submission.</p>
-<p>Acceptance stays with you. <a href="manual/en/resume.md#handoff">Inbox and notifications</a></p>
+<td width="33%" align="center" valign="top">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/switch-en-dark.png"><img src="manual/assets/gallery/switch-en-light.png" width="100%" alt="In a new chat or with another agent, find the approved scope and accepted submission in the same project."></picture><br>
+<strong>Pick up in a new chat or with another agent</strong>
+</td>
+<td width="33%" align="center" valign="top">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/drift-en-dark.png"><img src="manual/assets/gallery/drift-en-light.png" width="100%" alt="Compare the accepted submission with current files to see what changed."></picture><br>
+<strong>Compare the accepted submission with current files</strong><br>
+Compare the version you accepted with your current files to see what’s changed since then.
 </td>
 </tr>
 </table>
 
-## For coding tasks across several files, too
+### Pick up a coding task
 
-- **Resume from a review** · “Show me the files that changed since the payment update I accepted, and what I need to review again.”
-- **Find the remaining checks** · “We checked that uploading the same file twice creates only one order. Did we test an interrupted upload that resumes?”
+> “Show me what changed since the file-upload update I accepted and what I need to review again. Did we test resuming an interrupted upload?”
 
-Your agent asks Colvia to register a revision for your review. Colvia can reject that request if the revision includes file changes outside the agreed scope. Colvia does not prevent other programs from editing files, and rejecting a registration request does not undo existing edits. A new chat can pick up the same Work and its recorded approval when the scope and workspace still match. [Work and review in the SQLite Preview](manual/en/foundation-preview.md#delegate-and-review)
+The agent can compare current files with the accepted submission and show which checks passed, failed, or could not be run. If a check was never recorded, the agent can tell you that.
 
-## Advanced reference · related tasks and working copies
+## Git, backups, and moving folders
 
-These examples show advanced workflows from the earlier `.hrn/` profile. See [the SQLite Preview guide](manual/en/foundation-preview.md) for the current capabilities and their conditions.
+- **Put an accepted result into Git.** Colvia keeps the submission you accepted, so you can compare it with your current files later without making a work-in-progress (WIP) commit. Review the changes to commit and the current staging area, then approve the integration separately. Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result. [Put an accepted result into Git](manual/en/foundation-preview.md#put-an-accepted-result-into-git)
+- **Back up and restore records.** Export Work records, approvals, submitted contents, and settings. Backups include the file contents Colvia kept before changes and at submission, so store them as you would your project data. Back up project files separately. When restoring Colvia records, check both the Work and its retained contents. [Back up and restore records](manual/en/foundation-preview.md#back-up-and-restore-records)
+- **Move a project folder.** After moving a folder on the same local volume, ask your agent, “I moved this project folder. Help me continue with its existing Colvia records.” Review the old and new paths in the preview. Once Colvia verifies it is the same folder, approve updating the connection. See the guide for verified environments and connection requirements. [Moving a folder and keeping its records](manual/en/foundation-preview.md#continue-after-moving-a-project-folder)
+
+## Open a result from a notification
+
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/notify-en-dark.png"><img src="manual/assets/gallery/notify-en-light.png" width="360" alt="Open a Work submitted for review from a notification or from the project records."></picture>
+</p>
+
+Set up Colvia notifications and allow them in your operating system. Where notifications are supported, click one to open the Work for review. You decide whether to accept it after reviewing it. If you miss a notification or it doesn’t open the result, ask in that project, “Is anything waiting for my review?” [Set up notifications](manual/en/foundation-preview.md#set-up-notifications)
+
+To stop new notifications, ask your agent, “Turn off Colvia notifications for this account.” The installed manager uses `notice-disable`. You can still check for results to review in the project chat.
+
+## Break larger tasks into smaller pieces
+
+Split a larger task into child Works in the same folder to review and accept each result. To apply a result from an isolated folder (a registered Git worktree of the same repository), check **the exact submission and its destination**. If the submission is still under review, approve both applying and accepting it. Colvia records acceptance after applying the files and checking the destination. If you already accepted the submission, approve the application alone.
 
 <table>
 <tr>
 <td width="50%" align="center" valign="top">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/split-en-dark.png"><img src="manual/assets/gallery/split-en-light.png" width="100%" alt="Accept each child result, then separately review the combined result."></picture><br>
-<strong>Review related tasks together</strong><br>
-Even after you accept each task’s result, you review the combined result separately.
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/split-en-dark.png"><img src="manual/assets/gallery/split-en-light.png" width="100%" alt="Accept the results of child Works, then review and accept the combined result separately."></picture><br>
+<strong>Review child results and the combined result</strong>
 </td>
 <td width="50%" align="center" valign="top">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-en-dark.png"><img src="manual/assets/gallery/parallel-en-light.png" width="100%" alt="Prepare revisions in separate working copies and integrate them into the main copy one at a time."></picture><br>
-<strong>Prepare in separate working copies</strong><br>
-Workers prepare revisions in their own working copies, and you review each result separately. Results are integrated into the main copy one at a time.
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-en-dark.png"><img src="manual/assets/gallery/parallel-en-light.png" width="100%" alt="Review submissions the agent prepared in isolated folders and use Colvia to apply the approved submissions to the destination one at a time."></picture><br>
+<strong>Apply results from isolated folders one at a time</strong>
 </td>
 </tr>
 </table>
 
-You can also appoint a delegate to accept one specific result on your behalf. The earlier macOS profile also has a document executor with separate setup and approval. [Conditions for the earlier workflows](manual/en/work-guide.md)
+Apply one submission at a time. Check that the destination has no other Work that is approved, in progress, or under review. You can delegate applying and accepting a specific isolated Work under the conditions in the guide. Review the combined files and checks before accepting the parent Work yourself. The guide also covers when you can resume an interrupted application. [Child Works and results from isolated folders](manual/en/foundation-preview.md#child-works-and-results-from-isolated-folders)
 
 ## Your project and its records
 
-The SQLite Preview keeps each project’s work records in your operating system’s user-data folder. [Export and restore through Colvia](manual/en/foundation-preview.md#retained-contents-and-backups) to back up records, retained contents, settings and acceptance history. A Git commit or clone does not back up those records. [Disconnecting](manual/en/foundation-preview.md#notifications-and-disconnection) preserves your files and work history. If you move a connected folder, see [how to check its new location](manual/en/foundation-preview.md#continue-after-moving-a-project-folder).
+| Who | What they do |
+| --- | --- |
+| You | Choose the goal and scope, grant necessary access, and decide whether to accept the result. |
+| Codex and Claude Code | Read the project rules, propose a task, do the work, and run the checks. |
+| Colvia | Helps the agent find the project’s Work and keeps plans, approvals, submissions, and decisions on your device. |
 
-[Earlier profile guide](manual/en/README.md) · [SQLite Preview environments](manual/en/foundation-preview.md#target-platforms-and-verification-status) · [Contribute](CONTRIBUTING.md) · [Apache License 2.0](LICENSE)
+Colvia keeps plans, approvals, submissions, and decisions in the operating system’s user data folder. It puts the launcher, connection information, and guidance in the project folder.
+
+To stop using Colvia in a project, ask your agent, “Show me how Colvia would disconnect this folder.” [Disconnecting the project](manual/en/foundation-preview.md#disconnect-a-project) preserves your files and Work records. If you plan to reconnect and continue the work later, [back up the records](manual/en/foundation-preview.md#back-up-and-restore-records) before disconnecting. To remove the installation and keep your records, ask your agent to show a removal preview or follow the [removal and reinstall instructions](manual/en/foundation-preview.md#remove-colvia-and-keep-your-records).
+
+Use the app or CLI’s permissions to control what the agent can read, write, or run. Apps and agents can edit files they have permission to change. At submission, Colvia checks changes in the files it tracks against the approved scope and stops the submission if it finds a change outside that scope. Before recording ordinary Work acceptance, Colvia compares the current files in that Work’s folder with the submission you reviewed. If the files have changed, review the changes and submit again. Review check results and any Git integration separately.
+
+Messages and materials you share with an agent follow the AI service’s data handling settings.
+
+## Preview support
+
+The first Preview targets **macOS on Apple Silicon and Windows 11 on x64 and ARM64**, with **the Codex and Claude Code CLI and desktop apps**. Depending on the app, CLI and permission mode, you may need to grant separate access to the project and Colvia record folders. See [supported environments](manual/en/foundation-preview.md#supported-environments) for installation, update and access requirements.
+
+## What we want to improve
+
+- **Make it easier to start and pick up again.** We want first-task guidance for both document and software projects, a short summary of what needs attention and what has changed since your last decision, and a way to record recurring problems as work to consider.
+- **Keep larger projects moving.** We plan to explore approving only newly discovered scope and reviewing results from several Works together. We also want to test how quickly records can be retrieved and how reliably backups restore as records grow, and to provide clearer next steps when setup or work is interrupted.
+- **Explore more ways to use Colvia.** Linux, more agents, simultaneous team editing, and automatic parallel execution are candidates for future work. Colvia’s direct invocation of agents is disabled in the first Preview. The initial focus is work in the regular Codex and Claude Code apps and CLIs.
+
+[Questions and bug reports](CONTRIBUTING.md#questions-and-bug-reports) · [Report a security issue privately](CONTRIBUTING.md#report-a-security-issue-privately) · [Contributing](CONTRIBUTING.md) · [Apache License 2.0](LICENSE)

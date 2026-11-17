@@ -2,17 +2,25 @@
 
 [English README](README.md) · [한국어 기여 안내](CONTRIBUTING.ko.md)
 
-Small changes are welcome for review. If you found a bug, describe what you expected, what happened, the operating system and the asset name or version you received. A short example in a clean project helps. Leave out account details, private paths and project files.
+Small changes are welcome for review.
+
+## Questions and bug reports
+
+Use [Colvia Issues](https://github.com/kyungseo/colvia/issues) for questions and bug reports. If you found a bug, describe what you expected, what happened, the operating system and the asset name or version you received. A short example in a clean project helps. Leave out account details, private paths and project files.
 
 For a typo, a clearer example or a reproducible bug, open a focused pull request against `main`. Explain what changed and how you checked it. Discuss larger features, changes to what agents can do, or changes to stored Work records with a maintainer before implementing them.
 
-Please keep security reports out of public issues and pull requests. During the private preview, contact the person who supplied your build privately. Before public release, we’ll list a private reporting contact here.
+## Report a security issue privately
+
+Keep vulnerability details out of public issues and pull requests. Open [Colvia’s Security tab](https://github.com/kyungseo/colvia/security) and use **Report a vulnerability** when the option is available. If you received a private build and the option is unavailable, contact the person who gave you the build privately.
+
+## Contribution license
 
 Colvia’s own code and documentation in this revision use Apache-2.0. Contributions intentionally submitted for inclusion are handled under section 5 of the license unless explicitly stated otherwise. Third-party components keep their own licenses. [License](LICENSE)
 
 ## Make your first change
 
-Use the [next Preview guide](manual/en/foundation-preview.md) to see the SQLite candidate’s user flow. The earlier `.hrn/` profile has its own [user guide](manual/en/README.md).
+See the [Colvia Preview guide](manual/en/foundation-preview.md) for the user workflow.
 
 To reproduce the verified developer setup for this representative check, use GIL-enabled CPython 3.14.7 in a POSIX shell. The check passed in a clean local clone at `448b581` on macOS ARM64 with SQLite 3.54.0. This is a single developer test; the installed product uses its own dedicated Python.
 
@@ -36,7 +44,7 @@ This file locates the rules for developing Colvia itself. Start with [Source Pro
 
 Reorganization and effective-state record: [DR-0006](docs/decisions/DR-0006-source-contributor-document-structure.md). Until the Owner accepts and activates its exact amendment, the [retained source procedures](docs/DECISION-GUIDE.md#retained-source-procedures) remain effective. After that recorded activation, the identified guides own the relocated rules. This entry does not activate them.
 
-Developing Colvia in its trusted source checkout does not require installing the product or creating an installed-project Work. For ordinary work in a connected SQLite project, follow its installed launcher (`./colvia guide` on macOS, `.\colvia.cmd guide` in Windows PowerShell) and project rules. `view --details` belongs to the earlier `.hrn/` profile. These source rules do not replace the contribution and licensing terms above.
+Developing Colvia in its trusted source checkout does not require installing the product or creating an installed-project Work. For ordinary work in a connected Colvia project, follow its installed launcher (`./colvia guide` on macOS, `.\colvia.cmd guide` in Windows PowerShell) and project rules. These source rules do not replace the contribution and licensing terms above.
 
 The headings below retain historical links. Their destinations follow the effective-state boundary above.
 
@@ -85,16 +93,8 @@ Read [Resume And Handoff](docs/development/WORKFLOW.md#resume-and-handoff) and [
 
 ## Preparing source for lifecycle checks
 
-This procedure is for the earlier `.hrn/` profile. Its installed bilingual entry comes from `distribution/README-installed.md`; links resolve from `README.md` in that prepared tree. For the SQLite candidate, follow the separate procedure below. Do not pass the raw checkout as a lifecycle candidate.
-
-Prepare an ordinary managed source tree in a new directory outside the checkout:
-
-```sh
-python3 scripts/prepare-source.py --output /path/to/new-prepared-source
-```
-
-Then use that prepared directory as the explicit `--source` for a source lifecycle preview. Source `init` requires this argument; the user-facing management tools already supply it. Preview and apply remain separate. Windows and macOS packaging scripts apply the same README mapping and retain the installed file names and inventory. Preparation alone installs nothing.
+Use a prepared Colvia Preview bundle when checking the installation lifecycle. Keep the build inputs and resulting archive available for byte and link checks.
 
 ### Record-foundation candidate preparation
 
-For the SQLite candidate, [`foundation_bundle.assemble`](distribution/foundation_bundle.py) builds an unsigned archive from prepared inputs. Reproducing an identical release archive from a clone alone remains unverified. Assembly requires the pinned platform runtime, verifier dependencies and native launcher, plus the channel configuration, trust root and notices for that candidate. It maps the SQLite entry from `distribution/foundation-guides/README.md` and includes its own guides and Work adapter. Use the guides' Git registration and move examples with the SQLite manager. The trial Git and installer corrections entered the later integration tree. The clean-clone result above applies to `448b581`. Before distributing a bundle, match the guide examples and relative links to that archive and its manager. See [the supply and candidate procedure](docs/development/record-foundation/runtime-and-extension.md#supply-candidate-and-vm-reuse) and [verified results](docs/development/product-evidence-and-followups.md#record-foundation-verification).
+[`foundation_bundle.assemble`](distribution/foundation_bundle.py) builds an unsigned Colvia Preview archive from pinned inputs for the platform runtime, verification dependencies, native launcher, channel, trust root and notices. [`guide_sources`](distribution/foundation_bundle.py) maps the welcome page and language guides to their installed paths, and the archive includes the Work adapter. Before distributing a bundle, verify that its links resolve and that the Git registration and folder move examples work with its manager. See the [assembly inputs and procedure](docs/development/record-foundation/runtime-and-extension.md#supply-candidate-and-vm-reuse) and [verification results](docs/development/product-evidence-and-followups.md#record-foundation-verification). Reproducing the exact release archive from a clone alone remains unverified.

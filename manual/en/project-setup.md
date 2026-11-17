@@ -1,6 +1,6 @@
 # Install, update or disconnect
 
-[User guide](README.md)
+[User guide](README.md) · Earlier trial reference · [Install, update, or disconnect in Colvia Preview](foundation-preview.md)
 
 Prepare the tools on your device, then preview the changes for each project you want to use. Preview packages target Apple silicon Mac and Windows 11 ARM64. On Windows, use a standard account and a local NTFS project folder. See [environments and limits](work-guide.md#limits-en).
 
@@ -12,7 +12,7 @@ Prepare the tools on your device, then preview the changes for each project you 
 
 ### Start in a new folder
 
-Public downloads are in preparation. If you received a preview package, use the verification value supplied separately by the distributor. If Colvia is already installed, skip to connecting your practice folder.
+Earlier trials used separately supplied packages. Use the verification value supplied with that package if you are working with an earlier trial. For the current Colvia Preview, use the [official installation page](https://colvia.github.io/downloads/) and follow [the current connection guide](foundation-preview.md#install-and-connect-a-project).
 
 On an Apple silicon Mac, check the bootstrap file with `shasum -a 256 "$HOME/Downloads/bootstrap.sh"`. Compare the digest with the separately supplied value. If it matches, run `/bin/sh "$HOME/Downloads/bootstrap.sh"` to preview the installation. Check the destination and run the displayed apply command with its confirmation code.
 

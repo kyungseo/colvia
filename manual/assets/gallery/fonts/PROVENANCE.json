@@ -15,8 +15,35 @@
   },
   "subsets": {
     "SkinSans-400.woff2": "86bfa43b8bdf3ce514c2b410d890c1401aab1bbfb7085a41bd6a909534c8d45c",
-    "SkinSans-700.woff2": "7f1d69ace7191bcb95a640488553706a2d39edfa780241e578a81a329b92230a"
+    "SkinSans-700.woff2": "7f1d69ace7191bcb95a640488553706a2d39edfa780241e578a81a329b92230a",
+    "SkinSans-400-expanded.woff2": "61e3a10066c27046cd561d633958048b011051491f7e56788ceeed8c4b6102f4",
+    "SkinSans-700-expanded.woff2": "6a31ea813cb430f00dc890165f5d3988b5bb0e47c45600236f67da8099f5122a",
+    "SkinSans-400-submission.woff2": "6b7e070b12b410d1df43906a4e28129da8c0e28c2980344dd09500bfbb2d11b8",
+    "SkinSans-700-submission.woff2": "d1677f78e5b8ee5ff3ffc192cc70ba7512b6c3194bdee914559391ab5e312b0b",
+    "SkinSans-400-comparison.woff2": "df8c6e00ae67ad583a437b9307d81c5353f6893449d199d35d64f328db211be2",
+    "SkinSans-700-comparison.woff2": "492a9f1951d4ed32504b93379622cd446fdf6fc1c930ff974148f1b4fa063676"
   },
-  "coverage": "Visible labels from the seven preserved SVGs and their English translations.",
-  "characters": " &-./12?ABCDEGIKMNOPRSTUVWYabcdefghijklmnoprstuvwxy·“”간건결계고공과그금기나느다달대더뒤라락로록리림매목문미번범보본상서설속수시신씩알어업연요월위으은음일작젝조준줘지짐쪽처청치큰통트파판폴표프하한할함합해획후"
+  "coverage": "Default embedded labels. Expanded adds Hangul glyphs for split and parallel. Submission covers switch. Comparison covers the revised drift labels.",
+  "characters": " &-./12?ABCDEGIKMNOPRSTUVWYabcdefghijklmnoprstuvwxy·“”간건결계고공과그금기나느다달대더뒤라락로록리림매목문미번범보본상서설속수시신씩알어업연요월위으은음일작젝조준줘지짐쪽처청치큰통트파판폴표프하한할함합해획후",
+  "variants": {
+    "expanded": {
+      "scenes": [
+        "split",
+        "parallel"
+      ],
+      "characters": "격전체"
+    },
+    "submission": {
+      "scenes": [
+        "switch"
+      ],
+      "characters": "제출"
+    },
+    "comparison": {
+      "scenes": [
+        "drift"
+      ],
+      "characters": "경내변용재정제출항현"
+    }
+  }
 }

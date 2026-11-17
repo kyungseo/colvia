@@ -2,9 +2,11 @@
 
 [한국어 README](README.ko.md) · [English contributing guide](CONTRIBUTING.md)
 
-## 버그를 발견했다면
+<a id="버그를-발견했다면" name="버그를-발견했다면"></a>
 
-어떤 환경에서 무슨 일이 있었는지 알려 주세요. 운영체제, 사용한 버전이나 배포 파일 이름, 기대한 결과와 실제 결과를 적으면 됩니다. 빈 프로젝트에서 같은 문제를 재현하는 방법이 있다면 함께 적어 주세요. 계정 정보나 개인 경로, 실제 프로젝트 파일은 제외해 주세요.
+## 질문하거나 버그를 신고하려면
+
+질문과 버그 신고는 [Colvia Issues](https://github.com/kyungseo/colvia/issues)에 남겨 주세요. 어떤 환경에서 무슨 일이 있었는지 알려 주세요. 운영체제, 사용한 버전이나 배포 파일 이름, 기대한 결과와 실제 결과를 적으면 됩니다. 빈 프로젝트에서 같은 문제를 재현하는 방법이 있다면 함께 적어 주세요. 계정 정보나 개인 경로, 실제 프로젝트 파일은 제외해 주세요.
 
 ## 변경을 제안하려면
 
@@ -12,7 +14,7 @@
 
 ## 보안 문제를 발견했다면
 
-비공개 배포본의 보안 문제는 그 파일을 제공한 담당자에게 개별적으로 알려 주세요. 공개 이슈나 PR에는 재현 정보가 노출될 수 있습니다. 공개 배포를 시작하기 전에 이곳에 비공개 제보 창구를 안내하겠습니다.
+취약점의 재현 정보는 비공개로만 전달해 주세요. [Colvia의 Security 탭](https://github.com/kyungseo/colvia/security)에서 **Report a vulnerability** 항목이 보이면 그 기능으로 비공개 제보해 주세요. 비공개 배포본을 받았고 이 항목이 보이지 않는다면 배포본을 제공한 담당자에게 직접 알려 주세요.
 
 ## 기여물의 라이선스
 
@@ -20,7 +22,7 @@ Colvia가 작성한 코드와 문서에는 [Apache License 2.0](LICENSE)이 적�
 
 ## 첫 변경과 검사
 
-SQLite 후보의 사용 흐름은 [Preview 안내](manual/ko/foundation-preview.md)에서, 이전 `.hrn/` 배포본은 [이전 프로필 설명서](manual/ko/README.md)에서 확인하세요.
+사용 흐름은 [Colvia Preview 안내](manual/ko/foundation-preview.md)에서 확인하세요.
 
 일반 Work를 바꿨다면 저장소 루트에서 [대표 검사 한 건](CONTRIBUTING.md#make-your-first-change)을 실행하세요. 확인한 개발 환경을 재현하려면 GIL을 사용하는 CPython 3.14.7과 POSIX 셸을 사용하세요. `448b581`의 깨끗한 로컬 clone에서 macOS ARM64와 SQLite 3.54.0으로 통과했습니다. 범위 승인, 검토용 제출, 특정 결과 수락을 확인합니다. 설치본의 Python은 Colvia가 별도로 준비합니다.
 
@@ -34,8 +36,8 @@ Colvia 자체를 개발한다면 [개발 절차(영문)](docs/development/WORKFL
 
 [사용자 문서 작성 기준 · 영문](docs/development/user-documentation.md)
 
-소스 체크아웃에서 설치 흐름을 검사할 때는 [설치용 소스 준비](CONTRIBUTING.md#preparing-source-for-lifecycle-checks)를 먼저 확인하세요. 공개 README와 설치본 README는 각각 원본이 있습니다. SQLite 배포본을 준비할 때는 안내의 링크와 Git 등록·폴더 이동 예를 실제 ZIP과 관리자 명령에 대조하세요.
+소스 체크아웃에서 설치 흐름을 검사할 때는 [설치용 소스 준비](CONTRIBUTING.md#preparing-source-for-lifecycle-checks)를 먼저 확인하세요. 공개 README와 설치본 README는 각각 원본이 있습니다. Colvia Preview 배포본을 준비할 때는 안내의 링크와 Git 등록·폴더 이동 예를 실제 ZIP과 관리자 명령에 대조하세요.
 
-### 새 기록 구조의 후보 준비
+### Colvia Preview 배포본 준비
 
-앞의 `scripts/prepare-source.py`는 기존 프로필용 소스 트리를 준비합니다. 새 기록 구조의 배포 후보는 `distribution/foundation_bundle.py`에 정규화한 실행환경, 검증 라이브러리, 네이티브 실행기와 신뢰 입력을 명시해 준비합니다. `guide_sources(source)`는 후보 전용 진입 페이지와 한영 안내를 설치본 경로에 연결하며, 예전 기술 색인을 복사하지 않습니다. 현재 Git 등록 예는 고정한 시험본의 관리자와 대조했습니다. 새 배포본을 배포하기 전에는 그 배포본에 들어간 관리자와 예제를 다시 대조하세요. 보정 전 `448b581`에는 시험본의 Git·설치기 수정이 없습니다. 생성 결과는 서명하지 않은 준비용 압축 파일입니다. 설치나 플랫폼 검증을 완료한 것은 아닙니다. 근거와 다음 작업은 [현재 작업 기록](docs/development/FEAT-20261106-002-record-foundation.md)을 확인하세요.
+[`foundation_bundle.assemble`](distribution/foundation_bundle.py)는 플랫폼별 실행환경, 검증 라이브러리, 네이티브 실행기, 배포 채널, 신뢰 루트와 고지를 고정한 입력으로 서명 전 압축 파일을 조립합니다. 같은 파일에 있는 `guide_sources`가 진입 페이지와 한·영 안내를 설치본 경로에 배치하며, Work 어댑터도 ZIP에 들어갑니다. 배포 전에 그 ZIP에서 링크가 열리는지, Git 등록과 폴더 이동 예가 동봉한 관리자에서 맞는지 확인하세요. 자세한 절차와 확인 범위는 [조립 절차](docs/development/record-foundation/runtime-and-extension.md#supply-candidate-and-vm-reuse)와 [검증 근거](docs/development/product-evidence-and-followups.md#record-foundation-verification)에 있습니다. 저장소를 복제한 상태에서 바로 동일한 ZIP을 재현하는 경로는 확인할 항목입니다.

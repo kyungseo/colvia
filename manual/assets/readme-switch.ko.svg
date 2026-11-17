@@ -41,5 +41,5 @@
 <ellipse cx="180" cy="108.0" rx="46.0" ry="7" class="rec"/>
 <text x="180" y="136" class="workt" font-size="13.5" font-weight="600" text-anchor="middle">기록</text>
 <path d="M226 126 C262 126 294 112 294 84" class="ln" marker-end="url(#ah)"/>
-<text x="180" y="184" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">범위 · 수락한 판본 · 다음 할 일</text>
+<text x="180" y="184" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">범위 · 수락한 제출본 · 다음 할 일</text>
 </svg>

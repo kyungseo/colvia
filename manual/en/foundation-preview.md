@@ -131,7 +131,23 @@ A Git commit or clone does not back up Colvia records. Use Colvia export and res
 
 ### Updating and recovering an interrupted update
 
-To update an existing installation of the official Colvia Preview, run the same command for your operating system from the [installation page](https://colvia.github.io/downloads/). Colvia checks for a newer version at the address verified during installation. If you are already on the current release, Colvia keeps using that runtime.
+Ask your agent, “Update Colvia.” Use the same account that installed Colvia. The agent can run the installed manager if it has access to the installation and can reach the official download site. If the app asks for permission, review the command and approve it there. If the agent cannot run the update in that account, use your terminal.
+
+To update it yourself, rerun the command you originally used from the [official installation page](https://colvia.github.io/downloads/). If `colvia-manage` is on your `PATH`, you can also run `colvia-manage update`. For a default installation, use the full path below without changing your `PATH`.
+
+macOS Terminal
+
+```bash
+"$HOME/Library/Application Support/Colvia/bin/colvia-manage" update
+```
+
+Windows PowerShell
+
+```powershell
+& (Join-Path ([Environment]::GetFolderPath("LocalApplicationData")) "Colviain\colvia-manage.exe") update
+```
+
+Colvia checks for a newer version at the address verified during installation. If you are already on the current release, Colvia keeps using that runtime.
 
 Before updating, Colvia creates recovery copies of registered records and compares their required capabilities with those declared by the new runtime. This compatibility check does not run every user workflow. Returning to a compatible previous runtime does not roll work history back.
 
@@ -147,11 +163,43 @@ On macOS, if Colvia asks you to confirm a working folder, first identify the pro
 
 ### Remove Colvia and keep your records
 
-Save the [official installer script](https://colvia.github.io/downloads/) as a file. Use the standard account that installed Colvia, with its default management folder. Finish any ongoing Git operation or update, and close Colvia work and notification windows.
+Ask your agent, “Show me what would be removed if I uninstall Colvia and keep my records.” The agent can run the removal preview with the official installer script if it has the required access in the account that installed Colvia. Check the files it would remove and what it would keep. Ask the agent to apply the removal after you approve that preview. Project files, Work records, approvals, submissions, project connections, settings and update trust remain. Use the commands below if you want to do it yourself or the app cannot run them.
 
-1. **Preview removal.** Run the saved script in ordinary PowerShell with `-UninstallPreview <operation ID>` on Windows or with `--uninstall-preview <operation ID>` on macOS. Choose an unused short ID such as `remove-colvia`.
-2. **Remove the reviewed installation.** Check which launchers and runtime files will be removed and what will be retained. Run the script with `-Uninstall <operation ID> -Receipt <receipt>` on Windows or `--uninstall <operation ID> <receipt>` on macOS. Work, approvals, submissions, project links, settings and update trust stay in the default management folder. The removal operation keeps verified installation files separately for recovery. If interrupted, use the same ID and receipt with `-ResumeUninstall` on Windows or `--resume-uninstall` on macOS.
-3. **Reinstall when needed.** Run the usual install command in the same account. Open the same project to review its existing Work and submissions. If the installer reports that a reinstall is pending, resume with `-ResumeReinstall` on Windows or `--resume-reinstall` on macOS. Keep the management folder and its records.
+Use the standard account and default management folder you used to install Colvia. Finish any active Work, Git integration or update and close Colvia work and notification windows. Save the official installer script for [macOS ARM64](https://colvia.github.io/downloads/preview/macos-arm64/install.sh), [Windows x64](https://colvia.github.io/downloads/preview/windows-x64/install.ps1), or [Windows ARM64](https://colvia.github.io/downloads/preview/windows-arm64/install.ps1). Open Terminal or ordinary Windows PowerShell in the folder where you saved it.
+
+**Preview the removal.** Choose an unused operation ID. This example uses `remove-colvia`.
+
+macOS Terminal
+
+```bash
+/bin/sh ./install.sh --uninstall-preview remove-colvia
+```
+
+Windows PowerShell
+
+```powershell
+$path = (Resolve-Path -LiteralPath .\install.ps1).Path
+$installer = [ScriptBlock]::Create([IO.File]::ReadAllText($path))
+& $installer -UninstallPreview remove-colvia
+```
+
+**Apply after checking the preview.** Replace `RECEIPT_FROM_PREVIEW` with the receipt displayed in the preview. In PowerShell, continue in the same window.
+
+macOS Terminal
+
+```bash
+/bin/sh ./install.sh --uninstall remove-colvia RECEIPT_FROM_PREVIEW
+```
+
+Windows PowerShell
+
+```powershell
+& $installer -Uninstall remove-colvia -Receipt RECEIPT_FROM_PREVIEW
+```
+
+The receipt is shown by the preview. If interrupted, use `--resume-uninstall` on macOS or `-ResumeUninstall` on Windows with the same operation ID and receipt.
+
+**Reinstall when needed.** Run the usual install command in the same account. Open the same project to review its existing Work and submissions. If the installer reports that a reinstall is pending, use `--resume-reinstall` on macOS or `-ResumeReinstall` on Windows with the saved script. Keep the management folder and its records.
 
 To undo an interrupted removal before starting a reinstall, use `-RestoreUninstall <operation ID> -Receipt <receipt>` on Windows or `--restore-uninstall <operation ID> <receipt>` on macOS. If you used Windows notifications before removing Colvia, enable them again after restoring or reinstalling.
 
@@ -246,7 +294,7 @@ When applying a registration, the manager verifies the selected executable’s h
 
 ### Put an accepted result into Git
 
-Accepting a report and committing it to Git are separate decisions. Acceptance records that you accept the result. Git integration separately checks the entire proposed commit and the current staging state.
+Accepting a submission keeps a version you can compare with your current files later. You can make that comparison without a work-in-progress (WIP) commit. To put the accepted submission into Git, review the full proposed commit and current staging state, then approve the integration separately.
 
 Changing branches, pulling or rebasing during a Work does not automatically approve a new baseline. Colvia keeps changes outside the scope visible and requires checking how to continue. Independently connecting a repository subfolder, or automatically converting a folder between Git and non-Git operation, is outside the first-release path. Symlinks and submodules can remain protected, but are not editable targets.
 

@@ -33,6 +33,7 @@ This table helps locate rules. It does not narrow their applicability, waive a r
 | Review or execute approved work | [Review And Evidence](#review-and-evidence), [Execute Within The Approved Boundary](#execute-within-the-approved-boundary), [Maintaining](../MAINTAINING.md#validation-frequency-and-native-timeouts) |
 | Invoke an agent or reviewer CLI | Common review rules and [Agent Collaboration](#agent-collaboration) |
 | Resume, hand off or close work | [Resume And Handoff](#resume-and-handoff), [Close And Assess Adopter Impact](#close-and-assess-adopter-impact) |
+| Prepare a GitHub release | [GitHub Release Procedure](#github-release-procedure) |
 | Publish, apply to an adopter or change rules | [Publication And Adopter Authorization](#publication-and-adopter-authorization), [Rule Changes And Retirement](#rule-changes-and-retirement) |
 
 ## Roles And Authorization
@@ -93,11 +94,21 @@ Contributors assess generic product impact from source evidence. The Owner or a 
 
 Assess generic adopter impact using Maintaining and report update recommended, no update currently needed, or installation state unverified. Private target observations and exact application approvals remain with the Owner or designated maintainer. An adopter issue becomes a minimal anonymous or synthetic source candidate/task, followed by the qualified source change, separately approved exact application and recheck of the original case. An unsafe or unsupported application stops and preserves truth. This procedure does not authorize detach to bypass an unsupported update. Portfolio coordination (priorities and resources across separate products) is a separate action, not a prerequisite to source result acceptance unless explicitly included in that task's criteria.
 
+At checkpoints, review closeout, handoff and task completion, follow the active working agreements for worktree preservation and cleanup. See the owning task record for any retained worktree’s purpose, consumer and condition for removal.
+
 ## Publication And Adopter Authorization
 
 Obtain explicit Owner authorization for commit, push, PR creation, merge, public release and actual adopter application when those actions are not already authorized for the named target and scope. Review or result acceptance alone authorizes none of these actions. Do not infer execution authority from a candidate, recommendation or old task, and do not ask again for work already covered by an applicable authorization.
 
 Commit, push, PR creation, merge, public release and actual adopter application retain the explicit authorization boundaries in this section. This procedure installs no runtime, grants no new command, changes no technical contract and launches no background scheduler or cross-repository synchronization.
+
+### GitHub Release Procedure
+
+When preparing a Colvia release on GitHub, load `github-release-guide`. Use `first-public` when making the private source repository public and `version-release` for new releases from a public repository. Start with read-only Assess and reuse applicable evidence from the release record. In Guided mode, show the exact target and effect, recheck the preconditions, obtain the Owner's approval for the specific action, and verify the observed result before continuing. Source visibility, repository settings, Git refs and GitHub Release objects have separate approval boundaries.
+
+Use Colvia's existing release plan for signing, Pages deployment and installation checks. Approval for a Pages deployment covers the specified installation files at the public URL. A GitHub Release or a change to source visibility requires its own approval.
+
+For each new public version, add the Owner’s daily-use installation to the release closeout checklist. After verifying the official distribution, the Owner applies the approved release to that installation and runs `colvia-manage status`. Record the installed version alongside the published version and close this check only when they match. If local application is pending, carry the check forward in the release record.
 
 ## Agent Collaboration
 
