@@ -14,7 +14,7 @@ import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
-from distribution.source_layout import read_checkout, prepare_source, source_path
+from distribution.source_layout import SOURCE_MAP, read_checkout, prepare_source, source_path
 from hv2ref import product
 from hv2ref.errors import ContractError
 
@@ -33,20 +33,32 @@ class SourceLayoutTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.base = Path(self.temp.name).resolve()
 
-    def checkout(self):
-        source = self.base / 'checkout'
+    def checkout(self, name='checkout'):
+        source = self.base / name
         for name in product.OFFICIAL_V2_MANAGED_PATHS:
             p = source / name; p.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, p)
-        p = source / 'distribution/README-installed.md'; p.parent.mkdir(); shutil.copy2(ROOT / p.relative_to(source), p)
+        for installed, archive in SOURCE_MAP.items():
+            p = source / archive
+            p.parent.mkdir(parents=True, exist_ok=True)
+            if installed in ("AGENTS.md", "CLAUDE.md"):
+                p.write_text(f"# Synthetic archived guidance for {installed}\n", encoding="utf-8")
+            else:
+                shutil.copy2(ROOT / archive, p)
+        for name in ("source_layout.py", "verify-macos-tree.sh", "manager.py"):
+            shutil.copy2(ROOT / "distribution" / name, source / "distribution" / name)
         return source
 
     def test_public_readme_never_enters_prepared_inventory(self):
-        checkout = read_checkout(ROOT)
-        self.assertEqual(checkout['payload']['README.md'], (ROOT / 'distribution/README-installed.md').read_bytes())
-        self.assertNotEqual(checkout['payload']['README.md'], (ROOT / 'README.md').read_bytes())
+        source = self.checkout()
+        checkout = read_checkout(source)
+        self.assertEqual(checkout['payload']['README.md'], (source / 'distribution/README-installed.md').read_bytes())
+        self.assertNotEqual(checkout['payload']['README.md'], (source / 'README.md').read_bytes())
+        for installed in ("docs/README.md", "AGENTS.md", "CLAUDE.md"):
+            self.assertEqual(checkout["payload"][installed], (source / SOURCE_MAP[installed]).read_bytes())
+            self.assertNotEqual(checkout["payload"][installed], (source / installed).read_bytes())
         self.assertEqual(tuple(checkout['payload']), product.CONTINUATION_MANAGED_PATHS)
-        target = self.base / 'prepared'; prepare_source(ROOT, target)
+        target = self.base / 'prepared'; prepare_source(source, target)
         observed = product.workspace_candidate(target)
         self.assertEqual(observed['payload'], checkout['payload'])
         self.assertEqual(observed['release_ref'], checkout['release_ref'])
@@ -61,6 +73,20 @@ class SourceLayoutTests(unittest.TestCase):
         with self.assertRaises((OSError,ContractError)):read_checkout(source)
         p.unlink();p.write_bytes(raw);os.link(p,self.base/'shared')
         with self.assertRaises((OSError,ContractError)):read_checkout(source)
+
+    def test_missing_archived_agent_entry_prevents_preparation(self):
+        for installed in ("AGENTS.md", "CLAUDE.md"):
+            with self.subTest(installed=installed):
+                source = self.checkout(f"{installed}-missing")
+                target = source.with_name(f"{installed}-blocked")
+                path = source_path(source, installed)
+                retained = path.read_bytes()
+                self.assertEqual(retained, read_checkout(source)["payload"][installed])
+                self.assertNotEqual(retained, (source / installed).read_bytes())
+                path.unlink()
+                with self.assertRaisesRegex(ContractError, "requires the retained source checkout"):
+                    prepare_source(source, target)
+                self.assertFalse(target.exists())
 
     def test_drift_during_read_is_refused(self):
         source=self.checkout();p=source/'distribution/README-installed.md';original=product._serial_file;seen=0
@@ -85,7 +111,7 @@ class SourceLayoutTests(unittest.TestCase):
         result=subprocess.run(cmd,capture_output=True,timeout=20)
         self.assertEqual(result.returncode,2,result.stderr);self.assertIn(b'--source',result.stderr)
         self.assertEqual(before,{str(p.relative_to(target)):p.read_bytes() for p in target.rglob('*') if p.is_file()})
-        source=self.base/'prepared';prepare_source(ROOT,source)
+        source=self.base/'prepared';prepare_source(self.checkout(),source)
         args=cmd+['--source',str(source),'--authority-home-id','home-test','--operation-id','init-test','--observed-at','2026-01-01T00:00:00Z']
         result=subprocess.run(args,capture_output=True,timeout=20)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
@@ -93,19 +119,21 @@ class SourceLayoutTests(unittest.TestCase):
         self.assertEqual(before,{str(p.relative_to(target)):p.read_bytes() for p in target.rglob('*') if p.is_file()})
 
     def test_windows_and_official_preparation_use_mapped_input(self):
+        source = self.checkout()
         for kind,window in [('windows','windows-2'),('official','official-execution-2')]:
             out=self.base/kind
-            result=subprocess.run([sys.executable,'-I','-B',str(ROOT/f'scripts/prepare-{kind}.py'),'--source',str(ROOT),'--output',str(out)],capture_output=True,timeout=30)
+            result=subprocess.run([sys.executable,'-I','-B',str(ROOT/f'scripts/prepare-{kind}.py'),'--source',str(source),'--output',str(out)],capture_output=True,timeout=30)
             self.assertEqual(result.returncode,0,result.stdout+result.stderr)
             candidate=product.workspace_candidate(out)
             self.assertEqual(candidate['release_ref']['inventory_id'],window)
             self.assertEqual(candidate['payload']['README.md'],(ROOT/'distribution/README-installed.md').read_bytes())
 
     def test_macos_both_profiles_use_mapped_readme(self):
+        source = self.checkout()
         mac=module('mac_readme','distribution/macos.py');supply=self.base/'supply';supply.mkdir();(supply/mac.ARCHIVE).write_bytes(b'synthetic')
         out=self.base/'mac'
         with patch.object(mac,'runtime_catalog',return_value=(b'objects',b'checksums')),patch.object(mac,'licenses',return_value={'license':b'synthetic'}),patch.object(mac,'build_notice_app',return_value={}):
-            result=mac.prepare(ROOT,supply,out,version='test-readme',notice_build_version='2',origin='https://github.com/example/example/releases/download/test',fixture_root=self.base/'store')
+            result=mac.prepare(source,supply,out,version='test-readme',notice_build_version='2',origin='https://github.com/example/example/releases/download/test',fixture_root=self.base/'store')
         with tarfile.open(out/'product.tar') as archive:
             readmes=[archive.extractfile(m).read() for m in archive if m.name.endswith('/README.md') and m.name.count('/')==1]
         self.assertEqual(len(readmes),2)

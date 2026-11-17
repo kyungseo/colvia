@@ -1,11 +1,21 @@
 """Explicit repository-to-installed source mapping. Build-time only; never shipped."""
 from pathlib import Path
 
-SOURCE_MAP = {"README.md": "distribution/README-installed.md"}
+SOURCE_MAP = {
+    "README.md": "distribution/README-installed.md",
+    "docs/README.md": "docs/earlier-profile.md",
+    "AGENTS.md": "AGENTS.earlier-profile.md",
+    "CLAUDE.md": "CLAUDE.earlier-profile.md",
+}
 
 
 def source_path(source: Path, name: str) -> Path:
     return source / SOURCE_MAP.get(name, name)
+
+
+def archived_agent_entries_available(source: Path) -> bool:
+    """Whether the two retained earlier-profile agent entries are present."""
+    return all(source_path(source, name).exists() for name in ("AGENTS.md", "CLAUDE.md"))
 
 
 def read_checkout(source: Path, paths=None) -> dict:
@@ -14,6 +24,8 @@ def read_checkout(source: Path, paths=None) -> dict:
     from hv2ref.workspace import safe_target, _require_kind
     from hv2ref.jsonio import canonical_json_bytes, sha256_bytes
     source = safe_target(source)
+    _serial_require(archived_agent_entries_available(source),
+                    "earlier-profile preparation requires the retained source checkout with both archived agent entries")
     declaration = _serial_file(source / "colvia")
     window = _launcher_inventory_window(declaration)
     names = tuple(_managed_paths(window) if paths is None else paths)

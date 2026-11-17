@@ -14,7 +14,7 @@
 
 ## 보안 문제를 발견했다면
 
-취약점의 재현 정보는 비공개로만 전달해 주세요. [Colvia의 Security 탭](https://github.com/kyungseo/colvia/security)에서 **Report a vulnerability** 항목이 보이면 그 기능으로 비공개 제보해 주세요. 비공개 배포본을 받았고 이 항목이 보이지 않는다면 배포본을 제공한 담당자에게 직접 알려 주세요.
+[비공개 취약점 제보 안내](SECURITY.md)에 따라 제보해 주세요.
 
 ## 기여물의 라이선스
 
@@ -22,9 +22,9 @@ Colvia가 작성한 코드와 문서에는 [Apache License 2.0](LICENSE)이 적�
 
 ## 첫 변경과 검사
 
-사용 흐름은 [Colvia Preview 안내](manual/ko/foundation-preview.md)에서 확인하세요.
+사용 흐름은 [Colvia Preview 안내](manual/ko/README.md)에서 확인하세요.
 
-일반 Work를 바꿨다면 저장소 루트에서 [대표 검사 한 건](CONTRIBUTING.md#make-your-first-change)을 실행하세요. 확인한 개발 환경을 재현하려면 GIL을 사용하는 CPython 3.14.7과 POSIX 셸을 사용하세요. `448b581`의 깨끗한 로컬 clone에서 macOS ARM64와 SQLite 3.54.0으로 통과했습니다. 범위 승인, 검토용 제출, 특정 결과 수락을 확인합니다. 설치본의 Python은 Colvia가 별도로 준비합니다.
+일반 Work를 바꿨다면 저장소 루트에서 [대표 검사 한 건](CONTRIBUTING.md#make-your-first-change)을 실행하세요. 이 개발 검사는 GIL을 사용하는 CPython 3.14.7과 POSIX 셸에서 실행하세요. 범위 승인, 검토용 제출, 특정 결과 수락을 확인합니다. 설치본의 Python은 Colvia가 별도로 준비합니다.
 
 문서 변경은 링크와 안내의 적용 대상을 확인하세요. 저장소·패키징·플랫폼 변경은 [유지보수 안내](docs/MAINTAINING.md#evidence-reuse-and-selection)와 [검증 근거](docs/development/product-evidence-and-followups.md#record-foundation-verification)에서 관련 검사를 고르세요. PR에는 사용한 명령, 환경, 결과를 적어 주세요.
 

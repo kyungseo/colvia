@@ -2,27 +2,48 @@
 
 한국어 · [English](../en/README.md) · [제품 소개](../../README.ko.md)
 
-## Colvia Preview 사용하기
+Colvia v0.1.0(첫 공개 Preview) 기준 설명서입니다. Codex나 Claude Code에서 작업 범위를 승인하고, 결과를 검토해 수락하고, 새 대화에서 이어가는 방법을 안내합니다.
 
-[설치와 연결](foundation-preview.md#설치하고-프로젝트에-적용하기)에서 시작하거나 [실습을 따라 해 보세요](tutorial.md). 설치한 뒤에는 [업데이트와 복구](foundation-preview.md#업데이트와-중단-복구), [프로젝트 연결 해제](foundation-preview.md#프로젝트-연결-해제하기), [기록을 보존하는 제거·재설치](foundation-preview.md#기록을-보존하면서-colvia-제거하기), [지원 환경](foundation-preview.md#지원-환경)을 참고하세요.
+## 처음이라면
 
-## 이전 시험본 참고 자료
+1. [Colvia 한눈에 보기](overview.md) — 누가 무엇을 결정하고, 무엇이 어디에 남는지 먼저 파악합니다.
+2. [설치와 프로젝트 연결](install.md) — 사용할 운영체제 계정에 설치하고 프로젝트 폴더를 연결합니다.
+3. [따라 하기](tutorial.md) — 고객 문의 보고서나 팀용 할 일 웹앱을 만들며 승인·검토·수락을 직접 해 봅니다.
 
-### 처음 쓰는 순서
+## 사용하기
 
-아래 자료는 이전 시험본을 위한 안내입니다. 지금 Colvia Preview를 설치하려면 [현재 설치 안내](foundation-preview.md#설치하고-프로젝트에-적용하기)에서 시작하세요.
-
-1. [고객 문의 보고서 쓰기](getting-started.md) — 연습 폴더에 Colvia를 적용하고 문의 12건으로 초안을 만드세요.
-2. [피드백을 받고 보고서 검토하기](getting-started.md#오늘--새-대화에서-결정하기) — 배송 문의를 뺐을 때 분모와 결론이 어떻게 달라지는지 확인하세요.
-3. [새 대화에서 이어가기](resume.md) — 어제 검토한 초안과 현재 파일을 비교하고 남은 일을 찾으세요.
-4. [자리를 비울 때 결과 받기](resume.md#handoff) — 준비된 초안의 제출을 맡기고 돌아와서 프로젝트 수신함을 여세요.
-5. [갱신하거나 잠시 쉴 때](project-setup.md#maintenance-ko) — 갱신이 중단됐거나 프로젝트 연결을 해제하려면 어떤 기록이 남는지 먼저 확인하세요.
-
-<a id="확인한-범위" name="확인한-범위"></a>
-<a id="함께-볼-문서" name="함께-볼-문서"></a>
+| 안내 | 다루는 내용 |
+| --- | --- |
+| [일을 맡기고 검토하기](work.md) | 작업 시작, 범위 승인, 제출본 검토와 수락, 수정 요청, 새 대화에서 이어가기, 후속 작업, 하위 Work와 격리 폴더 |
+| [Git과 함께 쓰기](git.md) | Git 등록, 수락한 결과를 Git에 반영하기, 중단된 Git 통합 복구 |
+| [기록과 백업, 폴더 이동](records.md) | Colvia가 보관하는 내용, 백업과 복원, 폴더를 옮긴 뒤 이어가기 |
+| [업데이트, 알림, 연결 해제와 제거](maintenance.md) | 업데이트와 중단 복구, 알림 설정, 프로젝트 연결 해제, 기록을 보존하는 제거와 재설치 |
 
 ## 더 알아보기
 
-[Colvia가 기억하는 것](understand.md) · [맡길 수 있는 일과 지원 범위](work-guide.md) · [구조와 역할](architecture.md) · [예약 안내 추가 실습](first-work.md) · [기술 자료와 과거 실습](reference.md)
+| 안내 | 다루는 내용 |
+| --- | --- |
+| [아키텍처](architecture.md) | 구성요소와 계층, 호출 경로, 기록 저장 구조, Git·설치·알림의 경계 |
+| [지원 환경과 참고 자료](reference.md) | 지원 환경, 파일과 폴더 위치, 명령 요약, 용어, 문제가 생겼을 때 |
 
-<!-- en_content_sha256: cf37f1d40083f87b99124b442bd11ef6790562cc0a92d44e90477254c26e362f -->
+## 상황별로 찾기
+
+| 상황 | 볼 곳 |
+| --- | --- |
+| 설치한 버전을 확인하고 싶어요 | [설치한 버전 확인하기](install.md#check-installed-version) |
+| 에이전트가 폴더나 기록에 접근하지 못해요 | [접근이 막혔을 때](install.md#access) |
+| 어제 맡긴 일을 새 대화에서 이어가고 싶어요 | [새 대화나 다른 에이전트에서 이어가기](work.md#resume) |
+| 제출이 거부됐어요 | [맡기고 검토하기](work.md#review) |
+| 수락한 결과를 커밋하고 싶어요 | [Git에 결과 반영하기](git.md#git-integration) |
+| 프로젝트 폴더를 옮겼어요 | [프로젝트 폴더를 옮긴 뒤 이어가기](records.md#move) |
+| 업데이트가 중간에 멈췄어요 | [설치나 업데이트가 중단됐을 때](maintenance.md#update-recovery) |
+| 이 프로젝트에서 그만 쓰고 싶어요 | [프로젝트 연결 해제하기](maintenance.md#disconnect) |
+| Colvia를 지우되 기록은 남기고 싶어요 | [기록을 보존하면서 Colvia 제거하기](maintenance.md#uninstall) |
+
+## 이전 시험본을 쓰고 있다면
+
+공개 전 시험본은 프로젝트 안의 `.hrn/` 폴더에 기록을 보관했습니다. 그 구성을 계속 쓰는 프로젝트를 위한 자료는 [이전 시험본 참고 자료](earlier-profile/README.md)에 따로 모았습니다. v0.1.0을 새로 설치했다면 읽지 않아도 됩니다.
+
+## 도움 받기
+
+[문의·버그 신고](../../CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](../../SECURITY.md) · [기여 안내](../../CONTRIBUTING.ko.md)

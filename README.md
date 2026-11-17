@@ -11,7 +11,7 @@
 
 [한국어](README.ko.md) · English
 
-[Install and connect a project](manual/en/foundation-preview.md#install-and-connect-a-project) · [Follow along](manual/en/tutorial.md) · [User guide](manual/en/foundation-preview.md) · [Supported environments](manual/en/foundation-preview.md#supported-environments)
+[Install and connect a project](manual/en/install.md) · [Follow along](manual/en/tutorial.md) · [User guide](manual/en/README.md) · [Colvia at a glance](manual/en/overview.md) · [Supported environments](manual/en/reference.md#environments) · [Release notes and downloads](https://github.com/colvia/downloads/releases)
 
 </div>
 
@@ -26,15 +26,15 @@ You don’t need to know how to code to get started. Once Colvia is installed, y
 
 Install Codex or Claude Code and sign in before starting.
 
-1. Copy and run the command for your operating system from the [official installation page](https://colvia.github.io/downloads/). Colvia downloads and verifies the release files and prepares its own Python runtime. On Windows, open regular PowerShell from the Start menu as a standard user. When setup completes, [check the installed version](manual/en/foundation-preview.md#check-installed-version).
-2. Open the project folder in Codex or Claude Code. If it uses Git and you haven’t registered it with Colvia yet, [ask the agent to register Git](manual/en/foundation-preview.md#register-git) first and open the repository root. Then ask, “Connect this folder to Colvia.” Review the folder, the files Colvia will add, and where it will keep the records. Approve the connection if the preview looks right.
+1. In the operating-system account that will use Colvia, copy and run the command for your platform from the [official installation page](https://colvia.github.io/downloads/). Colvia downloads and verifies the release files and prepares its own Python runtime. On Windows, open regular PowerShell from the Start menu as a standard user. When setup completes, [check the installed version](manual/en/install.md#check-installed-version).
+2. Open the project folder in Codex or Claude Code. If it uses Git and you haven’t registered it with Colvia yet, [ask the agent to register Git](manual/en/git.md#git-register) first and open the repository root. Then ask, “Connect this folder to Colvia.” Review the folder, the files Colvia will add, and where it will keep the records. Approve the connection if the preview looks right.
 3. Once the folder is connected, tell the agent what you want to do here in the current chat. In an empty folder, describe what you want to do, such as writing a report or building a web app, in a sentence or two. You can also connect a project you already work in. The agent uses any goal you’ve shared, along with the existing README and project rules, to propose a plan.
 
 In a regular folder, you can assign a report, proposal, or meeting brief, then review the submitted version or compare it with the current files.
 
 Already installed? Ask your agent to update Colvia, or rerun the same command from the official installation page using the account that installed it.
 
-[Git registration guide](manual/en/foundation-preview.md#register-git) · [Updates and recovery](manual/en/foundation-preview.md#updating-and-recovering-an-interrupted-update) · [Disconnect a project](manual/en/foundation-preview.md#disconnect-a-project)
+[Git registration guide](manual/en/git.md#git-register) · [Updates and recovery](manual/en/maintenance.md#update) · [Disconnect a project](manual/en/maintenance.md#disconnect)
 
 <p align="center">
 <picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/overview-en-dark.png"><img src="manual/assets/gallery/overview-en-light.png" width="900" alt="Install and review the connection, then agree on scope, accept a result, and choose what comes next."></picture><br>
@@ -54,13 +54,13 @@ Here’s what you can ask when you have a file of customer inquiries.
 
 Colvia keeps the goal, file scope, checks, submission, and decisions together in a **Work**, a single recorded task. You can ask short questions and look up files within the access already granted.
 
-You can skip creating a Work for a typo, spacing, or punctuation correction you explicitly request. The edit must follow your project rules and granted access, preserve meaning and behavior, and need no separate result review, retention, or handoff. If the edit belongs to an existing Work, check that Work’s approved scope and continue with its records. [Assign and review work](manual/en/foundation-preview.md#delegate-and-review)
+You can skip creating a Work for a typo, spacing, or punctuation correction you explicitly request. The edit must follow your project rules and granted access, preserve meaning and behavior, and need no separate result review, retention, or handoff. If the edit belongs to an existing Work, check that Work’s approved scope and continue with its records. [Assign and review work](manual/en/work.md#review)
 
 ## Pick up in a new chat
 
 Open the same project and ask, “What do I need to review in the report I assigned earlier?” When the agent can access the project folder and Colvia records, it can find the approved scope, the last submission, differences from the current files, and any recorded next step.
 
-If you use both Codex and Claude Code, you can switch between them in the same project. For example, before picking up work from Codex in Claude Code, check that Claude Code can read the project folder and Colvia records. You can continue the same Work if its approval is still valid and the workspace and scope still match. [Find a recorded next step](manual/en/foundation-preview.md#find-a-recorded-next-step)
+If you use both Codex and Claude Code, you can switch between them in the same project. For example, before picking up work from Codex in Claude Code, check that Claude Code can read the project folder and Colvia records. You can continue the same Work if its approval is still valid and the workspace and scope still match. [Find a recorded next step](manual/en/work.md#follow-up)
 
 <table>
 <tr>
@@ -88,9 +88,9 @@ The agent can compare current files with the accepted submission and show which 
 
 ## Git, backups, and moving folders
 
-- **Put an accepted result into Git.** Colvia keeps the submission you accepted, so you can compare it with your current files later without making a work-in-progress (WIP) commit. Review the changes to commit and the current staging area, then approve the integration separately. Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result. [Put an accepted result into Git](manual/en/foundation-preview.md#put-an-accepted-result-into-git)
-- **Back up and restore records.** Export Work records, approvals, submitted contents, and settings. Backups include the file contents Colvia kept before changes and at submission, so store them as you would your project data. Back up project files separately. When restoring Colvia records, check both the Work and its retained contents. [Back up and restore records](manual/en/foundation-preview.md#back-up-and-restore-records)
-- **Move a project folder.** After moving a folder on the same local volume, ask your agent, “I moved this project folder. Help me continue with its existing Colvia records.” Review the old and new paths in the preview. Once Colvia verifies it is the same folder, approve updating the connection. See the guide for verified environments and connection requirements. [Moving a folder and keeping its records](manual/en/foundation-preview.md#continue-after-moving-a-project-folder)
+- **Put an accepted result into Git.** Colvia keeps the submission you accepted, so you can compare it with your current files later without making a work-in-progress (WIP) commit. Review the changes to commit and the current staging area, then approve the integration separately. Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result. [Put an accepted result into Git](manual/en/git.md#git-integration)
+- **Back up and restore records.** Export Work records, approvals, submitted contents, and settings. Backups include the file contents Colvia kept before changes and at submission, so store them as you would your project data. Back up project files separately. When restoring Colvia records, check both the Work and its retained contents. [Back up and restore records](manual/en/records.md#backup)
+- **Move a project folder.** After moving a folder on the same local volume, ask your agent, “I moved this project folder. Help me continue with its existing Colvia records.” Review the old and new paths in the preview. Once Colvia verifies it is the same folder, approve updating the connection. See the guide for verified environments and connection requirements. [Moving a folder and keeping its records](manual/en/records.md#move)
 
 ## Open a result from a notification
 
@@ -98,7 +98,7 @@ The agent can compare current files with the accepted submission and show which 
 <picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/notify-en-dark.png"><img src="manual/assets/gallery/notify-en-light.png" width="360" alt="Open a Work submitted for review from a notification or from the project records."></picture>
 </p>
 
-Set up Colvia notifications and allow them in your operating system. Where notifications are supported, click one to open the Work for review. You decide whether to accept it after reviewing it. If you miss a notification or it doesn’t open the result, ask in that project, “Is anything waiting for my review?” [Set up notifications](manual/en/foundation-preview.md#set-up-notifications)
+Set up Colvia notifications and allow them in your operating system. Where notifications are supported, click one to open the Work for review. You decide whether to accept it after reviewing it. If you miss a notification or it doesn’t open the result, ask in that project, “Is anything waiting for my review?” [Set up notifications](manual/en/maintenance.md#notifications)
 
 To stop new notifications, ask your agent, “Turn off Colvia notifications for this account.” The installed manager uses `notice-disable`. You can still check for results to review in the project chat.
 
@@ -119,7 +119,7 @@ Split a larger task into child Works in the same folder to review and accept eac
 </tr>
 </table>
 
-Apply one submission at a time. Check that the destination has no other Work that is approved, in progress, or under review. You can delegate applying and accepting a specific isolated Work under the conditions in the guide. Review the combined files and checks before accepting the parent Work yourself. The guide also covers when you can resume an interrupted application. [Child Works and results from isolated folders](manual/en/foundation-preview.md#child-works-and-results-from-isolated-folders)
+Apply one submission at a time. Check that the destination has no other Work that is approved, in progress, or under review. You can delegate applying and accepting a specific isolated Work under the conditions in the guide. Review the combined files and checks before accepting the parent Work yourself. The guide also covers when you can resume an interrupted application. [Child Works and results from isolated folders](manual/en/work.md#child-works)
 
 ## Your project and its records
 
@@ -129,9 +129,9 @@ Apply one submission at a time. Check that the destination has no other Work tha
 | Codex and Claude Code | Read the project rules, propose a task, do the work, and run the checks. |
 | Colvia | Helps the agent find the project’s Work and keeps plans, approvals, submissions, and decisions on your device. |
 
-Colvia keeps plans, approvals, submissions, and decisions in the operating system’s user data folder. It puts the launcher, connection information, and guidance in the project folder.
+Colvia keeps plans, approvals, submissions, and decisions in the operating system’s user data folder. It puts the launcher, connection information, and guidance in the project folder. To see how the components and record storage fit together, read the [architecture guide](manual/en/architecture.md).
 
-To stop using Colvia in a project, ask your agent, “Show me how Colvia would disconnect this folder.” [Disconnecting the project](manual/en/foundation-preview.md#disconnect-a-project) preserves your files and Work records. If you plan to reconnect and continue the work later, [back up the records](manual/en/foundation-preview.md#back-up-and-restore-records) before disconnecting. To remove the installation and keep your records, ask your agent to show a removal preview or follow the [removal and reinstall instructions](manual/en/foundation-preview.md#remove-colvia-and-keep-your-records).
+To stop using Colvia in a project, ask your agent, “Show me how Colvia would disconnect this folder.” [Disconnecting the project](manual/en/maintenance.md#disconnect) preserves your files and Work records. If you plan to reconnect and continue the work later, [back up the records](manual/en/records.md#backup) before disconnecting. To remove the installation and keep your records, ask your agent to show a removal preview or follow the [removal and reinstall instructions](manual/en/maintenance.md#uninstall).
 
 Use the app or CLI’s permissions to control what the agent can read, write, or run. Apps and agents can edit files they have permission to change. At submission, Colvia checks changes in the files it tracks against the approved scope and stops the submission if it finds a change outside that scope. Before recording ordinary Work acceptance, Colvia compares the current files in that Work’s folder with the submission you reviewed. If the files have changed, review the changes and submit again. Review check results and any Git integration separately.
 
@@ -139,7 +139,7 @@ Messages and materials you share with an agent follow the AI service’s data ha
 
 ## Preview support
 
-The first Preview targets **macOS on Apple Silicon and Windows 11 on x64 and ARM64**, with **the Codex and Claude Code CLI and desktop apps**. Depending on the app, CLI and permission mode, you may need to grant separate access to the project and Colvia record folders. See [supported environments](manual/en/foundation-preview.md#supported-environments) for installation, update and access requirements.
+The first Preview targets **macOS on Apple Silicon and Windows 11 on x64 and ARM64**, with **the Codex and Claude Code CLI and desktop apps**. Depending on the app, CLI and permission mode, you may need to grant separate access to the project and Colvia record folders. See [supported environments](manual/en/reference.md#environments) for installation, update and access requirements.
 
 ## What we want to improve
 
@@ -147,4 +147,4 @@ The first Preview targets **macOS on Apple Silicon and Windows 11 on x64 and ARM
 - **Keep larger projects moving.** We plan to explore approving only newly discovered scope and reviewing results from several Works together. We also want to test how quickly records can be retrieved and how reliably backups restore as records grow, and to provide clearer next steps when setup or work is interrupted.
 - **Explore more ways to use Colvia.** Linux, more agents, simultaneous team editing, and automatic parallel execution are candidates for future work. Colvia’s direct invocation of agents is disabled in the first Preview. The initial focus is work in the regular Codex and Claude Code apps and CLIs.
 
-[Questions and bug reports](CONTRIBUTING.md#questions-and-bug-reports) · [Report a security issue privately](CONTRIBUTING.md#report-a-security-issue-privately) · [Contributing](CONTRIBUTING.md) · [Apache License 2.0](LICENSE)
+[When something goes wrong](manual/en/reference.md#problems) · [Questions and bug reports](CONTRIBUTING.md#questions-and-bug-reports) · [Report a security issue privately](SECURITY.md#english) · [Contributing](CONTRIBUTING.md) · [Apache License 2.0](LICENSE)

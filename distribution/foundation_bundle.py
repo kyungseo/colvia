@@ -15,14 +15,17 @@ from colvia.updates.slots import supported_python_version
 from colvia.storage.sqlite import runtime_capabilities,_token
 
 
+GUIDE_PAGES=('overview','install','tutorial','work','git','records','maintenance','architecture','reference')
+
+
 def guide_sources(source):
     """Map foundation guides to installed destinations; never reuse the legacy index."""
     source=Path(source)
     return {'README.md':source/'distribution/foundation-guides/README.md',
             'manual/en/README.md':source/'distribution/foundation-guides/en.md',
             'manual/ko/README.md':source/'distribution/foundation-guides/ko.md',
-            'manual/en/foundation-preview.md':source/'manual/en/foundation-preview.md',
-            'manual/ko/foundation-preview.md':source/'manual/ko/foundation-preview.md'}
+            **{f'manual/{language}/{page}.md':source/'manual'/language/f'{page}.md'
+               for language in ('en','ko') for page in GUIDE_PAGES}}
 
 
 def wrapper(module):

@@ -61,6 +61,12 @@ class BundleTests(unittest.TestCase):
     def test_foundation_guides_resolve_inside_the_prepared_archive(self):
         import posixpath,re
         from urllib.parse import unquote,urlsplit
+        allowed_install_links = {
+            'https://colvia.github.io/downloads/',
+            'https://colvia.github.io/downloads/preview/macos-arm64/install.sh',
+            'https://colvia.github.io/downloads/preview/windows-x64/install.ps1',
+            'https://colvia.github.io/downloads/preview/windows-arm64/install.ps1',
+        }
         self.kw['guides']=bundle.guide_sources(self.kw['source'])
         guides={**self.kw['guides'],
                 'adapters/colvia-work/SKILL.md':self.kw['source']/'adapters/foundation-work/SKILL.md'}
@@ -71,6 +77,8 @@ class BundleTests(unittest.TestCase):
             for name,source in guides.items():
                 raw=archive.read(name)
                 self.assertEqual(source.read_bytes(),raw,name)
+                unexpected_controls = {byte for byte in raw if (byte < 32 and byte not in (9, 10, 13)) or byte == 127}
+                self.assertFalse(unexpected_controls, (name, unexpected_controls))
                 self.assertEqual(hashlib.sha256(raw).hexdigest(),inventory[name]['sha256'],name)
                 # Only inspect prose links, not examples inside fenced blocks.
                 body=re.sub(r'^```[^\n]*\n.*?^```[^\n]*$', '', raw.decode('utf-8'), flags=re.M|re.S)
@@ -78,7 +86,10 @@ class BundleTests(unittest.TestCase):
                 for link in re.findall(r'\[[^\]]*\]\(([^)]+)\)|href="([^"]+)"',body):
                     link=next(value for value in link if value)
                     url=urlsplit(link)
-                    self.assertFalse(url.scheme or url.netloc or url.path.startswith('/'),(name,link))
+                    if url.scheme or url.netloc:
+                        self.assertIn(link, allowed_install_links, (name, link))
+                        continue
+                    self.assertFalse(url.path.startswith('/'), (name, link))
                     target=posixpath.normpath(posixpath.join(posixpath.dirname(name),unquote(url.path))) if url.path else name
                     self.assertIn(target,names,(name,link))
                     if url.fragment:

@@ -2,7 +2,7 @@
 
 [User guide](README.md)
 
-Keep team instructions separate from files managed by Colvia. The notes below describe an earlier installation. For Colvia Preview, see [remove the installation and keep your records](foundation-preview.md#remove-colvia-and-keep-your-records) or [disconnect an individual project](foundation-preview.md#disconnect-a-project).
+Keep team instructions separate from files managed by Colvia. The notes below describe an earlier installation. For Colvia Preview, see [remove the installation and keep your records](../maintenance.md#uninstall) or [disconnect an individual project](../maintenance.md#disconnect).
 
 ## 1. Identify Who Owns Each File
 
@@ -22,7 +22,7 @@ First check the existing rule for this situation. Extend its relevant section if
 
 For a CLI project, a proposed rule might say: when a CLI option changes, include the usage page and affected examples in the authorized scope, then report which commands and checks changed. The exact page and checks come from that project's code and documentation. This example does not mandate CLI checks for unrelated projects.
 
-Show the proposed rule and entry-pointer diff to the Owner. Follow [Check Before Writing](../../docs/REFERENCE.md#check-before-writing) before applying it: a required document reference or submitted result can require a new acceptance or supported rework first. Record the outcome in the existing Work narrative when authorized; do not create a second progress log.
+Show the proposed rule and entry-pointer diff to the Owner. Follow [Check Before Writing](../../../docs/REFERENCE.md#check-before-writing) before applying it: a required document reference or submitted result can require a new acceptance or supported rework first. Record the outcome in the existing Work narrative when authorized; do not create a second progress log.
 
 ## 3. Adapt The Agent's Instructions
 
@@ -56,9 +56,9 @@ Treat runtime installation and local rule edits as separate changes requiring th
 <details>
 <summary>Historical transition — use only for the matching older installation</summary>
 
-The following two paragraphs preserve the historical checkout-1→entry-1 procedure for matching retained source. For current continuation-1, use [current transition and recovery](../../docs/OPERATIONS.md#continuation-1). It admits only the named exact delegation-1 predecessor, uses paired schema5 lifecycle records and preserves continuation truth. Valid pending continuation blocks ordinary update/detach; invalid continuation also blocks repair. Exact active repair has only the stated valid-pending exception.
+The following two paragraphs preserve the historical checkout-1→entry-1 procedure for matching retained source. For current continuation-1, use [current transition and recovery](../../../docs/OPERATIONS.md#continuation-1). It admits only the named exact delegation-1 predecessor, uses paired schema5 lifecycle records and preserves continuation truth. Valid pending continuation blocks ordinary update/detach; invalid continuation also blocks repair. Exact active repair has only the stated valid-pending exception.
 
-For that historical checkout-1→entry-1 transition, only the exact allowlisted predecessor is supported. Stop cooperating writers and retain exact old/new sources, original request/token and restoration-verified external recovery material before applying. S1, the first durable switch receipt, is one-way: no rollback to checkout-1 or earlier, even before new records exist. Local/parent manifest and captured-child reference checks can block admission; old worker results need separate Git approval, explicit same-intent worker rebind and resubmission. Runtime does not edit project entry pointers or perform Git actions. See [Entry-1 transition](../../docs/OPERATIONS.md#entry-1-transition).
+For that historical checkout-1→entry-1 transition, only the exact allowlisted predecessor is supported. Stop cooperating writers and retain exact old/new sources, original request/token and restoration-verified external recovery material before applying. S1, the first durable switch receipt, is one-way: no rollback to checkout-1 or earlier, even before new records exist. Local/parent manifest and captured-child reference checks can block admission; old worker results need separate Git approval, explicit same-intent worker rebind and resubmission. Runtime does not edit project entry pointers or perform Git actions. See [Entry-1 transition](../../../docs/OPERATIONS.md#entry-1-transition).
 
 Torn first receipt/S2 files and unsupported O-plus-binding.next prefixes may have no supported product recovery; preserve them and obtain separate external recovery/disposition approval. OLD pending init/repair/detach requires the matching retained OLD source and original request, not a new entry-1 request. A scoped retired `hv2` occupant is preserved: otherwise-valid live diagnostics report conflict/12 and lifecycle calls refuse65; after schema-3 detach loses its binding, source diagnostics instead use degraded/10 with the collision error. Neither a confirmation display nor a healthy current status certifies historical comparison or earlier synchronization. That historical detach uses paired schema3; paired1/2 history remains readable but its recovery belongs to matching OLD source.
 
@@ -66,7 +66,7 @@ Torn first receipt/S2 files and unsupported O-plus-binding.next prefixes may hav
 
 ## 5. Remove Colvia And Finish Project Entry Cleanup
 
-The exact command and recovery contract is in [Operations](../../docs/OPERATIONS.md#detach). In the current development candidate, completed detach does not support reinstallation over retained authority or an attach operation. Decide before approving removal how to continue project work without Colvia and read the retained history; do not delete history to make installation possible.
+The exact command and recovery contract is in [Operations](../../../docs/OPERATIONS.md#detach). In the current development candidate, completed detach does not support reinstallation over retained authority or an attach operation. Decide before approving removal how to continue project work without Colvia and read the retained history; do not delete history to make installation possible.
 
 1. **Prepare the exit.** Identify the current installation and pending Work, intent, continuation or lifecycle operations; resolve those operations through their supported paths. Before approval, decide how unfinished Work and results awaiting a decision will be handled: detach does not block every unfinished Work state. Identify only the affected entry pointers, local rules, tool-specific instructions and hooks that call Colvia, and propose what will survive or be replaced. While the runtime is available, use Check Before Writing to trace whether retained records reference the entry and rule files to be edited in step 5, and include that finding in the proposed edits. Review project-instruction edits separately and complete any authorized pre-detach edits under Check Before Writing before preparing the request; leave removal of `./colvia view` pointers until step 5. Secure compatible independent source and useful manuals outside the target before applying detach; retain required historical/reference bytes. Do not run an all-repository cleanup.
 2. **Review the preview.** Have the agent prepare the exact detach request and explain its removal/preservation list. Keep the original request and confirmation token outside the target before applying it. As a precaution, defer further project edits until completed detach is verified, including during partial recovery; publishing their Work records can change the truth bound by the request. If observed state changes before removal begins, stop and prepare the appropriate new request for approval.
@@ -79,7 +79,7 @@ Project entries need to distinguish an expected completed detach from an unexpec
 
 ## Basis And Limits
 
-This guide explains the current [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules), [project-entry preparation](../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach contract](../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach) and [retained-history operation](../../docs/MANUAL-OPERATION.md). It is a repository-only guide, outside the installed payload. Before detach, use `./colvia view` to locate and check the verified documents for the actual target.
+This guide explains the current [Repository-Owned Rules](../../../docs/REFERENCE.md#repository-owned-rules), [project-entry preparation](../../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach contract](../../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach) and [retained-history operation](../../../docs/MANUAL-OPERATION.md). It is a repository-only guide, outside the installed payload. Before detach, use `./colvia view` to locate and check the verified documents for the actual target.
 
 The [environments and limits](work-guide.md#limits-en) describe this Preview’s scope.
 

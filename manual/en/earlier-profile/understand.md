@@ -4,7 +4,7 @@
 
 If the conclusion looks different when you open yesterday’s report, start with the draft you accepted. Colvia keeps the decision tied to that draft.
 
-![A week of reviewing and revising an inquiry report](../assets/work-across-chats.en.svg)
+![A week of reviewing and revising an inquiry report](../../assets/work-across-chats.en.svg)
 
 “Check the counts. Leave the choice of improvements to me.” When the report arrives, you can see which figures were checked and which decision is still yours.
 
