@@ -1,74 +1,74 @@
 # Development Index
 
-- [개발 기록과 문서 검증 절차 보강](CHORE-20261117-003-development-record-and-documentation-checkpoints.md) — DR-0003 조항 개정 시행과 사례 대조.
+- [Development records and documentation checkpoints](CHORE-20261117-003-development-record-and-documentation-checkpoints.md) — Implementation of the DR-0003 amendment and checks against representative cases.
 
-- [공개·설치 안내와 저장소 진입점 현행화](CHORE-20261117-002-manual-and-entry-alignment.md) — 실행 범위와 검증 기록.
+- [Public guides, installation instructions, and repository entry points](CHORE-20261117-002-manual-and-entry-alignment.md) — Scope and verification record.
 
-- [새 기록 기반과 공개 실행환경](FEAT-20261106-002-record-foundation.md) — 설계 보정·구현 준비.
+- [Record foundation and public runtime](FEAT-20261106-002-record-foundation.md) — Design revisions and implementation preparation.
 - [Document and artifact placement](document-ownership.md) — existing source, installed-guide and private-evidence rules.
 - [Product evidence and retained follow-ups](product-evidence-and-followups.md) — contracts, observed limits and the small public-safe intake from private trials.
-- [기록을 보존하는 설치본 제거·재설치](record-preserving-uninstall-followup.md#첫-preview-반영--2026-11-17) — 첫 Preview에 반영. 같은 계정에서 설치 파일을 제거하고 기존 Work와 제출본을 유지해 재설치한다.
+- [Record-preserving uninstall and reinstall](record-preserving-uninstall-followup.md#첫-preview-반영--2026-11-17) — Included in the first Preview. Remove the installed files and reinstall under the same account with existing Work and submissions intact.
 
-- [사용자 문서 정리와 배포 후보 준비](CHORE-20261105-004-user-doc-tone-and-candidate.md) — 진행 중. 사용자 안내·작성 기준·후보 구성과 일반 사용자 검증 준비.
+- [User documentation and release candidate preparation](CHORE-20261105-004-user-doc-tone-and-candidate.md) — In progress. User guidance, writing conventions, candidate assembly, and preparation for user testing.
 
-- [브랜드 자산과 프로젝트 진입 안내](CHORE-20261105-003-brand-and-agent-entry.md) — 진행 중. 확정 심벌·자산·README·플랫폼 패키징과 일반 사용자 진입 안내.
+- [Brand assets and project entry guidance](CHORE-20261105-003-brand-and-agent-entry.md) — In progress. Approved branding, assets, README, platform packaging, and guidance for new users.
 
 - [macOS receiver and ordinary Work journey](PATCH-20261105-001-receiver-and-journey.md) — accepted with recorded limits.
 - [Host receiver and Codex confirmation](CHORE-20261105-002-host-receiver-confirmation.md) — accepted and complete (2026-11-05): same-candidate Codex/Claude notification clicks, with recorded limits; public-release sequence recorded in the Work.
 
-- [대량 파일 변경의 제출·수락과 저장 한도](PATCH-20261104-005-large-ordinary-work.md) · Owner 수락·완료(2026-11-04)
+- [Submission and acceptance of large file changes and storage limits](PATCH-20261104-005-large-ordinary-work.md) — Completed with Owner acceptance on 2026-11-04.
 
-- [중단된 수정 요청과 이전 알림 · 12개 기능 점검](PATCH-20261104-004-recovery-and-notification-history.md) · Owner 수락·완료(2026-11-04)
+- [Interrupted revision requests and notification history with 12 capability checks](PATCH-20261104-004-recovery-and-notification-history.md) — Completed with Owner acceptance on 2026-11-04.
 
-- [일반 작업의 보완과 결과 알림](PATCH-20261104-003-ordinary-revision-and-delivery.md) · Owner 수락·완료(2026-11-04)
+- [Ordinary Work revisions and result notifications](PATCH-20261104-003-ordinary-revision-and-delivery.md) — Completed with Owner acceptance on 2026-11-04.
 
-- [첫 적용과 일반 작업의 검토](FEAT-20261104-002-first-use-and-ordinary-work.md) · Owner 수락·완료(2026-11-04)
+- [First use and ordinary Work review](FEAT-20261104-002-first-use-and-ordinary-work.md) — Completed with Owner acceptance on 2026-11-04.
 
 [User documentation writing and navigation](user-documentation.md)
 
-- [승인한 작업의 수정본 검토](FEAT-20261104-001-approved-work-review.md) · Owner 수락·완료(2026-11-04). 깨끗한 VM에서의 대화 검증은 공개 후보 단계에 진행한다.
+- [Reviewing revisions of approved Work](FEAT-20261104-001-approved-work-review.md) — Completed with Owner acceptance on 2026-11-04. A conversation check in a clean VM is planned for the public candidate.
 
-[첫 Preview의 플랫폼별 지원 결정과 사용자 여정](preview-release-order-and-user-journey.md) · 동시 준비 방향 선택, 시점 개정 문안 수락과 플랫폼별 검증 대기.
+[Platform support and user journey for the first Preview](preview-release-order-and-user-journey.md) — Concurrent preparation selected and revised timing accepted. Per-platform verification pending.
 
-- [macOS 도입 프로젝트의 준비된 결과 제출과 조회](CHORE-20261103-004-macos-prepared-result-observation.md) — 수신함·Work 상세의 사용자 조회와 개별 알림을 연결할 수 있는 범위를 구분한다.
+- [Submitting and viewing prepared results in a macOS adopter project](CHORE-20261103-004-macos-prepared-result-observation.md) — Defines what users can view in the inbox and Work details and when a notification can link to an individual result.
 
-- [알림에서 해당 Work 상세 열기](FEAT-20261103-007-notification-work-detail.md#owner-수락과-완료) — 개발 범위 수락·완료(2026-11-03). 격리 macOS·Windows 11 ARM64에서 해당 제출 열기와 Windows 등록 복구를 확인했다. 공개 전에는 네이티브 x64와 Codex·Claude Code별 실제 클릭을 확인한다.
+- [Opening the associated Work from a notification](FEAT-20261103-007-notification-work-detail.md#owner-수락과-완료) — Owner accepted and completed the development scope on 2026-11-03. Verified opening the submission in isolated macOS and Windows 11 ARM64 environments and checked Windows registration recovery. The public-readiness scope calls for native x64 and actual notification clicks with Codex and Claude Code.
 
-- [Windows 11 x64 개발 후보 제작과 ARM64 대조](FEAT-20261103-006-windows-x64-development-candidate.md) — 개발 측 제작·검사 완료(Owner 수락). 다음 단계는 네이티브 x64 확인이다.
+- [Windows 11 x64 development candidate and ARM64 comparison](FEAT-20261103-006-windows-x64-development-candidate.md) — Owner accepted the completed development build and checks. Native x64 verification is the next step in this record.
 
-- [패키지별 검증 현황과 Windows 11 x64 공개 준비](CHORE-20261103-003-qualification-alignment.md) — 완료(Owner 수락, 2026-11-03). macOS arm64에서 PR #46의 비공개 설치를 확인했다. 고정 패키지 #42와 #46 각각에서 [공식 직접 실행의 정상 완료와 읽기 후 외부 취소](../OFFICIAL-EXECUTION.md)를 확인했다. Windows 11 x64 네이티브 검증은 공개 준비 단계에 남아 있다.
+- [Package verification and Windows 11 x64 public readiness](CHORE-20261103-003-qualification-alignment.md) — Completed with Owner acceptance on 2026-11-03. Verified private installation of PR #46 on macOS ARM64. Verified [normal official direct execution and external cancellation after a read](../OFFICIAL-EXECUTION.md) on both pinned packages #42 and #46. Native Windows 11 x64 verification remains in the public-readiness scope of this record.
 
-- [단일 Work 맡기기 설치본 안내 정비](CHORE-20261103-002-single-work-installed-guidance.md) — 완료(Owner 수락, 2026-11-03).
+- [Installed guidance for assigning a single Work](CHORE-20261103-002-single-work-installed-guidance.md) — Completed with Owner acceptance on 2026-11-03.
 
-- [단일 Work 맡기기와 로컬 결과 통지](FEAT-20261103-001-single-work-local-delivery.md) — 완료(Owner 수락, 2026-11-03). macOS·지정 Windows ARM64의 단일 Work 수신함과 로컬 알림 호출. [선행 계획](PATCH-20261102-005-view-decision-summary.md#단일-work-사용자-흐름과-재검토-조건)
+- [Assigning a single Work and receiving a local result notification](FEAT-20261103-001-single-work-local-delivery.md) — Completed with Owner acceptance on 2026-11-03. Single-Work inbox and local notification invocation on macOS and the selected Windows ARM64 installation. [Prerequisite plan](PATCH-20261102-005-view-decision-summary.md#단일-work-사용자-흐름과-재검토-조건)
 
-- [Windows 기본 지원과 단일 Work 온보딩](FEAT-20261102-006-windows-basic-distribution.md#owner-수락과-완료-2026-11-03) — 완료(Owner 수락, 2026-11-03). 지정 ARM64 비공개 기본 흐름과 최종 후보의 요청 저장 경로 8단계.
+- [Windows baseline support and single-Work onboarding](FEAT-20261102-006-windows-basic-distribution.md#owner-수락과-완료-2026-11-03) — Completed with Owner acceptance on 2026-11-03. Private baseline flow on the selected ARM64 setup and the eight-step request-saving path on the final candidate.
 
-- [첫 화면의 판단 안내와 단일 Work 후속 순서](PATCH-20261102-005-view-decision-summary.md) — 완료(Owner 수락, 2026-11-02).
+- [First-screen decision guidance and single-Work follow-up](PATCH-20261102-005-view-decision-summary.md) — Completed with Owner acceptance on 2026-11-02.
 
-- [공식 실행 경고 처리와 읽기 후 취소의 제품 소스 반영](PATCH-20261102-004-official-runtime-source-port.md) — 완료(Owner 수락, 2026-11-02). 이후 같은 PR #42 고정 패키지에서 두 공식 실행 사례를 확인했다.
+- [Porting official runtime warning handling and cancellation after a read to product source](PATCH-20261102-004-official-runtime-source-port.md) — Completed with Owner acceptance on 2026-11-02. Both official execution cases were subsequently verified on the same pinned PR #42 package.
 
-- 공식 실행기 조합 확인 — 완료(Owner 수락, 2026-11-02). [두 격리 후보의 수락 범위](CHORE-20261102-003-official-runtime-confirmation.md#owner-acceptance-and-work-completion).
+- Official runtime combination checks — Completed with Owner acceptance on 2026-11-02. [Accepted scope for the two isolated candidates](CHORE-20261102-003-official-runtime-confirmation.md#owner-acceptance-and-work-completion).
 
-- 공통 실행·운영 진단과 후속 연결 — 완료(Owner 수락, 2026-11-02): [승인 범위·검증·리뷰](FEAT-20261102-002-common-execution-operations.md).
+- Common execution, operational diagnostics, and follow-up links — Completed with Owner acceptance on 2026-11-02. [Approved scope, checks, and review](FEAT-20261102-002-common-execution-operations.md).
 
-- macOS 배포·관리·온보딩 — 완료(Owner 수락, 2026-11-02): [수락 범위와 남은 자격 조건](FEAT-20261101-003-macos-distribution-onboarding.md#owner-결과-수락과-source-완료--2026-11-02).
+- macOS distribution, management, and onboarding — Completed with Owner acceptance on 2026-11-02. [Accepted scope and remaining qualification conditions](FEAT-20261101-003-macos-distribution-onboarding.md#owner-결과-수락과-source-완료--2026-11-02).
 
-- 작업 중 안내와 View 요약 — 완료(Owner 수락, 2026-11-01): [수락 범위·한계·실사용 후속 보완](FEAT-20261031-001-guidance-and-view-summary.md).
+- In-progress guidance and View summary — Completed with Owner acceptance on 2026-11-01. [Accepted scope, limits, and follow-up for actual use](FEAT-20261031-001-guidance-and-view-summary.md).
 
-- 완료 실행 이력의 Git 권한 호환성: [Owner 결과 수락 및 source 완료](PATCH-20261030-003-completed-history-permissions.md#owner-result-acceptance-and-source-completion--2026-10-30).
+- Git permission compatibility for completed run history — [Owner acceptance and source completion](PATCH-20261030-003-completed-history-permissions.md#owner-result-acceptance-and-source-completion--2026-10-30).
 
-- 공식 링크 metadata native 검증: [실행 근거와 한계](CHORE-20261030-001-official-link-native-validation.md).
+- Native verification of official link metadata — [Execution evidence and limits](CHORE-20261030-001-official-link-native-validation.md).
 
-- 공식 adapter 제품 연결: [승인 범위와 진행](FEAT-20261029-002-official-adapter-product.md).
+- Official adapter integration — [Approved scope and progress](FEAT-20261029-002-official-adapter-product.md).
 
 ## Current Task — 2026-10-29
 
-- 공식 CLI 정책과 합성 U2 검증: [진행·결과·한계](PATCH-20261029-001-official-runtime-policy.md). 합성 source-only 결과는 Owner가 수락했으며 제품 연결은 후속 작업이다.
+- Official CLI policy and synthetic U2 verification — [Progress, results, and limits](PATCH-20261029-001-official-runtime-policy.md). The Owner accepted the synthetic source-only results. Product integration remains a follow-up.
 
 ## Current Task — 2026-10-28
 
-- 단일 문서 편집 연결: [Owner 수락·source 완료와 한계](FEAT-20261028-001-single-document-edit.md#final-owner-acceptance-and-source-completion--2026-10-28). 다른 도입 프로젝트의 실제 적용과 Git 통합은 별도다.
+- Single-document editing integration — [Owner acceptance, source completion, and limits](FEAT-20261028-001-single-document-edit.md#final-owner-acceptance-and-source-completion--2026-10-28). Application to another adopter project and Git integration have separate scopes.
 
 ## Current Task And Closeout Links — 2026-10-27
 
@@ -290,23 +290,25 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
-- [Git 반영 전 자격증명 차단](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — 첫 Preview 이후 후속 0순위. 선택한 제출본과 커밋 메시지에서 비밀번호·API 키 등을 검사해 Git 객체 생성 전에 차단한다. 첫 Preview 뒤 별도 범위 선택과 검증을 거쳐 착수한다.
+- [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0, after the first Preview. Check the selected submission and commit message for passwords, API keys, and similar credentials before creating Git objects. Select the scope and verification separately before starting.
 
-- [일반 폴더를 Git 프로젝트로 전환](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — 첫 Preview 이후 P1. 연결된 일반 폴더를 같은 Colvia 프로젝트로 유지하면서 Git을 사용한다.
+- [Convert a connected plain folder to a Git project](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — P1, after the first Preview. Enable Git while retaining the existing Colvia project.
 
-- [새 대화의 Colvia 시작 안내 경량화](product-evidence-and-followups.md#p1-short-guide-at-the-start-of-a-new-chat) — P1. 새 대화에서는 짧은 시작 안내를 읽고, 제출·복구 절차는 해당 단계에서 찾아 읽는다.
+- [Shorter Colvia startup guidance in new chats](product-evidence-and-followups.md#p1-short-guide-at-the-start-of-a-new-chat) — P1. Read a short guide at entry and load the submission or recovery procedure when needed.
 
-- [같은 Work에서 수정 범위 추가](product-evidence-and-followups.md#p1-add-paths-to-the-same-work) — P1. 조사 중 새로 드러난 파일과 검사만 추가로 승인받아 같은 Work에서 이어간다.
+- [Add paths to the same Work](product-evidence-and-followups.md#p1-add-paths-to-the-same-work) — P1. When investigation reveals more files to edit, approve the added paths and checks and continue the same Work.
 
-- [제출 전 진행 메모와 새 대화 재개](product-evidence-and-followups.md#p1-record-progress-before-submission) — P1. Work에 한 일과 다음 행동을 남겨 첫 제출 전에도 새 대화에서 이어간다.
+- [Pre-submission progress notes and resuming in a new chat](product-evidence-and-followups.md#p1-record-progress-before-submission) — P1. Record completed steps and the next action so a new chat can resume before the first submission.
 
-- [Work 일시중단·종료와 대체 연결](product-evidence-and-followups.md#p1-pause-end-or-replace-a-work) — P1. 중단 이유와 대체 Work를 기록하고 기존 Work가 진행 중으로 남는 문제를 해결한다.
+- [Pause, end, or replace a Work](product-evidence-and-followups.md#p1-pause-end-or-replace-a-work) — P1. Record why a Work stopped and link its replacement so the previous Work can leave the active list.
 
-- [후보 우선순위·프로젝트 현황·의존 관계](product-evidence-and-followups.md#p2-candidate-priority-project-status-and-dependencies) — P2. 기존 후보·Work 기록에서 우선순위와 다음 행동을 조회하고 실제 선행 관계를 표시한다.
+- [Candidate priority, project status, and dependencies](product-evidence-and-followups.md#p2-candidate-priority-project-status-and-dependencies) — P2. Show priorities and next actions from existing candidate and Work records and identify genuine dependencies.
 
-- [마일스톤](product-evidence-and-followups.md#p3-milestones-when-needed) — 조건부 P3. 기존 상·하위 Work로 해결되지 않는 묶음·일정 확인 수요가 반복될 때 검토한다.
+- [Complete removal across connected projects](record-preserving-uninstall-followup.md#p2-여러-프로젝트를-포함한-완전-제거--2026-11-17) — P2. Let a user review and confirm removal of this account's project connections, installation, Colvia records, and recovery files in one operation.
 
-- [이전 세대 코드 정리](product-evidence-and-followups.md#p3-retire-earlier-generation-code) — P3. 현행 배포 경로의 의존성을 확인한 뒤 남아 있는 `src/hv2ref`와 `.hrn` 세대의 코드·조립 경로를 정리한다.
+- [Milestones](product-evidence-and-followups.md#p3-milestones-when-needed) — P3 (conditional). Revisit when users repeatedly need to group Works or track shared dates beyond the existing parent-child relationship.
+
+- [Retire earlier-generation code](product-evidence-and-followups.md#p3-retire-earlier-generation-code) — P3. Check current distribution dependencies before removing obsolete code and build paths from `src/hv2ref` and the `.hrn` generation.
 
 - [Natural project entry without procedural prompts](FEAT-20261106-002-record-foundation.md#pre-publication-entry-and-connection-conditions--2026-11-10) — Pre-publication guide/behavior condition. Reuse existing context and decisions; qualify only missing first-request differences. No mandatory onboarding phase.
 - [Independent project overlap protection](FEAT-20261106-002-record-foundation.md#pre-publication-entry-and-connection-conditions--2026-11-10) — Pre-publication connection guard. Demonstrate both containment orders, recheck before apply, preserve sibling and same-project worktree paths. Separate from the current Windows storage/output correction.
@@ -314,20 +316,20 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - Future platforms and agents: Linux; agents using local models; Antigravity; other project-capable AI tools. Preserve the same Work/acceptance history through narrow platform and agent contracts. Deferred until a separate implementation selection and actual integration qualification. [Owner planning authorization and conditions](FEAT-20261106-002-record-foundation.md#후속-후보-연결).
 
-- [알림을 눌러 해당 Work 결과 상세 열기](CHORE-20261103-005-notification-guidance.md#첫-preview-확인--2026-11-17) — 플랫폼별 실제 클릭 근거와 첫 Preview의 Windows 공통 경로 확인 결과를 남긴다. 알림으로 열기 어려우면 같은 프로젝트 대화에서 결과를 찾을 수 있다.
+- [Open the associated Work result from a notification](CHORE-20261103-005-notification-guidance.md#첫-preview-확인--2026-11-17) — Records per-platform click evidence and results for the shared Windows path in the first Preview. Find the result in a chat for the same project if the notification cannot open it.
 
-- [공식 실행 보정의 제품 소스 반영](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — 2026-11-02 제품 소스 반영과 오프라인 검증 수락·완료. [수락 범위와 커밋 순서](PATCH-20261102-004-official-runtime-source-port.md#owner-판단과-보존).
+- [Port official runtime fixes to product source](CHORE-20261102-003-official-runtime-confirmation.md#product-source-follow-up-proposal) — The product source port and offline verification were accepted and completed on 2026-11-02. [Accepted scope and commit order](PATCH-20261102-004-official-runtime-source-port.md#owner-판단과-보존).
 
-- [같은 작업 재개와 중단 후 안내](same-task-resume-and-interruption-plan.md#owner-계획-요청과-시작-기준) — 선택된 범위는 2026-11-02 Owner의 제한 수락 후 Done. [완료·수락 기록](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02)을 따른다.
-- [Guardrails 통합 후보·설치 호환 확인](PATCH-20261101-002-local-payload-gates.md#owner-planning-authorization--2026-11-01) — P0, 해당 후보 설치 전. S1b 제한 수락과 통합 실행 승인 후 정확한 window·상태/View·lifecycle/old writer를 확인한다. 통합 범위는 [macOS 구현 Work](FEAT-20261101-003-macos-distribution-onboarding.md)에서 선택; 나머지 후보는 미선택.
-- [Guardrails 원천 접근·native 관측 강화](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, profile/OS/runtime·보호 주장 확대 때 재개. 실제 oracle/rlimit·준비 근거와 양성/음성 대조를 보강하며 기본 온보딩의 일괄 선행조건은 아니다.
-- [Guardrails provider 전송·독립 승인 경계](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, 실제 전송 경로 확대 또는 강한 보호 요구 때 재개. 추가 문맥/수신 관측과 Host/사람 승인 경계를 별도로 확보한다.
-- [Guardrails 종료·취소 경합·crash 복구](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 진단 혼란·경합/crash 요구 또는 재현 결함 때 재개; 안전 결함이면 P1로 재판단. 효과/종료와 실제 복원 근거를 분리한다.
-- [Guardrails 탐지·정상 입력 품질](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 정상 입력 차단·새 비밀 형식 요구 때 재개. 미탐/오탐·가짜 키/인젝션과 정상 대조를 보강하며 원천 접근 권한과 구분한다.
-- [Guardrails 기존 기록·사고 대응](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1, 대상 repo·열람/전송 범위 지정 또는 사고 때 별도 승인으로 재개. 잔존과 수신·키 회수/교체를 구분하며 삭제/이력 재작성은 자동 수행하지 않는다.
-- [Guardrails 일반 개발·민감자료 경로](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2, 해당 작업/위협 모델을 선택할 때 재개. 원래 요구의 잔여이며 합성 근거부터 접근·전송·복원 경계를 정한다.
+- [Resume the same Work and recover after interruption](same-task-resume-and-interruption-plan.md#owner-계획-요청과-시작-기준) — The selected scope was completed on 2026-11-02 after the Owner accepted the specified limits. See the [completion and acceptance record](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02).
+- [Guardrails integration candidate and installation compatibility](PATCH-20261101-002-local-payload-gates.md#owner-planning-authorization--2026-11-01) — P0, before installing the candidate. After limited S1b acceptance and integration approval, check the exact compatibility window, state and View, lifecycle, and old-writer behavior. The [macOS implementation Work](FEAT-20261101-003-macos-distribution-onboarding.md) selected the integration scope. The other candidates remain unselected.
+- [Guardrails source access and native observability](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1. Revisit if profile, OS, runtime, or protection claims expand. Strengthen the actual oracle, resource-limit and setup evidence, and positive and negative checks. Keep the basic onboarding path independent of this expansion.
+- [Guardrails provider transmission and independent approval](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1. Revisit when actual transmission paths expand or stronger protection is needed. Obtain evidence for additional context and receipt and verify the Host and human approval boundaries separately.
+- [Guardrails termination, cancellation races, and crash recovery](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2. Revisit when diagnostics are confusing, race or crash recovery is needed, or a defect is reproduced. Reassess a safety defect as P1. Distinguish effects and process termination from evidence of actual recovery.
+- [Guardrails detection and legitimate-input handling](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2. Revisit when legitimate input is blocked or a new secret format needs coverage. Strengthen false-positive, false-negative, fake-key, injection, and legitimate-input checks separately from source access permissions.
+- [Guardrails existing records and incident response](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P1. Revisit with separate approval when the repository and viewing or transmission scope are specified or an incident occurs. Distinguish retained traces, receipt, and key revocation or rotation. Deletion and history rewriting require a separate decision.
+- [Guardrails ordinary development and sensitive-data paths](PATCH-20261101-002-local-payload-gates.md#follow-up-candidates) — P2. Revisit when the applicable work and threat model are selected. For this remaining scope, start with synthetic evidence to define access, transmission, and recovery boundaries.
 
-- [Windows detach 성능 개선](windows-detach-performance-followup.md#owner-planning-authorization--2026-10-28) — 정상 완료·보존 검증과 성능을 분리한다. Windows 본 검증을 우선하고 최적화는 미선택 후속으로 보류한다. 현재 Windows 검증 결과 처분 뒤 다음 작업 선택 시 재검토하며, 사용상 지연·새 규모·안전한 완료 실패가 관측되면 앞당긴다. 본 검증의 선행 조건이 아니다.
+- [Windows project disconnect performance](windows-detach-performance-followup.md#owner-planning-authorization--2026-10-28) — Track successful completion and record preservation separately from performance. Prioritize Windows qualification. Reconsider the deferred optimization when choosing the next task after qualification results are dispositioned. Advance it if users observe delays, a new scale, or failure to finish safely.
 
 - [Delegation activation labels and local-link oracle](delegation-activation-label-and-link-oracle-plan.md#owner-planning-authorization--2026-10-18) — prepare installed delegation-1 instructions that remain accurate after separately authorized activation, and correct fenced-code false positives without weakening local-link checks. Owner requested a combined follow-up plan on 2026-10-18. Closed after [Owner result acceptance](PATCH-20261018-002-delegation-label-and-link-oracle.md#owner-result-acceptance-and-source-contract-activation--2026-10-18) and the separately authorized [exact source activation](../decisions/DR-0005-delegated-ordinary-work-acceptance.md#delegation-1-activation) on 2026-10-18. Git, release and adopter application remain on hold.
 
@@ -339,7 +341,7 @@ None created by this proposal. Allocate a plain development record ID only when 
 
 ## Authorized Development Records
 
-- [FEAT-20261102-001 — 같은 작업 재개와 중단 후 안내](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02): Done — 2026-11-02 Owner가 명시한 범위·한계를 전제로 수락. Git·설치·공개는 별도.
+- [FEAT-20261102-001 — Resume the same Work after interruption](FEAT-20261102-001-resume-interruption-view.md#owner-수락과-work-완료--2026-11-02) — Done. On 2026-11-02 the Owner accepted the specified scope and limits. Git, installation, and publication remain separate decisions.
 
 - [CHORE-20261027-001 — Public History Preparation](CHORE-20261027-001-public-history-preparation.md#owner-acceptance-and-work-done--2026-10-27): Done after Owner acceptance of R1 and its remaining review limits on 2026-10-27; Git actions remain separate.
 
@@ -368,8 +370,8 @@ None created by this proposal. Allocate a plain development record ID only when 
 
 [Binding permission technical closeout](binding-permissions-amendment.md#technical-closeout--2026-10-16) — source result, exact identities, accepted evidence and remaining limits; existing preparation and private originals remain preserved.
 
-- 공식 링크 검증 정보 연결: [승인 범위와 진행](PATCH-20261029-003-official-link-metadata.md).
+- Official link verification metadata — [Approved scope and progress](PATCH-20261029-003-official-link-metadata.md).
 
-- 공식 실행 이후 최초 설치 이력의 guard 선택 보정: [승인 범위와 진행](PATCH-20261030-002-official-guard-history.md).
+- Guard selection for first-install history after official execution — [Approved scope and progress](PATCH-20261030-002-official-guard-history.md).
 
-- [직접 시험 후 작업 흐름 보강](FEAT-20261106-001-trial-usability.md) — Active, 결과 수락 전.
+- [Workflow improvements after hands-on trials](FEAT-20261106-001-trial-usability.md) — Active, pending result acceptance.
