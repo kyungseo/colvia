@@ -1,6 +1,6 @@
 # Security And Support
 
-This document describes the earlier Continuation-1 profile and the listed historical extensions. See its [authorization and qualification](README.md#continuation-1). For the SQLite Preview, use the [current record and access guide](../manual/en/foundation-preview.md) and its [observed environments](development/product-evidence-and-followups.md#record-foundation-verification).
+This document describes the earlier Continuation-1 profile and the listed historical extensions. See its [authorization and qualification](README.md#continuation-1). For the SQLite Preview, use the [current record and access guide](../manual/en/README.md) and its [observed environments](development/product-evidence-and-followups.md#record-foundation-verification).
 
 This development candidate assumes one trusted local OS account and cooperating agents. Logical actor and acceptance-authority strings are declarations, not authentication. Confirmation tokens bind request bytes; they do not prove a human approved them. File checks and locks do not defend against an adversarial process with the same account bypassing the protocol.
 

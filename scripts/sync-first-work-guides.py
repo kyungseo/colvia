@@ -25,7 +25,7 @@ def anchor(target):
 
 
 def chapter(language):
-    source = ROOT / "manual" / language / "getting-started.md"
+    source = ROOT / "manual" / language / "earlier-profile" / "getting-started.md"
     title, navigation, body = source.read_text(encoding="utf-8").strip().split("\n\n", 2)
     if not title.startswith("# ") or not navigation.startswith("["):
         raise ValueError(f"Missing title or language navigation in {source.name}")
@@ -45,17 +45,18 @@ def chapter(language):
 
 
 def setup_chapter(language):
-    source = ROOT / "manual" / language / "project-setup.md"
+    source = ROOT / "manual" / language / "earlier-profile" / "project-setup.md"
     title, _, body = source.read_text(encoding="utf-8").strip().split("\n\n", 2)
     body = re.sub(r"\n+<!-- en_content_sha256: [0-9a-f]{64} -->\Z", "", body)
     body = body.replace("](README.md)", "](../README.md#한국어)" if language == "ko" else "](../README.md#english)")
     body = body.replace(f"](work-guide.md#limits-{language})", f"](#limits-{language})")
+    body = body.replace("](../install.md", f"](../manual/{language}/install.md")
     nav = "[한국어](#setup-ko) · English" if language == "en" else "한국어 · [English](#setup-en)"
     return f"{anchor('setup-' + language)}\n\n#{title}\n\n{nav}\n\n{body}"
 
 
 def feature_chapter(language):
-    source = ROOT / "manual" / language / "work-guide.md"
+    source = ROOT / "manual" / language / "earlier-profile" / "work-guide.md"
     title, _, body = source.read_text(encoding="utf-8").strip().split("\n\n", 2)
     body = re.sub(r"\n+<!-- en_content_sha256: [0-9a-f]{64} -->\Z", "", body)
     if language == "en":

@@ -22,7 +22,7 @@ Colvia가 작성한 코드와 문서에는 [Apache License 2.0](LICENSE)이 적�
 
 ## 첫 변경과 검사
 
-사용 흐름은 [Colvia Preview 안내](manual/ko/foundation-preview.md)에서 확인하세요.
+사용 흐름은 [Colvia Preview 안내](manual/ko/README.md)에서 확인하세요.
 
 일반 Work를 바꿨다면 저장소 루트에서 [대표 검사 한 건](CONTRIBUTING.md#make-your-first-change)을 실행하세요. 확인한 개발 환경을 재현하려면 GIL을 사용하는 CPython 3.14.7과 POSIX 셸을 사용하세요. `448b581`의 깨끗한 로컬 clone에서 macOS ARM64와 SQLite 3.54.0으로 통과했습니다. 범위 승인, 검토용 제출, 특정 결과 수락을 확인합니다. 설치본의 Python은 Colvia가 별도로 준비합니다.
 

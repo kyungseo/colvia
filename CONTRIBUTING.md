@@ -20,7 +20,7 @@ Colvia’s own code and documentation in this revision use Apache-2.0. Contribut
 
 ## Make your first change
 
-See the [Colvia Preview guide](manual/en/foundation-preview.md) for the user workflow.
+See the [Colvia Preview guide](manual/en/README.md) for the user workflow.
 
 To reproduce the verified developer setup for this representative check, use GIL-enabled CPython 3.14.7 in a POSIX shell. The check passed in a clean local clone at `448b581` on macOS ARM64 with SQLite 3.54.0. This is a single developer test; the installed product uses its own dedicated Python.
 

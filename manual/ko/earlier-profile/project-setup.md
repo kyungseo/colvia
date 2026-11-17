@@ -1,6 +1,6 @@
 # 설치·갱신·연결 해제
 
-[사용 설명서](README.md) · 이전 시험본 참고 자료 · [현재 Colvia Preview의 설치·갱신·연결 해제](foundation-preview.md)
+[사용 설명서](README.md) · 이전 시험본 참고 자료 · [현재 Colvia Preview의 설치·갱신·연결 해제](../install.md)
 
 기기의 도구를 준비한 뒤, 사용할 프로젝트마다 적용할 내용을 먼저 확인하세요.
 
@@ -14,7 +14,7 @@ Preview 패키지는 Apple silicon Mac과 Windows 11 ARM64를 대상으로 합�
 
 ### 새 폴더에서 시작하기
 
-이전 시험판은 별도로 전달한 패키지를 사용했습니다. 현재 Colvia Preview를 사용하려면 [공식 설치 페이지](https://colvia.github.io/downloads/)에서 설치하고 [현재 프로젝트 연결 안내](foundation-preview.md#설치하고-프로젝트에-적용하기)를 따르세요.
+이전 시험판은 별도로 전달한 패키지를 사용했습니다. 현재 Colvia Preview를 사용하려면 [공식 설치 페이지](https://colvia.github.io/downloads/)에서 설치하고 [현재 프로젝트 연결 안내](../install.md#connect)를 따르세요.
 
 시험용 배포 파일을 받았다면 먼저 파일 이름과 운영체제를 확인하세요. Apple silicon Mac의 터미널에서는 `shasum -a 256 "$HOME/Downloads/bootstrap.sh"`로 다운로드한 파일의 해시를 구합니다. 배포 안내에서 별도로 제공한 값과 일치하면 `/bin/sh "$HOME/Downloads/bootstrap.sh"`를 실행하세요. 어디에 무엇을 설치할지 살펴본 뒤, 미리보기에 표시된 적용 명령과 확인값을 확인한 뒤 그 명령을 실행하세요.
 
@@ -58,4 +58,4 @@ Windows 11 ARM64에서 기기 알림을 쓰고 있다면 새 관리 EXE의 확�
 
 [사용 설명서로 돌아가기](README.md)
 
-<!-- en_content_sha256: b3053aa213fb7df6007e46598df6976c2453cefc6693d6da630091f4ad1e1dde -->
+<!-- en_content_sha256: 24dd2c9a1ec889b5db1ae531157b7348628673029aa3af12992186521f7fb04e -->

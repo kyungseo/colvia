@@ -1,100 +1,157 @@
-# Operations reference
+# Supported environments and reference
 
-[User guide](README.md)
+[User guide](README.md) · [한국어](../ko/reference.md) · English
 
-Use these notes when you need exact commands or recovery procedures.
+Look up supported environments, storage locations, commands, and terms here. The procedures themselves are in each guide.
 
-[Project rules, updates and disconnection](rules-and-removal.md) · [Records and terminology](concepts.md) · [Operations](../../docs/OPERATIONS.md)
+[Supported environments](#environments) · [Files and folders](#locations) · [Command summary](#commands) · [Glossary](#glossary) · [When something goes wrong](#problems)
 
-<a id="notifications" name="notifications"></a>
+<a id="environments" name="environments"></a>
 
-## Turn on device notifications
+## Supported environments
 
-Ask your agent to enable notifications on this device. On macOS, use the verified manager’s `notice-enable` command and allow notifications when prompted. On Windows, use `notice-enable` with the matching manager. After a Windows manager update, run it again with the new executable. You can always open the project inbox. [Platform commands and click support](../../docs/REFERENCE.md#single-work-handoff-and-inbox)
+Colvia Preview targets macOS on Apple Silicon and Windows 11 on x64 and ARM64, with the Codex and Claude Code CLI and desktop apps.
 
-<a id="resume-details" name="resume-details"></a>
+| Item | Scope in v0.1.0 |
+| --- | --- |
+| Operating systems | macOS on Apple Silicon, Windows 11 on x64 and ARM64 |
+| Agents | The Codex and Claude Code CLI and desktop apps. On Windows, this covers native Windows apps and CLIs |
+| Filesystems | Local APFS on macOS, local NTFS on Windows |
+| Not qualified | Network shares, synchronized record stores, and Windows ReFS/Dev Drive |
+| Follow-up candidates | Linux and additional agents. We’ll consider WSL as part of Linux support. |
 
-## Technical details on resuming and recovery
+Use the official command for your operating system to start installation or an update. If setup or an update stops, see [updates and recovery](maintenance.md#update-recovery) for the procedure that matches its state. To resume applying a submission from an isolated folder, first check the preparation record and the destination connection.
 
-### Recover The Current Situation
+Depending on the agent, you may need to grant access to the Colvia record folder in addition to the project folder. Tested Windows x64 setups include the Codex app with user approval and write access to one designated record folder, and Codex CLI 0.167.1 in MXC. Verification varies by app version and approval mode.
 
-Expect a concise explanation of the accepted result, unfinished scope, current file agreement or drift, consumed time/attempts and valid remaining authority. A completed Work remains a historical acceptance even if files later change. Resolve differences between narrative and records before proposing a write.
+The space and processing time needed for records and backups depend on the number of files and how much changes. Records accumulate over time, so check available space in projects with large files.
 
-If the previously approved task still has work remaining and its conditions hold, the agent continues it. If you asked only for a status check or recommendation, it stays read-only. A pending or unknown operation uses its recovery path; a new chat does not reset the operation or its budget. Keep the exact request and source needed for recovery.
+<a id="execution-readiness" name="execution-readiness"></a>
 
-The View puts the Work title, ID, recorded state and next check together. `view work ID` adds the recorded scope and submitted observations before technical details. The agent explains any interpretation separately from that output.
+### Check document execution availability
 
-Execution records have their own cards. They describe what was recorded for that run, including document effects and process closure. A shared Work ID does not establish a link to the current Work revision. If an unresolved run has an unknown effect, first inspect the permitted records and current files; any recovery or new execution follows the existing approval rules. An already resolved run can retain an unknown historical effect while current work proceeds under its own conditions. Detailed evidence shows the limits of what was checked.
+Direct agent invocation is disabled in the first Preview. Run the installed launcher’s `execution readiness` to inspect its current configuration. The check leaves project records closed and does not start a model. If the check reports missing or changed files, inspect the reported state.
 
-### Choose The Next Work
+<a id="locations" name="locations"></a>
 
-For a completed task, ask for one recommendation or compare named alternatives. The agent first reads `./colvia view candidates`, then explains the proposed scope, checks and why it is useful now. An explicit request to record a candidate permits that planning change; execution and result acceptance retain their own boundaries.
+## Files and folders
 
-If the runtime is missing after moving or cloning the project, acquire the exact pinned runtime from the trusted release. If the installed entry is damaged, use an independent trusted distribution and [Operations](../../docs/OPERATIONS.md). Preserve detached records for supported reading rather than treating them as a fresh project.
+### Device · the Colvia management folder
 
-### Hand off one Work item
+| Operating system | Location |
+| --- | --- |
+| macOS | `~/Library/Application Support/Colvia` |
+| Windows | `%LOCALAPPDATA%\Colvia` |
 
-Ask the agent to continue an approved Work item and tell you when its result is ready. Review the title, action, scope, deadline and local inbox before confirming. A one-shot process continues after the submitting client exits while the device and user session are available. The everyday actions are summarizing one active Work and submitting an already prepared result for review. See [environments and limits](work-guide.md#limits-en) for the separate document execution path.
+| Entry | Contents |
+| --- | --- |
+| `bin/` | The launcher `colvia` and the manager `colvia-manage` (`.exe` on Windows), and the notification receiver on macOS |
+| `notification-tools/` | The notification receiver on Windows |
+| `runtime/` | Runtime slots holding dedicated Python and the Colvia code, and the current selection |
+| `authorities/<project ID>/` | Records for each project. The SQLite database is here. |
+| `backups/` | Recovery copies of records made before an update |
+| `operations/` | Progress records for management operations such as installation, updates and connections |
+| `trust/` | Trust state used to verify updates |
 
-Ask whether the Work has a question or result, or open `./colvia view inbox` from the project. Answer a question in that Work or stop the request. Device notifications use generic text. The local inbox retains the result even if delivery fails. After an interruption, inspect the existing Work and its recorded effects before submitting anything again.
+Do not edit or delete files in this folder yourself. If you need to recover, use the procedures under [updates and recovery](maintenance.md#update-recovery). For an agent to read and write records, you may need to grant access to this folder in the app or CLI.
 
-If the deadline passes and the effect remains uncertain, ask what the Work records show. Once the worker is inactive, you may explicitly close that receipt with the outcome marked unknown. Its history and consumed step stay in the inbox. You can then hand off a different action.
+### The project folder
 
-If you missed the alert or selecting **View** on it does not open the submission, ask about the same Work in the inbox. Check the project and revision before deciding.
+Connecting adds the following to the project folder. The connection preview shows the same list.
 
-<a id="review-details" name="review-details"></a>
+| Entry | Contents |
+| --- | --- |
+| `colvia` (macOS), `colvia.cmd` (Windows) | The project launcher. It calls the installed launcher for this project path. |
+| `AGENTS.md`, `CLAUDE.md` | Colvia appends a guidance block to the end of each file and creates the file if it is absent. Existing contents stay as they are. |
+| Connection information | `.colvia-link.json` in a plain folder, or `colvia/connection.json` in the common Git directory of a repository. Worktrees of the same repository are each registered under this project connection. |
 
-## Review and acceptance details
+Connection information is a marker that identifies the project; it is not the record. Copying this file to another folder does not make that folder share the records.
 
-### Agree On A Small Result
+<a id="commands" name="commands"></a>
 
-For a document task, ask:
+## Command summary
 
-> The booking policy changed. Show me which parts of the FAQ and the support reply need an update. Fees are still undecided.
+Your agent normally runs these commands for you. To run one yourself, use `./colvia` on macOS or `.\colvia.cmd` in Windows PowerShell from the project folder. Check exact arguments with `./colvia <command> --help`.
 
-The agent reads project instructions, `./colvia view --details` and the current adapter, then identifies the existing plan, affected files, expected result, checks, limits and stop conditions. It resolves material gaps and prepares the exact intent for your decision. An existing applicable approval carries forward; a changed scope or consumed approval follows its contract. See [Guided Intent](../../docs/GUIDED-INTENT-FORMATION.md).
+### The project launcher
 
-### Implement And Check
+| Command | What it does |
+| --- | --- |
+| `guide` | Reads the agent work guide bundled with the installation. It does not open project records. |
+| `ordinary list` | Lists the project’s Works. |
+| `ordinary view`, `ordinary review`, `ordinary content` | Shows a Work’s state, a submission awaiting review, and retained contents. |
+| `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | Moves a Work from a recorded plan through scope approval, submission, acceptance, revision requests and archiving. |
+| `candidate list`, `candidate save`, `followup` | Shows and records candidates for later work and a Work’s follow-up choice. |
+| `composition` | Names direct child Works under a parent Work. |
+| `worker` | Applies a submission from an isolated folder to a destination folder. |
+| `delivery` | Hands off submission of a prepared result and sends a notification. |
+| `git-integration` | Puts an accepted result into Git under a separate approval, and recovers an interrupted integration. |
+| `backup status`, `backup export` | Shows backup status and exports records. |
+| `execution readiness` | Inspects the document execution configuration. Execution is disabled in v0.1.0. |
+| `manage` | Calls the manager of the same installation. |
 
-Once you approve a plan that covers editing, checking and submitting the drafts for review, the agent establishes the Work baseline and edits within that scope. For this example, check that both documents agree at the 24-hour boundary and leave the fee undecided. Keep temporary test data outside the Work's tracked content unless it belongs to the accepted result. Missing or unavailable checks stay visible.
+Output is a human-readable summary by default. Put `--json` before the command group for machine output. Identifiers needed for a related Work or a diagnosis can appear in human output too.
 
-The agent records the result and presents what changed, what was checked and any remaining limits. It prepares the result confirmation and reads the same revision with `./colvia view work WORK_ID --revision REVISION_ID`. The agent substitutes the actual ID and prepares canonical input; you can review the explanation and confirmation without editing JSON. [General Work](../../docs/GENERAL-WORK.md) defines the record fields and acceptance rules.
+### The manager
 
-### Decide And Continue
+Call it as `colvia-manage` or through the project launcher’s `manage`. Some commands print JSON, such as a preview you save to a file and apply.
 
-When the result meets the agreed criteria, accept the exact result shown. The agent applies that ticket and checks the stored state and current files. Passing tests or a reviewer recommendation support your decision; the acceptance is yours. In local work, the edited files already exist in the control checkout. Worker results have their own exact application procedure.
+| Command | What it does |
+| --- | --- |
+| `status` | Shows the installed version and state. |
+| `update`, `update-status`, `update-resume` | Updates, and inspects and resumes an interrupted update. |
+| `update-rollback-preview`, `update-rollback` | Reverses the installation files changed by an update that stopped before the new runtime was selected. This is not a downgrade command. |
+| `connect-preview`, `connect` | Connects a project folder. |
+| `detach-preview`, `detach` | Disconnects a project. |
+| `move-preview`, `move-apply`, `move-status`, `move-resume` | Carries an existing connection over to a moved folder. |
+| `git-register-preview`, `git-register` | Registers the Git executable to use. |
+| `notice-enable`, `notice-disable`, `notice-check` | Turns notifications on and off and checks them. |
+| `restore-prepare`, `restore-apply`, `rebind-preview`, `rebind` | Restores a backup and connects the restored records to a folder. |
+| `repair-preview`, `repair-apply` | Recovers to a compatible previous runtime. Available only in the recovery mode started with the `--repair` option (for example `colvia-manage --repair repair-preview`). A recovery target compatible with the current records must exist. |
 
-The completion report should say what was achieved, what remains in the project plan and the recommended next step with its reason. A recommendation can be to finish here. If there is no selected follow-up, say so and explain what decision would be useful. A recommendation does not start another task.
+Removal and reinstallation use the official installer script, not the manager. See [Remove Colvia and keep your records](maintenance.md#uninstall).
 
-### Preserve The Result
+<a id="glossary" name="glossary"></a>
 
-Keep the accepted records, necessary source and recovery inputs. Ask for Git status and the proposed preservation set before deciding on a commit or push. Review important ignored outputs separately. Clean up only when ownership, remaining use and recoverability are established. Work acceptance, Git integration and remote publication remain separate decisions.
+## Glossary
 
-If application stops or current files differ from the result, preserve the inputs and inspect the supported recovery path. Continue with [a fresh conversation](resume.md) using the project records rather than reconstructing authority from chat history.
+| Term | Meaning |
+| --- | --- |
+| Work | A single task you scope and review. It keeps the goal, file scope, checks, submission, and decisions together. |
+| Plan | The goal, file scope, checks and exclusions the agent proposes. Recording it keeps the existing contents of the files in scope. |
+| Scope approval | Your decision to entrust the work under that plan |
+| Submission | The result the agent submits for review. It holds the changed contents and the check results. |
+| Acceptance | Your decision to accept the submission you read. It does not mean a Git commit or a deployment. |
+| Revision request | A decision to have a submission changed. The work continues in the same Work. |
+| Candidate | An item saved as something you might do later. Saving it grants no permission to start. |
+| Follow-up choice | The record of what comes after a Work. It distinguishes a candidate, another Work, no follow-up, and undecided. |
+| Child Work | A Work directly under a larger goal. You accept each result and the parent result separately. |
+| Isolated folder | A registered Git worktree of the same repository |
+| Preview and receipt | The changes shown before a state change, and the value bound to them. The change applies only when the receipt matches. |
+| Project launcher | `colvia` or `colvia.cmd` in the project folder |
+| Manager | `colvia-manage`, which manages the installation |
+| Connection | The link between a project folder and its Colvia records. Disconnecting keeps your files and records. |
 
-<a id="operations-reference-and-earlier-exercises"></a>
+<a id="problems" name="problems"></a>
 
-## Installed documents and related references
+## When something goes wrong
 
-This page belongs to the source manual. In an installed project, `./colvia view` identifies its current manual and adapter; `./colvia status` reports the verified `documentation_root`. Use those installed documents for operations.
+Start by asking the agent where it stopped. Then use the guide that matches the situation.
 
-### Keep These References Nearby
+| Situation | Where to look |
+| --- | --- |
+| The launcher won’t start, or a folder or record store can’t be accessed | [If access is blocked](install.md#access) |
+| A submission was refused for changes outside the scope | [Delegate and review](work.md#review) · [When files outside the approved scope are needed](work.md#scope-change) |
+| A new chat can’t find the earlier work | [Pick up in a new chat or with another agent](work.md#resume) |
+| Setup or an update was interrupted | [If setup or an update stops](maintenance.md#update-recovery) |
+| macOS asks you to confirm a working folder | [Confirm a working folder](maintenance.md#folder-confirmation) |
+| You moved the project folder | [Continue after moving a project folder](records.md#move) |
+| A Git integration was interrupted | [Recover an interrupted Git integration](git.md#git-recovery) |
+| A notification doesn’t arrive or doesn’t open the result | [Set up notifications](maintenance.md#notifications) |
+| Applying a result from an isolated folder was interrupted | [Child Works and results from isolated folders](work.md#child-works) |
 
-- [Extend project rules and remove Colvia](rules-and-removal.md): local instructions, runtime updates and entry cleanup after detach.
-- [Installed setup procedure](../../docs/GETTING-STARTED.md): installation and project preparation.
-- [Command reference](../../docs/REFERENCE.md): exact commands, input contracts and diagnostics.
-- [Operations](../../docs/OPERATIONS.md): update, recovery, repair and removal.
-- [Key concepts](concepts.md#when-to-stop): short guidance when the first path cannot continue.
-
-Linked technical and operating documents under `docs/` are in English.
-
-<a id="earlier-checkout-exercise"></a>
-<a id="what-was-checked"></a>
-
-## Earlier exercise records
-
-The [development record](../../docs/development/CHORE-20261105-004-user-doc-tone-and-candidate.md#historical-exercise-en) preserves the earlier exercise results and package identities.
+Do not delete retained files or records to make an error go away. When a state can’t be established, stopping and asking for diagnosis is the safe choice.
 
 ---
 
-[Start the tutorial](getting-started.md) · [Key concepts](concepts.md)
+[Back to the user guide](README.md) · [Architecture](architecture.md)

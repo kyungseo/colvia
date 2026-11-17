@@ -2,7 +2,7 @@
 
 [사용 설명서](README.md)
 
-프로젝트 팀의 지침과 Colvia가 관리하는 파일은 별도로 유지합니다. 아래는 이전 설치본을 사용한 운영 참고 자료입니다. 현재 Colvia Preview를 사용한다면 [기록을 보존하는 설치본 제거](foundation-preview.md#기록을-보존하면서-colvia-제거하기)나 [개별 프로젝트 연결 해제](foundation-preview.md#프로젝트-연결-해제하기)를 참고하세요.
+프로젝트 팀의 지침과 Colvia가 관리하는 파일은 별도로 유지합니다. 아래는 이전 설치본을 사용한 운영 참고 자료입니다. 현재 Colvia Preview를 사용한다면 [기록을 보존하는 설치본 제거](../maintenance.md#uninstall)나 [개별 프로젝트 연결 해제](../maintenance.md#disconnect)를 참고하세요.
 
 ## 1. 파일의 소유자 확인하기
 
@@ -22,7 +22,7 @@
 
 CLI 프로젝트라면 “CLI 옵션을 바꿀 때 사용법 페이지와 관련 예제를 승인된 범위에 포함하고, 바뀐 명령과 검사 결과를 보고한다”는 규칙을 제안할 수 있습니다. 정확한 문서 경로와 검사 방법은 해당 프로젝트의 코드·문서에서 정합니다. 이 예시가 다른 종류의 프로젝트에도 CLI 검사를 요구하는 것은 아닙니다.
 
-규칙과 진입 연결의 변경안을 Owner에게 보여 주세요. 적용 전 [Check Before Writing](../../docs/REFERENCE.md#check-before-writing)을 따릅니다. 필수 문서 참조나 제출된 결과에 영향을 주면 새 수락 또는 지원되는 재작업 절차가 먼저 필요할 수 있습니다. 기록 권한이 있다면 기존 Work 서술에 결과를 남기고, 별도의 진행 로그를 만들지 않습니다.
+규칙과 진입 연결의 변경안을 Owner에게 보여 주세요. 적용 전 [Check Before Writing](../../../docs/REFERENCE.md#check-before-writing)을 따릅니다. 필수 문서 참조나 제출된 결과에 영향을 주면 새 수락 또는 지원되는 재작업 절차가 먼저 필요할 수 있습니다. 기록 권한이 있다면 기존 Work 서술에 결과를 남기고, 별도의 진행 로그를 만들지 않습니다.
 
 ## 3. Agent 지침에 연결하기
 
@@ -56,9 +56,9 @@ Runtime 설치와 프로젝트 규칙 편집은 별개의 작업·승인으로 �
 <details>
 <summary>이전 설치의 전환 절차 · 해당 버전을 사용하는 경우</summary>
 
-다음 두 문단은 일치하는 과거 source용 checkout-1→entry-1 절차를 보존합니다. 현재 continuation-1은 [현재 전환·복구 안내](../../docs/OPERATIONS.md#continuation-1)를 따릅니다. 명시된 정확한 delegation-1 predecessor만 허용하며, schema5 lifecycle 쌍을 사용하고 continuation 기록을 보존합니다. 유효한 pending continuation은 일반 update·detach를 차단하고, 분류할 수 없는 continuation은 repair도 차단합니다. 정확한 현재 설치본 repair에는 명시된 유효 pending 예외만 있습니다.
+다음 두 문단은 일치하는 과거 source용 checkout-1→entry-1 절차를 보존합니다. 현재 continuation-1은 [현재 전환·복구 안내](../../../docs/OPERATIONS.md#continuation-1)를 따릅니다. 명시된 정확한 delegation-1 predecessor만 허용하며, schema5 lifecycle 쌍을 사용하고 continuation 기록을 보존합니다. 유효한 pending continuation은 일반 update·detach를 차단하고, 분류할 수 없는 continuation은 repair도 차단합니다. 정확한 현재 설치본 repair에는 명시된 유효 pending 예외만 있습니다.
 
-이 과거 checkout-1→entry-1 전환은 허용 목록의 정확한 predecessor만 지원합니다. 적용 전에 협력하는 writer를 멈추고, 정확한 old/new source와 원래 request·token, 복원을 확인한 외부 복구 자료를 보존하세요. 첫 switch receipt가 영속화되는 S1부터는 새 기록이 없어도 checkout-1이나 이전 window로 rollback할 수 없습니다. Local/parent manifest와 직접 포착한 child 참조 검사 때문에 전환이 거부될 수 있습니다. 기존 worker 결과는 별도 Git 승인, 명시적인 same-intent worker rebind와 재제출이 필요합니다. Runtime은 프로젝트 진입 지침을 수정하거나 Git 작업을 수행하지 않습니다. [Entry-1 transition](../../docs/OPERATIONS.md#entry-1-transition)을 참고하세요.
+이 과거 checkout-1→entry-1 전환은 허용 목록의 정확한 predecessor만 지원합니다. 적용 전에 협력하는 writer를 멈추고, 정확한 old/new source와 원래 request·token, 복원을 확인한 외부 복구 자료를 보존하세요. 첫 switch receipt가 영속화되는 S1부터는 새 기록이 없어도 checkout-1이나 이전 window로 rollback할 수 없습니다. Local/parent manifest와 직접 포착한 child 참조 검사 때문에 전환이 거부될 수 있습니다. 기존 worker 결과는 별도 Git 승인, 명시적인 same-intent worker rebind와 재제출이 필요합니다. Runtime은 프로젝트 진입 지침을 수정하거나 Git 작업을 수행하지 않습니다. [Entry-1 transition](../../../docs/OPERATIONS.md#entry-1-transition)을 참고하세요.
 
 첫 receipt나 S2 파일의 torn bytes, 지원하지 않는 O-plus-binding.next 조합은 제품 안에서 복구할 경로가 없을 수 있습니다. 원본을 보존하고 외부 복구·처분 승인을 별도로 받으세요. OLD pending init/repair/detach는 새로운 entry-1 요청이 아니라, 일치하는 보존 OLD source와 원래 요청으로 처리합니다. 적용 대상인 은퇴 경로 `hv2`의 점유물은 보존합니다. 그 밖의 검증이 유효한 live 진단은 conflict/12, lifecycle 호출은 65로 거부하고, schema-3 detach로 binding이 사라진 뒤의 source 진단은 충돌 오류를 동반한 degraded/10을 사용합니다. Confirmation 표시나 정상적인 현재 status가 과거 내용 비교 또는 이전 동기화의 성공을 증명하지는 않습니다. 그 과거 detach는 paired schema3을 사용합니다. Paired1/2 이력은 읽을 수 있지만 복구에는 일치하는 OLD source가 필요합니다.
 
@@ -66,7 +66,7 @@ Runtime 설치와 프로젝트 규칙 편집은 별개의 작업·승인으로 �
 
 ## 5. Colvia 제거와 진입 지침 정리하기
 
-정확한 명령과 복구 계약은 [Operations](../../docs/OPERATIONS.md#detach)에 있습니다. 현재 개발판은 detach 후 남은 authority 위에 재설치하거나 attach하는 절차를 지원하지 않습니다. 제거를 승인하기 전에 Colvia 없이 프로젝트 작업을 계속하고 남은 이력을 읽을 방법을 정하세요. 다시 설치하려고 이력을 삭제하면 안 됩니다.
+정확한 명령과 복구 계약은 [Operations](../../../docs/OPERATIONS.md#detach)에 있습니다. 현재 개발판은 detach 후 남은 authority 위에 재설치하거나 attach하는 절차를 지원하지 않습니다. 제거를 승인하기 전에 Colvia 없이 프로젝트 작업을 계속하고 남은 이력을 읽을 방법을 정하세요. 다시 설치하려고 이력을 삭제하면 안 됩니다.
 
 1. **제거를 준비합니다.** 현재 설치본과 pending Work·intent·continuation·lifecycle 작업을 확인하고, pending 작업은 지원되는 절차로 해결합니다. 제거 승인을 받기 전에 미완료 Work와 결정 대기 결과를 어떻게 처리할지 정합니다. Detach가 모든 미완료 Work 상태를 차단하는 것은 아닙니다. Colvia를 호출하는 관련 진입 연결·프로젝트 규칙·도구 지침·hook만 찾아 무엇을 유지하고 교체할지 제안합니다. Runtime이 있는 동안 Check Before Writing에 따라 5단계에서 고칠 진입·규칙 파일이 남는 기록에서 참조되는지 추적하고, 그 결과를 승인받을 편집안에 포함합니다. 프로젝트 지침 변경은 별도로 검토하고, 제거 전에 할 편집은 Check Before Writing에 따라 승인받아 마친 뒤 요청을 준비합니다. `./colvia view` 연결 제거는 5단계까지 남겨 둡니다. Detach 적용 전에 호환되는 독립 source와 필요한 매뉴얼을 대상 밖에 확보하고, 필요한 역사·참조 원본을 보존합니다. 저장소 전체를 정리하는 작업으로 넓히지 않습니다.
 2. **Preview를 검토합니다.** Agent에게 exact detach 요청을 준비하고 제거·보존 목록을 설명하도록 합니다. 적용 전 원 요청과 confirmation token을 대상 밖에 보관합니다. 일부만 제거된 상태의 복구 중에도, 제거 완료를 확인할 때까지 추가 프로젝트 편집은 예방 차원에서 미룹니다. 편집을 기록하는 Work 발행이 요청에 묶인 truth를 바꿀 수 있기 때문입니다. 제거가 시작되기 전에 확인한 상태가 달라졌다면 멈추고 적절한 새 요청을 준비해 승인받습니다.
@@ -79,10 +79,10 @@ Runtime 설치와 프로젝트 규칙 편집은 별개의 작업·승인으로 �
 
 ## 근거와 확인 범위
 
-이 안내는 현행 [Repository-Owned Rules](../../docs/REFERENCE.md#repository-owned-rules), [프로젝트 진입 준비](../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach 계약](../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach), [남은 이력 읽기](../../docs/MANUAL-OPERATION.md)를 연결합니다. Repository에서 읽는 문서이며 설치 payload에는 포함되지 않습니다. Detach 전에 `./colvia view`로 실제 대상의 검증된 문서 위치와 내용을 확인하세요.
+이 안내는 현행 [Repository-Owned Rules](../../../docs/REFERENCE.md#repository-owned-rules), [프로젝트 진입 준비](../../../docs/GETTING-STARTED.md#prepare-project-agent-entry), [detach 계약](../../../docs/WORKSPACE-CONTRACT.md#receipt-bound-detach), [남은 이력 읽기](../../../docs/MANUAL-OPERATION.md)를 연결합니다. Repository에서 읽는 문서이며 설치 payload에는 포함되지 않습니다. Detach 전에 `./colvia view`로 실제 대상의 검증된 문서 위치와 내용을 확인하세요.
 
 이번 Preview의 범위는 [사용 환경과 제한](work-guide.md#limits-ko)을 참고하세요.
 
 [매뉴얼 처음으로](README.md)
 
-<!-- en_content_sha256: 23592f3ab07aaf77bd2b6c032f48f5add275651393826de80decf83e6cfd7fe4 -->
+<!-- en_content_sha256: 724792bcae008e222886a7f2059e17ba4608ed39dcd604156b8a6b226f7564ab -->

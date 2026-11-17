@@ -1,8 +1,8 @@
 # Documentation Index
 
-For the new record-foundation candidate, use its [source task and current evidence](development/FEAT-20261106-002-record-foundation.md) or the paired [English](../manual/en/foundation-preview.md) / [한국어](../manual/ko/foundation-preview.md) guide. The retained profile instructions below describe earlier runtime contracts; they are not the new candidate's installation instructions.
+For the new record-foundation candidate, use its [source task and current evidence](development/FEAT-20261106-002-record-foundation.md) or the paired [English](../manual/en/README.md) / [한국어](../manual/ko/README.md) guide. The retained profile instructions below describe earlier runtime contracts; they are not the new candidate's installation instructions.
 
-New to Colvia? [Start with the inquiry report](#guide-en). 한국어로 처음 사용한다면 [고객 문의 보고서 실습](#guide-ko)부터 보세요.
+New to Colvia v0.1.0? [Follow the current tutorial](../manual/en/tutorial.md). Colvia v0.1.0을 처음 사용한다면 [현재 실습](../manual/ko/tutorial.md)을 보세요. The inquiry report exercise below belongs to the earlier profile: [English](#guide-en) · [한국어](#guide-ko).
 
 Use this index to find the instructions for this release, whether you are reading source or a verified installation. The `continuation-1` profile provides commands for writing local records, init/update/rollback, restoring an exact active release with repair, and removing the runtime with receipt-bound detach. General usability and real-project multi-worker efficiency remain unverified. [Security and Support](SECURITY-AND-SUPPORT.md) distinguishes current limits from historical observations.
 

@@ -1,6 +1,6 @@
 # Follow along with Colvia
 
-[한국어](../ko/tutorial.md) · English · [About Colvia](../../README.md)
+[User guide](README.md) · [한국어](../ko/tutorial.md) · English
 
 Install Colvia, connect a folder, and try writing a customer inquiry report or building a team to-do web app. In either exercise, you’ll agree on the scope, review a submission and its checks, and find the same task in a new chat.
 
@@ -18,13 +18,13 @@ Colvia records each task you scope and review as a **Work**. Granting file or co
 
 ## Install and connect
 
-1. On macOS with Apple Silicon or Windows 11 on x64 or ARM64, open Codex or Claude Code and confirm you’re signed in. See the [platform and agent access requirements](foundation-preview.md#target-platforms-and-verification-status) for your setup.
-2. Copy and run the command for your operating system from the [official installation page](https://colvia.github.io/downloads/). On Windows, open regular PowerShell from the Start menu as a standard user. Check the installed version when setup completes. [Installation and connection guide](foundation-preview.md#install-and-connect-a-project)
-3. Create a local practice folder and open it in Codex or Claude Code. You can also connect an existing project. If your project uses Git, [ask the agent to register Git first](foundation-preview.md#register-git) and connect the repository root. Ask:
+1. On macOS with Apple Silicon or Windows 11 on x64 or ARM64, open Codex or Claude Code and confirm you’re signed in. See the [platform and agent access requirements](reference.md#environments) for your setup.
+2. Copy and run the command for your operating system from the [official installation page](https://colvia.github.io/downloads/). On Windows, open regular PowerShell from the Start menu as a standard user. Check the installed version when setup completes. [Installation and connection guide](install.md)
+3. Create a local practice folder and open it in Codex or Claude Code. You can also connect an existing project. If your project uses Git, [ask the agent to register Git first](git.md#git-register) and connect the repository root. Ask:
 
    > Connect this folder to Colvia.
 
-4. In the preview, check the folder, the files Colvia will add, and where it will store the records. Approve the connection if those details are right. If the app or CLI blocks access, [check the permissions it needs](foundation-preview.md#install-and-connect-a-project).
+4. In the preview, check the folder, the files Colvia will add, and where it will store the records. Approve the connection if those details are right. If the app or CLI blocks access, [check the permissions it needs](install.md#access).
 5. In the current chat, tell the agent what you want to do in a sentence or two. If you’ve already shared a goal, the agent can use it and your project rules to propose a plan. In an empty folder, you could start with “I’d like to make a team to-do app.”
 
 Pick either exercise to start. If you try both, install Colvia once and connect a new folder for each exercise.
@@ -72,7 +72,7 @@ Q12,Other,What are your customer service hours?
 
    Ask, “Show me just the sentences that differ from the last submission.” Ask the agent to submit again after you’ve reviewed the changes. If the new submission looks right, say “I accept this submission.” Check that Colvia recorded the accepted submission and that the original CSV is still there.
 
-If Colvia blocks a submission, ask which file caused it and why. Existing edits stay in the work folder. Review and resolve the changes before submitting again. If you need to edit files outside the approved scope, approve those changes in a separate Work. [Guidance for reviewing and revising work](foundation-preview.md#delegate-and-review)
+If Colvia blocks a submission, ask which file caused it and why. Existing edits stay in the work folder. Review and resolve the changes before submitting again. If you need to edit files outside the approved scope, approve those changes in a separate Work. [Guidance for reviewing and revising work](work.md#review)
 
 ## Team to-do web app
 
@@ -95,14 +95,14 @@ Check the plan for the server, browser page, list storage, test files, and compl
 1. Run the app using the commands in its project README. Open the same address in two browser tabs. In the first tab, add “Draft refund guidance” and “Update shipping delay policy.”
 2. Refresh the second tab and check that both items appear. Assign someone to a task and mark an item complete. Refresh the first tab and check that it shows the same state. Restart the server and check that the list and completion status survive.
 3. Ask the agent to record which checks it ran and what it couldn’t confirm in the submission. This exercise checks that two tabs on the same computer share a list.
-4. Open the same project in a new chat and ask, “Show me the last submission for the to-do app, the checks that ran, and what I need to decide.” Review the result, say “I accept this first version” if it’s ready, and confirm that acceptance was recorded. To save a next step, try “I’d like to hide completed tasks from the list.” [Find a recorded next step](foundation-preview.md#find-a-recorded-next-step)
+4. Open the same project in a new chat and ask, “Show me the last submission for the to-do app, the checks that ran, and what I need to decide.” Review the result, say “I accept this first version” if it’s ready, and confirm that acceptance was recorded. To save a next step, try “I’d like to hide completed tasks from the list.” [Find a recorded next step](work.md#follow-up)
 
 ## What to try next
 
 - **Pick up with another agent.** If you use both Codex and Claude Code, open the same project with the other agent and find the Work. That agent needs access to the project folder and the Colvia records.
-- **Put an accepted result into Git.** If your project uses Git, review the changes to commit and the current staging area, then approve the integration separately. [Git integration guide](foundation-preview.md#put-an-accepted-result-into-git)
-- **Back up the records.** Back up your project files and Colvia records separately. [Back up and restore records](foundation-preview.md#back-up-and-restore-records)
-- **Find help for your next step.** [Set up notifications](foundation-preview.md#set-up-notifications) · [Updates and recovery](foundation-preview.md#updating-and-recovering-an-interrupted-update) · [Continue after a folder move](foundation-preview.md#continue-after-moving-a-project-folder) · [Disconnect a project](foundation-preview.md#disconnect-a-project)
+- **Put an accepted result into Git.** If your project uses Git, review the changes to commit and the current staging area, then approve the integration separately. [Git integration guide](git.md#git-integration)
+- **Back up the records.** Back up your project files and Colvia records separately. [Back up and restore records](records.md#backup)
+- **Find help for your next step.** [Set up notifications](maintenance.md#notifications) · [Updates and recovery](maintenance.md#update) · [Continue after a folder move](records.md#move) · [Disconnect a project](maintenance.md#disconnect)
 
 ### When demonstrating the exercises
 

@@ -37,7 +37,7 @@ View ── current observations for the human and agent
 Project README / plan / Work narrative ── readable explanations
 ```
 
-The diagram separates responsibilities; it is not an automatic orchestration system. Actor names in records declare roles within a trusted local account and are not authenticated identities. See the [source concept contract](../../docs/CONCEPTS.md).
+The diagram separates responsibilities; it is not an automatic orchestration system. Actor names in records declare roles within a trusted local account and are not authenticated identities. See the [source concept contract](../../../docs/CONCEPTS.md).
 
 `View` is a read-only rendering of verified records and current observations. It neither changes state nor decides acceptance. Its output is diagnostic Markdown, primarily English with some localized content; the agent should explain it in your language. You should not need to decode internal fields to make an informed decision.
 
@@ -79,15 +79,15 @@ For a local Work, application records the decision around files already present 
 
 | Observation | Next action |
 | --- | --- |
-| No installation, wrong runtime or refused topology | Check the source, interpreter and fresh primary target before installation; use [Getting Started](../../docs/GETTING-STARTED.md) |
+| No installation, wrong runtime or refused topology | Check the source, interpreter and fresh primary target before installation; use [Getting Started](../../../docs/GETTING-STARTED.md) |
 | Draft has a material unresolved gap | Resolve it, publish a new draft and review that revision before acceptance |
 | Submitted result or required document changed | Preserve the change, explain the mismatch, and use the supported rework/new acceptance or rebind procedure; do not silently refresh the baseline |
-| Intent, Work or lifecycle operation is pending | Preserve original inputs and exact source; use [Operations](../../docs/OPERATIONS.md) before unrelated writes |
+| Intent, Work or lifecycle operation is pending | Preserve original inputs and exact source; use [Operations](../../../docs/OPERATIONS.md) before unrelated writes |
 | `status` is healthy but current files differ | Inspect the Work view and actual files; historical completion and current content are separate |
-| Launcher or managed files are damaged | Preserve the state and use the independent-source diagnostic/repair path in [Operations](../../docs/OPERATIONS.md) |
+| Launcher or managed files are damaged | Preserve the state and use the independent-source diagnostic/repair path in [Operations](../../../docs/OPERATIONS.md) |
 | A record is unreadable, unknown or torn | Preserve it and seek diagnosis; do not hand-edit selectors or delete records to clear the error |
 
-The [Reference](../../docs/REFERENCE.md) explains exact error codes and the [Manual Operation](../../docs/MANUAL-OPERATION.md) guide covers reading retained evidence without the installed product. Do not turn an unavailable observation into a successful result.
+The [Reference](../../../docs/REFERENCE.md) explains exact error codes and the [Manual Operation](../../../docs/MANUAL-OPERATION.md) guide covers reading retained evidence without the installed product. Do not turn an unavailable observation into a successful result.
 
 ## Keep The First Work Stable
 

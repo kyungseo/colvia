@@ -37,7 +37,7 @@ View ── 사람과 agent가 읽는 현재 관측 결과
 프로젝트 README / 계획 / Work 문서 ── 사람이 읽는 설명
 ```
 
-그림은 책임을 구분한 것이며 자동 orchestration을 뜻하지 않습니다. 기록의 actor 이름은 신뢰하는 로컬 계정 안에서 역할을 나타내고, 인증된 신원은 아닙니다. [기본 개념 계약](../../docs/CONCEPTS.md)을 참고하세요.
+그림은 책임을 구분한 것이며 자동 orchestration을 뜻하지 않습니다. 기록의 actor 이름은 신뢰하는 로컬 계정 안에서 역할을 나타내고, 인증된 신원은 아닙니다. [기본 개념 계약](../../../docs/CONCEPTS.md)을 참고하세요.
 
 `View`는 검증된 기록과 현재 관측을 보여주는 읽기 전용 결과입니다. 상태를 바꾸거나 수락을 결정하지 않습니다. 출력은 주로 영어이며 일부 현지화된 내용이 포함된 진단용 Markdown입니다. agent가 사용자의 언어로 설명해야 합니다. 판단을 내리기 위해 내부 필드를 직접 해독할 필요는 없어야 합니다.
 
@@ -79,15 +79,15 @@ local Work의 적용은 control checkout에 이미 있는 파일에 대한 결�
 
 | 관측한 상황 | 다음 행동 |
 | --- | --- |
-| 설치본 없음, runtime 불일치, 지원하지 않는 Git 구조 | 설치 전에 source·interpreter·새 primary 대상을 확인하고 [Getting Started](../../docs/GETTING-STARTED.md) 참고 |
+| 설치본 없음, runtime 불일치, 지원하지 않는 Git 구조 | 설치 전에 source·interpreter·새 primary 대상을 확인하고 [Getting Started](../../../docs/GETTING-STARTED.md) 참고 |
 | 초안에 수락을 가로막는 미해결 사항이 있음 | 해결한 새 초안을 publish하고 그 판본을 검토한 뒤 수락 |
 | 제출 결과나 필수 문서가 달라짐 | 변경을 보존하고 불일치를 설명한 뒤 지원되는 rework·새 수락·rebind 절차 사용. baseline을 몰래 갱신하지 않음 |
-| intent·Work·lifecycle 작업이 pending | 원래 입력과 정확한 source를 보존하고, 다른 쓰기 전에 [Operations](../../docs/OPERATIONS.md) 확인 |
+| intent·Work·lifecycle 작업이 pending | 원래 입력과 정확한 source를 보존하고, 다른 쓰기 전에 [Operations](../../../docs/OPERATIONS.md) 확인 |
 | `status`는 정상이지만 현재 파일이 다름 | Work view와 실제 파일 확인. 과거 완료와 현재 내용은 구별 |
-| launcher나 managed 파일이 손상됨 | 상태를 보존하고 [Operations](../../docs/OPERATIONS.md)의 독립 source 진단·repair 경로 사용 |
+| launcher나 managed 파일이 손상됨 | 상태를 보존하고 [Operations](../../../docs/OPERATIONS.md)의 독립 source 진단·repair 경로 사용 |
 | 기록을 읽을 수 없거나 알 수 없는 내용·부분 쓰기가 있음 | 보존하고 원인을 확인. 오류를 없애려고 selector를 직접 고치거나 기록을 삭제하지 않음 |
 
-정확한 오류 코드는 [Reference](../../docs/REFERENCE.md), 설치된 제품 없이 보존 자료를 읽는 방법은 [Manual Operation](../../docs/MANUAL-OPERATION.md)을 참고하세요. 확인할 수 없는 관측을 성공으로 바꾸지 않습니다.
+정확한 오류 코드는 [Reference](../../../docs/REFERENCE.md), 설치된 제품 없이 보존 자료를 읽는 방법은 [Manual Operation](../../../docs/MANUAL-OPERATION.md)을 참고하세요. 확인할 수 없는 관측을 성공으로 바꾸지 않습니다.
 
 ## 첫 Work의 기준 유지하기
 
@@ -101,4 +101,4 @@ Colvia는 변경 파일 목록만이 아니라 프로젝트 전체 내용을 비
 
 [사용 설명서로 돌아가기](README.md)
 
-<!-- en_content_sha256: e20dc01a1fcf2894724769e8db09b7a3c9a06575e7865adeca79e722f1eb6db6 -->
+<!-- en_content_sha256: 7baf7fa0702001f36f1c97dfaaccf4adfe2a3101b41c0b2e4f3b452bf8455f9f -->
