@@ -16,9 +16,14 @@ from test_foundation_binding import P,I,W
 
 class WorkFixture:
     def setUp(self):
-        self.tmp=tempfile.TemporaryDirectory(prefix='ordinary-')
-        self.root=Path(self.tmp.name)/'project';self.root.mkdir()
-        self.store=GenerationStore.create(Path(self.tmp.name)/'state.sqlite3',project=P,instance=I,generation='g',active_check=lambda:None)
+        self.tmp = tempfile.TemporaryDirectory(prefix='ordinary-')
+        base = Path(self.tmp.name).resolve(strict=True)
+        self.root = base / 'project'
+        self.root.mkdir()
+        self.store = GenerationStore.create(
+            base / 'state.sqlite3', project=P, instance=I, generation='g',
+            active_check=lambda: None,
+        )
         self.locator=Locator(P,I,1,'a'*64,W);topology=Topology('plain',location(self.root))
         binding=ProjectBinding(self.locator,'plain',topology.root)
         Connections(self.store).connect(operation='connect',binding=binding,observed=topology,
