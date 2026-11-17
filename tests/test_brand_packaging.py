@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from tests.platform_fixtures import require_archived_agent_entries
 
 ROOT = Path(__file__).resolve().parents[1]
 BRAND = ROOT / "assets/brand"
@@ -59,6 +60,7 @@ class BrandPackagingTests(unittest.TestCase):
         self.assertEqual(pos,len(raw)); self.assertIn(b"ic10",types)
 
     def test_exact_managed_inventory_excludes_build_assets(self):
+        require_archived_agent_entries(ROOT)
         from hv2ref import product
         expected = set(product.CONTINUATION_MANAGED_PATHS)
         from distribution.source_layout import read_checkout

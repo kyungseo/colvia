@@ -82,9 +82,9 @@ The agent can compare current files with the accepted submission and show which 
 
 ## Revise an earlier result
 
-To revise an earlier result after working on something else, tell the agent what to change. The agent checks the recorded request, approved scope, and changes since the last submission. If the approval is still valid and the requested changes fit the scope, continue in the same Work. Files added and submitted by another Work can be accounted for when its retained evidence and current content agree. Unattributed changes and outside-scope modifications or deletions are reported with the causal files. Your draft is preserved; you decide whether to accept the result after review.
+To revise an earlier result after working on something else, tell the agent what to change. The agent checks the recorded request, approved scope, and changes since the last submission. If the approval is still valid and the requested changes fit the scope, continue in the same Work. Colvia can attribute a file to the other Work that added and submitted it when its current contents match that Work’s retained submission. The agent reports the affected files for unattributed changes and outside-scope edits or deletions. Your draft is preserved; you decide whether to accept the result after review.
 
-Applying a revision that accounts for another Work’s added files to a different workspace is not yet available. You can review and accept it in its own workspace.
+You can review and accept such a revision in the workspace where you made it. Applying it to a different workspace is outside the current scope.
 
 <a id="scope-change" name="scope-change"></a>
 
@@ -119,11 +119,11 @@ If you split a larger goal into direct child Works in the same folder, review an
 
 Check the destination before applying. Colvia blocks the application if any other Work in that folder is approved, in progress, or under review. Apply one submission at a time, then review the combined result and checks before accepting the parent Work separately.
 
-If applying an approved submission is interrupted, check whether Colvia recorded its preparation. When that record is available, resume the application with the approved submission. The destination connection and shared Git data must remain valid. If you can’t verify the preparation record or the destination connection, pause and ask for help diagnosing the issue.
+If applying an approved submission is interrupted, check whether Colvia recorded its preparation. When that record is available, resume the application with the approved submission. The destination connection and common Git directory must remain valid. If you can’t verify the preparation record or the destination connection, pause and ask for help diagnosing the issue.
 
 To delegate applying and accepting a specific isolated Work, check the source, destination, file scope, named delegate, and a valid grant. The grant applies to the specified isolated Work. You decide whether to accept other Work and the final parent result.
 
-If Git still lists a worktree whose folder has been removed, inspect its registration before continuing. For ordinary Work acceptance, Colvia still checks the current files in that Work’s own folder.
+If a missing worktree blocks a command, [check its Git registration](git.md#git-worktree-registration) before continuing. For ordinary Work acceptance, Colvia still checks the current files in that Work’s own folder.
 
 <a id="limits" name="limits"></a>
 

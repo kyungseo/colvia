@@ -51,6 +51,15 @@ def fixture_temporary_directory(**kwargs):
     return tempfile.TemporaryDirectory(**kwargs)
 
 
+def require_archived_agent_entries(source):
+    """Use exact retained guidance for integration fixtures that prepare the earlier profile."""
+    from unittest import SkipTest
+    from distribution.source_layout import archived_agent_entries_available
+
+    if not archived_agent_entries_available(source):
+        raise SkipTest("earlier-profile fixture requires the retained source checkout")
+
+
 def fixture_source():
     """Prepare one mapped source per test process; keep public README out of fixtures."""
     from hv2ref.product import source_root, workspace_candidate
@@ -63,6 +72,7 @@ def fixture_source():
     import subprocess
     import tempfile
     common = source_root()
+    require_archived_agent_entries(common)
     holder = Path(tempfile.mkdtemp(prefix="s-", dir=os.environ.get("COLVIA_NATIVE_TEST_ROOT")))
     import atexit
     if not os.environ.get("COLVIA_NATIVE_TEST_ROOT"):

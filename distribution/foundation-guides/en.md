@@ -1,8 +1,8 @@
 # Using Colvia
 
-[한국어](../ko/README.md) · English · v0.1.0 · first public Preview
+[한국어](../ko/README.md) · English · [Check the installed version](install.md#check-installed-version)
 
-Colvia is a local workflow tool for working with AI agents. Plan work with Codex or Claude Code, approve the scope, and review results before accepting them. Colvia keeps approvals and submissions on your device. Open the same project to pick up the work in a new chat or with another agent.
+Colvia is a local workflow tool for working with AI agents. Approve the scope proposed by Codex or Claude Code, then review the result and decide whether to accept it. Colvia keeps approvals and submissions on your device. Open the same project to pick up the work in a new chat or with another agent.
 
 1. [Install and connect the folder](install.md). If your project uses Git, [ask the agent to register Git first](git.md#git-register). In your usual chat, ask, “Connect this folder to Colvia.” Review the files Colvia will add and where it will store records before approving the connection.
 2. [Say what you want to do in the current chat](work.md#start). In an empty folder, a sentence such as “I want to summarize the meeting in one page” is enough to start. You can also connect a project you already work in. The agent uses any goal you’ve shared and the existing project material to propose a plan. Saving a plan keeps the existing contents of the files it lists. These contents and later submissions are kept in records and backups.

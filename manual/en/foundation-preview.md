@@ -1,3 +1,5 @@
+<a id="installation-and-work-records-in-colvia-preview" name="installation-and-work-records-in-colvia-preview"></a>
+
 # This guide is now split into several pages
 
 [User guide](README.md) · [한국어](../ko/foundation-preview.md) · English

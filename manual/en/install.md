@@ -2,7 +2,7 @@
 
 [User guide](README.md) · [한국어](../ko/install.md) · English
 
-Install Colvia once on your device, then connect each project folder you want to use it in. Installation applies to the device; a connection applies to one project.
+Install Colvia once for the operating-system account that will use it. Connect each project folder you want to use with that installation.
 
 [Install](#install) · [Check the installed version](#check-installed-version) · [Connect a project folder](#connect) · [If access is blocked](#access)
 

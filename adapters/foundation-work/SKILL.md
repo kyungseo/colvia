@@ -127,6 +127,13 @@ For existing Work:
 
 ## Access failures
 
+If a command reports `stale-or-bare-worktree`, inspect the repository with
+`git worktree list --porcelain`. Show the flagged entry and ask the person
+to verify whether its folder moved, its drive is unavailable, or the folder
+is gone. An entry marked `bare` is a separate Git layout; don't treat it
+as a missing worktree. Keep the registration and related records until the maintainer has
+confirmed the exact recovery or cleanup and preserved any needed data.
+
 Use the actual command result, not an assumed permission setting:
 
 | Observation | Meaning and next step |

@@ -12,7 +12,7 @@
 
 Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Claude Code의 CLI·데스크톱 앱을 대상으로 합니다.
 
-| 항목 | v0.1.0의 범위 |
+| 항목 | Preview 지원 범위 |
 | --- | --- |
 | 운영체제 | macOS Apple Silicon, Windows 11 x64·ARM64 |
 | 에이전트 | Codex와 Claude Code의 CLI·데스크톱 앱. Windows에서는 Windows용 앱과 CLI |
@@ -22,7 +22,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 
 설치와 업데이트를 시작할 때는 운영체제에 맞는 공식 설치 명령을 사용하세요. 설치나 업데이트가 멈췄다면 [업데이트와 중단 복구](maintenance.md#update-recovery)에서 현재 상태에 맞는 절차를 확인하세요. 격리 폴더의 제출본 반영을 다시 시작할 때는 준비 기록과 대상 폴더의 연결부터 확인하세요.
 
-에이전트에 따라 작업 폴더뿐 아니라 Colvia 기록 폴더의 접근을 허용해야 할 수 있습니다. 검증한 Windows x64 설정은 사용자 승인과 지정 기록 폴더 쓰기를 허용한 Codex 앱, MXC를 사용한 Codex CLI 0.167.1입니다. 다른 앱 버전과 승인 방식은 확인 범위가 다를 수 있습니다.
+에이전트에 따라 작업 폴더뿐 아니라 Colvia 기록 폴더의 접근을 허용해야 할 수 있습니다. 검증한 Windows x64 설정은 사용자 승인과 지정 기록 폴더 쓰기를 허용한 Codex 앱, Windows 샌드박스 백엔드를 `mxc`로 지정한 Codex CLI 0.167.1입니다. 다른 앱 버전과 승인 방식은 확인 범위가 다를 수 있습니다.
 
 파일 수와 변경량에 따라 기록·백업에 필요한 공간과 처리 시간이 달라집니다. 기록을 자동으로 삭제하지 않으므로 큰 파일이 있는 프로젝트에서는 저장 공간을 확인하세요.
 
@@ -36,7 +36,9 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 
 ## 파일과 폴더 위치
 
-### 기기 · Colvia 관리 폴더
+<a id="기기--colvia-관리-폴더" name="기기--colvia-관리-폴더"></a>
+
+### 이 계정의 Colvia 관리 폴더
 
 | 운영체제 | 위치 |
 | --- | --- |
@@ -50,7 +52,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `runtime/` | 전용 Python과 Colvia 코드가 든 런타임 슬롯, 현재 선택 정보 |
 | `authorities/<프로젝트 ID>/` | 프로젝트별 기록. SQLite 데이터베이스가 여기에 있습니다. |
 | `backups/` | 업데이트 전에 남기는 기록 복구본 |
-| `operations/` | 설치·업데이트·연결 같은 관리 작업의 진행 기록 |
+| `operations/` | 설치·업데이트·연결 같은 관리 작업의 진행 기록과 제거할 때 옮겨 둔 설치 파일 |
 | `trust/` | 업데이트 검증에 쓰는 신뢰 정보 |
 
 이 폴더의 파일을 직접 고치거나 지우지 마세요. 복구가 필요하면 [업데이트와 중단 복구](maintenance.md#update-recovery)의 절차를 사용하세요. 에이전트가 기록을 읽고 쓰려면 앱이나 CLI에서 이 폴더의 접근을 허용해야 할 수 있습니다.
@@ -87,7 +89,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `delivery` | 준비된 결과의 제출을 맡기고 알림을 보냅니다. |
 | `git-integration` | 수락한 결과를 별도 승인으로 Git에 반영하고, 중단된 반영을 복구합니다. |
 | `backup status`, `backup export` | 기록 백업 상태를 보고 내보냅니다. |
-| `execution readiness` | 문서 실행 설정을 확인합니다. 실행은 v0.1.0에서 비활성입니다. |
+| `execution readiness` | 문서 실행 설정을 확인합니다. 이 Preview에서 문서 실행 기능은 비활성입니다. |
 | `manage` | 같은 설치본의 관리 도구를 호출합니다. |
 
 출력은 기본으로 사람이 읽는 요약이고, `--json`을 명령 그룹 앞에 붙이면 기계용 출력이 됩니다. 관련 Work나 진단에 필요한 식별자는 사람용 출력에도 나타날 수 있습니다.
@@ -146,11 +148,26 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | 설치나 업데이트가 중단됨 | [설치나 업데이트가 중단됐을 때](maintenance.md#update-recovery) |
 | macOS에서 작업 폴더를 다시 확인하라는 안내 | [작업 폴더 다시 확인하기](maintenance.md#folder-confirmation) |
 | 프로젝트 폴더를 옮김 | [프로젝트 폴더를 옮긴 뒤 이어가기](records.md#move) |
-| Git 반영이 중단됨 | [중단된 Git 통합 복구하기](git.md#git-recovery) |
+| 등록된 Git worktree 때문에 명령이 멈춤 | [worktree 등록 확인하기](git.md#git-worktree-registration) |
+| Git 반영이 중단됨 | [중단된 Git 반영 복구하기](git.md#git-recovery) |
 | 알림이 오지 않거나 결과가 열리지 않음 | [알림 설정하기](maintenance.md#notifications) |
 | 격리 폴더 결과의 반영이 중단됨 | [하위 Work와 격리 폴더의 결과](work.md#child-works) |
 
 보존된 파일이나 기록을 지워서 오류를 없애려 하지 마세요. 상태를 확인할 수 없을 때는 멈추고 진단을 요청하는 것이 안전합니다.
+
+## 이전 참조 문서에서 찾아왔다면
+
+<a id="notifications" name="notifications"></a>
+
+- [알림 켜기와 결과 열기](maintenance.md#notifications)
+
+<a id="resume-details" name="resume-details"></a>
+
+- [새 대화에서 이어가기](work.md#resume)
+
+<a id="review-details" name="review-details"></a>
+
+- [제출본을 검토하고 수락하기](work.md#review)
 
 ---
 

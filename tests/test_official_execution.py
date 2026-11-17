@@ -6,6 +6,7 @@ from hv2ref import official_state as state, official_entry as entry, official_ho
 from hv2ref.official_documents import EffectJournal
 from hv2ref.errors import ContractError, InjectedCrash
 from hv2ref.jsonio import canonical_json_bytes
+from tests.platform_fixtures import require_archived_agent_entries
 
 SOURCE=Path(__file__).resolve().parents[1]
 TIME='2026-01-01T00:00:00Z'
@@ -14,6 +15,7 @@ PREFIX=b'# Guide\n\n';BEFORE=b'Before.\n';AFTER='Approved fact.\n';SUFFIX=b'\nTa
 class OfficialExecutionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        require_archived_agent_entries(SOURCE)
         cls.tmp=tempfile.TemporaryDirectory();cls.root=Path(cls.tmp.name).resolve()
         cls.candidate=cls.root/'candidate'
         completed=subprocess.run([sys.executable,'-I','-S','-B',str(SOURCE/'scripts/prepare-official.py'),'--output',str(cls.candidate)],capture_output=True,timeout=45)

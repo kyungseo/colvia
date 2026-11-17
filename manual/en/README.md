@@ -7,7 +7,7 @@ This guide covers Colvia v0.1.0, the first public Preview. It explains how to ap
 ## If you are new
 
 1. [Colvia at a glance](overview.md) — who decides what, and what is kept where.
-2. [Install Colvia and connect a project](install.md) — install once on your device, then connect a project folder.
+2. [Install Colvia and connect a project](install.md) — install for your operating-system account, then connect a project folder.
 3. [Follow along](tutorial.md) — write a customer inquiry report or build a team to-do web app, and try approving, reviewing and accepting for yourself.
 
 ## Using Colvia
@@ -46,4 +46,4 @@ Trial builds before the public release kept records in a `.hrn/` folder inside t
 
 ## Getting help
 
-[Questions and bug reports](../../CONTRIBUTING.md#questions-and-bug-reports) · [Report a security issue privately](../../CONTRIBUTING.md#report-a-security-issue-privately) · [Contributing](../../CONTRIBUTING.md)
+[Questions and bug reports](../../CONTRIBUTING.md#questions-and-bug-reports) · [Report a security issue privately](../../SECURITY.md#english) · [Contributing](../../CONTRIBUTING.md)

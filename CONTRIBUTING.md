@@ -6,13 +6,13 @@ Small changes are welcome for review.
 
 ## Questions and bug reports
 
-Use [Colvia Issues](https://github.com/kyungseo/colvia/issues) for questions and bug reports. If you found a bug, describe what you expected, what happened, the operating system and the asset name or version you received. A short example in a clean project helps. Leave out account details, private paths and project files.
+Use [Colvia Issues](https://github.com/kyungseo/colvia/issues) for questions and bug reports. If you found a bug, describe what you expected, what happened, the operating system and the Colvia version or download filename. A short example in a clean project helps. Leave out account details, private paths and project files.
 
 For a typo, a clearer example or a reproducible bug, open a focused pull request against `main`. Explain what changed and how you checked it. Discuss larger features, changes to what agents can do, or changes to stored Work records with a maintainer before implementing them.
 
 ## Report a security issue privately
 
-Keep vulnerability details out of public issues and pull requests. Open [Colvia’s Security tab](https://github.com/kyungseo/colvia/security) and use **Report a vulnerability** when the option is available. If you received a private build and the option is unavailable, contact the person who gave you the build privately.
+Use [private vulnerability reporting](SECURITY.md#english) for security issues.
 
 ## Contribution license
 
@@ -22,7 +22,7 @@ Colvia’s own code and documentation in this revision use Apache-2.0. Contribut
 
 See the [Colvia Preview guide](manual/en/README.md) for the user workflow.
 
-To reproduce the verified developer setup for this representative check, use GIL-enabled CPython 3.14.7 in a POSIX shell. The check passed in a clean local clone at `448b581` on macOS ARM64 with SQLite 3.54.0. This is a single developer test; the installed product uses its own dedicated Python.
+For this developer check, use GIL-enabled CPython 3.14.7 in a POSIX shell. The installed product uses its own dedicated Python.
 
 From the repository root, run this command before opening a PR for a change to the ordinary Work flow.
 

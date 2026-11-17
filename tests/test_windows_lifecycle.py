@@ -21,6 +21,7 @@ from unittest import mock
 
 from hv2ref import jsonio, product, workspace
 from hv2ref.errors import ContractError, InjectedCrash
+from tests.platform_fixtures import require_archived_agent_entries
 
 SOURCE = Path(__file__).resolve().parents[1]
 TIME = "2026-01-01T00:00:00Z"
@@ -595,6 +596,7 @@ class HistoricalDetachTests(unittest.TestCase):
 class NativeLifecycleFixture:
     @classmethod
     def setUpClass(cls):
+        require_archived_agent_entries(SOURCE)
         root = Path(os.environ['COLVIA_NATIVE_TEST_ROOT']) / hashlib.sha256(cls.__name__.encode()).hexdigest()[:4]
         root.mkdir(parents=True, exist_ok=False); cls.suite_root = root
         cls.p = root / 'P'; cls.q = root / 'Q'; common_q = root / 'common-Q'; common_q.mkdir()

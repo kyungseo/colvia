@@ -6,10 +6,10 @@ Procedures you need after installation. Each one has a different reach, so check
 
 | What you want to do | What it affects | What remains |
 | --- | --- | --- |
-| [Update](#update) | The Colvia installation on this device | Every project’s records and connections |
+| [Update](#update) | The Colvia installation for this account | Records and connections for projects using this installation |
 | [Turn notifications on or off](#notifications) | Notification delivery for this account | Existing Work records |
 | [Disconnect a project](#disconnect) | One project | Your files and Work records |
-| [Remove Colvia](#uninstall) | The installation on this device | Project files, Work records, approvals, submissions, project connections, settings and update trust |
+| [Remove Colvia](#uninstall) | The installation for this account | Project files, Work records, approvals, submissions, project connections, settings and update trust |
 
 <a id="update" name="update"></a>
 
@@ -116,7 +116,9 @@ Windows PowerShell
 
 The receipt is shown by the preview. If interrupted, use `--resume-uninstall` on macOS or `-ResumeUninstall` on Windows with the same operation ID and receipt.
 
-**3. Reinstall when needed.** Run the usual install command in the same account. Open the same project to review its existing Work and submissions. If the installer reports that a reinstall is pending, use `--resume-reinstall` on macOS or `-ResumeReinstall` on Windows with the saved script. Keep the management folder and its records.
+Colvia moves the removed installation files to `operations/<operation ID>/retired/` in the [management folder](reference.md#locations). It uses these files to undo an interrupted removal. They continue to occupy disk space while they are retained.
+
+**3. Reinstall when needed.** Run the usual install command in the same account. Open the same project to review its existing Work and submissions. If the installer reports that a reinstall is pending, use `--resume-reinstall` on macOS or `-ResumeReinstall` on Windows with the saved script. Keep your records and the entire management folder for recovery.
 
 To undo an interrupted removal before starting a reinstall, use `-RestoreUninstall <operation ID> -Receipt <receipt>` on Windows or `--restore-uninstall <operation ID> <receipt>` on macOS. If you used Windows notifications before removing Colvia, enable them again after restoring or reinstalling.
 

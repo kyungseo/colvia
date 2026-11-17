@@ -8,7 +8,7 @@
 
 한국어 · [English](README.md)
 
-[설치와 프로젝트 연결](manual/ko/install.md) · [따라 하기](manual/ko/tutorial.md) · [사용 안내](manual/ko/README.md) · [지원 환경](manual/ko/reference.md#environments)
+[설치와 프로젝트 연결](manual/ko/install.md) · [따라 하기](manual/ko/tutorial.md) · [사용 안내](manual/ko/README.md) · [Colvia 한눈에 보기](manual/ko/overview.md) · [지원 환경](manual/ko/reference.md#environments) · [릴리스 노트와 다운로드](https://github.com/colvia/downloads/releases)
 
 </div>
 
@@ -23,7 +23,7 @@ Codex나 Claude Code가 제안한 작업 범위를 승인하고, 결과를 검�
 
 먼저 Codex 또는 Claude Code를 설치하고 로그인하세요.
 
-1. [공식 설치 페이지](https://colvia.github.io/downloads/)에서 운영체제에 맞는 명령을 복사해 실행하세요. Colvia가 배포 파일을 내려받아 검증하고 전용 Python을 준비합니다. Windows에서는 표준 사용자로 시작 메뉴에서 일반 PowerShell을 여세요. 준비가 끝나면 [설치한 버전을 확인하세요](manual/ko/install.md#check-installed-version).
+1. Colvia를 사용할 운영체제 계정으로 로그인한 뒤 [공식 설치 페이지](https://colvia.github.io/downloads/)에서 운영체제에 맞는 명령을 복사해 실행하세요. Colvia가 배포 파일을 내려받아 검증하고 전용 Python을 준비합니다. Windows에서는 표준 사용자로 시작 메뉴에서 일반 PowerShell을 여세요. 준비가 끝나면 [설치한 버전을 확인하세요](manual/ko/install.md#check-installed-version).
 2. Codex 또는 Claude Code에서 작업할 폴더를 여세요. Git을 쓰는 프로젝트라면 아직 등록하지 않은 Git의 [등록을 에이전트에게 요청](manual/ko/git.md#git-register)하고, 저장소의 최상위 폴더를 여세요. 이어서 “이 폴더에 Colvia를 연결해 주세요.”라고 요청하세요. 미리보기에 나온 폴더, 추가할 파일, 기록 저장 위치가 맞으면 연결을 승인하세요.
 3. 연결을 마치면 지금 대화에서 하려던 일을 짧게 알려주세요. 빈 폴더에서 시작한다면 “보고서를 쓰고 싶어요”나 “웹앱을 만들고 싶어요”처럼 하려는 일을 한두 문장으로 말해 보세요. 이미 작업 중인 프로젝트에도 연결할 수 있습니다. 에이전트는 앞서 설명한 목적과 기존 README, 프로젝트 규칙을 참고해 작업안을 제안합니다.
 
@@ -144,4 +144,4 @@ Colvia는 운영체제의 사용자 데이터 폴더에 계획·승인·제출�
 - **큰 작업을 계속 이어가기.** 작업 중 새로 생긴 범위만 이어서 승인하고, 여러 Work의 결과를 모아 검토하는 흐름을 넓히고자 합니다. 기록이 오래 쌓인 프로젝트에서도 조회와 백업·복원이 잘 되는지 확인하고, 설치나 작업이 멈췄을 때 어디서부터 이어갈지 더 쉽게 안내할 계획입니다.
 - **사용 환경 넓히기.** Linux와 추가 에이전트, 팀의 동시 편집과 자동 병렬 실행은 검토 후보입니다. Colvia가 에이전트를 직접 호출하는 기능은 첫 Preview에서 비활성 상태입니다. 첫 Preview에서는 평소 쓰는 Codex·Claude Code 앱과 CLI에서 작업을 맡기고 검토하는 흐름에 집중합니다.
 
-[문제가 생겼을 때](manual/ko/reference.md#problems) · [문의·버그 신고](CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](CONTRIBUTING.ko.md#보안-문제를-발견했다면) · [기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)
+[문제가 생겼을 때](manual/ko/reference.md#problems) · [문의·버그 신고](CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](SECURITY.md) · [기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)

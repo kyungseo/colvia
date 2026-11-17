@@ -99,6 +99,7 @@ Check the plan for the server, browser page, list storage, test files, and compl
 
 ## What to try next
 
+- **Try a notification for the report.** After preparing the report above and before submitting it for review, ask, “The draft is ready. Submit it for review and notify me on this device.” One submission covers the request when the agent handles the submission and notification. If prompted, grant notification permission yourself. Open the result from the notification and read the submission before accepting it or asking for changes. If delivery is uncertain, check the existing notification record first. If you miss the notification or it doesn’t open the result, ask in the same project, “Is anything waiting for my review?” [Set up notifications and check delivery](maintenance.md#notifications)
 - **Pick up with another agent.** If you use both Codex and Claude Code, open the same project with the other agent and find the Work. That agent needs access to the project folder and the Colvia records.
 - **Put an accepted result into Git.** If your project uses Git, review the changes to commit and the current staging area, then approve the integration separately. [Git integration guide](git.md#git-integration)
 - **Back up the records.** Back up your project files and Colvia records separately. [Back up and restore records](records.md#backup)

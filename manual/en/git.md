@@ -45,6 +45,21 @@ This preview does not run Git. Read the file to check the path, file hash and `r
 
 When applying a registration, the manager verifies the selected executable’s hash and checks its version. The hash covers that executable; you still need to trust the Git installation and its dependencies.
 
+<a id="git-worktree-registration" name="git-worktree-registration"></a>
+
+## If a registered Git worktree blocks a command
+
+A missing worktree or an entry marked `bare` can stop Colvia when it checks the repository layout. This can happen during a connection preview or while running a command in a connected project. Ask the agent to show you the entry that blocked the command. To inspect the registrations yourself, run this in the repository.
+
+```sh
+git worktree list --porcelain
+```
+
+- For a path marked `prunable`, first check whether it is still accessible. If the folder moved or its drive is unavailable, restore access at the original path. If it is gone, ask the repository maintainer to inspect the branch, working files, and staged changes, preserve anything needed, and clear that registration.
+- An entry marked `bare` is a repository with Git data and no working folder. Ask the maintainer to identify an eligible Git checkout.
+
+Git’s bulk cleanup can affect several registrations. Preserve the contents of `.git` and other worktree registrations, and check the blocked command again after the maintainer’s action. If you were connecting the project, check the [connection preview](install.md#connect) again.
+
 <a id="git-integration" name="git-integration"></a>
 
 ## Put an accepted result into Git

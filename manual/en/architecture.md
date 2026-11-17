@@ -2,7 +2,7 @@
 
 [User guide](README.md) · [한국어](../ko/architecture.md) · English
 
-What Colvia v0.1.0 is made of, and the path one command takes before it becomes a record. You do not need this page for everyday use. It is for readers who want to understand the structure, diagnose a problem, or contribute to Colvia.
+What Colvia Preview is made of, and the path one command takes before it becomes a record. You do not need this page for everyday use. It is for readers who want to understand the structure, diagnose a problem, or contribute to Colvia.
 
 Read first · [Overall picture](#overview) · [Call path](#call-path) · [Responsibilities](#layers) · [CLI and View](#cli-view) · [Agent connection](#agent) · [Work lifecycle](#work-lifecycle) · [Record storage](#storage)
 
@@ -10,7 +10,7 @@ Read when needed · [The Git boundary](#git-boundary) · [Installation and updat
 
 ## Three things to know first
 
-1. **Colvia does not run the agent for you.** Your usual Codex or Claude Code does the work and calls Colvia commands when it needs to. Colvia’s own direct agent execution is disabled in v0.1.0.
+1. **Colvia does not run the agent for you.** Your usual Codex or Claude Code does the work and calls Colvia commands when it needs to. Colvia’s own direct agent execution is disabled in this Preview.
 2. **Records live outside the project folder.** Approvals, submissions and decisions are kept in a per-project SQLite database in the operating system’s user-data directory. The project folder holds only the launcher, connection information and guidance.
 3. **Decisions are separated by kind.** Scope approval, result acceptance, Git integration and notification never stand in for one another. The whole structure is arranged to keep that separation.
 
@@ -526,7 +526,7 @@ The files an agent can read and write and the tools it can run are set by the ap
 
 ### Optional feature · document execution
 
-A feature in which Colvia calls an agent directly to edit a document remains in the code as an optional module, but it is disabled in v0.1.0 and a request to enable it is refused. Ordinary Work runs without this module. You can inspect the current state with `execution readiness`.
+A feature in which Colvia calls an agent directly to edit a document remains in the code as an optional module, but it is disabled in this Preview and a request to enable it is refused. Ordinary Work runs without this module. You can inspect the current state with `execution readiness`.
 
 <a id="source-map" name="source-map"></a>
 

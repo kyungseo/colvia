@@ -12,7 +12,7 @@ Look up supported environments, storage locations, commands, and terms here. The
 
 Colvia Preview targets macOS on Apple Silicon and Windows 11 on x64 and ARM64, with the Codex and Claude Code CLI and desktop apps.
 
-| Item | Scope in v0.1.0 |
+| Item | Preview scope |
 | --- | --- |
 | Operating systems | macOS on Apple Silicon, Windows 11 on x64 and ARM64 |
 | Agents | The Codex and Claude Code CLI and desktop apps. On Windows, this covers native Windows apps and CLIs |
@@ -22,7 +22,7 @@ Colvia Preview targets macOS on Apple Silicon and Windows 11 on x64 and ARM64, w
 
 Use the official command for your operating system to start installation or an update. If setup or an update stops, see [updates and recovery](maintenance.md#update-recovery) for the procedure that matches its state. To resume applying a submission from an isolated folder, first check the preparation record and the destination connection.
 
-Depending on the agent, you may need to grant access to the Colvia record folder in addition to the project folder. Tested Windows x64 setups include the Codex app with user approval and write access to one designated record folder, and Codex CLI 0.167.1 in MXC. Verification varies by app version and approval mode.
+Depending on the agent, you may need to grant access to the Colvia record folder in addition to the project folder. Tested Windows x64 setups include the Codex app with user approval and write access to one designated record folder, and Codex CLI 0.167.1 with the Windows sandbox backend set to `mxc`. Verification varies by app version and approval mode.
 
 The space and processing time needed for records and backups depend on the number of files and how much changes. Records accumulate over time, so check available space in projects with large files.
 
@@ -36,7 +36,9 @@ Direct agent invocation is disabled in the first Preview. Run the installed laun
 
 ## Files and folders
 
-### Device · the Colvia management folder
+<a id="device--the-colvia-management-folder" name="device--the-colvia-management-folder"></a>
+
+### The account’s Colvia management folder
 
 | Operating system | Location |
 | --- | --- |
@@ -50,7 +52,7 @@ Direct agent invocation is disabled in the first Preview. Run the installed laun
 | `runtime/` | Runtime slots holding dedicated Python and the Colvia code, and the current selection |
 | `authorities/<project ID>/` | Records for each project. The SQLite database is here. |
 | `backups/` | Recovery copies of records made before an update |
-| `operations/` | Progress records for management operations such as installation, updates and connections |
+| `operations/` | Progress records for management operations and installation files retained during removal |
 | `trust/` | Trust state used to verify updates |
 
 Do not edit or delete files in this folder yourself. If you need to recover, use the procedures under [updates and recovery](maintenance.md#update-recovery). For an agent to read and write records, you may need to grant access to this folder in the app or CLI.
@@ -87,7 +89,7 @@ Your agent normally runs these commands for you. To run one yourself, use `./col
 | `delivery` | Hands off submission of a prepared result and sends a notification. |
 | `git-integration` | Puts an accepted result into Git under a separate approval, and recovers an interrupted integration. |
 | `backup status`, `backup export` | Shows backup status and exports records. |
-| `execution readiness` | Inspects the document execution configuration. Execution is disabled in v0.1.0. |
+| `execution readiness` | Inspects the document execution configuration. Document execution is disabled in this Preview. |
 | `manage` | Calls the manager of the same installation. |
 
 Output is a human-readable summary by default. Put `--json` before the command group for machine output. Identifiers needed for a related Work or a diagnosis can appear in human output too.
@@ -146,11 +148,26 @@ Start by asking the agent where it stopped. Then use the guide that matches the 
 | Setup or an update was interrupted | [If setup or an update stops](maintenance.md#update-recovery) |
 | macOS asks you to confirm a working folder | [Confirm a working folder](maintenance.md#folder-confirmation) |
 | You moved the project folder | [Continue after moving a project folder](records.md#move) |
+| A registered Git worktree blocks a command | [Check Git worktree registrations](git.md#git-worktree-registration) |
 | A Git integration was interrupted | [Recover an interrupted Git integration](git.md#git-recovery) |
 | A notification doesn’t arrive or doesn’t open the result | [Set up notifications](maintenance.md#notifications) |
 | Applying a result from an isolated folder was interrupted | [Child Works and results from isolated folders](work.md#child-works) |
 
 Do not delete retained files or records to make an error go away. When a state can’t be established, stopping and asking for diagnosis is the safe choice.
+
+## If you came from the earlier reference
+
+<a id="notifications" name="notifications"></a>
+
+- [Set up notifications and open the result](maintenance.md#notifications)
+
+<a id="resume-details" name="resume-details"></a>
+
+- [Pick up in a new chat](work.md#resume)
+
+<a id="review-details" name="review-details"></a>
+
+- [Review and accept a submission](work.md#review)
 
 ---
 

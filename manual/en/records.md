@@ -71,7 +71,7 @@ If you haven’t moved the folder yet, ask the agent to check the move condition
 
 On macOS, if Colvia asks you to confirm the folder, follow the [connection check guide](maintenance.md#folder-confirmation).
 
-The verified scope for moves covers ordinary and Git folders on local APFS on macOS. If you’ve already moved a folder on Windows NTFS, keep the connection information and records and ask for help diagnosing the issue. Use a compatible launcher to open records after a move.
+On macOS, same-volume moves were checked for ordinary folders and single Git checkouts on local APFS. On Windows, manager commands reconnected an ordinary folder after a move within the same local NTFS volume and read its existing Work. The Windows 11 ARM64 check used the official v0.1.0 release. The x64 check used an isolated 0.1.0 test build on a physical device. Git folders on Windows need separate verification. If you’ve already moved a Git folder on Windows, preserve the connection information and records and ask for help diagnosing the move. Use a compatible launcher to open records after a move.
 
 <a id="move-cli" name="move-cli"></a>
 

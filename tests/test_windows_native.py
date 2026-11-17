@@ -16,6 +16,7 @@ from unittest import mock
 
 from hv2ref.errors import ContractError
 from hv2ref import jsonio, workspace
+from tests.platform_fixtures import require_archived_agent_entries
 
 SOURCE = Path(__file__).resolve().parents[1]
 
@@ -871,6 +872,7 @@ class PortableNativeTests(unittest.TestCase):
             self.assertEqual([script], list(root.iterdir()))
 
     def test_explicit_preparation_changes_only_declared_managed_bytes(self):
+        require_archived_agent_entries(SOURCE)
         from hv2ref.product import workspace_candidate, WINDOWS_MANAGED_PATHS
         with tempfile.TemporaryDirectory() as name:
             output = Path(name) / "prepared"
@@ -903,6 +905,7 @@ class PortableNativeTests(unittest.TestCase):
             self.assertEqual([], list(target.iterdir()))
 
     def test_windows_preview_wrong_os_refuses_without_publication(self):
+        require_archived_agent_entries(SOURCE)
         from hv2ref.product import workspace_init_preview
         with tempfile.TemporaryDirectory() as name:
             root = Path(name); prepared = root / "prepared"; target = root / "target"; target.mkdir()

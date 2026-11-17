@@ -7,7 +7,7 @@ Colvia v0.1.0(첫 공개 Preview) 기준 설명서입니다. Codex나 Claude Cod
 ## 처음이라면
 
 1. [Colvia 한눈에 보기](overview.md) — 누가 무엇을 결정하고, 무엇이 어디에 남는지 먼저 파악합니다.
-2. [설치와 프로젝트 연결](install.md) — 기기에 한 번 설치하고 프로젝트 폴더를 연결합니다.
+2. [설치와 프로젝트 연결](install.md) — 사용할 운영체제 계정에 설치하고 프로젝트 폴더를 연결합니다.
 3. [따라 하기](tutorial.md) — 고객 문의 보고서나 팀용 할 일 웹앱을 만들며 승인·검토·수락을 직접 해 봅니다.
 
 ## 사용하기
@@ -46,4 +46,4 @@ Colvia v0.1.0(첫 공개 Preview) 기준 설명서입니다. Codex나 Claude Cod
 
 ## 도움 받기
 
-[문의·버그 신고](../../CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](../../CONTRIBUTING.ko.md#보안-문제를-발견했다면) · [기여 안내](../../CONTRIBUTING.ko.md)
+[문의·버그 신고](../../CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](../../SECURITY.md) · [기여 안내](../../CONTRIBUTING.ko.md)
