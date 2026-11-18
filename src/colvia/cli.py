@@ -336,6 +336,12 @@ def main(argv=None,*,entry=None):
         if not isinstance(exc,(RecordError,PermissionError)) and ((args.group=='execution' and args.action in ('start','resolve')) or (args.group=='delivery' and args.action in ('run','finish-execution'))):code=args.group+'-outcome-unknown'
         from .presentation import display_path
         value=dict(error=code,message=failure(code))
+        from .credentials import GitContentRefusal
+        if isinstance(exc, GitContentRefusal):
+            value['finding'] = exc.finding
+            finding = exc.finding
+            line = f", {finding['line']}행" if finding['line'] is not None else ''
+            value['message'] += f" ({display_path(finding['location'])}{line}, {finding['category']})"
         for name in ('directory','workspace','preparation_state'):
             if getattr(exc,name,None) is not None:value[name]=getattr(exc,name)
         if value.get('directory') is not None:

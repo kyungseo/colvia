@@ -301,6 +301,11 @@ MESSAGES={
 
 def failure(code):
     recovery={
+        'git-credential-blocked':'Git에 기록할 내용에서 자격증명 형태의 값을 찾았습니다. 설정은 환경변수 참조로 바꾸고 수정본을 제출·수락한 뒤 다시 준비하세요. 커밋 메시지에 있으면 메시지를 수정하세요.',
+        'git-protected-path':'비밀 설정용 경로의 파일은 Git에 추가하거나 수정할 수 없습니다. 실제 값은 로컬에 두고 공유할 설정 예시는 별도 파일로 준비하세요.',
+        'git-protected-copy':'교체하거나 삭제하는 비밀 설정 파일의 이전 내용이 다른 반영 대상에 그대로 들어 있습니다. 공유할 파일에서 실제 값을 제거한 뒤 다시 제출하세요.',
+        'git-content-uninspectable':'파일의 텍스트를 검사할 수 없어 Git 반영을 멈췄습니다. 검사 가능한 텍스트 파일을 별도로 선택하세요.',
+        'git-credential-new-preview-required':'이전 Git 미리보기에는 그대로 표시할 수 없는 내용이 있습니다. 새 Git 반영 미리보기를 준비하세요.',
         'uninstall-transition-pending':'Colvia 제거 또는 재설치가 진행 중입니다. 기존 기록은 보존되며 설치 스크립트에서 이어갈 수 있습니다.',
         'uninstall-not-complete':'이전 제거가 완료되지 않았습니다. 같은 제거 작업을 재개해 주세요.',
         'uninstall-resume-required':'중단된 제거 작업이 있습니다. 같은 작업 번호와 확인값으로 제거를 재개해 주세요.',

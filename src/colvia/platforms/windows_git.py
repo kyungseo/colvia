@@ -54,8 +54,8 @@ class WindowsGit(GitCandidate):
         if 'native_index' in m['context']:
             require(port.roots==m['context']['native_index']['roots'],'git-index-directory-changed')
         return port
-    def prepare(self,*args,**kwargs):
-        m=super().prepare(*args,**kwargs);original=canonical_bytes(m);port=self.index_port(m)
+    def _prepare_screened(self,*args,**kwargs):
+        m=super()._prepare_screened(*args,**kwargs);original=canonical_bytes(m);port=self.index_port(m)
         before=port.observe(port.gitdir/'index')
         require((before is None and m['context']['index'] is None) or
                 (before is not None and before['sha256']==m['context']['index'] and self.file_id(port.gitdir/'index')==m['context']['index_native']),

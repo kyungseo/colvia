@@ -5,10 +5,11 @@ ref/index effects are serialized by the shared project barrier and have explicit
 recovery. The native port is platform-specific, the stored decisions are not.
 """
 import hashlib,io,base64
-from .codec import Edge,encode_envelope,canonical_bytes,require
+from .codec import RecordError,Edge,encode_envelope,canonical_bytes,require
 from .graph import Schema,validate_closure
 from .records import record,link,fields,text,application_registry,operation_closure
 from .work import WorkService,work_key
+from .credentials import inspect_chunks, screen_candidate
 from .connection import Connections,PROJECT_KEY,workspace_key
 from .effects import PENDING,guard
 from .bodies import ingest_body,body_bytes,descriptor
@@ -68,19 +69,48 @@ class GitIntegration:
     def obj(self,ref,load=None):
         load=load or self.store.load;return self.registry.inspect(ref,load(ref),required=True)
     def _selected(self,works):
-        heads=[];changes={};bodies={}
-        for name in works:
-            ref,head=self.work._head(name);require(head.payload['phase']=='completed','git-accepted-result-required')
+        heads = [self.work._head(name)[0] for name in works]
+        changes, bodies = self._accepted_bodies(heads)
+        return heads, changes, bodies
+
+    def _accepted_bodies(self, heads, *, current=False):
+        changes = {}
+        bodies = {}
+        for ref in heads:
+            head = self.obj(ref)
+            require(head.payload['phase']=='completed','git-accepted-result-required')
             self.work._validate_head(ref,self.store.load)
             plan=self.obj(link(head,'plan'));result=self.obj(link(head,'result'))
-            require(self.work._result_agrees(plan,result),'git-accepted-files-changed');heads.append(ref)
+            if current:
+                require(self.work._result_agrees(plan,result),'git-accepted-files-changed')
             observed=self.obj(link(result,'observation'));tree=link(observed,'tree')
             for path in result.payload['changed']:
                 entry=entry_at(tree,path,self.store.load);body=map_get(link(result,'after'),path,self.store.load)
                 require(entry is None or entry['kind']=='regular','opaque-git-edit-not-supported')
                 require(path not in changes or changes[path]==entry,'git-selected-results-conflict')
                 changes[path]=entry;bodies[path]=body
-        require(changes,'git-no-selected-change');return heads,changes,bodies
+        require(changes,'git-no-selected-change');return changes,bodies
+    def _screen(self, changes, bodies, message, identity, operation):
+        screen_candidate(changes, lambda p: body_bytes(bodies[p], self.store.load), message, identity, operation)
+
+    def _screen_plan(self, plan):
+        manifest = plan.payload['manifest']
+        refs = [plan.edges[i].ref for i in plan.payload['links']['accepted']]
+        changes, bodies = self._accepted_bodies(refs)
+        self._screen(changes, bodies, manifest['message'], manifest['author'], manifest['operation'])
+        inspect_chunks([manifest['context']['branch'].encode()], 'branch')
+        from .credentials import REVIEW_HEADER
+        chunks = body_bytes(link(plan, 'diff'), self.store.load)
+        first = next(chunks, b'')
+        if not first.startswith(REVIEW_HEADER):
+            self.port.check_legacy_display(manifest)
+            import itertools
+            from .credentials import GitContentRefusal
+            try:
+                inspect_chunks(itertools.chain((first,), chunks), 'legacy-diff')
+            except GitContentRefusal:
+                raise RecordError('git-credential-new-preview-required') from None
+
     def _validate(self,plan,view):
         m=plan.payload['manifest']
         registration=self.obj(link(plan,'workspace'),view);binding=self.obj(link(plan,'binding'),view)
@@ -117,14 +147,17 @@ class GitIntegration:
         from .platforms.git_candidate import validate_candidate_input
         validate_candidate_input(message, identity)
         require(self.store.head(PENDING) is None,'external-effect-pending');require(self.store.head(key(operation)) is None,'git-integration-already-exists')
+        heads, changes, bodies = self._selected(works)
+        self._screen(changes, bodies, message, identity, operation)
         with self.port.exclusion():
             registration,_,_=self.workspace.verify();binding=self.store.head(PROJECT_KEY)
-            heads,changes,bodies=self._selected(works)
+            require(heads == [self.work._head(name)[0] for name in works], 'git-accepted-result-changed')
+            self._accepted_bodies(heads, current=True)
             # Git object writes precede the ref/index reservation. Keep the
             # attempt active until a known refusal or this exact publication.
             attempt=operation+'-prepare'
             with self.store.import_attempt(attempt,'git-candidate',can_abandon=lambda: not self.port.child_pending):
-                m=self.port.prepare(operation,changes,lambda path:body_bytes(bodies[path],self.store.load),message=message,identity=identity)
+                m=self.port._prepare_screened(operation,changes,lambda path:body_bytes(bodies[path],self.store.load),message=message,identity=identity)
                 area=self.port.verify_manifest(m);objects=[];refs={}
                 for name in ('i0','i1','diff'):
                     raw=self.port.files.read(area/name,128*1024*1024)
@@ -144,7 +177,16 @@ class GitIntegration:
         return self.preview(operation)
     def preview(self,operation):
         _,state,plan=self._state(operation);m=plan.payload['manifest']
+        from .credentials import REVIEW_HEADER, category
         raw=b''.join(body_bytes(link(plan,'diff'),self.store.load))
+        phase = state.payload['phase']
+        if phase == 'prepared':
+            self._screen_plan(plan)
+        elif not raw.startswith(REVIEW_HEADER):
+            # The historical receipt may contain a raw credential. Keep status
+            # available even when the Git workspace has moved or disappeared.
+            label = '[withheld]' if category(operation) else operation
+            return dict(integration=label, operation=label, state=phase, historical_diff_withheld=True)
         return dict(integration=operation,operation=operation,state=state.payload['phase'],files=m['paths'],parent=m['context']['ref'],branch=m['context']['branch'],
             commit=m['new'],message=m['message'],author=m['author'],diff_base64=base64.b64encode(raw).decode('ascii'),diff_sha256=m['diff'],
             receipt=self._receipt(plan.ref),question='이 변경만 Git에 기록할까요? 다른 staging 내용은 그대로 남깁니다.')
@@ -164,7 +206,9 @@ class GitIntegration:
         with self.port.exclusion():
             ref,state,plan=self._state(operation);m=plan.payload['manifest']
             require(state.payload['phase']=='prepared','git-integration-recovery-required')
-            require(receipt==self._receipt(plan.ref),'git-integration-review-changed');self.port.check(m)
+            require(receipt==self._receipt(plan.ref),'git-integration-review-changed')
+            self._screen_plan(plan)
+            self.port.check(m)
             ref,state=self._advance(ref,state,plan,'lock-intent',statement=statement,reserve=True);event('lock-intent')
             if hasattr(self.port,'reconcile_owner'):
                 def live_gate():require(self.store.head(PENDING)==ref and self.store.head(key(operation))==ref,'git-effect-authority-changed')
