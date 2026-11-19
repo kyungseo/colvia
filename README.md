@@ -62,6 +62,8 @@ You can skip creating a Work for a typo, spacing, or punctuation correction you 
 
 ## Pick up in a new chat
 
+Stepping away before the first submission? Ask the agent to save your progress. In a new chat in the same folder, say “Pick up where we left off” to see the latest note and which files have changed since. Requires a build with progress notes. [Using progress notes](manual/en/work.md#progress-note)
+
 Open the same project and ask, “What do I need to review in the report I assigned earlier?” When the agent can access the project folder and Colvia records, it can find the approved scope, the last submission, differences from the current files, and any recorded next step.
 
 If you use both Codex and Claude Code, you can switch between them in the same project. For example, before picking up work from Codex in Claude Code, check that Claude Code can read the project folder and Colvia records. You can continue the same Work if its approval is still valid and the workspace and scope still match. [Find a recorded next step](manual/en/work.md#follow-up)

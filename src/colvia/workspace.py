@@ -1,4 +1,5 @@
 """Concrete workspace port; domain Work services receive this as an interface."""
+from contextlib import contextmanager
 from pathlib import Path
 import sys
 from .binding import resolve,require_registered,same_plain_location,revalidates,creation_identity_changed
@@ -62,16 +63,28 @@ class LocalWorkspace:
         require(self.selected(paths)==tuple(e for e in observed.snapshot.entries if e['path'] in paths),'body-observation-changed')
         return mapping.root,objects,sum(sizes)
 
-    def selected(self,paths):
-        _,topology,_=self.verify()
-        index=self.git.index(Path(topology.root.path)) if sys.platform=='win32' and self.git and topology.kind=='git' else {}
-        result=selected(Path(topology.root.path),paths,byte_limit=self.budget.read_bytes,
-                        modes={p:e.mode for p,e in index.items() if e.mode in ('100644','100755')})
-        if index:
-            from .platforms.posix import Snapshot
-            from .adapters.opaque_git import placeholders
-            result=placeholders(self.git,Path(topology.root.path),index,Snapshot(topology.root,result,(),0)).entries
+    @contextmanager
+    def selected_reader(self, *, verify_path=False):
+        _, topology, _ = self.verify()
+        root = Path(topology.root.path)
+        windows_git = sys.platform == 'win32' and self.git and topology.kind == 'git'
+        index = self.git.index(root) if windows_git else {}
+        modes = {p: e.mode for p, e in index.items() if e.mode in ('100644', '100755')}
 
-        require(location(Path(topology.root.path))==topology.root,'workspace-location-changed')
+        def read(paths, byte_limit):
+            entries = selected(root, paths, byte_limit=byte_limit, modes=modes, verify_path=verify_path)
+            if index:
+                from .platforms.posix import Snapshot
+                from .adapters.opaque_git import placeholders
+                entries = placeholders(self.git, root, index, Snapshot(topology.root, entries, (), 0)).entries
+            return entries
+
+        yield read
+        require(location(root) == topology.root, 'workspace-location-changed')
+        if verify_path and windows_git:
+            require(self.git.index(root) == index, 'git-observation-changed')
         self.verify()
-        return result
+
+    def selected(self, paths):
+        with self.selected_reader() as read:
+            return read(paths, self.budget.read_bytes)

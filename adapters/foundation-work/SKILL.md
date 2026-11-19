@@ -30,6 +30,9 @@ command group for structured records. When needed read `ordinary content` for
 the submitted version and compare it with current files. Keep IDs and approval receipts in tool calls. For an active revision
 read `guide revision` before describing edits or submitting again.
 
+For a progress note or an ambiguous stopping phrase, read `guide work`. Stop work when asked to stop. Ask before saving an ambiguous note; a sign-off never authorizes submission or acceptance.
+On first-submission resume, report the latest note and current file differences before taking the next approved step.
+
 Say what was approved, what was submitted or checked, and which decision remains,
 to the extent the records establish it. A completed Work needs no new acceptance.
 For a recorded next step use `followup WORK_ID` or `candidate list`; plain output

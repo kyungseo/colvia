@@ -6,6 +6,8 @@ Install Colvia, connect a folder, and try writing a customer inquiry report or b
 
 [Install and connect](#install-and-connect) · [Customer inquiry report](#customer-inquiry-report) · [Team to-do web app](#team-to-do-web-app) · [What to try next](#what-to-try-next)
 
+Stepping away before the first submission? Ask the agent to save your progress. In a new chat in the same folder, say “Pick up where we left off” to see the latest note and which files have changed since. [Using progress notes](work.md#progress-note)
+
 ## What you’ll use
 
 | Part | What it does |

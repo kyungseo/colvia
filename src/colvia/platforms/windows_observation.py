@@ -149,27 +149,37 @@ class Observer:
         visit(root,(),0);require(self.location(root)==root_location,'root-observation-changed')
         return Snapshot(root_location,tuple(canonical_entries(entries)),tuple(stamps),used,tuple(inventory),tuple(blobs))
 
-    def resolve_selected(self,root,path):
+    def resolve_selected(self,root,path,*,verify_path=False):
         require(logical_path(path)==path,'invalid-scope-path');directory=Path(root)
         parts=path.split('/')
         for i,part in enumerate(parts):
             with self.opened(directory) as (_,info):
                 require(info['directory'] and not info.get('symlink'),'unsafe-scope-ancestor')
                 names={logical_path(name):name for name in self.names(directory,1000000)}
+                if verify_path and i:
+                    require({n.casefold() for n in names}.isdisjoint({'.git', '.colvia-link.json'}), 'progress-nested-project')
                 if part not in names:return None
                 directory=directory/names[part]
         return directory
 
-    def selected(self,root,paths,*,byte_limit,modes=None):
+    def selected(self,root,paths,*,byte_limit,modes=None,verify_path=False):
         entries=[];used=0;modes=dict(modes or {})
         for path in sorted(paths):
-            native=self.resolve_selected(root,path)
-            if native is None:continue
+            native=self.resolve_selected(root,path,verify_path=verify_path)
+            if native is None:
+                if verify_path:
+                    require(self.resolve_selected(root,path,verify_path=True) is None, 'file-observation-changed')
+                continue
             with self.opened(native,opaque=True) as (_,info):
                 if info.get('symlink'):entry,_=self.symlink(native)
                 else:
                     require(not info['directory'],'scope-entry-not-regular')
                     entry,_=self.regular(native,info,limit=byte_limit-used,cancelled=lambda:False,mode=modes.get(path,'100644'));used+=entry['size']
+                if verify_path:
+                    again = self.resolve_selected(root, path, verify_path=True)
+                    require(again == native, 'file-observation-changed')
+                    with self.opened(again, opaque=True) as (_, live):
+                        require(self.stamp('', live) == self.stamp('', info), 'file-observation-changed')
                 entries.append(dict(path=path,**entry))
         return tuple(entries)
 

@@ -64,6 +64,16 @@ Before recording ordinary Work acceptance, Colvia compares the current files in 
 
 You can archive a Work once it is accepted. Archiving does not delete records or free storage. Its submitted contents, decisions and follow-up links remain available afterward.
 
+<a id="progress-note" name="progress-note"></a>
+
+## Step away before submitting
+
+On an active ordinary Work, say “Save our progress for tomorrow.” The agent records what it did, what it checked, what remains and what to do next. If you just say “Let's wrap up,” it asks whether to save. Saving leaves the Work active.
+
+In a new chat, say “Pick up where we left off.” The agent reads the note and approved scope, then compares the files with their state when the note was saved. If the note says to check a source and the report has since changed, inspect the report first. Unavailable comparisons are shown separately. Checks mentioned in a note do not count as a submission's check report. After a submission is sent back, resume from its revision request. A Work that returns to the same approved plan can use its earlier note. If the approval has changed, read the note as history and check the current plan.
+
+Once the first note is saved, this project's records and subsequent backups require a version that supports notes. If you might return to v0.2.0, keep a separate [backup](records.md#backup) before saving that first note.
+
 <a id="resume" name="resume"></a>
 
 ## Pick up in a new chat or with another agent

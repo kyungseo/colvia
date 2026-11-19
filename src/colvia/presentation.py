@@ -154,6 +154,20 @@ def human(value):
             value.get('question','이 범위로 진행할까요?')])
     if state=='approved':return '이 범위로 진행하겠습니다. 검사가 끝나면 검토할 결과를 보여드리겠습니다.'
     if state=='active':
+        if value.get('progress_saved'):
+            return '진척을 기록했습니다. 같은 작업에서 이어갈 수 있습니다.'
+        if 'progress' in value:
+            note=value['progress']
+            lines=[title+' — 마지막 중간 메모']
+            if not note['same_approval']:
+                lines.append('이전 승인 범위에서 남긴 메모입니다. 현재 승인 계획을 확인하세요.')
+            for field,label in [('done','한 일'),('checked','확인한 것'),('remaining','남은 일'),('next_action','다음 행동')]:
+                lines.append(label+' · '+_printable(note[field]))
+            labels={'unchanged':'동일','changed':'변경','created':'생성','deleted':'삭제','unavailable':'확인 불가'}
+            lines.extend(_printable(item['path'])+' · '+labels[item['status']] for item in note['files'])
+            if note['additional_paths_unavailable']:
+                lines.append('추가 경로 확인 불가 · '+str(note['additional_paths_unavailable']))
+            return '\n'.join(lines)
         context=value.get('rework')
         if not context:return '작업을 진행할 수 있습니다. 수정과 검사가 끝나면 결과를 제출해 주세요.'
         lines=[title+' — 수정 중입니다.','승인한 수정: '+context['approved_request']]
@@ -292,6 +306,11 @@ MESSAGES={
  'execution-qualified-runtime-required':'이 소스 경로에는 검증된 실행환경이 아직 연결되지 않았습니다. 설치본 검증 후 사용할 수 있습니다.',
  'invalid-command-input':'입력한 경로나 옵션 형식을 확인해 주세요. 작업 상태는 상태 조회로 확인할 수 있습니다.',
  'invalid-git-tree':'Git 파일 목록을 해석할 수 없습니다. Git 상태를 확인한 뒤 이어가 주세요.',
+ 'progress-view-stale':'작업이나 메모가 바뀌었습니다. 현재 작업을 다시 열어 내용을 확인하세요.',
+ 'progress-first-submission-only':'첫 제출 전인 진행 중 일반 작업에서만 중간 메모를 남길 수 있습니다.',
+ 'progress-work-mismatch':'이 메모가 현재 작업의 기록과 일치하지 않습니다. 작업과 기록 위치를 확인하세요.',
+ 'invalid-progress-files':'메모의 파일 목록이 승인 범위와 일치하지 않습니다. 기록을 확인하세요.',
+ 'invalid-progress-text':'메모에는 항목마다 2,048자 이내의 짧은 한 줄을 입력하세요.',
  'invalid-scope':'수정할 파일을 중복 없이 한 번씩 지정해 주세요.',
  'boundary-swallows-protected':'다른 작업 폴더나 관리 영역 안의 파일은 이 작업에서 수정할 수 없습니다. 해당 작업 폴더에서 시작해 주세요.',
  'work-not-found':'이 작업을 찾지 못했습니다. 작업 목록에서 제목을 확인해 주세요.',

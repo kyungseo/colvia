@@ -300,7 +300,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [Add paths to the same Work](product-evidence-and-followups.md#p1-add-paths-to-the-same-work) — P1. When investigation reveals more files to edit, approve the added paths and checks and continue the same Work.
 
-- [Pre-submission progress notes and resuming in a new chat](product-evidence-and-followups.md#p1-record-progress-before-submission) — P1. Record completed steps and the next action so a new chat can resume before the first submission.
+- [Pre-submission progress notes and resuming in a new chat](product-evidence-and-followups.md#p1-record-progress-before-submission) — P1. [First-submission implementation and evidence](FEAT-20261119-002-pre-submission-progress.md).
 
 - [Pause, end, or replace a Work](product-evidence-and-followups.md#p1-pause-end-or-replace-a-work) — P1. Record why a Work stopped and link its replacement so the previous Work can leave the active list.
 

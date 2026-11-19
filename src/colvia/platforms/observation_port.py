@@ -28,12 +28,12 @@ def snapshot(root,budget,**options):
     return native(root,budget,**options)
 
 
-def selected(root,paths,*,byte_limit,modes=None):
+def selected(root,paths,*,byte_limit,modes=None,verify_path=False):
     if sys.platform=='win32':
         from .windows_observation import Observer
-        return Observer().selected(root,paths,byte_limit=byte_limit,modes=modes)
+        return Observer().selected(root,paths,byte_limit=byte_limit,modes=modes,verify_path=verify_path)
     from .selected import selected as native
-    return native(root,paths,byte_limit=byte_limit)
+    return native(root,paths,byte_limit=byte_limit,verify_path=verify_path)
 
 
 def capture(root,path,expected,store,import_id):

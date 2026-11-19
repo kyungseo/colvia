@@ -69,6 +69,10 @@ def parser(*,managed=False):
         command=ordinary.add_parser(name);command.add_argument('work');command.add_argument('--receipt',required=True);command.add_argument('--statement',required=True)
     for name in ('start','review','view','plan-review'):
         ordinary.add_parser(name).add_argument('work')
+    progress=ordinary.add_parser('progress', help='Save a progress note before first submission')
+    progress.add_argument('work')
+    for name in ('receipt','done','checked','remaining','next-action'):
+        progress.add_argument('--'+name, required=True)
     submit=ordinary.add_parser('submit');submit.add_argument('work');submit.add_argument('--summary',required=True)
     for name in ('passed','failed','unavailable'):submit.add_argument('--'+name,action='append',default=[],metavar='CHECK::DETAIL')
     content=ordinary.add_parser('content');content.add_argument('work');content.add_argument('path');content.add_argument('--revision',type=int)
@@ -161,6 +165,9 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
         action=args.action
         if action=='plan':return service.plan(operation=operation,work=args.work,title=args.title,goal=args.goal,scope=args.path,checks=args.check,excludes=args.exclude,replace_receipt=args.replace_receipt)
         if action in ('approve','accept','revise'):return getattr(service,action)(operation=operation,work=args.work,receipt=args.receipt,statement=args.statement)
+        if action=='progress':
+            from .progress import NOTE_FIELDS, save
+            return save(service, args.work, operation, args.receipt, {key:getattr(args,key) for key in NOTE_FIELDS})
         if action=='start':return service.start(operation=operation,work=args.work)
         if action=='view' and display:
             root=store.root().ref
