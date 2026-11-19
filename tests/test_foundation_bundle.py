@@ -1,5 +1,6 @@
 import hashlib,importlib.util,os,subprocess,sys,tempfile,unittest,zipfile
 from pathlib import Path
+from colvia.guide_topics import GUIDE_FILES, TOPIC_NAMES
 from colvia.codec import RecordError,decode_canonical
 from colvia.updates.bootstrap import inspect_bundle
 from colvia.updates.package import stage_archive
@@ -37,14 +38,19 @@ class BundleTests(unittest.TestCase):
         env=dict(os.environ,PYTHONPATH='/invalid',PYTHONHOME='/invalid')
         p=subprocess.run([sys.executable,'-I','-B',staged.manager,'--help'],env=env,capture_output=True,text=True,timeout=10)
         self.assertEqual(0,p.returncode,p.stderr);self.assertIn('connect-preview',p.stdout)
-    def stage_checked(self,result):
+    def stage_checked(self,result,slots=None):
         target=dict(length=result['length'],sha256=result['sha256'],custom={'colvia':dict(version=1,channel='preview',os=self.kw['os_name'],architecture=self.kw['architecture'],release='synthetic',sequence=1,manifest_sha256=result['manifest_sha256'])})
-        slots=RuntimeSlots.create(self.root/('slots-'+self.kw['architecture']),os_name=self.kw['os_name'],architecture=self.kw['architecture'])
+        if slots is None:
+            slots=RuntimeSlots.create(self.root/('slots-'+self.kw['architecture']),os_name=self.kw['os_name'],architecture=self.kw['architecture'])
         return stage_archive(self.kw['output'],root=slots.root,slot='candidate',target=target,channel='preview',os_name=self.kw['os_name'],architecture=self.kw['architecture'])
     def test_windows_generated_manifest_passes_slot_validation(self):
         for architecture in ('arm64','x64'):
             self.kw.update(os_name='windows',architecture=architecture,output=self.root/(architecture+'.zip'))
-            result=bundle.assemble(**self.kw);self.stage_checked(result)
+            result=bundle.assemble(**self.kw)
+            staged=self.stage_checked(result)
+            for filename in GUIDE_FILES.values():
+                self.assertEqual((self.kw['source']/'adapters/foundation-work'/filename).read_bytes(),
+                                 (Path(staged.product).parent/'adapters/colvia-work'/filename).read_bytes())
     def test_receiver_inventory_is_packaged_without_registration(self):
         from colvia.updates.notice_app import PARTS,PREFIX
         app=self.root/'ColviaWork.app';app.mkdir()
@@ -57,6 +63,48 @@ class BundleTests(unittest.TestCase):
             self.assertIn('native-notices',decode_canonical(z.read('manifest.json'))['features'])
         self.stage_checked(result)
         self.assertFalse(result['runtime_execution_verified'])
+
+    def test_verified_guide_from_staged_bundle(self):
+        import contextlib, io, json
+        from unittest.mock import patch
+        from colvia.cli import main
+        from colvia.managed_entry import ManagedEntry
+        from colvia.management import ManagerHome
+
+        result = bundle.assemble(**self.kw)
+        home = ManagerHome.create(self.root/'home', os_name='macos', architecture='arm64')
+        slot = self.stage_checked(result, home.slots)
+        pointer = dict(slot=slot.slot, manifest_sha256=result['manifest_sha256'])
+        home.slots.initialize(pointer)
+        with patch('colvia.managed_entry.process_runtime', return_value=(slot.python, '3.14.7', '3.54.0')), \
+             patch('colvia.managed_entry.current_platform', return_value=('macos', 'arm64')):
+            entry = ManagedEntry(home.root, pointer=pointer)
+        with patch.object(entry, 'workspace', side_effect=AssertionError('guide opened records')):
+            for topic, filename in GUIDE_FILES.items():
+                args = ['guide'] + ([topic] if topic else [])
+                expected = (self.kw['source']/'adapters/foundation-work'/filename).read_bytes().decode('utf-8')
+                for structured in (False, True):
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        self.assertEqual(0, main((['--json'] if structured else []) + args, entry=entry))
+                    if structured:
+                        self.assertEqual({'guide': expected}, json.loads(output.getvalue()))
+                    else:
+                        self.assertEqual(expected + '\n', output.getvalue())
+            self.assertIn('read `guide management` before submitting', entry.guide('work'))
+            short = entry.guide()
+            self.assertLessEqual(len(short.encode()), 5000)
+            self.assertLessEqual(len(short.splitlines()), 75)
+            for topic in TOPIC_NAMES:
+                self.assertIn('guide ' + topic, short)
+            document = Path(slot.product).parent/'adapters/colvia-work/work.md'
+            raw = document.read_bytes()
+            document.write_bytes(b'X' + raw[1:])
+            with self.assertRaisesRegex(RecordError, 'managed-guide-changed'):
+                entry.guide('work')
+            document.unlink()
+            with self.assertRaisesRegex(RecordError, 'managed-guide-unavailable'):
+                entry.guide('work')
 
     def test_foundation_guides_resolve_inside_the_prepared_archive(self):
         import posixpath,re
@@ -71,7 +119,8 @@ class BundleTests(unittest.TestCase):
         }
         self.kw['guides']=bundle.guide_sources(self.kw['source'])
         guides={**self.kw['guides'],
-                'adapters/colvia-work/SKILL.md':self.kw['source']/'adapters/foundation-work/SKILL.md'}
+                **{'adapters/colvia-work/'+name:self.kw['source']/'adapters/foundation-work'/name
+                   for name in GUIDE_FILES.values()}}
         result=bundle.assemble(**self.kw)
         with zipfile.ZipFile(self.kw['output']) as archive:
             names=set(archive.namelist())

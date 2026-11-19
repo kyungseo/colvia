@@ -141,6 +141,23 @@ class ManagedEntryTests(unittest.TestCase):
                 with contextlib.redirect_stdout(output):code=main(['guide'],entry=self.entry)
                 self.assertEqual(0,code);self.assertIn('Bundled guidance',output.getvalue())
         with self.assertRaisesRegex(RecordError,'managed-guide-unavailable'):self.entry.guide()
+    def test_invalid_topic_stays_out_of_output_and_old_slot_cannot_serve_a_loose_file(self):
+        import json
+        directory = self.manager.root/'slots/one/adapters/colvia-work'
+        directory.mkdir(parents=True)
+        (directory/'work.md').write_text('unlisted guide')
+        with self.assertRaisesRegex(RecordError, 'managed-guide-unavailable'):
+            self.entry.guide('work')
+        for bad in (['WORK'], [''], ['../private'], ['--private'], ['work', 'private']):
+            for prefix in ([], ['--json']):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+                    self.assertEqual(2, main(prefix + ['guide', *bad], entry=self.entry))
+                self.assertNotIn('private', output.getvalue())
+                self.assertIn('recovery', output.getvalue())
+                if prefix:
+                    self.assertEqual('invalid-guide-topic', json.loads(output.getvalue())['error'])
+
     def test_project_launcher_manager_is_bound_without_opening_work_records(self):
         with patch.object(self.entry,'workspace',side_effect=AssertionError('must not open Work records')):
             output=io.StringIO()

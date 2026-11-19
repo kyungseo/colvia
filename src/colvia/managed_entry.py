@@ -8,6 +8,7 @@ from pathlib import Path
 import argparse,platform,sqlite3,sys,uuid,hashlib,os
 from .codec import decode_canonical,require,RecordError
 from .management import ManagerHome
+from .guide_topics import GUIDE_FILES
 from .storage.authority import Authority
 from .updates.lease import RuntimeLease,open_managed_store
 from .adapters.git import Git,discover
@@ -125,16 +126,20 @@ class ManagedEntry:
             require(hashlib.sha256(raw).hexdigest()==self.pointer['manifest_sha256'],'slot-manifest-mismatch')
             return inspect_assets(slot,decode_canonical(raw),self.home.files,platform=current_platform())
 
-    def guide(self):
+    def guide(self, topic=None):
+        require(topic in GUIDE_FILES, 'invalid-guide-topic')
+        name = 'adapters/colvia-work/' + GUIDE_FILES[topic]
         with self.lease.hold():
             slot=self.home.slots.root/'slots'/self.pointer['slot']
             raw_manifest=self.home.files.read(slot/'manifest.json',4*1024*1024)
             require(hashlib.sha256(raw_manifest).hexdigest()==self.pointer['manifest_sha256'],'slot-manifest-mismatch')
             manifest=decode_canonical(raw_manifest)
-            name='adapters/colvia-work/SKILL.md'
             matches=[row for row in manifest['inventory'] if row['path']==name]
             require(len(matches)==1,'managed-guide-unavailable')
-            raw=self.home.files.read(slot/name,128*1024)
+            try:
+                raw = self.home.files.read(slot/name, 128*1024)
+            except (FileNotFoundError, NotADirectoryError, IsADirectoryError) as exc:
+                raise RecordError('managed-guide-unavailable') from exc
             require(len(raw)==matches[0]['size'] and hashlib.sha256(raw).hexdigest()==matches[0]['sha256'],'managed-guide-changed')
             return raw.decode('utf-8')
     def git(self):

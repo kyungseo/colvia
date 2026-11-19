@@ -79,7 +79,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 
 | 명령 | 하는 일 |
 | --- | --- |
-| `guide` | 설치본에 동봉된 에이전트 작업 안내를 읽습니다. 프로젝트 기록을 열지 않습니다. |
+| `guide` | 짧은 시작 안내를 엽니다. 제출·수락은 `guide work`, 중단 후 복구는 `guide recovery`처럼 필요한 주제를 붙여 읽을 수 있습니다. 두 방식 모두 프로젝트 기록을 열지 않고 설치본에서 검증한 안내를 읽습니다. |
 | `ordinary list` | 프로젝트의 Work 목록을 봅니다. |
 | `ordinary view`, `ordinary review`, `ordinary content` | Work의 상태, 검토할 제출본, 보관된 본문을 봅니다. |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | 계획 기록부터 범위 승인, 제출, 수락, 수정 요청, 보관까지 Work를 진행합니다. |

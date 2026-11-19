@@ -1,6 +1,8 @@
 """Concise human output; machine receipts and source paths require explicit JSON."""
 import json
 
+from .guide_topics import TOPIC_NAMES
+
 
 def _diagnostic_item(item):
     label={'addition':'추가','modification':'수정','deletion':'삭제','proof-mismatch':'대조 근거 불일치'}.get(item['change'],'변경 확인 필요')
@@ -324,7 +326,11 @@ MESSAGES={
 
 
 def failure(code):
+    if code == 'invalid-guide-topic':
+        return '다음 안내 중 하나를 선택하세요: ' + ', '.join(TOPIC_NAMES) + '. JSON 출력을 원하면 guide 앞에 --json을 붙이세요.'
     recovery={
+        'managed-guide-unavailable':'설치본에서 요청한 안내를 찾을 수 없습니다. 해당 작업을 멈추고 설치 상태를 확인하세요.',
+        'managed-guide-changed':'설치한 안내가 검증된 내용과 다릅니다. 해당 작업을 멈추고 설치 상태를 확인하세요.',
         'git-credential-blocked':'Git에 기록할 내용에서 자격증명 형태의 값을 찾았습니다. 설정은 환경변수 참조로 바꾸고 수정본을 제출·수락한 뒤 다시 준비하세요. 커밋 메시지에 있으면 메시지를 수정하세요.',
         'git-protected-path':'비밀 설정용 경로의 파일은 Git에 추가하거나 수정할 수 없습니다. 실제 값은 로컬에 두고 공유할 설정 예시는 별도 파일로 준비하세요.',
         'git-protected-copy':'교체하거나 삭제하는 비밀 설정 파일의 이전 내용이 다른 반영 대상에 그대로 들어 있습니다. 공유할 파일에서 실제 값을 제거한 뒤 다시 제출하세요.',
