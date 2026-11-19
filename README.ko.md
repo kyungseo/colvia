@@ -10,7 +10,7 @@
 
 [설치와 프로젝트 연결](manual/ko/install.md) · [따라 하기](manual/ko/tutorial.md) · [사용 안내](manual/ko/README.md) · [Colvia 한눈에 보기](manual/ko/overview.md) · [지원 환경](manual/ko/reference.md#environments) · [릴리스 노트와 다운로드](https://github.com/colvia/downloads/releases)
 
-현재 배포판 · [Colvia Preview v0.1.1](https://github.com/colvia/downloads/releases/tag/v0.1.1)
+[현재 공개된 Preview 버전 확인](https://github.com/colvia/downloads/releases)
 
 </div>
 
@@ -91,7 +91,7 @@ Codex와 Claude Code를 모두 이용 중이라면 같은 프로젝트에서 두
 
 - **Git에 결과 반영하기.** 수락한 제출본은 Colvia에 남으므로, 임시 커밋(WIP 커밋)을 만들지 않아도 나중에 현재 파일과 비교할 수 있습니다. 결과를 수락한 뒤 커밋할 변경과 스테이징 상태를 검토하고 별도로 승인합니다. Colvia는 다른 파일에 스테이징한 변경을 보존합니다. 선택한 파일의 스테이징 내용이 현재 커밋과 수락한 결과 중 어느 쪽에도 맞지 않으면, 스테이징한 변경을 보호하기 위해 Git 반영을 멈춥니다. [Git에 결과 반영하기](manual/ko/git.md#git-integration)
 
-### Git에 반영하기 전 자격증명 검사 · 다음 Preview
+### Git에 반영하기 전 자격증명 검사 · v0.2.0
 
 Colvia로 Git에 반영할 때는 내 기기에서 변경 내용을 먼저 검사합니다. 소스에 직접 적은 API 키나 토큰을 알아보거나, 변경에 `.env` 같은 보호 파일의 추가·수정이 포함되면 이번 변경의 Git 객체를 만들기 전에 멈춥니다. 안내에서 값을 드러내지 않고 고칠 위치를 짚어 줍니다.
 
