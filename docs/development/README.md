@@ -294,7 +294,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [Convert a connected plain folder to a Git project](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — P1, after the first Preview. Enable Git while retaining the existing Colvia project.
 
-- [Shorter Colvia startup guidance in new chats](product-evidence-and-followups.md#p1-short-guide-at-the-start-of-a-new-chat) — P1. Read a short guide at entry and load the submission or recovery procedure when needed.
+- [Shorter Colvia startup guidance in new chats](product-evidence-and-followups.md#p1-short-guide-at-the-start-of-a-new-chat) — P1. Read a short guide at entry and load the submission or recovery procedure when needed. [Selected implementation and verification](FEAT-20261119-001-startup-guide.md).
 
 - [Add paths to the same Work](product-evidence-and-followups.md#p1-add-paths-to-the-same-work) — P1. When investigation reveals more files to edit, approve the added paths and checks and continue the same Work.
 

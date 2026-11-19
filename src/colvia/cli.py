@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .adapters.git import Git,discover,read_file
 from .binding import Locator
+from .guide_topics import TOPIC_NAMES
 from .codec import RecordError,require
 from .planning import Planning,page_heads
 from .presentation import human,failure
@@ -34,7 +35,8 @@ def parser(*,managed=False):
     p.add_argument('--json',action='store_true');p.add_argument('--operation',default=None)
     sub=p.add_subparsers(dest='group',required=True)
     if managed:
-        sub.add_parser('guide',help='Read the bundled agent guide without opening project records')
+        guide = sub.add_parser('guide', help='Read the startup guide or one verified topic without opening project records')
+        guide.add_argument('topics', nargs='*', metavar='TOPIC', help='One of: ' + ', '.join(TOPIC_NAMES))
         manager=sub.add_parser('manage',add_help=False,help='Use this verified installation manager')
         manager.add_argument('--help',action='store_true',dest='manager_help');manager.add_argument('--json',action='store_true',dest='manager_json')
         manager.add_argument('arguments',nargs=argparse.REMAINDER)
@@ -275,11 +277,17 @@ def command_readonly(args):
 
 
 def main(argv=None,*,entry=None):
-    args=parser(managed=entry is not None).parse_args(argv);store=None
+    command_parser = parser(managed=entry is not None)
+    args, extras = command_parser.parse_known_args(argv)
+    if extras and args.group != 'guide':
+        command_parser.error('unrecognized arguments: ' + ' '.join(extras))
+    store = None
     args.operation=args.operation or 'op-'+uuid.uuid4().hex
     try:
         if args.group=='guide':
-            value=entry.guide()
+            require(not extras and len(args.topics) <= 1, 'invalid-guide-topic')
+            topic = args.topics[0] if args.topics else None
+            value = entry.guide(topic)
             print(json.dumps(dict(guide=value),ensure_ascii=False) if args.json else value)
             return 0
         if entry is not None and args.group=='execution' and args.action=='readiness':

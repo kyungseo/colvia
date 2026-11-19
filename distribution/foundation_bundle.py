@@ -6,6 +6,7 @@ release trust are separate steps. The output is not a publicly qualified asset.
 """
 from pathlib import Path
 import hashlib,os,stat,zipfile
+from colvia.guide_topics import GUIDE_FILES
 from colvia.codec import canonical_bytes,require
 from colvia.tree import canonical_entries
 from colvia.worker_state import path_namespace
@@ -82,7 +83,8 @@ def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,
             add(prefix+'/'+relative.as_posix(),path)
     tree(source/'src/colvia','lib/colvia',python_only=True)
     tree(runtime,'runtime');tree(verifier,'lib')
-    add('adapters/colvia-work/SKILL.md',source/'adapters/foundation-work/SKILL.md')
+    for filename in GUIDE_FILES.values():
+        add('adapters/colvia-work/'+filename, source/'adapters/foundation-work'/filename)
     executable='native/colvia.exe' if os_name=='windows' else 'native/colvia'
     add(executable,native_entry);add('trust/root.json',anchor)
     if notice_app is not None:

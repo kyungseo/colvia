@@ -79,7 +79,7 @@ Your agent normally runs these commands for you. To run one yourself, use `./col
 
 | Command | What it does |
 | --- | --- |
-| `guide` | Reads the agent work guide bundled with the installation. It does not open project records. |
+| `guide` | Shows the short startup guide. For a specific step, append a topic such as `guide work` (submission and acceptance) or `guide recovery` (interrupted work). Both forms read verified instructions without opening project records. |
 | `ordinary list` | Lists the project’s Works. |
 | `ordinary view`, `ordinary review`, `ordinary content` | Shows a Work’s state, a submission awaiting review, and retained contents. |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | Moves a Work from a recorded plan through scope approval, submission, acceptance, revision requests and archiving. |
