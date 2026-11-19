@@ -13,7 +13,7 @@
 
 [Install and connect a project](manual/en/install.md) · [Follow along](manual/en/tutorial.md) · [User guide](manual/en/README.md) · [Colvia at a glance](manual/en/overview.md) · [Supported environments](manual/en/reference.md#environments) · [Release notes and downloads](https://github.com/colvia/downloads/releases)
 
-[Find the currently published Preview](https://github.com/colvia/downloads/releases)
+[Official installation page](https://colvia.github.io/downloads/#en)
 
 </div>
 

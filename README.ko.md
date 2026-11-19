@@ -10,7 +10,7 @@
 
 [설치와 프로젝트 연결](manual/ko/install.md) · [따라 하기](manual/ko/tutorial.md) · [사용 안내](manual/ko/README.md) · [Colvia 한눈에 보기](manual/ko/overview.md) · [지원 환경](manual/ko/reference.md#environments) · [릴리스 노트와 다운로드](https://github.com/colvia/downloads/releases)
 
-[현재 공개된 Preview 버전 확인](https://github.com/colvia/downloads/releases)
+[공식 설치 페이지](https://colvia.github.io/downloads/#ko)
 
 </div>
 
