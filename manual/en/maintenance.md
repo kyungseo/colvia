@@ -131,26 +131,28 @@ This is a **temporary manual procedure** until Colvia offers automatic removal o
 
 A normal uninstall keeps your Work for reinstallation. Use these steps only when you intend to discard **the Work, approvals, submissions and recovery files for every project in this account**. To keep using other projects, [disconnect only the project you are leaving](#disconnect).
 
-1. In the account that installed Colvia, identify **every project you connected**. [Export any records you want to keep](records.md#backup) to a separate location and verify that you can recover them. In the folder where you originally connected each project, preview and approve [disconnection](#disconnect). You can ask your agent, “Show me what Colvia added to this folder and disconnect it.” Check that your documents, code, Git history, staged changes and existing agent instructions remain. Stop if a folder is missing, disconnection is refused, or you cannot account for all connections. Deleting the records first removes the information needed to detach the remaining folders.
-2. If you enabled notifications, [turn them off](#notifications). Finish active operations and complete **steps 1 and 2 only** of the [normal uninstall](#uninstall). Continue only after removal succeeds. Keep the recovery files if removal fails or stops.
-3. Run the command below to **select the exact default installation folder**. Inspect its contents for personal files. Return to its parent and move only the selected `Colvia` folder to the Trash or Recycle Bin. It contains every project’s SQLite records, built-in backups, update trust data and uninstall recovery files. These commands cover the default installation location.
+1. **Account for the projects you connected.** This Preview has no command that lists every connected folder. The manager’s `status` count can include records kept after disconnection. In a plain folder, look for the hidden file `.colvia-link.json`. In a Git project, run `git rev-parse --path-format=absolute --git-common-dir` and look for `colvia/connection.json` inside the reported directory. Use these files for identification only. If you cannot account for all connections or the originally connected worktree is gone, stop after the record-preserving uninstall.
+2. [Export any Work you want to keep](records.md#backup) **outside the folders you will remove**. Confirm that export completed and locate the saved file. Keep your project files separately. In each project’s originally connected folder, ask your agent, “Show me what Colvia added. After I approve, disconnect the project and confirm it finished.” For multiple Git worktrees, use the originally connected worktree. Confirm that [disconnection](#disconnect) reached `detached` for each project. The agent can read `state` from the manager’s `--json` output. Stop on `pending` or an error. Project files, your own instructions, Git history and staged changes stay in place.
+3. [Turn off notifications](#notifications) if enabled. Finish active work, close windows and processes using Colvia, then complete **steps 1 and 2 only** of the [normal uninstall](#uninstall). Check the output for your operation ID, `"state": "removed"` and `"records_preserved": true`. Keep the management folder if removal stopped, failed, is in recovery, or you used a custom installation path.
+4. Run the command below to **select the default management folder**. It holds every project’s SQLite records, built-in backups, update trust data and uninstall recovery files. Inspect it for personal files, then **run the same command again** to reselect it. Move the selected item to the Trash or Recycle Bin only if its name is `Colvia` and its full path matches [this account’s default management folder](reference.md#locations). Cancel if nothing is selected, the item is a link or junction, or the system offers immediate permanent deletion. On Windows, use ordinary Delete, never Shift+Delete.
 
    macOS Terminal
 
    ```bash
-   open -R "$HOME/Library/Application Support/Colvia"
+   folder="$HOME/Library/Application Support/Colvia"
+   if [ -d "$folder" ] && [ ! -L "$folder" ]; then open -R "$folder"; else echo "Cannot verify the default Colvia folder."; fi
    ```
 
    Windows PowerShell
 
    ```powershell
    $folder = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Colvia'
-   if (-not (Test-Path -LiteralPath $folder -PathType Container)) { throw 'Colvia folder not found.' }
-   Start-Process explorer.exe -ArgumentList ('/select,"' + $folder + '"')
+   $item = Get-Item -LiteralPath $folder -Force -ErrorAction SilentlyContinue
+   if ($item -and $item.PSIsContainer -and -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Start-Process explorer.exe -ArgumentList ('/select,"' + $folder + '"') } else { Write-Warning 'Colvia folder not found.' }
    ```
 
-4. Installer preparation folders may remain in the same parent folder. Move each `Colvia-bootstrap-…` folder to the Trash or Recycle Bin only when its **exact path** matches a `Recovery files:` line from this account’s installer output. Keep folders of uncertain origin. Select any downloaded installer scripts and exported backups separately where you saved them.
-5. Check that the default `Colvia` folder is gone and your project files remain. To delete permanently, select **only the items you just moved** in the Trash or Recycle Bin and permanently delete them. You can no longer recover those records or undo removal from that recovery copy. OS notification permissions, previously delivered notifications and copies retained by system backups or sync services are managed separately.
+5. Move a `Colvia-bootstrap-…` preparation folder to the Trash or Recycle Bin only if its **exact path** matches a `Recovery files:` line in your installer output. Keep it if you no longer have the log or cannot verify its origin. Leave the exports and personal backups you kept in step 2 outside this cleanup.
+6. Confirm that the default `Colvia` folder is gone and that your project files and chosen backups remain. If you want permanent deletion, use the deletion date to select only the items you just moved. On Windows, check the original location too. Once permanently deleted, those records and recovery files cannot be restored from the Trash or Recycle Bin. OS notifications and permissions, manually configured app access or PATH entries, Git history, and system backups such as Time Machine or synced copies can remain.
 
 ---
 

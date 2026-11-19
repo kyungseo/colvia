@@ -55,7 +55,7 @@ Direct agent invocation is disabled in the first Preview. Run the installed laun
 | `operations/` | Progress records for management operations and installation files retained during removal |
 | `trust/` | Trust state used to verify updates |
 
-Do not edit or delete files in this folder yourself. If you need to recover, use the procedures under [updates and recovery](maintenance.md#update-recovery). For an agent to read and write records, you may need to grant access to this folder in the app or CLI.
+Do not edit or delete files in this folder yourself. If you need to recover, use the procedures under [updates and recovery](maintenance.md#update-recovery). For an agent to read and write records, you may need to grant access to this folder in the app or CLI. After a completed uninstall, follow the [temporary manual cleanup procedure](maintenance.md#remove-all) if you also want to discard the account’s records.
 
 ### The project folder
 

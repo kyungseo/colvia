@@ -55,7 +55,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `operations/` | 설치·업데이트·연결 같은 관리 작업의 진행 기록과 제거할 때 옮겨 둔 설치 파일 |
 | `trust/` | 업데이트 검증에 쓰는 신뢰 정보 |
 
-이 폴더의 파일을 직접 고치거나 지우지 마세요. 복구가 필요하면 [업데이트와 중단 복구](maintenance.md#update-recovery)의 절차를 사용하세요. 에이전트가 기록을 읽고 쓰려면 앱이나 CLI에서 이 폴더의 접근을 허용해야 할 수 있습니다.
+이 폴더의 파일을 직접 고치거나 지우지 마세요. 복구가 필요하면 [업데이트와 중단 복구](maintenance.md#update-recovery)의 절차를 사용하세요. 에이전트가 기록을 읽고 쓰려면 앱이나 CLI에서 이 폴더의 접근을 허용해야 할 수 있습니다. 설치 제거를 마치고 계정 기록까지 버릴 때는 [임시 수동 삭제 안내](maintenance.md#remove-all)를 따르세요.
 
 ### 프로젝트 폴더
 

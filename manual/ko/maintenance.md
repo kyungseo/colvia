@@ -85,7 +85,7 @@ Windows에서 수신기가 업데이트됐다면 새 알림을 보내기 전에 
 
 Colvia를 설치한 표준 계정의 기본 관리 폴더에서 진행합니다. 진행 중인 Work·Git 반영·업데이트를 먼저 마무리하고 Colvia 작업 창과 알림 창을 닫으세요. [macOS ARM64](https://colvia.github.io/downloads/preview/macos-arm64/install.sh), [Windows x64](https://colvia.github.io/downloads/preview/windows-x64/install.ps1), [Windows ARM64](https://colvia.github.io/downloads/preview/windows-arm64/install.ps1) 중 내 환경에 맞는 공식 설치 스크립트를 파일로 저장하세요. 파일을 저장한 폴더에서 macOS 터미널이나 일반 Windows PowerShell을 사용하세요.
 
-**1. 제거 범위를 미리 보세요.** 사용하지 않은 실행 ID를 고르세요. 예에서는 `remove-colvia`입니다.
+**1. 제거 범위를 미리 보세요.** 관리 폴더의 `operations/` 아래에 같은 이름의 폴더가 없는 실행 ID를 고르세요. 예에서는 `remove-colvia`입니다.
 
 macOS 터미널
 
@@ -131,26 +131,28 @@ Colvia는 제거한 설치 파일을 [관리 폴더](reference.md#locations)의 
 
 일반 제거는 다시 설치했을 때 Work를 이어갈 수 있도록 기록을 남깁니다. **이 계정에서 모든 프로젝트의 Work·승인·제출본과 복구 자료까지 버릴 때만** 아래 절차를 따르세요. 일부 프로젝트를 계속 쓴다면 [그만 쓸 프로젝트만 연결 해제](#disconnect)하세요.
 
-1. 설치한 계정에서 먼저 **연결했던 모든 프로젝트**를 확인하세요. 보관할 기록은 [별도 위치로 내보내고](records.md#backup) 복구할 수 있는지 확인하세요. 각 프로젝트를 처음 연결한 폴더에서 [연결 해제](#disconnect)를 미리 보고 승인하세요. 에이전트에게 “이 폴더에서 Colvia가 추가한 항목만 보여 주고 연결을 해제해 주세요”라고 요청해도 됩니다. 내 문서와 코드, Git 이력과 스테이징, 직접 쓴 에이전트 안내가 남았는지 확인하세요. 폴더가 없거나 해제가 거부되거나 연결 목록이 확실하지 않으면 여기서 멈추세요. 기록을 먼저 지우면 남은 연결을 정리할 근거도 사라집니다.
-2. 알림을 켰다면 [알림을 끄고](#notifications), 진행 중인 작업을 마친 뒤 [일반 제거](#uninstall)의 **1·2단계까지만** 실행하세요. 제거가 완료돼야 다음 단계로 갈 수 있습니다. 실패했거나 중단됐다면 복구 파일을 보존하세요.
-3. 아래 명령은 기본 설치 위치의 **정확한 폴더를 선택해서 보여 줍니다**. 내용을 열어 개인 파일이 섞여 있지 않은지 확인하고, 상위 폴더로 돌아와 선택한 `Colvia` 폴더만 휴지통으로 옮기세요. 이 폴더에는 모든 프로젝트의 SQLite 기록, 내장 백업, 업데이트 신뢰 정보와 제거 복구 파일이 들어 있습니다. 사용자 지정 설치 경로는 이 명령의 대상이 아닙니다.
+1. **연결했던 프로젝트를 먼저 확인하세요.** 현재 모든 연결 경로를 한 번에 열거하는 명령은 없습니다. 관리자의 `status` 숫자에는 연결을 해제하고 남긴 기록도 포함될 수 있습니다. 일반 폴더에서는 숨김 파일 `.colvia-link.json`을 확인하세요. Git 프로젝트에서는 `git rev-parse --path-format=absolute --git-common-dir`이 알려 주는 공용 폴더 안의 `colvia/connection.json`을 확인하세요. 두 파일 모두 확인용입니다. 직접 지우지 마세요. 연결했던 폴더를 모두 확인하기 어렵거나 원래 연결한 작업 폴더가 사라졌다면 기록 보존 제거까지만 진행하세요.
+2. 보관할 Work는 [기록 내보내기](records.md#backup)로 **삭제할 폴더 밖에** 저장하고, 내보내기가 완료됐는지와 저장한 파일의 위치를 확인하세요. 프로젝트 파일은 따로 보관하세요. 각 프로젝트의 원래 연결 폴더에서 에이전트에게 “Colvia가 추가한 항목을 미리 보여 주세요. 승인하면 연결을 해제하고 완료 상태를 확인해 주세요”라고 요청하세요. 여러 Git worktree가 있으면 처음 연결한 worktree에서 진행합니다. 프로젝트마다 [연결 해제](#disconnect) 결과가 `detached`인지 확인하세요. 에이전트는 관리자의 `--json` 출력에서 `state`를 볼 수 있습니다. `pending`이나 오류가 나오면 멈추세요. 프로젝트 파일, 직접 쓴 안내, Git 이력과 스테이징은 남습니다.
+3. 알림을 켰다면 [알림을 끄세요](#notifications). 진행 중인 작업을 마치고 Colvia를 사용하는 창과 프로세스를 닫은 뒤, [일반 제거](#uninstall)의 **1·2단계까지만** 실행하세요. 이번 실행 ID에 대해 `"state": "removed"`와 `"records_preserved": true`가 나왔는지 확인하세요. 중단·오류·복구 중이거나 사용자 지정 경로에 설치했다면 관리 폴더를 보존하세요.
+4. 아래 명령은 **기본 관리 폴더를 선택해 보여 줍니다**. 그 안에는 모든 프로젝트의 SQLite 기록, 내장 백업, 업데이트 신뢰 정보, 제거 복구 파일이 있습니다. 내용을 열어 개인 파일이 섞여 있지 않은지 확인한 뒤 **같은 명령을 다시 실행**하세요. 선택된 항목의 이름이 `Colvia`이고 경로가 [내 계정의 기본 관리 폴더](reference.md#locations)와 일치할 때만 일반 휴지통으로 옮기세요. 선택된 항목이 보이지 않거나 링크·정션이거나 즉시 영구 삭제하겠다는 대화상자가 뜨면 취소하세요. Windows에서는 Shift+Delete를 사용하지 마세요.
 
    macOS 터미널
 
    ```bash
-   open -R "$HOME/Library/Application Support/Colvia"
+   folder="$HOME/Library/Application Support/Colvia"
+   if [ -d "$folder" ] && [ ! -L "$folder" ]; then open -R "$folder"; else echo "기본 Colvia 폴더를 확인할 수 없습니다."; fi
    ```
 
    Windows PowerShell
 
    ```powershell
    $folder = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Colvia'
-   if (-not (Test-Path -LiteralPath $folder -PathType Container)) { throw 'Colvia 폴더를 찾을 수 없습니다.' }
-   Start-Process explorer.exe -ArgumentList ('/select,"' + $folder + '"')
+   $item = Get-Item -LiteralPath $folder -Force -ErrorAction SilentlyContinue
+   if ($item -and $item.PSIsContainer -and -not ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Start-Process explorer.exe -ArgumentList ('/select,"' + $folder + '"') } else { Write-Warning 'Colvia 폴더를 찾을 수 없습니다.' }
    ```
 
-4. 같은 상위 폴더에 설치 준비용 폴더가 남을 수 있습니다. 현재 계정의 설치 출력에서 `Recovery files:` 뒤에 표시됐던 **정확한 경로**와 일치하는 `Colvia-bootstrap-…` 폴더만 개별적으로 휴지통에 옮기세요. 이름만 비슷하거나 출처를 확인할 수 없으면 보존하세요. 별도로 저장한 설치 스크립트와 내보낸 백업은 직접 저장한 위치에서 선택해 정리하세요.
-5. 기본 설치 경로에서 `Colvia` 폴더가 사라지고 프로젝트 파일은 남아 있는지 확인하세요. 영구 삭제를 원하면 휴지통에서 **이번에 옮긴 항목만** 선택해 영구 삭제하세요. 이후에는 그 기록과 제거 복구본으로 되돌릴 수 없습니다. OS의 알림 권한·기존 알림, 시스템 백업이나 동기화 서비스가 보관한 사본은 각 서비스에서 따로 관리합니다.
+5. 설치 출력의 `Recovery files:` 뒤에 나온 **정확한 경로**와 일치하는 `Colvia-bootstrap-…` 폴더만 개별적으로 휴지통에 옮기세요. 설치 로그가 없거나 출처가 불확실하면 그 폴더는 남겨 두세요. 2단계에서 보관한 내보내기 파일과 개인 백업은 삭제 대상에서 제외하세요.
+6. 기본 위치에서 `Colvia` 폴더가 사라졌고 프로젝트 파일과 보관할 백업이 남았는지 확인하세요. 영구 삭제하려면 휴지통에서 방금 옮긴 항목만 삭제 날짜로 구분하세요. Windows에서는 원래 위치도 확인하세요. 이 단계부터 해당 기록과 복구 파일은 휴지통에서 되살릴 수 없습니다. OS 알림과 권한, 사용자가 설정한 앱 접근 권한·PATH, Git 이력, Time Machine 등 시스템 백업과 동기화 사본은 별도로 남을 수 있습니다.
 
 ---
 
