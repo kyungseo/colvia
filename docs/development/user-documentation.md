@@ -1,6 +1,6 @@
 # Writing the Colvia user guides
 
-These guidelines cover the repository READMEs, `manual/` and the guides shipped with the Colvia Preview.
+These guidelines cover the repository READMEs, `manual/` and the guides shipped with the Colvia Preview. For the language of a particular page, see [Document language](document-ownership.md#document-language).
 
 Write for someone who opened the page to make a decision or do one thing. Lead with the outcome, show a realistic request and explain what the reader gets back. Use a fresh chat, a changed file or a pending decision to show when a project record matters. Give a first-time reader the shortest path to a result. Put prerequisites before commands.
 

@@ -1,5 +1,7 @@
 # Development Index
 
+Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
+
 - [Development records and documentation checkpoints](CHORE-20261117-003-development-record-and-documentation-checkpoints.md) — Implementation of the DR-0003 amendment and checks against representative cases.
 
 - [Public guides, installation instructions, and repository entry points](CHORE-20261117-002-manual-and-entry-alignment.md) — Scope and verification record.

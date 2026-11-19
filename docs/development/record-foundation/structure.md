@@ -2,34 +2,36 @@
 
 Status: implementation design draft. This document explains module ownership and rationale; it does not activate a new runtime format. The [task](../FEAT-20261106-002-record-foundation.md) owns progress, [design](design.md) owns the proposed store contract, and [runtime/extension](runtime-and-extension.md) owns install and adapter requirements. Private comparison names and historical delivery metadata are not product dependencies.
 
+English reference, 2026-11-19. The [original wording at the translation base](https://github.com/kyungseo/colvia/blob/eed271ad5aa665f0002c9eded69d82f224da9ce0/docs/development/record-foundation/structure.md) governs the dated decisions and evidence. The Owner [accepted this English reference](../document-language-result-review.md#owner-acceptance).
+
 ## Layers And Dependencies
 
-제안서의 화살표는 사용자 흐름으로는 유용하지만 import 순서와 같지는 않다. 아래쪽이 UI·Git·OS를 알지 않는 의존 방향으로 고정한다.
+The proposal’s user flow and the import graph serve different purposes. The arrows below show the fixed dependency direction. Lower layers do not depend on the UI, Git or the operating system.
 
 ```text
 CLI / View / agent entry             Composition root
-           │                              │ 조립
+           │                              │ wires adapters
            ▼                              ▼
 Application: Work, acceptance, query, lifecycle services
            │             ▲
-           ▼             │ ports 구현
+           ▼             │ implement ports
 Domain / schema / ports  ◀── storage, Git/non-Git observation,
                               platform, provider, notification adapters
 ```
 
-| 책임 | 소유 모듈(역할명; 파일명은 구현 시 확정) | 금지 사항 |
+| Responsibility | Owning module (role names pending implementation) | Constraint |
 | --- | --- | --- |
-| Work·수락·참조 의미 | Domain/schema | OS·Git·앱 이름에 따른 결정 의미 변경 |
-| 정본 찾기·프로젝트 identity | Authority resolver | branch/remote 이름만으로 정본 추정, 구 사본 자동 승격 |
-| 작업 폴더와 앱 worktree 경계 | Workspace topology | `.claude` 이름만 보고 통째로 무시 |
-| 파일 집합·내용·정책 관측 | Observation service와 Git/non-Git adapter | 명령마다 별도 ignore 해석, 정책 변화와 내용 변화를 혼합 |
-| 불변 객체·head·transaction·복구 | Store service | 두 정본 쓰기, index/cache를 독립 권위로 취급 |
-| 실행·제출·수락 조합 | Application services | 직접 UI 출력·provider 호출을 domain에 삽입 |
-| 현재/과거 결과 조회 | Query service | 부분 조회를 전체 무결성 검사라고 표시 |
-| provider·알림·플랫폼 효과 | Capability adapters | Core 수락을 모델 판단이나 알림 클릭으로 대체 |
-| 설치·진입 안내 | Packaging/composition/agent entry | 소스 개발 지침을 설치 프로젝트에 자동 주입 |
+| Work, acceptance and references | Domain and schema | A decision has the same meaning across operating systems, Git configurations and apps. |
+| Find the authoritative records and identify the project | Authority resolver | Never infer authority from a branch or remote name alone, or automatically promote an old copy. |
+| Locate workspaces and app worktrees | Workspace topology | A directory named `.claude` is insufficient evidence to exclude its entire contents. |
+| Observe the file set, contents and policies | Observation service and Git/non-Git adapters | Commands share ignore rules. Report policy changes separately from content changes. |
+| Immutable objects, heads, transactions and recovery | Store service | Use one source of truth. Indexes and caches are derived. |
+| Coordinate execution, submission and acceptance | Application services | Keep UI output and provider calls outside the domain. |
+| Read current and historical results | Query service | A partial query cannot certify the integrity of the whole store. |
+| Provider, notification and platform effects | Capability adapters | A model judgment or a notification click cannot substitute for acceptance in Core. |
+| Installation and project entry | Packaging, composition and agent entry | Keep instructions for developing the source out of installed projects. |
 
-같은 개념의 검증을 한 곳에서 수행하되 필요한 경계의 재검사는 삭제하지 않는다. Application은 ports에 의존하고 구체 adapter는 composition root가 연결한다.
+Give each concept one owner for validation and repeat the necessary checks at its boundaries. Application services depend on ports. The composition root connects them to concrete adapters.
 
 ## S1–S11 Disposition
 
@@ -48,9 +50,9 @@ Domain / schema / ports  ◀── storage, Git/non-Git observation,
 
 ## Archive And Integrity
 
-보관은 상태·탐색 정책으로 설계하고, Work를 삭제하거나 요약문으로 대체하지 않는다. 실제 locator가 안정되기 전 파일을 임의로 옮기지 않는다. 과거 수락을 취소하거나 재개할 때도 새 사건/선택을 추가하고 봉인한 과거 bytes를 고치지 않는다.
+Archiving changes the state of a Work and how it is found. Preserve the Work and its contents. Keep files in place until their locators are stable. Revoking an acceptance or reopening work adds an event or decision while preserving the sealed bytes.
 
-봉인 체크포인트를 그대로 둔 채 그 안의 파일을 바꿀 수 있으므로, 체크포인트 hash만 보는 방식은 매번 전체 검증과 같은 보장을 하지 않는다. 불변 content-addressed 객체, 읽을 때 hash 확인, 결정 시 참조 closure 검증을 결합하고, 전체 감사와 일반 조회의 보장 범위를 구분한다. archive는 자동 GC가 아니며 공간 감소를 약속하지 않는다.
+A checkpoint can stay unchanged while a file it references is modified. Store immutable objects by content hash, check hashes on read, and verify the referenced dependencies when recording a decision. A full audit covers objects outside an ordinary query. Archiving does not run garbage collection or guarantee a reduction in storage.
 
 이번 기록에는 명령 전체 시간이 있고 내부 단계별 profiler가 없다. 파일 관측·전체 그래프 검증·실행기 해시 비용의 비율을 나눠 계산할 수 없다. managed 실행기 비용도 이번 source/Python 측정으로 대신하지 않는다. 당시 종료된 측정에 몰래 추가하지 않았으며, 이후 별도 [집중 진단](diagnostics.md)에서 시간 분해를 완료했다. 새 managed 실행기 비용은 여전히 별도 검증이다.
 

@@ -2,6 +2,8 @@
 
 Status: Driver 정적 분석·명세 제안, 2026-11-06. 동시 실행 구현·경쟁 시험을 수행한 결과가 아니다. 기준은 the prepared Colvia source input, HEAD `37ec0752fd7b1854c4f2765243826f2a73e57a6a`와 보존된 미커밋 보강이다. 소스 상대 경로는 Colvia 저장소를 기준으로 한다. 행 번호는 분석 당시 위치이며 구현 후 다시 확인한다.
 
+English reference, 2026-11-19. The [original wording at the translation base](https://github.com/kyungseo/colvia/blob/eed271ad5aa665f0002c9eded69d82f224da9ce0/docs/development/record-foundation/concurrency.md) governs the dated decisions and evidence. The Owner [accepted this English reference](../document-language-result-review.md#owner-acceptance).
+
 
 ## Decision
 
@@ -14,9 +16,9 @@ S11 네 항목 모두 새 기록 계약에 포함한다. 현재도 Work별 curre
 | ③ 내부 ID와 제목 분리 | 프로젝트/authority namespace, Work·시도·제출 ID와 사람이 읽는 제목을 분리한다. 충분한 무작위성을 가진 ID를 생성하고 중복을 검사한다. 이동·export/import에서 identity를 보존한다. 내용 hash는 무결성 식별이며 업무 identity를 대신하지 않는다 | 여러 clone의 자동 기록 병합·사용자/기기 협업 |
 | ④ 범위 겹침 | claim에 workspace, 기준점, 읽기 의존·쓰기 경로, 경로 정책 버전을 명시한다. 같은 workspace의 충돌 쓰기는 실행 전에 거부하거나 명시적 순서로 예약한다. 다른 workspace의 같은 경로는 각자 작업할 수 있지만 통합 대상에서는 다시 충돌 판정한다 | 자동 병합·줄 단위 편집 소유권·실시간 공동 편집 |
 
-clone은 namespace까지 복제할 수 있다. 고유 ID만으로 clone들이 하나의 최신 기록을 공유한다고 판단하지 않는다. 같은 ID에 다른 bytes가 오거나 서로 다른 head가 오면 충돌로 남기며 자동 last-write-wins로 합치지 않는다.
+A clone can also copy the namespace. Matching IDs alone cannot establish that two clones share the latest history. Different bytes under the same ID, or divergent heads, constitute a conflict. Never resolve it automatically by keeping the last write.
 
-CAS는 기록 경합을 막지만 외부 editor와 모델 도구의 파일 쓰기까지 잠그지 않는다. 범위 claim도 관찰 계약이지 OS 접근 차단이 아니다. 제출·수락 때 실제 파일과 정책을 다시 대조해야 한다. 첫 공개의 실행 정책을 직렬로 두더라도 여러 active/review Work의 조회·보존과 기존 한정 worker/umbrella 계약을 없애지 않는다.
+Compare-and-swap (CAS) protects competing record updates. External editors and agent tools can still write files. A scope claim defines what to observe. It does not enforce OS access control. Recheck actual files and policy at submission and acceptance. Even if the first release executes Works serially, it must allow multiple active or in-review Works to be queried and retained, and must preserve the existing bounded worker and umbrella contracts.
 
 ## Current Code Inventory
 
@@ -40,14 +42,14 @@ CAS는 기록 경합을 막지만 외부 editor와 모델 도구의 파일 쓰�
 
 ## Acceptance Cases For The New Format
 
-구현 뒤에 확인할 조건이며 이번에 실행한 결과가 아니다.
+Use these criteria after implementation. This design review did not execute the cases.
 
-1. 두 Work가 active/review로 공존하고 각각의 head·baseline·알림 링크를 잃지 않는다.
-2. 같은 Work의 같은 예상 head로 경쟁한 두 쓰기에서 한 개만 게시되고, 패자는 재검토를 요구한다. 서로 다른 Work 게시도 authority transaction의 부분 상태를 노출하지 않는다.
-3. workspace가 다른 두 writer도 같은 authority lock으로 모인다. 중단 후 공개된 선택과 orphan 객체를 구별하고 복구한다.
-4. 제목이 같거나 같은 사용자 slug를 가진 서로 다른 Work가 충돌하지 않는다. 충돌 ID 입력은 거부하며 clone 자동 병합으로 해결하지 않는다.
-5. 같은 workspace의 겹친 쓰기, 다른 파일 쓰기, 경로 alias·대소문자·부모/자식 경로·삭제/추가·rename을 구별한다. 다른 workspace에서 같은 경로를 편집한 결과는 별도 결과로 남고, 통합에서 충돌을 드러낸다.
-6. 외부 편집은 claim에 없더라도 다시 감지한다. 경고만 보인 뒤 잘못된 수락을 허용하지 않는다.
-7. 조회·기존 worker/umbrella·수락 위임·한 건 delivery의 현재 의미가 보존된다. 여러 Work 보관을 병렬 자동 실행 성공으로 표시하지 않는다.
+1. Two Works can coexist in active or review state. Each retains its head, baseline and notification link.
+2. When two writes expect the same head of the same Work, only one publishes. The other requires review. Publication for distinct Works must also hide partial authority transactions.
+3. Writers in different workspaces use the same authority lock. Recovery after interruption distinguishes the published selection from orphaned objects.
+4. Distinct Works can share a title or user-supplied slug. Reject a colliding internal ID. Never resolve it by merging clones automatically.
+5. Check that overlapping writes are distinguished from disjoint writes in the same workspace, including path aliases, case differences, parent/child paths, additions, deletions and renames. Edits to the same path in different workspaces remain separate results. Surface conflicts at integration.
+6. Detect external edits again even when they fall outside a claim. A warning alone must never permit acceptance of a mismatched result.
+7. Preserve query, worker/umbrella, delegated acceptance and single-delivery semantics. Retaining multiple Works must not be reported as successful automatic parallel execution.
 
 동시성 코드·OS 경합 검증은 실행되지 않았다. 현재 측정 목록을 바꾸지 않았으며, [구현 명세](design.md)의 미래 수락 조건으로 연결한다.

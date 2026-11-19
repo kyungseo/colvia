@@ -1,6 +1,6 @@
 # Where Colvia documents and artifacts belong
 
-Use this map when developing Colvia itself. It locates existing rules; it does not create a new approval process or make source-development documents part of an installed project. Revisit it when planning, resuming or closing source work, including after the first public release.
+Use this map when developing Colvia itself. It locates existing rules and describes how to apply the documentation language conventions; it does not create a new approval process or make source-development documents part of an installed project. Revisit it when planning, resuming or closing source work, including after the first public release.
 
 ## Existing rules to apply
 
@@ -10,6 +10,21 @@ Use this map when developing Colvia itself. It locates existing rules; it does n
 - [Document language and placement](preview-release-order-and-user-journey.md#문서-언어와-배치-제안--11월-4일): the accepted reader/language split remains applicable. Historical records keep their authored language; new technical contracts use the existing English reference convention. User guides remain paired English/Korean.
 - [User guide navigation](user-documentation.md): source manuals own generated installed content; verify links in the installed destination.
 - [Records and retention](../REFERENCE.md#records-and-retention): retain raw material only for a named evidence, recovery or follow-up need; do not duplicate plan/review/result trackers.
+
+## Document language
+
+Choose the language by the page’s reader and purpose. These conventions apply to the Colvia repository. A project connected to Colvia keeps its own writing conventions.
+
+| Where you are writing | What to write |
+| --- | --- |
+| Root README and CONTRIBUTING; current pages under `manual/en/` and `manual/ko/` | Maintain an English and a Korean page. Update both when instructions, support conditions or examples change. Link to the same page in the other language. An installation link in a single-language page should open that language on the downloads site. |
+| Shared entry pages | `docs/README.md`, `SECURITY.md` and the installed welcome page serve both languages on one page. Give each reader the same actions and destinations. The installable language indexes under `distribution/foundation-guides/` follow their respective locales. |
+| Source and agent references | Write current technical references under `docs/`, new decision text under `docs/decisions/`, agent entry points, adapter instructions and maintainer notes for builds, runtime and assets in English. Localized diagrams, example prompts and exact interface messages may use their intended language. |
+| Development index and ongoing development | Use English for index headings, link labels and summaries, and for new task plans, technical designs, follow-ups and result summaries under `docs/development/`, including `record-foundation/`. A dated update to an older file can use English under its own heading. If a plan is expressly requested in Korean for its reviewer, write it in Korean and identify its purpose in the English index entry. |
+| Maintained explanations in pages that also contain historical records | Apply the language convention by section. Write maintained technical explanations in English. When translating earlier wording in place, date the translation and link to the exact original revision. Historical decisions and evidence retain their original authority. Translating or maintaining a reference does not adopt a decision. |
+| Decisions, reviews and evidence already on record | Preserve the original language of accepted decisions, dated plans, reviewer responses, observations, receipts and earlier-profile material. Keep quoted wording, fixture bytes, identifiers and existing link targets intact. Describe a decision or finding in English in the current index or record when readers need it. A translation is a summary unless it has itself been adopted. |
+
+When reviewing a documentation change, check the headings **and the body** of the maintained text. For paired pages, follow the language switch and the links for the action that changed. For packaged pages, check the destination produced by the [guide mapping](../../distribution/foundation_bundle.py). For links into historical records, translate the visible label where needed and retain the original fragment.
 
 ## Placement by purpose
 

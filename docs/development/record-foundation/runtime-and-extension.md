@@ -1,30 +1,40 @@
-# 실행환경 계약과 다음 Claude 구조 리뷰 입력
+<a id="실행환경-계약과-다음-claude-구조-리뷰-입력" name="실행환경-계약과-다음-claude-구조-리뷰-입력"></a>
+
+# Runtime requirements and inputs to the next Claude architecture review
 
 상태: 2026-11-06 Owner의 기존 범위 확인을 반영한 구현 요구사항. 구현·설치·실행 검증 완료를 뜻하지 않는다. R1 입력은 그대로 보존한다. 이 저장소 문서가 실행환경·지원 목표·확장 경계의 현행 작성 위치다. 다음 집중 리뷰 패킷은 이 문서를 입력으로 참조한다. 나머지 R1 보정 명세를 대신하는 전체 패킷은 아니다.
 
-## 공개 전 갖춰야 할 사용자 경험
+English reference, 2026-11-19. The [original wording at the translation base](https://github.com/kyungseo/colvia/blob/eed271ad5aa665f0002c9eded69d82f224da9ce0/docs/development/record-foundation/runtime-and-extension.md) governs the dated decisions and evidence. The Owner [accepted this English reference](../document-language-result-review.md#owner-acceptance). The [R2 input table](review-r2.md) identifies the earlier review snapshot by digest.
 
-사용자는 특정 Python 버전을 설치하거나 pyenv와 PATH를 맞추지 않고 Colvia를 설치하고 사용한다. 지원 Python 버전 확대는 후속으로 둘 수 있지만, 이 설치 부담 해소는 첫 공개 조건이다. 개발자가 소스에서 실행하는 경로는 별도로 안내하며 일반 사용자 경로의 대안으로 떠넘기지 않는다.
+<a id="공개-전-갖춰야-할-사용자-경험" name="공개-전-갖춰야-할-사용자-경험"></a>
 
-앱과 CLI는 같은 제품 설치본에 연결된 전용 실행기를 사용한다. Codex 앱·CLI와 Claude Code 데스크톱·CLI마다 다른 Python 탐색 규칙을 두지 않는다. 실행기는 검증된 설치 binding을 통해 전용 Python과 제품 payload를 선택한다. PATH의 python/python3, pyenv shim, shell 활성화, 다른 프로젝트의 가상환경으로 조용히 대체하지 않는다. 동일한 설치 binding이면 GUI 실행과 login/non-login shell에서 같은 제품·Python·SQLite 조합이 선택돼야 한다. 업데이트 시점에 기존 실행이 있다면 실행별로 고정한 조합을 유지하고, 호환되는 새 실행부터 검증된 새 binding을 사용한다.
+## First-release user experience
 
-## 첫 공개 설치 진입과 완료 기준
+People must be able to install and use Colvia without installing a particular Python version or configuring pyenv and PATH. This is a condition of the first release. Wider Python support can follow. Document source runs separately for contributors. They cannot substitute for the ordinary installation path.
+
+Apps and CLIs use the dedicated launcher bound to the same installation. All four host forms (Codex app and CLI, Claude Code desktop and CLI) use the same Python selection rules. The launcher resolves its dedicated Python and product payload from the verified installation binding. Never silently fall back to python/python3 on PATH, a pyenv shim, shell activation or another project's virtual environment. A GUI, login shell and non-login shell must select the same product, Python and SQLite combination for a given binding. An update preserves the pinned combination of each running process. Compatible new processes use the newly verified binding.
+
+<a id="첫-공개-설치-진입과-완료-기준" name="첫-공개-설치-진입과-완료-기준"></a>
+
+## First-release installation entry and completion criteria
 
 Owner 확정 요구: 플랫폼별로 문서에 안내된 명령 하나로 설치 또는 업데이트를 시작한다. OS별 shell 문법은 달라도 된다. 같은 진입이 현재 설치 상태와 호환 가능한 공개 버전을 확인해 신규 준비 또는 갱신으로 연결한다. 정확한 명령 이름과 공개 URL은 배포 설계에서 정하며, 아직 존재하지 않는 주소를 사용 가능하다고 안내하지 않는다.
 
-도구가 OS·아키텍처와 배포 채널/버전 호환성을 판단하고, 배포 파일 다운로드·무결성 검증·전용 Python 준비·제품/runtime binding 활성화를 처리한다. 일반 사용자는 Python ZIP, 개별 해시, 내부 profile, Python 경로를 직접 고르거나 대조하지 않는다. 선택된 버전과 변경 내용은 사람이 이해할 수 있게 보여 준다. 전문가용 버전 지정·오프라인 공급은 일반 경로의 선행 조건이 아니다.
+The installer determines OS, architecture, channel and version compatibility. It downloads and verifies the assets, prepares the dedicated Python and activates the product/runtime binding. Show the selected version and changes in plain language. The ordinary user should not have to select or compare Python ZIPs, individual hashes, internal profiles or interpreter paths. Version pinning and offline supply are optional expert paths.
 
-자동 검증은 bootstrap 자체의 신뢰 확인을 없앤다는 뜻이 아니다. 공식 배포 진입의 신뢰 경로와 manifest/자산 검증 계약을 정의하고, 불일치·다운로드 실패·지원 밖 조합을 적용 전에 거부한다. 같은 변조 경로에서 받은 hash만으로 공급 진위를 보장한다고 주장하지 않는다. 공급·서명 방식이 확정되지 않은 부분은 미결로 남겨 실제 경로 검증 전에 해결한다.
+Define how the official bootstrap is trusted and how manifests and assets are verified. Refuse mismatches, failed downloads and unsupported combinations before applying anything. A hash obtained through the same compromised channel cannot authenticate the supply. Resolve outstanding supply and signing questions before qualifying the real delivery path.
 
-한 명령은 무인 완료를 뜻하지 않는다. OS 실행 허용, 알림 허용, 에이전트 설치나 구독 로그인처럼 본인이 해야 하는 조작은 발생 지점에서 목적과 다음 행동을 짧게 안내한다. Colvia 준비와 에이전트 설치/로그인 상태를 구별하고, 인증 정보를 대신 수집하거나 새 결제·보안 설정 완화를 자동 수행하지 않는다. 자동 처리할 다운로드·runtime 선택을 수동 단계로 돌려놓지 않는다.
+One command starts the process. Explain user actions where they occur, including OS execution permission, notifications, agent installation and subscription sign-in. Distinguish Colvia readiness from agent installation or login. Do not collect credentials, initiate new charges, relax security settings automatically or delegate downloads and runtime selection back to the user.
 
-업데이트는 기존 기록·설정·본문·수락 이력과 capability 선택을 보존한다. 중단·손상·용량 부족 등 실패 시 검증된 이전 실행 조합 또는 명시된 복구 경로를 제공한다. 데이터 형식이 진전된 뒤 무조건 이전 runtime으로 되돌리지 않는다. 실패 후 사용자가 Python이나 내부 파일을 손으로 조합해야 하는 상태를 정상 복구로 보지 않는다.
+Updates preserve records, settings, bodies, acceptance history and capability choices. After interruption, corruption or insufficient space, provide the previous verified combination or an explicit recovery path. Rollback must respect the current data format. Recovery must not require the user to assemble Python or internal files manually.
 
-완료 기준은 사용자가 보게 될 실제 배포 주소와 실제 명령에서 신규 설치 및 기존 설치 업데이트를 수행하는 것이다. 다운로드 → 검증 → runtime 준비 → 활성화 → 앱/CLI 첫 Work → 결과 확인·알림 진입·새 대화 재개를 연결하고, 대표 실패와 복구를 확인한다. 로컬 파일 공급·소스 실행·모의 서버 검사는 선행 근거이며 실제 배포 경로 완료를 대신하지 않는다. 실제 URL 검증에 배포 자산 게시가 필요하면 그 게시 승인을 별도로 받고, 검증 이전에는 공개 경로 미검증으로 남긴다.
+Qualify first install and update using the actual distribution address and documented command. Follow download, verification, runtime preparation and activation through the first Work in the app or CLI, result review, notification entry and resumption in a new chat. Exercise representative failure and recovery cases. Local assets, source runs and mock servers provide preliminary evidence only. They cannot qualify the actual distribution path. When real-URL testing requires publication, obtain separate approval and retain its unverified status until tested.
 
-## 지원 목표와 판정 단위
+<a id="지원-목표와-판정-단위" name="지원-목표와-판정-단위"></a>
 
-첫 공개 목표는 아래 세 플랫폼과 두 필수 에이전트의 CLI·데스크톱 앱이다. 제품 구현 목표, 상위 에이전트가 제공하는 OS/아키텍처 지원 가능 여부, Colvia 실제 검증 상태를 별도 열로 관리한다. 아래 표는 목표를 고정하며 아직 상위 제품의 지원 여부나 시험 완료를 주장하지 않는다.
+## Platform targets and units of verification
+
+The first-release targets cover three platforms and both the CLI and desktop forms of two agents. Track the product target, upstream OS/architecture availability and observed Colvia results separately. The table below sets the required targets for this design. It makes no claim about upstream support or completed tests.
 
 | 첫 공개 플랫폼 목표 | 필수 호스트 목표 | 지원 가능 여부 확인 | 새 최종 후보 검증 상태 |
 | --- | --- | --- | --- |
@@ -32,73 +42,81 @@ Owner 확정 요구: 플랫폼별로 문서에 안내된 명령 하나로 설치
 | Windows 11 ARM64 | Codex CLI·앱, Claude Code CLI·데스크톱 | 호스트/버전별 확인 | 기존 후보 근거 재사용 가능, 새 배포 경로 최종 판정 전 |
 | Windows 11 x64 | Codex CLI·앱, Claude Code CLI·데스크톱 | 호스트/버전별 확인 | 개발 후보·에뮬레이션 근거와 실제 x64 OS 설치/실행 판정 구분 |
 
-검증 원장은 OS × 아키텍처 × 호스트 네 종류의 12개 조합을 분리한다. 각 조합에서 호스트 버전, 실행 모드/권한, 전용 runtime, 프로젝트 위치와 관측 기능을 기록한다. 지원 가능성은 가능/제약 있음/상위 도구 미제공/미확인으로, 검증은 통과/실패/미실행/해당 없음과 이유로 구분한다. 기능별 일부 통과를 해당 조합 전체 지원으로 올리지 않는다. 상위 도구가 없거나 기능이 부족하면 목표를 조용히 삭제하거나 에뮬레이션 성공으로 대체하지 않고 Owner에게 근거와 선택지를 제시한다. 플랫폼별 최종 수락은 별도로 한다.
+Record the 12 platform/host combinations separately. For each, record host version, execution and permission mode, dedicated runtime, project location and observed feature. Classify upstream availability as available, constrained, unavailable upstream or unknown. Record each check as passed, failed, unrun or inapplicable, with a reason. A pass for one feature cannot establish support for the entire combination. If a host or capability is unavailable, present the evidence and options to the Owner. Retain the target and identify emulation separately. Record final acceptance separately for each platform after the Owner’s decision.
 
-## 확장을 위해 지금 고정할 경계
+<a id="확장을-위해-지금-고정할-경계" name="확장을-위해-지금-고정할-경계"></a>
 
-확장 대상을 미리 정하는 목적은 미래 기능 선행 구현이 아니라, 새 플랫폼/에이전트 때문에 기록 형식·수락 의미·이력을 다시 설계하지 않도록 하기 위함이다. 필요한 좁은 계약만 두고 범용 plugin registry, 동적 code loading, 자동 adapter 생성, 미래 scheduler를 만들지 않는다.
+## Extension boundaries
 
-| 경계 | 현재 소유 책임 | Core에 넣지 않을 차이 |
+These boundaries allow new agents and platforms to use the existing record format, acceptance semantics and history. Keep the contracts narrow. A general plugin registry, dynamic code loading, adapter generation and a future scheduler are outside this design.
+
+| Component | Responsibility | Boundary |
 | --- | --- | --- |
-| Core/domain | 프로젝트·Work·결과 identity, 승인/수락, 참조·본문 보존, 상태/경쟁·무결성 규칙 | OS명·모델명·제품명에 따른 수락 의미 변경 |
-| 플랫폼 구현 | 설치/runtime 준비, 경로·파일 특성, 잠금·내구성, 권한 진단, OS 알림·클릭 연결 | Windows/macOS 경로와 OS API 호출을 domain에 직접 삽입 |
-| 에이전트 연결 구현 | 지침 전달, 도구 호출 규약, 실행 시작/상태/취소, 승인 연계, 결과·오류 전달 | 특정 CLI flag, 앱별 session format, 제품별 출력 해석을 Work 상태 정의로 사용 |
-| 모델/provider 연결 | 실제 에이전트가 사용하는 모델의 호출·가용성 등 필요한 정보 | 모델만 연결하면 파일 작업·취소·재개까지 가능하다고 추론 |
-| 설치 조립·연결 | 검증된 플랫폼/에이전트 구현과 runtime/capability 조합 선택 | Core 내부에서 제품명에 따라 실행 경로를 분기 |
+| Core/domain | Project, Work and result identities, approval and acceptance, references, bodies, state, concurrency and integrity | Acceptance has the same meaning across operating systems, models and products. |
+| Platform implementation | Installation, runtime preparation, paths, file properties, locking, durability, permission diagnostics, OS notifications and click handling | Keep OS paths and API calls in the platform layer. |
+| Agent adapter | Guidance, tool invocation, run start/status/cancellation, approvals, result and error delivery | CLI flags, app session formats and vendor output formats belong to the adapter. |
+| Model/provider adapter | Model invocation and availability information required by the agent | A connected model alone establishes no capability to edit files, cancel or resume work. |
+| Installation and composition | Select verified platform and agent implementations and a compatible runtime/capability combination | Select implementations outside Core. |
 
-에이전트는 파일과 도구를 다루며 작업을 수행하는 실행 주체다. 로컬 모델은 그 주체가 사용할 수 있는 추론 수단이며 모델 자체를 파일/도구 실행 에이전트와 동일시하지 않는다. 모델 공급자가 로컬이라는 이유만으로 접근 격리·취소·알림·안전성이 보장되는 것도 아니다.
+An agent operates on files and tools. A local model can supply inference to that agent. A local provider alone guarantees neither isolation nor cancellation, notification delivery or safe execution.
 
-연결 계약은 기능 이름·버전과 검증된 제약을 표현한다. 최소한 지침 수신 방식, 프로젝트 읽기/쓰기 및 sandbox, 도구 호출, 실행 관측, 취소 요청과 실제 종료 확인, 결과의 정확한 식별·전달, 재개 가능 여부를 구분한다. 제품명/버전은 adapter 선택과 진단 근거로 기록하되 Core의 의미를 결정하지 않는다. 에이전트가 주장한 능력만으로 권한을 부여하지 않으며, 실제 권한과 연동 검증을 확인한다. 없는 능력을 추정하거나 더 넓은 권한으로 조용히 우회하지 않는다.
+For each capability, record its name, version and verified limits. Distinguish receipt of guidance, project reads and writes, sandboxing, tool invocation, run observation, a cancellation request, confirmed termination, exact result identification and delivery, and resumption. Record product and version for adapter selection and diagnostics. Verify actual permissions and integration before granting access. Missing capabilities must not trigger a silent fallback to wider permissions.
 
-OS 잠금 구현은 플랫폼에서 제공하되 공용 authority의 transaction/CAS 및 수락 불변식은 저장 계층과 Core의 계약이다. 에이전트 실행 성공이나 취소 요청 접수는 Work 결과 수락·실제 종료와 별개다. 결과 schema는 에이전트 고유 transcript나 session ID를 필수 권위로 삼지 않는다. 외부 실행 식별자는 보조 provenance이며 앱 대화가 사라져도 보존된 결과와 사람 결정은 읽을 수 있어야 한다.
+Platforms implement OS locks. Storage and Core own the common authority's transaction, CAS and acceptance invariants. Successful execution does not accept a Work, and acknowledging cancellation does not confirm termination. The result schema must not require an agent-specific transcript or session ID as authority. An external run ID is optional provenance. The retained result and human decision must remain readable after an app chat disappears.
 
-새 adapter 추가는 등록된 기능 구현의 추가로 처리하고, 기존 Work·본문·수락을 다시 쓰거나 제품명을 바꾸기 위해 이관하지 않는다. 같은 프로젝트 authority와 유효 workspace에서 다른 에이전트가 같은 Work의 상태·보존 결과·남은 결정을 읽고 이어갈 수 있어야 한다. 에이전트 간 비공개 채팅 맥락 자동 이관이나 서로 다른 기기/clone의 자동 동기화는 약속하지 않는다. 권한·능력 부족, 이전 실행의 미확정 효과, workspace 차이가 있으면 그 경계에서 안전하게 멈추고 설명한다.
+Register a new adapter as a capability implementation. Adding one does not require rewriting Work, bodies or acceptances or migrating a product name. At the same project authority and a valid workspace, another agent must be able to read the Work state, retained result and pending decision and continue. This makes no promise of private chat transfer or automatic synchronization across devices or clones. Stop and explain missing permissions or capabilities, uncertain earlier effects or a mismatched workspace.
 
-미래에 실제 의미 변경이 필요할 때는 첫 공개 호환·migration 정책을 따른다. 단순 OS/에이전트 추가 때문에 그 의미 변경이 필요하지 않도록 의존 방향과 중립적인 데이터 계약을 지금 검증한다.
+If semantics must change later, follow the public compatibility and migration policy. Verify the dependency direction and neutral data contracts now so adding an OS or agent alone does not require a change of meaning.
 
-## 후속 후보 — 현재 구현 제외
+<a id="후속-후보--현재-구현-제외" name="후속-후보--현재-구현-제외"></a>
 
-| 후보 | 의도 | 착수/지원 선언 조건 |
+## Follow-up candidates outside the implementation scope
+
+| Candidate | Purpose | Condition for selection and a support claim |
 | --- | --- | --- |
-| EXT-PLATFORM-LINUX | Linux 설치·경로·잠금·권한·알림 구현 | 별도 범위·대상 환경 결정 후 실제 배포·연동 검증 |
-| EXT-AGENT-LOCAL | 로컬 모델을 사용하는 파일/도구 실행 에이전트 연결 | 모델과 실행 에이전트 구분, 실제 작업·취소·결과·재개 검증 |
-| EXT-AGENT-ANTIGRAVITY | Antigravity 연결 | 당시 제공 능력·제약 확인, 같은 Work 재개와 상태/권한 검증 |
-| EXT-AGENT-PROJECT-TOOLS | 그 밖의 프로젝트 작업 가능한 AI 도구 | 필요한 지침/도구/실행 계약 충족 및 실제 연동 검증 |
+| EXT-PLATFORM-LINUX | Installation, paths, locking, permissions and notifications on Linux | Select the scope and target environments, then verify actual distribution and integration. |
+| EXT-AGENT-LOCAL | Connect an agent that operates files and tools using a local model | Distinguish the agent from the model. Verify actual work, cancellation, results and resumption. |
+| EXT-AGENT-ANTIGRAVITY | Connect Antigravity | Establish the capabilities and limits of the available version. Check Work resumption, state and permissions. |
+| EXT-AGENT-PROJECT-TOOLS | Connect other AI tools that work on projects | Meet the guidance, tool and execution contracts and verify the integration. |
 
-이 표는 잊지 않기 위한 현재 설계의 후속 후보 목록이다. 착수 승인·지원 선언이 아니며 제품 코드의 기능 ID를 미리 고정하지 않는다. 개발 인덱스의 후속 후보가 이 표를 참조한다. 착수 시 해당 후보와의 연결을 유지한다. 이번 구현은 첫 공개 플랫폼·에이전트에 필요한 경계만 구현하며 미래 도구 전용 코드와 시험을 포함하지 않는다.
+The development index links to this table. Keep the link when selecting a candidate. Listing a candidate neither authorizes work nor claims support or reserves a product feature ID. The current implementation covers the boundaries needed by the first-release hosts and platforms. Code and tests specific to future tools are deferred.
 
-## 구현 계약
+<a id="구현-계약" name="구현-계약"></a>
 
-1. 설치기는 OS·아키텍처에 맞는 전용 실행환경을 준비한다. 최초 준비가 미리 설치된 사용자 Python을 요구해서는 안 된다. 온라인 공급과 전달받은 오프라인 자산 모두 manifest의 버전·크기·해시 등 해당 공급 계약을 검증한다. Git 등 다른 필수 도구가 필요하면 별도로 감지·안내하며 준비됐다고 가정하지 않는다.
-2. 제품 버전, Python 버전, SQLite library 버전, OS·아키텍처, store/protocol/capability 호환성을 구분한다. 여러 Python 버전의 공개 지원 확대 없이도 검증된 전용 조합으로 동작해야 한다. 소스 실행의 runtime 요구는 설치 사용자에게 전가하지 않는다.
-3. 업데이트는 새 payload와 runtime을 먼저 준비·검사한 뒤 binding을 활성화한다. runtime 재사용이 가능하면 불필요한 재다운로드를 하지 않는다. 다운로드·무결성 검사·압축 해제·권한·중단 실패에서 이전 사용 가능한 조합과 기록을 보존한다. 새 기록을 읽지 못하는 이전 버전으로 자동 rollback하지 않는다.
-4. 프로젝트 연결과 앱 worktree의 연결은 프로젝트 identity·workspace identity·authority와 runtime binding을 따로 다룬다. worktree에 복사된 옛 경로나 PATH의 다른 실행기로 성공한 척하지 않는다. 일반 폴더, linked worktree, 프로젝트 내부의 앱 생성 worktree 모두 정확한 authority와 전용 실행기를 찾아야 한다. 같은 이름의 다른 프로젝트와 섞이지 않아야 한다.
-5. 실행환경이 올바르더라도 sandbox 접근이 막힐 수 있다. runtime/payload 읽기·실행, 프로젝트 범위 읽기·쓰기, authority DB와 journal/잠금 생성·교체·복구, 선택한 전달/알림 기능의 쓰기 경로를 구분한다. source success나 shell에서의 접근 가능성을 앱 권한의 증거로 삼지 않는다.
-6. 저장 위치 설계는 이 권한 계약과 함께 정한다. R1에서 제안했던 .git 내부 저장은 Codex 기본 sandbox 보호와 충돌하므로 기본 경로로 확정하지 않는다. 경로를 옮기기만 하거나 매번 권한 상승을 요구하는 것으로 해결됐다고 하지 않는다. 설정 변경이 필요한 경우 정확한 범위·이유·회수 방법을 설명하고 기존 승인 범위를 따른다. 보안 기능 전체 해제나 전체 디스크 권한 확대를 기본 해법으로 두지 않는다.
-7. 연결 전 진단은 실제 사용할 실행기와 권한으로 확인한다. 읽기 전용 조회에서 몰래 파일을 쓰지 않는다. 필요한 쓰기 probe는 명시된 진단 단계에서 작업 소유의 한정 경로만 사용하고, 실제 사용자 기록을 수정하지 않는다. 진단 자체가 추가 권한을 받았으면 기본 앱 모드 통과로 기록하지 않는다.
-8. runtime 누락·손상·지원 밖 조합·잘못된 workspace 연결·쓰기 차단을 구별해 짧게 안내한다. 예: “Colvia 실행환경이 준비되지 않았습니다. 설치 도구에서 복구를 실행해 주세요.” 또는 “이 앱에서 작업 기록 폴더에 쓸 수 없습니다. 아래 폴더의 접근을 허용한 뒤 다시 실행해 주세요.” 실제 해결 조작과 필요한 경로만 제시하고 토큰·내부 지침·긴 traceback은 진단 상세로 분리한다. 원인 확인 없이 재설치를 권하지 않는다.
+## Implementation requirements
 
-## 최종 검증 행렬
+1. Prepare the dedicated runtime for the OS and architecture without requiring a preinstalled user Python. Verify the manifest version, size, hashes and other supply requirements for online and offline assets. Detect other prerequisites such as Git separately.
+2. Distinguish product version, Python version, SQLite library version, OS and architecture, and store/protocol/capability compatibility. The verified combination must work without a broader public Python support promise. Source-development prerequisites apply only to contributors.
+3. Prepare and verify the new payload and runtime before activating the binding. Reuse a compatible runtime. On download, integrity, extraction, permission or interruption failure, preserve records and the previous usable combination. Never roll back automatically to a version unable to read the newer records.
+4. Distinguish project identity, workspace identity and authority from runtime binding when connecting a folder or an app worktree. Ordinary folders, linked worktrees and registered app worktrees inside a project must resolve the correct authority and dedicated launcher. A copied path, another launcher on PATH or a same-name project cannot establish identity.
+5. Check runtime and payload read/execute access, scoped project reads/writes, creation/replacement/recovery of authority journals and locks, and the write paths of selected delivery or notification capabilities separately. Shell access and successful source runs cannot establish app sandbox access.
+6. Choose storage alongside the permission contract. R1 proposed storing under `.git`, which conflicts with default Codex sandbox protection. This design does not adopt `.git` as the default storage location. Moving the path or repeatedly escalating permissions is insufficient. Explain the exact scope, reason and revocation steps for any required setting change and respect existing approval. Do not default to disabling security controls or granting full-disk access.
+7. Diagnose with the launcher and permissions that will actually be used. Read-only queries must not write files. Use only a bounded task-owned path for an explicit write probe and preserve real user records. If a diagnostic receives additional access, it cannot count as a pass in the default app mode.
+8. Distinguish missing or corrupt runtimes, unsupported combinations, wrong workspaces and denied writes. Give the reason, necessary path and next action briefly. Example messages include “Colvia 실행환경이 준비되지 않았습니다. 설치 도구에서 복구를 실행해 주세요.” and “이 앱에서 작업 기록 폴더에 쓸 수 없습니다. 아래 폴더의 접근을 허용한 뒤 다시 실행해 주세요.” Keep tokens, internal instructions and long tracebacks out of routine guidance. Diagnose the cause before recommending reinstallation.
 
-호스트는 Codex CLI, Codex 앱, Claude Code CLI, Claude Code 데스크톱으로 구분한다. 작업 위치는 비 Git 일반 폴더, Git 일반 checkout, 외부 linked worktree, 앱이 프로젝트 내부에 만든 등록 worktree로 구분한다. 모든 호스트가 worktree를 직접 생성해야 한다는 뜻은 아니다. 실제 생성 주체와 해당 폴더를 여는 주체를 기록한다.
+<a id="최종-검증-행렬" name="최종-검증-행렬"></a>
 
-| 검사 | 필요한 확인 | 근거의 한계 |
+## Final verification matrix
+
+Distinguish Codex CLI, the Codex app, Claude Code CLI and Claude Code desktop. Cover ordinary non-Git folders, ordinary Git checkouts, external linked worktrees and registered app worktrees nested in the project. Record which host created a worktree and which opened it. Each host need not create the worktree itself.
+
+| Check | Verify | Evidence boundary |
 | --- | --- | --- |
-| 개인 Python 설정 없는 최초 설치 | pyenv·사용자 venv·사용자 Python 없이 installer가 runtime을 준비하고 첫 명령 실행 | env를 비운 합성 검사는 탐색 규칙 근거다. 실제 새 사용자 설치를 대체하지 않는다. OS 기본 Python이 남아 있으면 존재 여부와 미사용을 기록한다. |
-| 앱·CLI 실행기 선택 | 위 네 호스트와 네 위치에서 설치 binding·실제 executable·Python·SQLite·제품 identity 대조 | process 이름이나 source version 출력만으로 installed payload 선택을 판단하지 않는다. |
-| 최소 읽기·쓰기 경로 | 조회, 합성 Work 등록/제출/수락, journal 생성·복구, 선택 기능의 전달 경로 | 앱 sandbox와 CLI sandbox를 각각 기록한다. 상위 권한으로 통과한 결과는 기본 권한 통과가 아니다. |
-| 다른 Python이 먼저 보이는 환경 | PATH 앞에 지원 밖 Python/가짜 shim이 있어도 전용 실행기를 사용 | 실제 개인 설정 변경 없이 합성 process 환경으로 재현한다. |
-| worktree와 이동·재개 | 올바른 authority/Work 조회, 다른 workspace 결과 혼합 거부, 유효 binding 유지 | 앱 생성 nested 경계를 단순 폴더 이름 제외 규칙으로 처리하지 않는다. |
-| 업데이트와 중단·복구 | 준비 실패, 활성화 직전/직후 중단, 기존 실행, 호환/비호환 rollback | 공개 이후 기록·설정·본문·수락 이력 보존 계약과 함께 검증한다. |
-| runtime/권한 실패 안내 | 잘못된 상태를 성공으로 보고하지 않고 필요한 다음 조작·이유를 짧게 표시 | 모델이 우연히 올바른 설명을 한 것과 제품 진단 출력의 정확성을 구분한다. |
+| First installation without personal Python settings | The installer prepares the runtime and runs the first command without pyenv, a user virtual environment or user Python. | A cleared process environment tests discovery rules only. It cannot substitute for installation by a fresh user. Record whether system Python was present and unused during a real fresh-user installation. |
+| App and CLI launcher selection | Compare the binding, actual executable, Python, SQLite and product identity across the four host forms and four location types. | A process name or source version string cannot establish installed payload identity. |
+| Minimum read/write paths | Query, register a synthetic Work, submit, accept, create and recover a journal, and check any selected delivery path. | Record app and CLI sandbox conditions separately. A pass with elevated permissions applies to those permissions only. |
+| Another Python first on PATH | Select the dedicated launcher even with an unsupported Python or fake shim first on PATH. | Use a synthetic process environment and preserve personal settings. |
+| Worktrees, moves and resumption | Query the correct authority and Work, reject mixed results across workspaces and keep valid bindings. | Identify registered nested worktrees structurally. A folder-name exclusion is insufficient. |
+| Updates, interruption and recovery | Cover failed preparation, interruption immediately before/after activation, running processes and compatible/incompatible rollback. | Verify preservation of post-release records, settings, bodies and acceptance history. |
+| Runtime and permission diagnostics | Report failure accurately with the reason and next action. | Distinguish product diagnostics from an explanation a model happened to give correctly. |
 
-제품 unit/통합 검사는 실행기 선택·binding·실패 상태를 집중 검증하고, 설치본 검사는 실제 패키지와 실제 앱 권한 경로를 확인한다. 최종 OS/아키텍처별 공개 후보는 해당 플랫폼의 설치본으로 판정한다. macOS 또는 Windows ARM64 근거를 x64 성공으로 넓히지 않는다.
+Use focused unit and integration checks for launcher selection, binding and failure states. Qualify actual package and app permission paths with the installed release candidate on the relevant OS and architecture. macOS or Windows ARM64 evidence alone does not establish x64 success.
 
-각 셀은 재사용/신규 통과/거부 관측/미실행을 구분한다. 최소 기록은 후보 버전·해시, host 및 실행 모드, 작업 위치 종류, 선택된 runtime/binding, 읽기·쓰기 결과와 필요한 사용자 조작이다. 인증 정보와 개인 계정 값은 수집하지 않는다. 동일 원리의 반복 대용량 검사는 생략할 수 있으나 앱별·위치별 실행기 선택과 권한 차이는 확인해야 한다.
+For each case record reused evidence, a new pass, an observed refusal or an unrun check. Record the candidate version and hash, host and mode, workspace type, selected runtime and binding, read/write results and required human actions. Exclude credentials and personal account values. Equivalent large checks can reuse evidence. Verify launcher selection and permission differences by host and location.
 
 ## Host Approval Modes
 
-[Codex·Claude 권한 모드별 접근·승인 기준](validation.md#codexclaude-권한-모드별-접근승인-경로)을 실제 호스트 검증에 적용한다. 선택한 승인 절차로 완료 가능한지를 판정하며, 계획 모드의 쓰기 제한을 실패로 보거나 호스트 도구 승인을 Colvia 범위 승인·결과 수락으로 대체하지 않는다. 실제 실행 조건이 같은 작성·제출·재개 근거는 재사용하고 차이가 있는 경로만 추가 확인한다. 모드 이름·제공 여부는 host/버전에서 확인하며 전체 권한 전환을 필수로 요구하지 않는다. 설정 미반영과 명령별 사용자 승인을 통한 실행 가능성은 별도 관측이다.
+Apply the [host approval-mode criteria](validation.md#codexclaude-권한-모드별-접근승인-경로) to actual hosts. Check that the selected approval flow can finish the task. Plan-mode write limits are expected. Host tool approvals are separate from Colvia scope approval and result acceptance. Reuse work, submission and resumption evidence where execution conditions match. Verify mode names and availability on the host version, and test differing paths without requiring full access. An unapplied setting and successful execution after a per-command approval are distinct observations.
 
 ## 기존 근거와 범위
 
@@ -139,25 +157,25 @@ runtime slot은 현재·실행 중·필요한 마지막 복구본을 보존한�
 
 ## Windows/WSL qualification boundary
 
-현재 Windows 목표는 native Windows 프로세스다. WSL/Linux CLI는 Linux 후속 대상으로 분리하고, Linux mount 경유로 Windows authority를 공유해 쓰는 경로는 미검증으로 차단·안내한다. WSL에서 Windows executable을 호출하는 상호 운용 경로도 별도로 확인하기 전 native 호스트 통과와 합치지 않는다. 모든 WSL 파일시스템의 잠금이 잘못됐다고 단정하지 않는다.
+Qualify native Windows processes for the Windows target. WSL/Linux CLI belongs to the Linux follow-up. Writing to a shared Windows authority through a Linux mount is unverified. Block writes through that path and explain why. Qualify Windows executables invoked through WSL interop separately before counting them as native-host coverage. This restriction makes no general claim about locking on WSL filesystems.
 
-호스트 접근 설정의 저장 위치는 user-level에서 프로젝트별 authority만 허용하는 방식을 우선 비교하되, 실제로 지원하는지와 앱 worktree에 상속되는지를 P2에서 확인한다. 프로젝트 전체/사용자 데이터 전체를 허용하거나 설정 파일이 branch에 복사될 것이라고 가정하지 않는다. 아직 실제 설정 변경은 없다. 최초 bootstrap과 갱신의 신뢰 경계는 [C7/C8](implementation-contracts.md)을 따른다.
+For host access settings, first evaluate a user-level setting scoped to the project authority. Check actual support and inheritance by app worktrees in P2. Do not assume access to the entire project or user-data directory or that settings follow a branch copy. No setting change was performed in this design step. Use [C7/C8](implementation-contracts.md) for trust at first bootstrap and update.
 
 
 ## Supply, Candidate And VM Reuse
 
-다음 후보를 준비할 때는 [담당 Work](../FEAT-20261106-002-record-foundation.md)의 수락 범위와 기존 공급·조립·설치 근거를 먼저 확인한다. 원본 입력과 실패 기록은 보존하고, 아래 구분에 따라 달라진 부분만 검사한다.
+Before preparing a candidate, check the accepted scope of the [owning Work](../FEAT-20261106-002-record-foundation.md) and prior supply, assembly and installation evidence. Preserve original inputs and failures. Select checks according to what changed.
 
-| 바뀐 내용 | 재사용과 다음 작업 |
+| Change or question | What to reuse and what to check |
 | --- | --- |
-| 제품 코드·설치 지침만 변경 | 고정한 전용 Python·검증기 의존성을 재사용한다. [후보 조립기](../../../distribution/foundation_bundle.py)로 새 후보를 만들고 변경 영향에 해당하는 검사와 inventory 대조를 수행한다. |
-| 실행환경·의존성 변경 | 기존에 검증된 공급 생성 절차의 고정 입력·도구 버전·원격 실행 기록을 확인하고, 변경된 공급물만 다시 생성·검증한다. 원격 실행과 비용은 별도 승인 범위를 따른다. |
-| 실제 설치·갱신·복구·호스트 사용 확인 | 기존 VM 등록·디스크·계정·설치 기준점을 먼저 확인한다. VM에 빌드 환경부터 다시 구성하지 않는다. |
-| 개인 설정 없는 환경 확인 | 필요에 따라 별도 계정이나 복제본을 사용한다. 개발 측 공급 생성에 쓰는 빌드 도구를 일반 사용자의 설치 조건에 넣지 않는다. |
+| Product code or installation guidance | Reuse the pinned dedicated Python and verifier dependencies. Use the [candidate builder](../../../distribution/foundation_bundle.py) and compare the inventory and affected behavior. |
+| Runtime or dependencies | Check the pinned inputs, tool versions and remote run records for the verified supply process. Regenerate and verify only affected components. Remote execution and cost require their own authorization. |
+| Installation, update, recovery or host behavior | Check existing VM registration, disk, account and installation baseline first. A fresh build environment inside the VM is unnecessary. |
+| An environment without personal configuration | Use a separate account or clone when needed. Build tools used to produce the supply are contributor dependencies. |
 
-재개 기록에는 고정 입력의 digest와 도구 버전, 실행 순서, 산출물 위치와 검증 방법, 재사용 가능한 조건, 알려진 실패와 중단 조건을 함께 둔다. 파일 전달은 실제 크기와 측정한 처리량으로 제한 시간을 정하고, 성공 종료뿐 아니라 회수한 바이트까지 대조한다. 다른 실행 조건의 성공이나 부분 전송을 현재 설치 성공으로 표시하지 않는다.
+In the resumption record, include input digests, tool versions, execution order, artifact locations, verification methods, conditions for reuse, known failures and stop conditions. Set transfer timeouts using actual size and measured throughput. Compare the received bytes as well as checking the exit status. A partial transfer or a pass under different conditions cannot establish installation success.
 
-공개 가능한 절차·제품 계약은 저장소가 관리한다. 개인 경로·계정·비공개 실행 정보와 원 실패 로그는 [기존 문서 배치 기준](../document-ownership.md)에 따라 내부 기록에 보존한다. 정확한 내부 실행 경로는 해당 작업의 기존 실행안과 결과에서 연결한다. 이 절차의 존재나 과거 성공은 새로운 실행·비용·설치·공개를 승인하지 않는다.
+Keep public procedures and product contracts in the repository. Keep personal paths, accounts, private execution details and original failure logs in the internal record under the [document placement rules](../document-ownership.md). Link the exact internal route from the task's existing plan and result. This procedure and prior passes grant no new execution, cost, installation or publication authority.
 
 ### Windows runtime creation checkpoint
 

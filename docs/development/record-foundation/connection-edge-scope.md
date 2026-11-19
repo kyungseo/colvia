@@ -1,46 +1,58 @@
-# 연결 경계와 첫 공개 범위
+<a id="연결-경계와-첫-공개-범위" name="연결-경계와-첫-공개-범위"></a>
+
+# Project connection boundaries and first-release scope
 
 상태: 2026-11-06 Driver 범위 제안. Owner는 추가 의견을 검토하되 모든 사례를 자동 처리하지 않고, 필요한 보호와 확장 경계만 지금 두도록 요청했다. 제품 구현이나 지원 검증 완료를 뜻하지 않는다. 진행 중인 R3b 입력은 수정하지 않는다. 결과가 도착하면 기존 [상세 계약](implementation-contracts.md), [구현 순서](implementation-plan.md), [검증표](validation.md)에 필요한 부분만 합친다. 진행 기록은 [기존 Work](../FEAT-20261106-002-record-foundation.md)가 소유한다.
 
-## 판단 기준
+English reference, 2026-11-19. The [original wording at the translation base](https://github.com/kyungseo/colvia/blob/eed271ad5aa665f0002c9eded69d82f224da9ce0/docs/development/record-foundation/connection-edge-scope.md) governs the dated decisions and evidence. The Owner [accepted this English reference](../document-language-result-review.md#owner-acceptance).
 
-첫 공개부터 필요한 것은 기록을 잃거나 잘못 수락하지 않는 것, 약속한 일반 작업 경로를 막지 않는 것이다. 드문 전환을 자동 처리하는 기능은 따로 만들지 않는다. 감지·보존·설명과 자동 해결을 구분한다. 기존에 정한 Git/non-Git, linked worktree와 앱의 등록된 nested worktree, 관리 실행기, 갱신·복구·해제 범위는 축소하지 않는다.
+<a id="판단-기준" name="판단-기준"></a>
+
+## Criteria for the first release
+
+The first release must preserve records, prevent acceptance of the wrong result and support the promised ordinary Work flow. Detect uncommon transitions, preserve the affected state and explain the next step. The first release does not handle these transitions automatically. Retain the agreed scope for Git and non-Git folders, linked and registered nested app worktrees, the managed launcher, updates, recovery and disconnection.
 
 추가 Claude 의견은 고정 입력을 가진 독립 리뷰가 아닌 보충 의견으로 받았다. 경로·기준점 쟁점은 유효하지만 세 기능의 추가 비용 3–6시간은 실측이 아니며 채택하지 않는다. 특히 기준점 갱신은 승인·검사·중단 복구 의미까지 걸려 단순한 안내 수정으로 계산할 수 없다.
 
-## 첫 공개와 후속 기능
+<a id="첫-공개와-후속-기능" name="첫-공개와-후속-기능"></a>
 
-| 사례 | 첫 공개의 권장 처리 | 후속 후보 |
+## First-release recommendations and follow-ups
+
+| Case | Recommended first-release behavior | Follow-up candidate |
 | --- | --- | --- |
-| monorepo 하위 폴더 | Git 작업 폴더의 root를 연결 단위로 삼는다. 이미 연결된 root 아래에서 명령을 실행하는 것은 별도 프로젝트 생성과 다르다. 검증된 root로 해석하고 실제 대상과 Work 범위를 보여 준다. 하위 폴더를 독립 프로젝트로 연결하는 요청에는 root 연결과 하위 경로의 작업 범위를 안내한다. root 연결로 범위를 조용히 넓히지 않는다. | 같은 저장소 안의 독립 하위 프로젝트, 중첩 프로젝트 간 기록/범위 관계. 실제 수요와 root 단위 관측 비용을 확인한 뒤 착수. |
-| 연결 뒤 Git 유무가 바뀜 | 상태 변경을 감지해 이전 연결 조건으로 쓰기를 계속하지 않는다. OS 데이터 위치의 기존 기록과 본문은 보존하고, 현재 폴더와의 일치를 주장하지 않는 기록 조회·내보내기를 제공한다. 명시적 재연결 또는 새 연결로 시작하며 기존 기록을 식별할 수 있게 한다. 진행 중 작업의 기준을 몰래 바꾸거나 완료로 처리하지 않는다. | 동일 논리 프로젝트로 자동 전환하고 활성 Work까지 이어주는 전환 도구. 명시적 재연결의 보존/신원 규칙을 재사용한다. |
-| Work 중 다른 파일/branch 등이 바뀜 | 명령 이름이 아니라 실제 파일·정책·신원·검사 전제의 변화를 판정한다. 변경이 범위 보호나 검증 전제를 깨면 제출/수락을 멈추고 관련 차이와 다음 행동을 보여 준다. 현재 파일과 옛 근거를 보존한 뒤 기존 승인 경로로 보완하거나, 사용자가 새 기준을 검토하여 새 Work로 이어간다. 기존 Work는 미완료/차단 사실을 남긴다. | 같은 Work 안에서 기준점 변경을 별도 결정으로 기록하고 계속하는 기능. 경로 비중복만으로 안전하다고 판단하지 않는다. |
-| 외장·특수 파일시스템 | 작업 폴더의 관측/파일 identity와 정본 DB의 저장 안전성을 따로 판단한다. 필요한 보장을 확인하지 못하면 쓰기를 거부하고 구체적 이유를 안내한다. 외장 프로젝트가 곧 외장 DB를 뜻하지 않는다. | 추가 파일시스템별 qualification과 안전한 대체 identity 방식. 지원 선언은 실제 근거 이후. |
+| Subdirectory of a monorepo | Connect at the Git workspace root. For a command inside a connected root, resolve the verified root and show the target and Work scope. If someone requests an independent subproject, explain how to connect the root and scope the Work to the subdirectory. Never silently broaden the scope. | Independent subprojects and the relationship between nested records and scopes. First establish demand and the cost of observing the entire root. |
+| Git status of a connected folder changes | Detect the change and stop writing under the old binding. Preserve the records and bodies in OS data storage. Allow historical queries and export without claiming the folder still matches. Reconnect explicitly or start a new connection with the old records identifiable. Preserve an active Work's baseline and state. | An automatic transition tool could carry the same logical project and its active Work forward using the preservation and identity rules for explicit reconnection. |
+| Files or the branch change during a Work | Compare files, policy, identity and check assumptions. Pause submission or acceptance if the change breaks scope protection or a check prerequisite. Show the difference and next action. Preserve current files and earlier evidence. Continue through the existing approval path, or have the user review a new baseline and continue in a new Work. Record the old Work as unfinished or blocked. | A separate decision to change the baseline within the same Work. Disjoint paths alone cannot establish safety. |
+| External drives or unusual filesystems | Check workspace observation and file identity separately from the safety of the authoritative database. Refuse writes and explain the missing guarantee when it cannot be established. An external project folder does not imply an external database. | Qualify additional filesystems and alternative identity methods before claiming support. |
 
-root는 primary checkout만 뜻하지 않는다. 등록된 linked/app worktree에는 각각 자신의 작업 폴더 root가 있으며 같은 프로젝트 정본을 사용할 수 있다. 다른 저장소·미등록 nested 경계는 root 탐색으로 삼키지 않는다. 비 Git 하위 폴더에 기존 연결 조상이 있는 경우도 중첩 독립 연결을 조용히 만들지 않는다.
+Each registered linked or app worktree has its own workspace root and can share the project authority. Root discovery must respect foreign repositories and unregistered nested boundaries. If a non-Git subfolder has a connected ancestor, do not silently create an independent nested connection.
 
-Git 실행 파일이 없거나 권한 때문에 `.git`을 읽지 못하는 상황은 Git 삭제와 다르다. 전환 감지는 이 상태를 구분해야 한다. `.git` locator를 잃어도 새 빈 정본으로 기존 이력을 대체하지 않는다. 재연결이 기존 identity를 증명하지 못하면 기록 보존과 명시적 새 연결까지만 허용한다. 다른 linked worktree나 세션의 이전 binding도 그대로 유효하다고 가정하지 않는다.
+A missing Git executable or denied access to `.git` calls for a different diagnosis from removal of Git metadata. Losing a locator must never replace history with a new empty authority. When reconnection cannot prove the old identity, permit only record preservation and an explicit new connection. Revalidate earlier bindings in other sessions or linked worktrees.
 
-외부 변경을 발견한 뒤에 “기존 Work부터 제출”이라고만 안내하면 이미 제출이 거부된 상황을 해결하지 못한다. 자동 checkout/reset/stash, 사용자 파일 덮어쓰기, 기준점 교체로 해결하지 않는다. 미제출 파일은 그대로 보존하며 저장되지 않은 과거 상태를 재구성할 수 있다고 약속하지 않는다. 새 Work를 만들었다고 이전의 범위 밖 변경을 검증 완료나 수락 완료로 간주하지 않는다.
+When external changes already prevent submission, asking the user to submit the old Work first leaves them stuck. Preserve unsubmitted files. Do not overwrite user files or replace the baseline to resolve the change. Do not run checkout, reset or stash automatically. Unrecorded earlier contents may be unrecoverable. Starting a new Work does not verify or accept an out-of-scope change from the old one.
 
-## 지금 유지할 확장 경계
+<a id="지금-유지할-확장-경계" name="지금-유지할-확장-경계"></a>
 
-- 프로젝트 identity, workspace identity, 실행 위치, Work의 승인 경로 범위를 분리한다. 하위 폴더 독립 연결을 미리 구현하거나 namespace 프레임워크를 만들지 않는다.
-- Git/non-Git 관측 adapter는 연결 종류·관측 정책·binding generation을 명시한다. 연결 변경은 데이터 삭제와 다르며, 이전 generation의 쓰기는 기대 상태 대조로 막는다.
-- 기준점과 관측은 불변 참조로 남기고 Work 결과/수락과 구분한다. 미래의 기준점 변경은 옛 사실을 덮어쓰지 않는 새 결정/관측으로 표현한다. 기존 capability/version 계약으로 호환성을 판정한다. 의미가 정해지지 않은 enum이나 새로운 이식 엔진을 선구현하지 않는다.
-- 차이 조회는 관측 사실을 반환한다. 출처를 알 수 없는 변경을 자동으로 “동료가 한 외부 변경”으로 분류하지 않는다. 기준점 갱신을 나중에 구현할 때는 승인 경로뿐 아니라 입력·설정·검사 의존 변화, 기존 검사/검토 receipt 무효화, 중단·중복 요청까지 다룬다.
-- 파일시스템 port는 필요한 identity·잠금·동기화 조건과 불가 이유를 드러낸다. SQLite 정본의 잠금/동기화 보장은 실제 저장 위치에 대해 별도로 확인한다. [SQLite의 파일시스템 전제](https://www.sqlite.org/howtocorrupt.html)
+## Boundaries for future extensions
 
-세 항목에 별도 엔진을 추가하지 않고 기존 C1/C3/C5의 신원·기대 상태·관측 경계에 배치한다. 새 기준점 변경 기록의 세부 형식은 해당 후속 기능을 설계할 때 정한다. 첫 공개 형식은 공개된 이력을 깨지 않는 capability/version 확장과 옛 reader의 안전한 거부를 지원해야 한다.
+- Keep project identity, workspace identity, invocation location and approved Work paths distinct. Independent subfolder connections and a namespace framework are outside this design.
+- Git and non-Git observation adapters identify the connection kind, observation policy and binding generation. Preserve data across connection changes and reject stale-generation writes by checking expected state.
+- Retain baselines and observations as immutable references, separate from results and acceptance. A future baseline change would add a decision and observation while preserving earlier facts. Use the existing capability/version contract for compatibility. Defer new enums and migration machinery until their semantics are defined.
+- A difference query reports observations. Do not attribute unexplained changes to a collaborator. A future baseline change must account for input, settings and check dependencies, invalidated check and review receipts, interruptions and duplicate requests as well as approval.
+- The filesystem port identifies required identity, locking and sync guarantees and explains when they are unavailable. Verify SQLite's locking and durability at the actual database location. [SQLite filesystem assumptions](https://www.sqlite.org/howtocorrupt.html)
 
-## 필요한 최소 검사
+Use the existing C1/C3/C5 boundaries for identity, expected state and observation. Specify the format for a baseline-change record when that feature is designed. The first public format must allow capability and version extensions that preserve published history and let older readers refuse safely.
 
-기존 C1/C5·D1/D7·scope 검사를 재사용하고 빠진 셀만 추가한다. 아래는 계획이며 이번에 실행하지 않았다.
+<a id="필요한-최소-검사" name="필요한-최소-검사"></a>
 
-1. 연결 root의 하위 폴더 실행과 독립 하위 연결 요청을 구분한다. linked/app root, foreign nested root를 혼동하지 않는다.
-2. 연결된 비 Git 폴더의 Git 생성, Git locator 소실, Git 실행 불가를 각각 구분한다. 기록/본문이 보존되고 오래된 세션이 잘못 쓰지 않으며 복구 안내가 실행 가능한지 확인한다.
-3. 범위 밖·범위 안 변경 및 경로는 달라도 검사 의존이 바뀐 경우를 나눈다. 기준점을 몰래 바꾸거나 검토 완료로 처리하지 않는지 확인한다. 파일 내용이 같은 Git 메타데이터 변화는 관련 계약의 전제가 실제 달라졌는지에 따라 판정한다.
-4. 필요한 파일 identity/관측을 확보할 수 없는 경우 거부하고, 정본을 손상으로 오인하거나 사용자 파일을 수정하지 않는다. 실제 외장 드라이브 행렬은 이번 설계 보정에 추가하지 않는다.
+## Minimum verification cases
+
+Reuse the C1/C5, D1/D7 and scope checks. These additional cases were planned and had not been run in this design exercise.
+
+1. Distinguish running inside a connected root from requesting an independent subfolder connection. Identify linked and app roots separately from foreign nested roots.
+2. Distinguish Git initialization in a connected non-Git folder, loss of the Git locator and an unavailable Git executable. Verify record and body retention, refusal of stale-session writes and actionable recovery guidance.
+3. Cover changes inside and outside scope and changes to check dependencies even at other paths. Verify that the baseline stays intact and review stays pending. For Git metadata changes with identical file contents, determine whether a contract prerequisite actually changed.
+4. Refuse safely when file identity or observation cannot be established. Preserve user files and do not misreport the authority as corrupt. A physical external-drive matrix was outside this design correction.
 
 “그 외 모든 사례는 처리됐다”는 결론은 채택하지 않는다. 회사 정책, 기기 이동, 프로젝트 삭제, 오랜만의 갱신 등은 계약에서 다루는 조건과 실제 qualification 상태를 기존 검증표로 구별한다. 새 기능이나 전수 환경 시험으로 범위를 늘리지는 않는다.
 
