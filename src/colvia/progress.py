@@ -149,7 +149,7 @@ def compare_files(workspace, scope, saved):
     return [{'path': path, 'status': difference(before, current[path])} for path, before in saved.items()]
 
 
-def view(service, work, head, scope):
+def view(service, work, head, scope, amendments=()):
     key = 'progress:' + work
     latest = service.store.head(key)
     value = dict(progress_receipt=receipt(service, work, head.ref, latest),
@@ -160,8 +160,13 @@ def view(service, work, head, scope):
                 all(note.payload[k] == head.payload[k] for k in ('work', 'workspace')), 'progress-work-mismatch')
         original = validate_content(latest, service.store.load)
         same_approval = all(link(original, k) == link(head, k) for k in ('plan', 'approval'))
-        files = compare_files(service.workspace, scope, note.payload['files']) if same_approval else []
+        inherited = not same_approval and any(link(basis,'approval') == link(original,'approval')
+                                             for _,basis in amendments)
+        saved = note.payload['files']
+        files = compare_files(service.workspace, sorted(saved), saved) if same_approval or inherited else []
+        appended = sorted(set(scope) - set(service._object(link(original,'plan')).payload['scope'])) if inherited else []
         value['progress'] = {**{k: note.payload[k] for k in NOTE_FIELDS}, 'files': files,
-                             'same_approval': same_approval, 'additional_paths_unavailable': len(scope) - len(files)}
+                             'same_approval': same_approval, 'added_after_note': appended,
+                             'additional_paths_unavailable': len(scope) - len(files) - len(appended)}
     require(service.store.head(key) == latest and service.store.head('work:' + work) == head.ref, 'progress-view-stale')
     return value

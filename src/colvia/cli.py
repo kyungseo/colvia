@@ -69,6 +69,15 @@ def parser(*,managed=False):
         command=ordinary.add_parser(name);command.add_argument('work');command.add_argument('--receipt',required=True);command.add_argument('--statement',required=True)
     for name in ('start','review','view','plan-review'):
         ordinary.add_parser(name).add_argument('work')
+    for action in ('scope-preview','scope-apply'):
+        command = ordinary.add_parser(action)
+        command.add_argument('work')
+        for field in ('edit','create','check'):
+            command.add_argument('--'+field, action='append', default=[])
+        command.add_argument('--reason', required=True)
+        if action == 'scope-apply':
+            command.add_argument('--receipt', required=True)
+            command.add_argument('--statement', required=True)
     progress=ordinary.add_parser('progress', help='Save a progress note before first submission')
     progress.add_argument('work')
     for name in ('receipt','done','checked','remaining','next-action'):
@@ -165,6 +174,13 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
         action=args.action
         if action=='plan':return service.plan(operation=operation,work=args.work,title=args.title,goal=args.goal,scope=args.path,checks=args.check,excludes=args.exclude,replace_receipt=args.replace_receipt)
         if action in ('approve','accept','revise'):return getattr(service,action)(operation=operation,work=args.work,receipt=args.receipt,statement=args.statement)
+        if action in ('scope-preview','scope-apply'):
+            from . import scope_addition
+            delta = dict(edit=args.edit, create=args.create, checks=args.check, reason=args.reason)
+            if action == 'scope-preview':
+                return scope_addition.review(service, args.work, **delta)[0]
+            return scope_addition.apply(service, args.work, operation, **delta,
+                                       receipt=args.receipt, statement=args.statement)
         if action=='progress':
             from .progress import NOTE_FIELDS, save
             return save(service, args.work, operation, args.receipt, {key:getattr(args,key) for key in NOTE_FIELDS})
@@ -280,7 +296,7 @@ def parse_cursor(value):
 
 
 def command_readonly(args):
-    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content')) or (args.group=='candidate' and args.action=='list') or (args.group=='followup' and args.choice is None)
+    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview')) or (args.group=='candidate' and args.action=='list') or (args.group=='followup' and args.choice is None)
 
 
 def main(argv=None,*,entry=None):
@@ -351,6 +367,10 @@ def main(argv=None,*,entry=None):
         if not isinstance(exc,(RecordError,PermissionError)) and ((args.group=='execution' and args.action in ('start','resolve')) or (args.group=='delivery' and args.action in ('run','finish-execution'))):code=args.group+'-outcome-unknown'
         from .presentation import credential_finding_detail, display_path
         value=dict(error=code,message=failure(code))
+        from .scope_addition import PathRefusal
+        if isinstance(exc, PathRefusal):
+            value['path'] = exc.path
+            value['message'] += ' · ' + display_path(exc.path)
         from .credentials import GitContentRefusal
         if isinstance(exc, GitContentRefusal):
             value['finding'] = exc.finding

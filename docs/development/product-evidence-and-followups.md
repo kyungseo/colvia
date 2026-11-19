@@ -125,7 +125,7 @@ The Owner set the priorities below for candidate registration against source rev
 
 ### P1: Add paths to the same Work
 
-Start with read-only exploration when the affected paths are unknown. When the goal stays the same and additional edits become necessary, show the added files, why they are needed and what extra checks will run. Bind the user's approval to that scope change before editing the added paths. Keep the Work identity, prior approval history, exact boundaries and existing edits. If the original bytes of an already changed file cannot be verified, record that they are unavailable. Consider directory-wide approvals separately.
+Start with read-only exploration when the affected paths are unknown. When the goal stays the same and additional edits become necessary, show the added files, why they are needed and what extra checks will run. Bind the user's approval to that scope change before editing the added paths. Keep the Work identity, prior approval history, exact boundaries and existing edits. If the original bytes of an already changed file cannot be verified, record that they are unavailable. Consider directory-wide approvals separately. The [implementation record](FEAT-20261119-003-scope-additions.md) covers approval-time absence for new paths and original content for existing files.
 
 ### P1: Record progress before submission
 

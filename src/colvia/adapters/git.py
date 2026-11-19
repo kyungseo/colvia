@@ -241,6 +241,17 @@ class Git:
             sources.append(PolicySource('workspace:'+logical_path(native),read_file(root/native,4*1024*1024)))
         return Policy(tuple(sources),tuple(config),self.identity)
 
+    def tracked_for_creation(self, root):
+        """Include staged deletions which vanished from the index but still exist in HEAD."""
+        paths = set(self.index(root))
+        head = self._run(root, ('rev-parse','--verify','--quiet','HEAD^{tree}'), allowed=(0,1))
+        if head.code == 0:
+            tree = _text(head.stdout.strip())
+            require(len(tree) in (40,64) and all(c in '0123456789abcdef' for c in tree), 'invalid-git-tree')
+            files = self._run(root, ('ls-tree','-rz','--name-only',tree)).stdout
+            paths.update(logical_path(_text(raw)) for raw in files.split(b'\0') if raw)
+        return paths
+
     def ignored(self,root:Path,native_paths):
         result=set();batch=[];size=0
         def flush():
