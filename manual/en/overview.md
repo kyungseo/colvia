@@ -14,14 +14,14 @@ Colvia is a local workflow tool for working with AI agents. Approve the scope pr
 | --- | --- |
 | You | Choose the goal and scope, grant necessary access, and decide whether to accept the result. |
 | Codex and Claude Code | Read the project rules, propose a task, do the work, and run the checks. |
-| Colvia | Helps the agent find the project’s Work and keeps plans, approvals, submissions, and decisions on your device. |
+| Colvia | Checks file changes against the approved scope at submission. Keeps plans, approvals, submissions, and decisions on your device so the agent can find and resume the same Work. |
 
 ```mermaid
 flowchart LR
     U(["You"]) <-->|chat · approve · accept| A["Codex or Claude Code"]
     A -->|work · checks| F["Project files"]
     A -->|record plan · submission · decision| C["Colvia"]
-    C -->|compare with scope| F
+    C -->|check scope at submission| F
     C --> R[("Records on your device")]
     R -.->|new chat · another agent| A
 ```
@@ -40,7 +40,11 @@ Granting file or command access in the app or CLI, approving the scope of a Work
 | Approving scope | In chat with the agent; Colvia records it | You entrust the work with this goal, file scope and checks. |
 | Accepting a result | In chat with the agent; Colvia records it | You accept the submission you just read. |
 
-Committing an accepted result to Git and being notified that a result is ready are separate again. Accepting does not commit, and clicking a notification does not accept.
+If [an out-of-scope change blocks submission](work.md#review), your files stay in the folder. Review the changes and resolve the issue before submitting again.
+
+A [result notification](maintenance.md#notifications) opens the Work for review. Read the submission and decide whether to accept it. To [commit an accepted result to Git](git.md#git-integration), review the proposed changes and the current staging state, then approve the commit separately.
+
+In the next Preview, Colvia will check for known credential patterns and protected paths when you prepare a commit through Colvia. [What the credential check covers](git.md#git-credential-check)
 
 <a id="work" name="work"></a>
 
