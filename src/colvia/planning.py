@@ -37,21 +37,40 @@ def candidate_key(candidate):_token(candidate);return 'candidate:'+candidate
 def followup_key(work):_token(work);return 'followup:'+work
 
 
-def page_heads(store,prefix,*,limit=20,cursor=None):
-    require(type(limit) is int and 1<=limit<=100,'invalid-page-limit')
-    root=store.root();offset=0
+def page_heads(store, prefix, *, limit=20, cursor=None, mode='all'):
+    require(type(limit) is int and 1 <= limit <= 100, 'invalid-page-limit')
+    require(mode in ('all','archived','current'), 'invalid-list-mode')
+    root = store.root()
+    offset = 0
     if cursor is not None:
-        require(type(cursor) is dict and set(cursor)=={'root','offset'} and cursor['root']==root.ref.as_dict() and
-                type(cursor['offset']) is int and 0<=cursor['offset']<=1_000_000,'list-changed-or-invalid-cursor')
-        offset=cursor['offset']
-    values=[];seen=0;next_cursor=None
-    for key,ref in scan_map(root.heads,store.load):
-        if not key.startswith(prefix):continue
-        if seen<offset:seen+=1;continue
-        if len(values)==limit:
-            next_cursor=dict(root=root.ref.as_dict(),offset=offset+limit);break
-        values.append((key,ref));seen+=1
-    require(store.root().ref==root.ref,'list-changed')
+        expected = {'root','offset'} if mode == 'all' else {'root','offset','mode'}
+        require(isinstance(cursor, dict) and set(cursor) == expected
+                and cursor.get('mode','all') == mode and cursor['root'] == root.ref.as_dict()
+                and type(cursor['offset']) is int and 0 <= cursor['offset'] <= 1_000_000,
+                'list-changed-or-invalid-cursor')
+        offset = cursor['offset']
+    values = []
+    next_cursor = None
+    registry = application_registry() if mode != 'all' else None
+    entries = ((key,ref) for key,ref in scan_map(root.heads,store.load) if key.startswith(prefix))
+    for index, (key,ref) in enumerate(entries):
+        if index < offset:
+            continue
+        if registry is not None:
+            require(ref.kind == 'work.head','wrong-work-head')
+            head = registry.inspect(ref,store.load(ref),required=True)
+            archived = head.payload['archived']
+            if mode == 'archived' and not archived:
+                continue
+            if mode == 'current' and (archived or head.payload['phase']=='discarded'):
+                continue
+        if len(values) == limit:
+            next_cursor = dict(root=root.ref.as_dict(),offset=index)
+            if mode != 'all':
+                next_cursor['mode'] = mode
+            break
+        values.append((key,ref))
+    require(store.root().ref == root.ref,'list-changed')
     return values,next_cursor
 
 

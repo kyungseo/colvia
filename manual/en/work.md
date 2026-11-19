@@ -64,6 +64,18 @@ Before recording ordinary Work acceptance, Colvia compares the current files in 
 
 You can archive a Work once it is accepted. Archiving does not delete records or free storage. Its submitted contents, decisions and follow-up links remain available afterward.
 
+<a id="work-lifecycle" name="work-lifecycle"></a>
+
+## Switch to another Work or take a break
+
+Say “Leave A as it is and open B.” Opening B’s plan or submission leaves A in its current state. You can work on C and then return to A. To mark where you want to return, say “Pause A. Next time I’ll check the sources for the table.” Confirm the Work and review the edits that will stay in the folder.
+
+Ask to resume A. Active work returns to its approved scope. A submission awaiting review returns to the same review. Check changed paths and any files Colvia could not compare. Colvia compares up to the first 128 approved paths in sorted order and reports how many fall outside that observation. Other Work can change files in the same folder. Resuming keeps the files as they are. If a submitted file has changed, review the changes before accepting a result.
+
+To end A, ask to discard it and confirm the reason. Files, approvals, notes and submissions remain available. If the goal has changed, ask to replace A with B. Select an existing B or record a plan for a new B first. The decision records both the end of A and its successor. B keeps its own scope and approval.
+
+The current list hides archived and discarded Work. Open the full list or look up a Work by ID to see it again. Restoring an archived Work returns it to the completed list. Once you record a lifecycle decision, older launchers cannot open the project or restore a new backup.
+
 <a id="progress-note" name="progress-note"></a>
 
 ## Step away before submitting

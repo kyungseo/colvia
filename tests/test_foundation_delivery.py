@@ -28,6 +28,14 @@ class DeliveryTests(WorkFixture,unittest.TestCase):
         self.delivery.start(operation='start-'+delivery,delivery=delivery,receipt=prepared['receipt'],statement='Do this step and requested notification')
         return prepared
     def claim(self):return self.delivery.claim(operation='claim',delivery='handoff',effects=self.effects)
+    def test_queued_submit_blocks_lifecycle_before_an_effect_is_claimed(self):
+        from colvia import work_lifecycle as lc
+        self.ready()
+        self.assertIsNone(self.store.head(PENDING))
+        with self.assertRaisesRegex(RecordError,'lifecycle-delivery-prepared'):
+            lc.proposal(self.service,'report','pause','later')
+        self.assertEqual('active',self.service.view('report')['state'])
+
     def test_preparation_and_claim_do_not_submit_or_accept(self):
         self.ready();self.assertEqual('active',self.service.view('report')['state'])
         self.assertIsNone(self.store.head(PENDING));self.claim()

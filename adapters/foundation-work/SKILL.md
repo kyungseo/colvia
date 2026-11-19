@@ -12,18 +12,18 @@ or another project's record directory.
 
 ## Enter and resume
 
-Read the project rules. Run `./colvia --json ordinary list` on macOS or
-`.\colvia.cmd --json ordinary list` in Windows PowerShell. Use that same launcher
-for every command below. Follow each non-null `next` with `ordinary list --cursor`
-and its returned cursor as one JSON argument before inferring an empty project or a unique match.
-Only a successful, complete empty list establishes that this connection has no Work.
+Read the project rules. Run `./colvia --json ordinary list --list-mode current` on macOS or
+`.\colvia.cmd --json ordinary list --list-mode current` in Windows PowerShell. Use that launcher throughout.
+Follow each non-null `next` with the same filter and `--cursor` plus its returned JSON argument.
+An empty current list can hide archived or discarded Work. Only a complete empty `--list-mode all` establishes that this connection has no Work.
 If a lookup fails, explain what is known, read `guide recovery`, and stop affected
 writes until you can verify the folder, access and Work state. For a folder that
 needs connection, use the manager’s connection preview first. You can still help in conversation.
 
 Check for a matching Work first. For a general request to continue, resume the
 only active or review Work when the full list establishes there is exactly one.
-If several fit, show their titles and ask which to open. Use the ID from the
+Consider paused matches too. If several fit, show their titles and ask which to open.
+For pause, resume, discard or replacement read `guide work`. Opening B leaves A as it was. Use the ID from the
 list in tool calls; the person need not supply it. Read `ordinary review WORK_ID`
 for review state, otherwise `ordinary view WORK_ID`. Keep `--json` before the
 command group for structured records. When needed read `ordinary content` for

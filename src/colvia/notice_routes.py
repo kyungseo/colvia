@@ -89,7 +89,7 @@ def detail_text(value):
     if files:
         lines.extend(['','결과 파일',*['• '+name for name in files[:20]]])
         if len(files)>20:lines.append(f'그 밖의 파일 {len(files)-20}개는 프로젝트에서 확인하세요.')
-    states={'planned':'진행 승인 대기','active':'진행 중','review':'결과 검토 대기','completed':'결과 수락 완료'}
+    states={'planned':'진행 승인 대기','active':'진행 중','review':'결과 검토 대기','completed':'결과 수락 완료','paused':'일시정지','discarded':'폐기'}
     lines.extend(['','현재 상태: '+states.get(current.get('state'),'현재 파일 상태 확인 필요')])
     if current.get('current_matches') is False:lines.append('현재 파일이 검토한 결과와 달라졌습니다.')
     if not value['workspace_connected']:lines.append('프로젝트 연결을 확인한 뒤 채팅에서 이 작업을 이어가세요. 보관된 결과는 남아 있습니다.')

@@ -10,6 +10,8 @@ Colvia is a local workflow tool for working with AI agents. Approve the scope pr
 
 Pause before submitting? [Save progress and return in a new chat](work.md#progress-note).
 
+[Switch Work, pause and resume](work.md#work-lifecycle)
+
 [Approve a table edit and a new appendix together](work.md#scope-change)
 
 For short questions and small corrections you request directly, check [when you can skip creating a Work](work.md#without-work). Continue edits that belong to an existing Work using its records.

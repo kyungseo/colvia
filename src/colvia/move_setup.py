@@ -110,9 +110,10 @@ class MoveSetup(ProjectSetup):
                 if not key.startswith('work:'):
                     continue
                 head, plan, result, _ = head_summary(ref, store.load)
-                if head.payload['workspace'] != current.workspace or head.payload['phase'] == 'completed':
+                if head.payload['workspace'] != current.workspace or head.payload['phase'] in ('completed','discarded'):
                     continue
-                require(result is None or result.ref.version == 1 or head.payload['phase'] != 'active',
+                phase = head.payload['origin'] if head.payload['phase'] == 'paused' else head.payload['phase']
+                require(result is None or result.ref.version == 1 or phase != 'active',
                         'connection-move-work-pending')
                 baseline = decode_envelope(link(plan, 'baseline'), store.load(link(plan, 'baseline')))
                 old = decode_policy(link(baseline, 'policy'), store.load)

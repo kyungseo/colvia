@@ -72,6 +72,27 @@ class WorkerTests(WorkerFixture,unittest.TestCase):
         self.assertIsNone(self.store.head(PENDING));self.assertIsNone(self.store.head(application_key('apply-report')))
         self.assertEqual(b'synthetic report\n',(self.root/'report.md').read_bytes())
 
+    def test_unbound_linked_worktree_can_pause_before_worker_binding(self):
+        from colvia import work_lifecycle as lc
+        self.source_result()
+        def decide(action,operation):
+            args=(self.source,'source',action,'review later','','')
+            return lc.apply(*args,lc.proposal(*args)[0]['receipt'],operation)
+        self.assertEqual('paused',decide('pause','pause-source')['state'])
+        self.assertEqual('review',decide('resume','resume-source')['state'])
+        self.prepare()
+        with self.assertRaisesRegex(RecordError,'lifecycle-application-prepared'):
+            decide('pause','pause-bound')
+
+    def test_paused_destination_still_blocks_worker_application(self):
+        from colvia import work_lifecycle
+        self.start(scope=('elsewhere.md',))
+        args=(self.service,'report','pause','return later','','')
+        work_lifecycle.apply(*args,work_lifecycle.proposal(*args)[0]['receipt'],'pause-other')
+        self.source_result()
+        with self.assertRaisesRegex(RecordError,'worker-destination-has-active-work'):
+            self.prepare()
+
     def test_destination_active_work_refuses_before_application(self):
         self.source_result();p=self.service.plan(operation='dest-plan',work='dest',title='다른 일',goal='대상 폴더 편집',scope=['other'],checks=['확인'])
         self.service.approve(operation='dest-approve',work='dest',receipt=p['receipt'],statement='진행')

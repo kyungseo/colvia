@@ -147,6 +147,22 @@ class UninstallTests(unittest.TestCase):
             self.removal.preview('remove-test')
         self.assertFalse((self.home.root / 'uninstall.json').exists())
 
+    def test_paused_work_keeps_uninstall_protection(self):
+        from colvia import work_lifecycle
+        with closing(self.authority.store()) as store:
+            workspace = LocalWorkspace(store, self.project, W, locator_reader=lambda: self.locator)
+            service = WorkService(store, workspace)
+            plan = service.plan(operation='plan-p', work='pause-me', title='Pause me',
+                                goal='Review the change', scope=['second.md'], checks=['verify'])
+            service.approve(operation='approve-p', work='pause-me', receipt=plan['receipt'], statement='ok')
+            service.start(operation='start-p', work='pause-me')
+            args = (service, 'pause-me', 'pause', 'come back later', '', '')
+            token = work_lifecycle.proposal(*args)[0]['receipt']
+            work_lifecycle.apply(*args, token, 'pause-p')
+        with self.assertRaisesRegex(RecordError, 'uninstall-active-work'):
+            self.removal.preview('remove-test')
+        self.assertFalse((self.home.root / 'uninstall.json').exists())
+
     def test_restore_partial_removal_requires_the_exact_review_receipt(self):
         def interrupt(phase):
             if phase == 'uninstall-after-move':

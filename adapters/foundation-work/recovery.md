@@ -7,6 +7,8 @@ is gone. An entry marked `bare` is a separate Git layout; don't treat it
 as a missing worktree. Keep the registration and related records until the maintainer has
 confirmed the exact recovery or cleanup and preserved any needed data.
 
+Use the guide from the installed launcher. If its list filter is unknown, verify that the launcher and guide belong to the same installation before continuing.
+
 Use the actual command result, not an assumed permission setting:
 
 | Observation | Meaning and next step |
@@ -16,7 +18,7 @@ Use the actual command result, not an assumed permission setting:
 | A started command times out, is interrupted or returns missing/damaged output | Its outcome is unknown. Inspect the Work or known operation read-only before considering another mutation; missing JSON alone is not a host denial. |
 | The person declines a tool request | Stop that action. Do not seek a bypass. |
 | Colvia reports a file or storage access failure | It may concern an input, output, runtime or record store. Identify only what the actual diagnostic establishes. |
-| `ordinary list` exits 0 with `items: []` and `next: null` | This verified connection has no Work. A failed query never establishes that. |
+| Complete `ordinary list --list-mode all` exits 0 with `items: []` and `next: null` | This verified connection has no Work. A failed query never establishes that. |
 
 `workspace-registration-required` needs the manager's connection preview; it is
 not an empty Work list. A non-null `next` means there are more pages. A new folder

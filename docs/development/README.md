@@ -302,7 +302,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [Pre-submission progress notes and resuming in a new chat](product-evidence-and-followups.md#p1-record-progress-before-submission) — P1. [First-submission implementation and evidence](FEAT-20261119-002-pre-submission-progress.md).
 
-- [Pause, end, or replace a Work](product-evidence-and-followups.md#p1-pause-end-or-replace-a-work) — P1. Record why a Work stopped and link its replacement so the previous Work can leave the active list.
+- [Pause, end, or replace a Work](product-evidence-and-followups.md#p1-pause-end-or-replace-a-work) — P1. Record why a Work stopped and link its replacement so the previous Work can leave the active list. [Implementation record](FEAT-20261119-004-work-lifecycle.md).
 
 - [Candidate priority, project status, and dependencies](product-evidence-and-followups.md#p2-candidate-priority-project-status-and-dependencies) — P2. Show priorities and next actions from existing candidate and Work records and identify genuine dependencies.
 

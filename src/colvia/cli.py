@@ -78,6 +78,15 @@ def parser(*,managed=False):
         if action == 'scope-apply':
             command.add_argument('--receipt', required=True)
             command.add_argument('--statement', required=True)
+    for name in ('lifecycle-preview','lifecycle-apply'):
+        change=ordinary.add_parser(name)
+        change.add_argument('work')
+        change.add_argument('decision',choices=('pause','resume','discard','replace'))
+        change.add_argument('--reason',required=True)
+        change.add_argument('--next-action',default='')
+        change.add_argument('--target',default='')
+        if name=='lifecycle-apply':
+            change.add_argument('--receipt',required=True)
     progress=ordinary.add_parser('progress', help='Save a progress note before first submission')
     progress.add_argument('work')
     for name in ('receipt','done','checked','remaining','next-action'):
@@ -87,6 +96,7 @@ def parser(*,managed=False):
     content=ordinary.add_parser('content');content.add_argument('work');content.add_argument('path');content.add_argument('--revision',type=int)
     archive=ordinary.add_parser('archive');archive.add_argument('work');archive.add_argument('--restore',action='store_true')
     listed=ordinary.add_parser('list');listed.add_argument('--limit',type=int,default=20);listed.add_argument('--cursor')
+    listed.add_argument('--list-mode',choices=('current','archived','all'))
     composition=sub.add_parser('composition').add_subparsers(dest='action',required=True)
     declare=composition.add_parser('declare');declare.add_argument('work')
     declare.add_argument('--child',action='append',required=True);declare.add_argument('--document',required=True)
@@ -181,6 +191,12 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
                 return scope_addition.review(service, args.work, **delta)[0]
             return scope_addition.apply(service, args.work, operation, **delta,
                                        receipt=args.receipt, statement=args.statement)
+        if action in ('lifecycle-preview','lifecycle-apply'):
+            from . import work_lifecycle
+            inputs=(service,args.work,args.decision,args.reason,args.next_action,args.target)
+            if action=='lifecycle-preview':
+                return work_lifecycle.proposal(*inputs)[0]
+            return work_lifecycle.apply(*inputs,args.receipt,operation)
         if action=='progress':
             from .progress import NOTE_FIELDS, save
             return save(service, args.work, operation, args.receipt, {key:getattr(args,key) for key in NOTE_FIELDS})
@@ -202,7 +218,8 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
                     checks.append(dict(name=parts[0],status=status,detail=parts[1]))
             return service.submit(operation=operation,work=args.work,summary=args.summary,checks=checks)
         root=store.root().ref
-        values,cursor=page_heads(store,'work:',limit=args.limit,cursor=parse_cursor(args.cursor))
+        mode=args.list_mode or ('current' if display else 'all')
+        values,cursor=page_heads(store,'work:',limit=args.limit,cursor=parse_cursor(args.cursor),mode=mode)
         items=[]
         for key,ref in values:
             head,_,_,_=head_summary(ref,store.load)
@@ -213,7 +230,7 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
                 if detail['recorded']:item['followup_detail']=detail
             items.append(item)
         require(store.root().ref==root,'list-changed')
-        return dict(items=items,next=cursor)
+        return dict(items=items,next=cursor,**({'list_mode':mode} if mode!='all' else {}))
     if args.group=='execution':
         from .execution.journal import ExecutionJournal
         journal=ExecutionJournal(service)
@@ -296,7 +313,7 @@ def parse_cursor(value):
 
 
 def command_readonly(args):
-    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview')) or (args.group=='candidate' and args.action=='list') or (args.group=='followup' and args.choice is None)
+    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action=='list') or (args.group=='followup' and args.choice is None)
 
 
 def main(argv=None,*,entry=None):

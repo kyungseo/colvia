@@ -342,6 +342,32 @@ class GitMoveTests(MoveFixture, GitFixture, unittest.TestCase):
         self.manager_fixture(self.home, self.git)
         self.connect()
 
+    def test_paused_active_review_and_discarded_work_survive_git_folder_move(self):
+        from colvia import work_lifecycle as lc
+        self.active()
+        def decide(service, work, action):
+            args=(service,work,action,'move the folder','','')
+            return lc.apply(*args,lc.proposal(*args)[0]['receipt'],work+'-'+action)
+        with closing(self.authority.store()) as store:
+            service=self.work(store)
+            for work in ('second','third'):
+                p=service.plan(operation=work+'-plan',work=work,title=work,goal='record it',scope=[work+'.md'],checks=['check'])
+                service.approve(operation=work+'-approve',work=work,receipt=p['receipt'],statement='yes')
+                service.start(operation=work+'-start',work=work)
+            (self.root/'report.md').write_bytes(b'review me')
+            self.submit(service,'submit-report')
+            for work,action in [('report','pause'),('second','pause'),('third','discard')]:
+                decide(service,work,action)
+            refs={work:store.head(work_key(work)) for work in ('report','second','third')}
+        self.assertEqual('moved',self.apply(self.relocate())['state'])
+        with closing(self.authority.store()) as store:
+            self.assertEqual(refs,{work:store.head(work_key(work)) for work in refs})
+            service=self.work(store,self.destination)
+            self.assertEqual('review',decide(service,'report','resume')['state'])
+            self.assertTrue(service.review('report')['current_matches'])
+            self.assertEqual('active',decide(service,'second','resume')['state'])
+            self.assertEqual('discarded',service.view('third')['state'])
+
     def test_git_config_origin_moves_with_single_root_and_later_worktree_can_register(self):
         self.active()
         review = self.relocate()
