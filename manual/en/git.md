@@ -64,7 +64,27 @@ Git’s bulk cleanup can affect several registrations. Preserve the contents of 
 
 ## Put an accepted result into Git
 
-Accepting a submission keeps a version you can compare with your current files later. You can make that comparison without a work-in-progress (WIP) commit. To put the accepted submission into Git, review the full proposed commit and current staging state, then approve the integration separately. Preparing a candidate creates Git objects. Applying it to your current branch and staging area is approved separately, after you review the candidate.
+Accepting a submission keeps a version you can compare with your current files later. You can make that comparison without a work-in-progress (WIP) commit. To put the accepted submission into Git, review the selected files, the change preview and your current staging area, then approve the integration separately.
+
+<a id="git-credential-check" name="git-credential-check"></a>
+
+### If the credential check stops a commit · Next Preview
+
+Before creating Git objects, Colvia checks the selected files and their paths, the commit message, the branch name, the author’s name and email, and the operation ID on your device. It looks for recognizable keys and tokens, private keys, passwords embedded in URLs, and secrets written directly into settings. The check stops at the first finding. It shows the location and, when available, the type and line number. The value stays hidden. Before submitting a revision, you can ask your agent to check the other selected files for the same kind of value and report only the locations. For example, replace a key written directly into Python code with a reference such as `api_key = os.getenv("OPENAI_API_KEY")`, then submit and accept the revision. For a finding in the message, edit the message. This check covers Git changes prepared through Colvia. Previously stored Work and Git history keep their original contents.
+
+Colvia blocks additions and edits to `.env`, `.env.local`, `.env.production`, and any file inside a `secrets/` directory. These names are matched case-insensitively at every level of the project. To share settings, keep `.env.example` or `.env.template` outside `secrets/` and use environment references for real values. Templates still go through the content check. The same protection covers `.netrc` (including `_netrc` on Windows), Terraform state files (`*.tfstate`), and backups (`*.tfstate.backup` or `*.tfstate.<digits>.backup`). Keystores (`.p12`, `.pfx`, `.jks`, `.keystore`) are also protected by path. When you delete a tracked file at a protected path, the preview shows the deletion and withholds its contents.
+
+You can share a project `.npmrc`. Colvia blocks literal credentials in settings such as `_authToken`, `_auth`, and `_password`. Keep the registry settings and reference an environment variable such as `${NPM_TOKEN}` for the credential. When you replace a stored token with a reference, the preview shows the new configuration and withholds the old contents.
+
+If you delete a protected file and include an exact copy of its contents at another path in the same commit candidate, Colvia stops even if you renamed the file. The same rule applies if you delete or edit a `.npmrc` that contained credentials and include an unchanged copy of its old contents elsewhere in the candidate. Remove the credential from the file you intend to share, then submit the revision.
+
+**Including images and fonts.** Colvia accepts PNG, JPEG (`.jpg` or `.jpeg`), GIF, WebP and ICO images, and WOFF, WOFF2, TTF and OTF fonts, when the extension matches the file signature. It skips credential checks inside these files. Before approving the commit, review each path and format in the preview or in the JSON field `unchecked_assets` (for example, `{"logo.png": "PNG"}`). Protected paths and exact-copy checks still apply. SVG files go through the text check.
+
+**When another file stops the candidate.** An image or font with a mismatched signature, a PDF, an archive, a database, an executable or another unsupported binary stops preparation. You can first integrate Works that exclude that file. If the file needs a separate commit, review its contents yourself before committing it with Git. Keep private keys and actual passwords out of the commit. Text must be UTF-8. Any line longer than 256 KiB stops the candidate, including in minified JavaScript or CSS.
+
+When the previous contents of the same file contain a recognized credential or cannot be inspected, the preview identifies the deletion or shows the new content with the old side withheld. If Colvia says the previous preview contains material it cannot display, prepare a new preview. Preparing a candidate creates Git objects. Applying it to your current branch and staging area is approved separately, after you review the candidate.
+
+### Check staging and repository state
 
 Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result.
 

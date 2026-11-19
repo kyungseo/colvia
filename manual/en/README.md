@@ -2,7 +2,7 @@
 
 [한국어](../ko/README.md) · English · [About Colvia](../../README.md)
 
-This guide covers Colvia v0.1.0, the first public Preview. It explains how to approve a work scope in Codex or Claude Code, review and accept a result, and pick up in a new chat.
+This guide covers Colvia Preview. It explains how to approve a work scope in Codex or Claude Code, review and accept a result, and pick up in a new chat.
 
 ## If you are new
 
@@ -42,7 +42,7 @@ This guide covers Colvia v0.1.0, the first public Preview. It explains how to ap
 
 ## If you use an earlier trial build
 
-Trial builds before the public release kept records in a `.hrn/` folder inside the project. Material for projects that still use that setup is collected under [Earlier trial reference](earlier-profile/README.md). If you installed v0.1.0 fresh, you do not need it.
+Trial builds before the public release kept records in a `.hrn/` folder inside the project. Material for projects that still use that setup is collected under [Earlier trial reference](earlier-profile/README.md). If you started with the official installer, follow the current guide.
 
 ## Getting help
 

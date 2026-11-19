@@ -5,10 +5,12 @@ This layer does not select a platform or make an OS permission decision.
 """
 from contextlib import contextmanager
 from dataclasses import asdict
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import json
 import hashlib,os,stat
 from ..adapters.git import read_file,_absolute
 from ..codec import RecordError,canonical_bytes,decode_canonical,require
+from ..credentials import GitContentRefusal, asset_review_prefix, inspect_chunks, opaque_review_path, protected_git_path, screen_candidate
 from ..git_index import Entry,Index,parse,emit,integrate,LIMIT
 from .observation_port import location,selected
 from ..storage.sqlite import _token
@@ -123,7 +125,9 @@ class GitCandidate:
         require(algorithm in ('sha1','sha256'),'unsupported-git-object-format')
         rawhead=read_file(Path(top.gitdir.path)/'HEAD',4096)
         require(rawhead.startswith(b'ref: refs/heads/') and rawhead.endswith(b'\n') and rawhead.count(b'\n')==1,'attached-git-branch-required')
-        branch=rawhead[5:-1].decode('utf-8');self.command(['check-ref-format',branch])
+        branch=rawhead[5:-1].decode('utf-8')
+        inspect_chunks([branch.encode()], 'branch')
+        self.command(['check-ref-format',branch])
         require(self.command(['symbolic-ref','-q',branch],allowed=(0,1)).code==1,'symbolic-target-branch-not-supported')
         for target in (Path(top.common.path)/branch,Path(top.common.path)/'packed-refs'):
             for parent in target.parents:
@@ -143,7 +147,7 @@ class GitCandidate:
 
     def tree(self,oid,algorithm):
         if oid is None:return {}
-        raw=self.command(['ls-tree','-r','-z','--full-tree',oid]).stdout;entries=[]
+        raw=self.read_objects(['ls-tree','-r','-z','--full-tree',oid]);entries=[]
         for row in raw.split(b'\0'):
             if not row:continue
             header,name=row.split(b'\t',1);mode,kind,sha=header.split(b' ')
@@ -152,11 +156,99 @@ class GitCandidate:
         value=parse(emit(Index(algorithm,tuple(entries))),algorithm)
         return value.by_path()
 
-    def prepare(self,operation,changes,body,*,message,identity):
+    def read_objects(self, args, limit=16*1024*1024):
+        # Read-only commands use bounded pipes on both platforms. Raw object
+        # bodies, patch bytes and errors must never enter effect-child receipts.
+        require(asdict(location(self.root))==self.root_identity, 'git-workspace-moved')
+        return self.git._run(self.root, ['--no-replace-objects', *args], limit=limit).stdout
+
+    def protected_old_paths(self, paths, head):
+        protected = []
+        for path in paths:
+            previous = head.get(path)
+            if previous is None:
+                continue
+            oid = previous.oid.hex()
+            if protected_git_path(path) or opaque_review_path(path) or previous.mode not in (0o100644, 0o100755):
+                protected.append(path)
+                continue
+            size = int(self.read_objects(['cat-file', '-s', oid], limit=64))
+            if size > 16*1024*1024:
+                protected.append(path)
+                continue
+            raw = self.read_objects(['cat-file', 'blob', oid])
+            try:
+                inspect_chunks((raw[i:i+65536] for i in range(0, len(raw), 65536)), path)
+            except GitContentRefusal:
+                protected.append(path)
+        return protected
+
+    def review_diff(self, oldtree, tree, head, after, body, assets=None):
+        assets = assets or {}
+        limit = 16*1024*1024
+        protected = self.protected_old_paths(sorted(after), head)
+        # Only non-sensitive preimages are eligible for a native patch.
+        # A literal exclude also covers deleted paths and avoids rename pairs.
+        # Excluding an old file also excludes additions beneath its former
+        # pathname. Display each of those replacements explicitly.
+        hidden = set(protected) | set(assets)
+        descendants = [p for p in after if any(str(parent) in hidden for parent in PurePosixPath(p).parents)]
+        excludes = [':(top,exclude,literal)' + (head.get(p) or after[p]).native.decode('utf-8') for p in sorted(hidden)]
+        args = ['diff-tree', '--no-commit-id', '--no-ext-diff', '--no-textconv',
+                '--no-renames', '--no-color', '--text', '-r', '-p', oldtree, tree, '--', *excludes]
+        patch = bytearray(asset_review_prefix(assets))
+        require(len(patch) < limit, 'git-review-output-limit')
+        patch.extend(self.read_objects(args, limit - len(patch)))
+        for path in sorted((set(protected) | set(descendants)) - set(assets)):
+            note = 'previous content withheld; ' if path in hidden else ''
+            patch.extend(('\n' + json.dumps(path, ensure_ascii=False) + ' — ' + note).encode())
+            entry = after[path]
+            if entry is None:
+                patch.extend(b'file deleted.\n')
+            else:
+                patch.extend(('new file content (mode %o):\n' % entry.mode).encode())
+                patch.extend(b'+')
+                for chunk in body(path):
+                    shown = chunk.replace(b'\n', b'\n+')
+                    require(len(patch) + len(shown) <= limit, 'git-review-output-limit')
+                    patch.extend(shown)
+            require(len(patch) <= limit, 'git-review-output-limit')
+        return bytes(patch)
+
+    def check_legacy_display(self, manifest):
+        # Old receipts bind the original raw diff. Never silently repurpose a
+        # receipt if the view needs redaction. A new operation can prepare it.
+        context = manifest['context']
+        head = self.tree(context['ref'], context['algorithm'])
+        require(not self.protected_old_paths(manifest['paths'], head),
+                'git-credential-new-preview-required')
+
+    def prepare(self, operation, changes, body, *, message, identity):
+        validate_candidate_input(message, identity)
+        assets = screen_candidate(changes, body, message, identity, operation)
+        return self._prepare_screened(operation, changes, body, message=message, identity=identity, assets=assets)
+
+    def _prepare_screened(self,operation,changes,body,*,message,identity,assets):
+        """Called with pinned body references already inspected before taking the effect lock."""
         require(self.locked,'git-integration-lock-required');_token(operation)
         validate_candidate_input(message, identity)
         paths=sorted(changes);require(0<len(paths)<=100000,'git-selection-limit')
         context,i0,index=self.snapshot(paths);head=self.tree(context['ref'],context['algorithm'])
+        # Reject an exact, nonempty copy of a removed or replaced sensitive blob in
+        # another selected path before writing any candidate body or object.
+        sensitive_oids = {head[p].oid for p in paths if changes[p] is None and p in head and protected_git_path(p)}
+        old_npm = [p for p in paths if p in head and p.rsplit('/', 1)[-1].lower() == '.npmrc']
+        if old_npm and len(paths) > 1:
+            sensitive_oids.update(head[p].oid for p in self.protected_old_paths(old_npm, head))
+        if sensitive_oids:
+            for path, entry in changes.items():
+                if entry is None or not entry['size']:
+                    continue
+                oid = hashlib.new(context['algorithm'], b'blob ' + str(entry['size']).encode() + b'\0')
+                for chunk in body(path):
+                    oid.update(chunk)
+                if oid.digest() in sensitive_oids:
+                    raise GitContentRefusal('protected-copy', path, None)
         area=self.scratch/operation;self.files.create_directory(area);after={}
         for n,path in enumerate(paths):
             entry=changes[path]
@@ -182,7 +274,7 @@ class GitCandidate:
         # An empty tree is an object, not a ref. This is safe for an unborn HEAD.
         oldtree=context['ref'] or self.command(['hash-object','-t','tree','-w','--stdin']).stdout.strip().decode()
         require(not context['ref'] or tree!=self.command(['rev-parse',context['ref']+'^{tree}']).stdout.strip().decode(),'git-no-candidate-change')
-        patch=self.command(['diff-tree','--no-commit-id','--no-ext-diff','--no-textconv','--binary','-r','-p',oldtree,tree]).stdout
+        patch=self.review_diff(oldtree, tree, head, after, body, assets)
         self.files.create(area/'diff',patch)
         now,_,_=self.snapshot(paths);require(now==context,'git-candidate-context-changed')
         manifest=dict(operation=operation,context=context,paths=paths,new=commit,tree=tree,i1=digest(i1),diff=digest(patch),message=message,author=identity)
@@ -196,8 +288,9 @@ class GitCandidate:
                 digest(self.files.read(area/'i0',LIMIT))==m['context']['index'],'git-staging-changed')
         if not objects:return area
         # Verify the stored commit still names the prepared tree and parent.
-        commit=self.command(['cat-file','commit',m['new']]).stdout
-        require(self.command(['hash-object','-t','commit','--stdin'],input_bytes=commit).stdout.strip().decode()==m['new'],'git-candidate-object-changed')
+        commit=self.read_objects(['cat-file','commit',m['new']])
+        object_bytes = b'commit ' + str(len(commit)).encode() + b'\0' + commit
+        require(hashlib.new(m['context']['algorithm'],object_bytes).hexdigest()==m['new'],'git-candidate-object-changed')
         headers,separator,body=commit.partition(b'\n\n');require(separator,'git-candidate-object-invalid')
         lines=headers.split(b'\n');require(lines[0]==('tree '+m['tree']).encode(),'git-candidate-tree-changed')
         parents=[line[7:].decode() for line in lines if line.startswith(b'parent ')]

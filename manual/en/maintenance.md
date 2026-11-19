@@ -17,7 +17,7 @@ Procedures you need after installation. Each one has a different reach, so check
 
 Ask your agent, “Update Colvia.” Use the same account that installed Colvia. The agent can run the installed manager if it has access to the installation and can reach the official download site. If the app asks for permission, review the command and approve it there. If the agent cannot run the update in that account, use your terminal.
 
-To update it yourself, rerun the command you originally used from the [official installation page](https://colvia.github.io/downloads/). If `colvia-manage` is on your `PATH`, you can also run `colvia-manage update`. For a default installation, use the full path below without changing your `PATH`.
+To update it yourself, rerun the command you originally used from the [official installation page](https://colvia.github.io/downloads/#en). If `colvia-manage` is on your `PATH`, you can also run `colvia-manage update`. For a default installation, use the full path below without changing your `PATH`.
 
 macOS Terminal
 

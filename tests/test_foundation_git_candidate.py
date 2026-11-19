@@ -56,13 +56,15 @@ class CandidateTests(CandidateFixture,unittest.TestCase):
             self.assertEqual(b'late edit',(self.root/'report.md').read_bytes())
             self.assertEqual(b'reviewed report\n',self.command('show',':report.md'))
             self.assertEqual(b'report.md\n',self.command('diff','--name-only'))
-    def test_unborn_branch_and_binary(self):
+    def test_unborn_branch_refuses_binary_and_accepts_text(self):
         fresh=self.home/'fresh';fresh.mkdir();self.command('init','-q',root=fresh)
         self.root=fresh;self.port=DarwinGit(self.root,self.scratch,self.git)
         with self.port.exclusion():
-            m=self.prepare(data=b'\0\xffbinary');self.assertIsNone(m['context']['ref']);self.assertIsNone(m['context']['index'])
+            with self.assertRaisesRegex(RecordError, 'git-content-uninspectable'):
+                self.prepare(data=b'\0\xffbinary')
+            m=self.prepare(data=b'reviewed text');self.assertIsNone(m['context']['ref']);self.assertIsNone(m['context']['index'])
             owner=self.port.acquire_index(m);self.port.update_ref(m,owner,live=lambda:None,event=lambda *_:None);self.port.replace_index(m,owner,live=lambda:None)
-        self.assertEqual(b'\0\xffbinary',self.command('show','HEAD:report.md'))
+        self.assertEqual(b'reviewed text',self.command('show','HEAD:report.md'))
     def test_filter_and_replacement_views_refuse(self):
         self.command('config','filter.synthetic.clean','cat')
         with self.port.exclusion(),self.assertRaisesRegex(RecordError,'transform-not-supported'):self.prepare()

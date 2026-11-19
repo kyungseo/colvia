@@ -10,6 +10,8 @@
 
 [설치와 프로젝트 연결](manual/ko/install.md) · [따라 하기](manual/ko/tutorial.md) · [사용 안내](manual/ko/README.md) · [Colvia 한눈에 보기](manual/ko/overview.md) · [지원 환경](manual/ko/reference.md#environments) · [릴리스 노트와 다운로드](https://github.com/colvia/downloads/releases)
 
+현재 배포판 · [Colvia Preview v0.1.1](https://github.com/colvia/downloads/releases/tag/v0.1.1)
+
 </div>
 
 Codex나 Claude Code가 제안한 작업 범위를 승인하고, 결과를 검토해 받아들일지 결정합니다. Colvia는 승인 내역과 제출본을 내 기기에 보관합니다. 같은 프로젝트를 열면 새 대화나 다른 에이전트에서도 작업을 이어갈 수 있습니다.
@@ -23,7 +25,7 @@ Codex나 Claude Code가 제안한 작업 범위를 승인하고, 결과를 검�
 
 먼저 Codex 또는 Claude Code를 설치하고 로그인하세요.
 
-1. Colvia를 사용할 운영체제 계정으로 로그인한 뒤 [공식 설치 페이지](https://colvia.github.io/downloads/)에서 운영체제에 맞는 명령을 복사해 실행하세요. Colvia가 배포 파일을 내려받아 검증하고 전용 Python을 준비합니다. Windows에서는 표준 사용자로 시작 메뉴에서 일반 PowerShell을 여세요. 준비가 끝나면 [설치한 버전을 확인하세요](manual/ko/install.md#check-installed-version).
+1. Colvia를 사용할 운영체제 계정으로 로그인한 뒤 [공식 설치 페이지](https://colvia.github.io/downloads/#ko)에서 운영체제에 맞는 명령을 복사해 실행하세요. Colvia가 배포 파일을 내려받아 검증하고 전용 Python을 준비합니다. Windows에서는 표준 사용자로 시작 메뉴에서 일반 PowerShell을 여세요. 준비가 끝나면 [설치한 버전을 확인하세요](manual/ko/install.md#check-installed-version).
 2. Codex 또는 Claude Code에서 작업할 폴더를 여세요. Git을 쓰는 프로젝트라면 아직 등록하지 않은 Git의 [등록을 에이전트에게 요청](manual/ko/git.md#git-register)하고, 저장소의 최상위 폴더를 여세요. 이어서 “이 폴더에 Colvia를 연결해 주세요.”라고 요청하세요. 미리보기에 나온 폴더, 추가할 파일, 기록 저장 위치가 맞으면 연결을 승인하세요.
 3. 연결을 마치면 지금 대화에서 하려던 일을 짧게 알려주세요. 빈 폴더에서 시작한다면 “보고서를 쓰고 싶어요”나 “웹앱을 만들고 싶어요”처럼 하려는 일을 한두 문장으로 말해 보세요. 이미 작업 중인 프로젝트에도 연결할 수 있습니다. 에이전트는 앞서 설명한 목적과 기존 README, 프로젝트 규칙을 참고해 작업안을 제안합니다.
 
@@ -86,6 +88,21 @@ Codex와 Claude Code를 모두 이용 중이라면 같은 프로젝트에서 두
 ## Git, 백업, 폴더 이동
 
 - **Git에 결과 반영하기.** 수락한 제출본은 Colvia에 남으므로, 임시 커밋(WIP 커밋)을 만들지 않아도 나중에 현재 파일과 비교할 수 있습니다. 결과를 수락한 뒤 커밋할 변경과 스테이징 상태를 검토하고 별도로 승인합니다. Colvia는 다른 파일에 스테이징한 변경을 보존합니다. 선택한 파일의 스테이징 내용이 현재 커밋과 수락한 결과 중 어느 쪽에도 맞지 않으면, 스테이징한 변경을 보호하기 위해 Git 반영을 멈춥니다. [Git에 결과 반영하기](manual/ko/git.md#git-integration)
+
+### Git에 반영하기 전 자격증명 검사 · 다음 Preview
+
+Colvia로 Git에 반영할 때는 내 기기에서 변경 내용을 먼저 검사합니다. 소스에 직접 적은 API 키나 토큰을 알아보거나, 변경에 `.env` 같은 보호 파일의 추가·수정이 포함되면 이번 변경의 Git 객체를 만들기 전에 멈춥니다. 안내에서 값을 드러내지 않고 고칠 위치를 짚어 줍니다.
+
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/credential-dark.png"><img src="manual/assets/gallery/credential-light.png" width="640" alt=".env 추가·수정, 소스에 적은 AI API 키, .npmrc 인증 토큰을 Colvia가 로컬에서 검사하고 차단 위치를 알려 줍니다."></picture>
+</p>
+
+PNG 로고나 글꼴처럼 지원되는 이미지·글꼴은 확장자와 파일 서명이 일치하면 함께 반영할 수 있습니다. 이 파일 안의 자격증명은 검사하지 않으며, 커밋 미리보기에 경로와 형식을 표시합니다. PDF·압축 파일 등 다른 이진 파일도 커밋해야 한다면 내용을 직접 검토한 뒤 Git으로 별도 커밋하세요.
+
+키를 코드에 직접 적었다면 환경변수를 읽도록 고치세요. 보호 파일은 반영 대상에서 빼세요. 파일을 고친 뒤에는 수정본을 다시 제출하고 수락한 다음 Git 반영을 준비합니다. 검사에 통과하면 커밋할 변경을 검토하고 별도로 승인합니다. [검사 범위와 해결 방법](manual/ko/git.md#git-credential-check)
+
+### 기록 백업과 폴더 이동
+
 - **기록 백업과 복원.** Work 기록, 승인, 제출 본문과 설정을 내보낼 수 있습니다. 백업에 작업 전 본문과 제출본이 담기므로 프로젝트 자료와 같은 기준으로 보관하세요. 프로젝트 파일은 따로 백업하세요. Colvia 기록을 복원할 때는 Work와 보존 본문을 함께 확인합니다. [기록 백업과 복원](manual/ko/records.md#backup)
 - **프로젝트 폴더 이동.** 같은 로컬 볼륨에서 폴더를 옮겼다면 에이전트에게 “프로젝트 폴더를 옮겼어요. 새 위치에서 기존 Colvia 기록을 이어가게 해 주세요.”라고 요청하세요. 미리보기에서 기존 위치와 새 위치를 확인하고, 같은 폴더라는 확인이 끝나면 새 위치로 연결하는 것을 승인하세요. 지원하는 환경과 연결 조건을 확인하세요. [폴더 이동과 기존 기록 이어가기](manual/ko/records.md#move)
 

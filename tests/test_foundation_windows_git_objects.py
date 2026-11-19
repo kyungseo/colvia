@@ -110,12 +110,12 @@ class AdmissionTests(WindowsFixture,unittest.TestCase):
     def manifest(self):return decode_canonical(self.files.read(self.scratch/'integrate/manifest'))
     def setup_case(self,kind,recovery):
         if kind=='legacy':
-            prepare=self.port.prepare
+            prepare=self.port._prepare_screened
             def old_manifest(*a,**k):
                 m=prepare(*a,**k);raw=canonical_bytes(m);del m['context']['native_objects']
                 self.files.replace(self.scratch/'integrate/manifest',canonical_bytes(m),raw);return m
             # Explicit historical-record fixture creation only, not product bypass.
-            with patch.object(self.port,'prepare',side_effect=old_manifest),patch.object(self.port,'verify_objects'),patch.object(self.port,'check'):
+            with patch.object(self.port,'_prepare_screened',side_effect=old_manifest),patch.object(self.port,'verify_objects'),patch.object(self.port,'check'):
                 preview=self.prepare()
         else:preview=self.prepare()
         if recovery:

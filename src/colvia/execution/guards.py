@@ -5,6 +5,7 @@ No rejected text or digest is logged. Payload and record integer bounds differ.
 """
 import json,re,time
 from ..codec import RecordError,require
+from ..credentials import KEY_OR_BEARER, PROVIDER_TOKEN
 
 HostRefusal=RecordError
 
@@ -26,14 +27,13 @@ def safe_text(text, allowed_identifiers=()):
     for literal in sorted(allowed_identifiers, key=len, reverse=True):
         require(isinstance(literal, str) and len(literal) >= 3, "invalid approved identifier")
         residue = residue.replace(literal, "[approved]")
-    require(not re.search(r"(?i)(?:sk-[A-Za-z0-9_-]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|Bearer\s+[A-Za-z0-9._-]{12,}|(?:access_token|refresh_token|api_key)\s*[=:]\s*[^\s,}]{8,})", text), "credential-like content")
+    require(not re.search(r"(?i)(?:" + KEY_OR_BEARER + r"|(?:access_token|refresh_token|api_key)\s*[=:]\s*[^\s,}]{8,})", text), "credential-like content")
     require(not re.search(r"(?:/Users/[^\s<>\"']+|/home/[^\s<>\"']+|[A-Za-z]:\\[^\s<>\"']+|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,})", residue), "unapproved document identifier")
 
 
 _CREDENTIAL = re.compile(
     r"(?i)(?:[\"']?(?:password|passwd|secret|api_key|access_token|refresh_token)[\"']?"
-    r"\s*[=:]\s*[\"']?[^\s,}\"']{8,}|gh[pousr]_[a-z0-9]{20,}|"
-    r"github_pat_[a-z0-9_]{20,}|AKIA[A-Z0-9]{16})")
+    r"\s*[=:]\s*[\"']?[^\s,}\"']{8,}|" + PROVIDER_TOKEN + ")")
 
 
 def checked_payload(value, *, limit=65536, deadline=None, protocol=False):

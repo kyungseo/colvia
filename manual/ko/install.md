@@ -16,7 +16,7 @@ Colvia를 사용할 운영체제 계정에 한 번 설치한 뒤, 해당 계정�
 
 ## 설치하기
 
-[공식 설치 페이지](https://colvia.github.io/downloads/)에서 운영체제에 맞는 설치 명령을 복사해 실행하세요. Colvia가 배포 파일을 내려받아 검증하고 전용 Python을 준비합니다. 준비가 끝나면 [설치한 버전](#check-installed-version)을 확인하세요. 이후 절차는 [업데이트와 중단 복구](maintenance.md#update)에서 확인할 수 있습니다.
+[공식 설치 페이지](https://colvia.github.io/downloads/#ko)에서 운영체제에 맞는 설치 명령을 복사해 실행하세요. Colvia가 배포 파일을 내려받아 검증하고 전용 Python을 준비합니다. 준비가 끝나면 [설치한 버전](#check-installed-version)을 확인하세요. 이후 절차는 [업데이트와 중단 복구](maintenance.md#update)에서 확인할 수 있습니다.
 
 Windows에서는 시작 메뉴에서 일반 PowerShell을 표준 사용자로 열어 설치 명령을 실행하세요. 앱 전용 셸에서 설치 위치를 확인할 수 없다는 안내가 나오면 일반 PowerShell에서 이어가세요. 디스크 공간이 부족하다는 안내가 나오면 표시된 필요 공간과 여유 공간을 확인하세요.
 

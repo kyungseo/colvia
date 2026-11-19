@@ -290,7 +290,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
-- [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0, after the first Preview. Check the selected submission and commit message for passwords, API keys, and similar credentials before creating Git objects. Select the scope and verification separately before starting.
+- [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0. The [implementation and verification record](FEAT-20261118-001-git-credential-gate.md) covers the selected local check before Git objects are written.
 
 - [Convert a connected plain folder to a Git project](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — P1, after the first Preview. Enable Git while retaining the existing Colvia project.
 
