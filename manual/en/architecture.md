@@ -14,6 +14,8 @@ Read when needed · [The Git boundary](#git-boundary) · [Installation and updat
 2. **Records live outside the project folder.** Approvals, submissions and decisions are kept in a per-project SQLite database in the operating system’s user-data directory. The project folder holds only the launcher, connection information and guidance.
 3. **Decisions are separated by kind.** Scope approval, result acceptance, Git integration and notification never stand in for one another. The whole structure is arranged to keep that separation.
 
+A progress note before the first submission is a separate SQLite record linked to the active Work. Saving changes the latest-note reference while preserving plan approval, submission and acceptance records.
+
 <a id="overview" name="overview"></a>
 
 ## Overall picture

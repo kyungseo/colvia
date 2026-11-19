@@ -153,6 +153,7 @@ def _head(payload):
 
 
 def application_registry():
+    from .progress import schema as progress_schema
     from .planning import planning_schemas
     from .composition import schemas as composition_schemas
     from .worker_records import schemas as worker_schemas
@@ -161,7 +162,7 @@ def application_registry():
     from .configuration import schemas as configuration_schemas
     from .lifecycle import schemas as lifecycle_schemas
     from .git_integration import schemas as git_schemas
-    return foundation_registry([*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
+    return foundation_registry([progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
         Schema('observation.policy',1,{'sources':'integrity'},_policy,{'sources':frozenset({'body.complete'})}),
         Schema('observation.snapshot',1,{'tree':'integrity','policy':'integrity','workspace':'decision'},_observation_v1,
                {'tree':TREE_KINDS,'policy':frozenset({'observation.policy'}),'workspace':frozenset({'workspace.registration'})}),

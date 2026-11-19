@@ -32,6 +32,7 @@ This guide covers Colvia Preview. It explains how to approve a work scope in Cod
 | --- | --- |
 | I want to check the installed version | [Check the installed version](install.md#check-installed-version) |
 | The agent can’t access a folder or the records | [If access is blocked](install.md#access) |
+| I want to step away before submitting | [Save a progress note](work.md#progress-note) |
 | I want to continue yesterday’s task in a new chat | [Pick up in a new chat or with another agent](work.md#resume) |
 | A submission was refused | [Delegate and review](work.md#review) |
 | I want to commit an accepted result | [Put an accepted result into Git](git.md#git-integration) |

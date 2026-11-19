@@ -15,6 +15,7 @@ When a Work plan is recorded, Colvia keeps the existing contents of the listed f
 | When | What is kept |
 | --- | --- |
 | A plan is recorded | The existing contents of the files in the plan, even before you approve it |
+| You request a progress note | A short summary and fingerprints of approved files. Notes are included in backups. |
 | A result is submitted for review | The contents changed within the approved scope (the submission) and the check results |
 | You decide | Scope approvals, result acceptances, revision requests, and follow-up choices |
 

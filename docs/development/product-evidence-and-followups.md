@@ -131,6 +131,8 @@ Start with read-only exploration when the affected paths are unknown. When the g
 
 When asked to save progress, let the agent record what it did, what it checked, what remains and the immediate next action on the active Work. Saving a note keeps the Work active. A fresh chat should find the note and the approved scope, compare the note with the current files and distinguish recorded progress from any changes observed later. Keep the note separate from review submissions and their verification results.
 
+The [first-submission implementation record](FEAT-20261119-002-pre-submission-progress.md) tracks the local candidate and its compatibility boundary.
+
 ### P1: Pause, end or replace a Work
 
 Let the user pause a Work for later resumption or end it with a reason. When a changed goal calls for a different Work, confirm the disposition of the old Work, link it to the replacement and remove it from the active list. Preserve the old Work's approvals, submissions and files. Show how unfinished edits will be handled, and obtain approval for the replacement's own scope. Build on the [existing continuation](README.md#continuation-scope-and-remaining-criteria) and [successor criteria](README.md#verifiable-slicing).

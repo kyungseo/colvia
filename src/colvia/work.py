@@ -348,6 +348,9 @@ class WorkService:
         if result is not None and obj.ref.version==2:
             from .rework import attribution_summary
             value['attribution']=attribution_summary(self,obj)
+        from . import progress
+        if progress.eligible(head) and head.payload['workspace'] == self.workspace.workspace:
+            value.update(progress.view(self, work, head, plan.payload['scope']))
         if head.payload['phase']=='completed':value['reopen_receipt']=self._receipt('reopen',work,ref)
         return value
 
