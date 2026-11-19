@@ -10,6 +10,7 @@ Procedures you need after installation. Each one has a different reach, so check
 | [Turn notifications on or off](#notifications) | Notification delivery for this account | Existing Work records |
 | [Disconnect a project](#disconnect) | One project | Your files and Work records |
 | [Remove Colvia](#uninstall) | The installation for this account | Project files, Work records, approvals, submissions, project connections, settings and update trust |
+| [Remove all records](#remove-all) | Every project connected in this account | Your project files and separately stored copies |
 
 <a id="update" name="update"></a>
 
@@ -121,6 +122,33 @@ Colvia moves the removed installation files to `operations/<operation ID>/retire
 **3. Reinstall when needed.** Run the usual install command in the same account. Open the same project to review its existing Work and submissions. If the installer reports that a reinstall is pending, use `--resume-reinstall` on macOS or `-ResumeReinstall` on Windows with the saved script. Keep your records and the entire management folder for recovery.
 
 To undo an interrupted removal before starting a reinstall, use `-RestoreUninstall <operation ID> -Receipt <receipt>` on Windows or `--restore-uninstall <operation ID> <receipt>` on macOS. If you used Windows notifications before removing Colvia, enable them again after restoring or reinstalling.
+
+<a id="remove-all" name="remove-all"></a>
+
+## Remove this account’s records after a trial
+
+A normal uninstall keeps your Work for reinstallation. Use these steps only when you intend to discard **the Work, approvals, submissions and recovery files for every project in this account**. To keep using other projects, [disconnect only the project you are leaving](#disconnect).
+
+1. In the account that installed Colvia, identify **every project you connected**. [Export any records you want to keep](records.md#backup) to a separate location and verify that you can recover them. In the folder where you originally connected each project, preview and approve [disconnection](#disconnect). You can ask your agent, “Show me what Colvia added to this folder and disconnect it.” Check that your documents, code, Git history, staged changes and existing agent instructions remain. Stop if a folder is missing, disconnection is refused, or you cannot account for all connections. Deleting the records first removes the information needed to detach the remaining folders.
+2. If you enabled notifications, [turn them off](#notifications). Finish active operations and complete **steps 1 and 2 only** of the [normal uninstall](#uninstall). Continue only after removal succeeds. Keep the recovery files if removal fails or stops.
+3. Run the command below to **select the exact default installation folder**. Inspect its contents for personal files. Return to its parent and move only the selected `Colvia` folder to the Trash or Recycle Bin. It contains every project’s SQLite records, built-in backups, update trust data and uninstall recovery files. These commands cover the default installation location.
+
+   macOS Terminal
+
+   ```bash
+   open -R "$HOME/Library/Application Support/Colvia"
+   ```
+
+   Windows PowerShell
+
+   ```powershell
+   $folder = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Colvia'
+   if (-not (Test-Path -LiteralPath $folder -PathType Container)) { throw 'Colvia folder not found.' }
+   Start-Process explorer.exe -ArgumentList ('/select,"' + $folder + '"')
+   ```
+
+4. Installer preparation folders may remain in the same parent folder. Move each `Colvia-bootstrap-…` folder to the Trash or Recycle Bin only when its **exact path** matches a `Recovery files:` line from this account’s installer output. Keep folders of uncertain origin. Select any downloaded installer scripts and exported backups separately where you saved them.
+5. Check that the default `Colvia` folder is gone and your project files remain. To delete permanently, select **only the items you just moved** in the Trash or Recycle Bin and permanently delete them. You can no longer recover those records or undo removal from that recovery copy. OS notification permissions, previously delivered notifications and copies retained by system backups or sync services are managed separately.
 
 ---
 
