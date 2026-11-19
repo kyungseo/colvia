@@ -1,6 +1,6 @@
 # Colvia에 기여하기
 
-[한국어 README](README.ko.md) · [English contributing guide](CONTRIBUTING.md)
+한국어 · [English](CONTRIBUTING.md) · [Colvia 소개](README.ko.md)
 
 <a id="버그를-발견했다면" name="버그를-발견했다면"></a>
 
@@ -34,7 +34,7 @@ Colvia가 작성한 코드와 문서에는 [Apache License 2.0](LICENSE)이 적�
 
 Colvia 자체를 개발한다면 [개발 절차(영문)](docs/development/WORKFLOW.md)와 [개발 문서 목록](docs/development/README.md)에서 시작하세요. 기존 결정과 개발 규칙의 적용 시점은 [영문 기여 안내의 개발 절차](CONTRIBUTING.md#source-development-workflow)에서 확인할 수 있습니다.
 
-[사용자 문서 작성 기준 · 영문](docs/development/user-documentation.md)
+새 개발 문서를 쓸 때는 [문서별 언어 기준(영문)](docs/development/document-ownership.md#document-language)을 확인하세요. 사용자 안내를 고칠 때는 [한·영 사용자 문서 작성 기준(영문)](docs/development/user-documentation.md)을 따르세요.
 
 소스 체크아웃에서 설치 흐름을 검사할 때는 [설치용 소스 준비](CONTRIBUTING.md#preparing-source-for-lifecycle-checks)를 먼저 확인하세요. 공개 README와 설치본 README는 각각 원본이 있습니다. Colvia Preview 배포본을 준비할 때는 안내의 링크와 Git 등록·폴더 이동 예를 실제 ZIP과 관리자 명령에 대조하세요.
 

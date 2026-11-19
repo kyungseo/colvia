@@ -19,7 +19,7 @@ Colvia는 범위를 정해 맡기고 검토하는 작업 한 건을 **Work(작�
 ## 설치하고 연결하기
 
 1. macOS Apple Silicon 또는 Windows 11 x64·ARM64에서 사용할 Codex나 Claude Code를 열고 로그인 상태를 확인하세요. [지원 환경과 필요한 접근 권한](reference.md#environments)에서 자신의 환경을 확인할 수 있습니다.
-2. [공식 설치 페이지](https://colvia.github.io/downloads/)에서 운영체제에 맞는 명령을 복사해 실행하세요. Windows에서는 시작 메뉴에서 일반 PowerShell을 표준 사용자로 엽니다. 설치가 끝나면 완료 화면에서 설치한 버전을 확인하세요. [설치와 프로젝트 연결 상세 안내](install.md)
+2. [공식 설치 페이지](https://colvia.github.io/downloads/#ko)에서 운영체제에 맞는 명령을 복사해 실행하세요. Windows에서는 시작 메뉴에서 일반 PowerShell을 표준 사용자로 엽니다. 설치가 끝나면 완료 화면에서 설치한 버전을 확인하세요. [설치와 프로젝트 연결 상세 안내](install.md)
 3. 새 로컬 실습 폴더를 만들어 Codex 또는 Claude Code에서 열고 요청하세요. 이미 작업 중인 폴더도 연결할 수 있습니다. Git을 사용하는 프로젝트 폴더라면 먼저 에이전트에게 [Git 등록을 요청](git.md#git-register)한 뒤 저장소의 최상위 폴더를 연결하세요.
 
    > 이 폴더에 Colvia를 연결해 주세요.

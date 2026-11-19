@@ -2,21 +2,23 @@
 
 ## Colvia Preview
 
-| Start here | 한국어 |
+| English | 한국어 |
 | --- | --- |
 | [User guide](../manual/en/README.md) | [사용 설명서](../manual/ko/README.md) |
 | [Install and connect a project](../manual/en/install.md) | [설치와 프로젝트 연결](../manual/ko/install.md) |
 | [Follow the tutorial](../manual/en/tutorial.md) | [따라 하기](../manual/ko/tutorial.md) |
 | [Support and troubleshooting](../manual/en/reference.md) | [지원 환경과 문제 해결](../manual/ko/reference.md) |
-
-[Official downloads and release notes](https://github.com/colvia/downloads/releases) · [공식 설치 페이지](https://colvia.github.io/downloads/) · [보안 문제 제보 · Report a security issue](../SECURITY.md)
+| [Official installation page](https://colvia.github.io/downloads/#en) | [공식 설치 페이지](https://colvia.github.io/downloads/#ko) |
+| [Release notes and downloads](https://github.com/colvia/downloads/releases) | [배포 기록과 다운로드](https://github.com/colvia/downloads/releases) |
+| [Report a security issue](../SECURITY.md#english) | [보안 문제 제보](../SECURITY.md) |
 
 ## Developing Colvia · Colvia 개발
 
 - [Contributing](../CONTRIBUTING.md) · [기여 안내](../CONTRIBUTING.ko.md)
-- [Source development workflow](development/WORKFLOW.md) and [development index](development/README.md)
-- [Preview source and verification](development/FEAT-20261106-002-record-foundation.md) and [validation guidance](MAINTAINING.md#evidence-reuse-and-selection)
-- [Agent entry](../AGENTS.md) and [Claude Code entry](../CLAUDE.md)
+- [Development workflow · 개발 절차](development/WORKFLOW.md) · [Development index · 개발 문서 목록](development/README.md)
+- [Document language · 문서별 언어 기준](development/document-ownership.md#document-language)
+- [Preview source and verification · Preview 구현과 검증 기록](development/FEAT-20261106-002-record-foundation.md) · [Validation guidance · 검사 선택 기준](MAINTAINING.md#evidence-reuse-and-selection)
+- [Agent instructions · 에이전트 지침](../AGENTS.md) · [Claude Code instructions · Claude Code 지침](../CLAUDE.md)
 
 ## Earlier profiles · 이전 시험본
 

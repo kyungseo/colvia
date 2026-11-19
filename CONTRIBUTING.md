@@ -1,6 +1,6 @@
 # Contributing to Colvia
 
-[English README](README.md) · [한국어 기여 안내](CONTRIBUTING.ko.md)
+[한국어](CONTRIBUTING.ko.md) · English · [Colvia README](README.md)
 
 Small changes are welcome for review.
 
@@ -40,7 +40,7 @@ Use a topic branch and a PR to main. Keep related changes reviewable and prefer 
 
 ## Source development workflow
 
-This file locates the rules for developing Colvia itself. Start with [Source Project Rules And Development Workflow](docs/development/WORKFLOW.md) and the [Development Index](docs/development/README.md). Use [Document and artifact placement](docs/development/document-ownership.md) to keep product specifications and reusable material in source while preserving private evidence separately. Decision-document rules are in the [Decision Guide](docs/DECISION-GUIDE.md); technical verification remains in [Maintaining](docs/MAINTAINING.md).
+This file locates the rules for developing Colvia itself. Start with [Source Project Rules And Development Workflow](docs/development/WORKFLOW.md) and the [Development Index](docs/development/README.md). Choose the language for a new page using [Document language](docs/development/document-ownership.md#document-language). Use [Document and artifact placement](docs/development/document-ownership.md) to keep product specifications and reusable material in source while preserving private evidence separately. Decision-document rules are in the [Decision Guide](docs/DECISION-GUIDE.md); technical verification remains in [Maintaining](docs/MAINTAINING.md).
 
 Reorganization and effective-state record: [DR-0006](docs/decisions/DR-0006-source-contributor-document-structure.md). Until the Owner accepts and activates its exact amendment, the [retained source procedures](docs/DECISION-GUIDE.md#retained-source-procedures) remain effective. After that recorded activation, the identified guides own the relocated rules. This entry does not activate them.
 

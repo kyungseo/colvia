@@ -19,6 +19,8 @@ Current release · [Colvia Preview v0.1.1](https://github.com/colvia/downloads/r
 
 Approve the scope proposed by Codex or Claude Code, then review the result and decide whether to accept it. Colvia keeps approvals and submissions on your device. Open the same project to pick up the work in a new chat or with another agent.
 
+When you submit work for review, Colvia checks file changes against the scope you approved. If an out-of-scope change blocks submission, your files stay in place so you can see what changed.
+
 You don’t need to know how to code to get started. Once Colvia is installed, you can ask in your usual chat to connect a folder and start a task. For software projects, you can use your existing repository and project rules.
 
 > [!NOTE]

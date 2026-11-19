@@ -19,7 +19,7 @@ Colvia records each task you scope and review as a **Work**. Granting file or co
 ## Install and connect
 
 1. On macOS with Apple Silicon or Windows 11 on x64 or ARM64, open Codex or Claude Code and confirm you’re signed in. See the [platform and agent access requirements](reference.md#environments) for your setup.
-2. Copy and run the command for your operating system from the [official installation page](https://colvia.github.io/downloads/). On Windows, open regular PowerShell from the Start menu as a standard user. Check the installed version when setup completes. [Installation and connection guide](install.md)
+2. Copy and run the command for your operating system from the [official installation page](https://colvia.github.io/downloads/#en). On Windows, open regular PowerShell from the Start menu as a standard user. Check the installed version when setup completes. [Installation and connection guide](install.md)
 3. Create a local practice folder and open it in Codex or Claude Code. You can also connect an existing project. If your project uses Git, [ask the agent to register Git first](git.md#git-register) and connect the repository root. Ask:
 
    > Connect this folder to Colvia.
