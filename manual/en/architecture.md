@@ -261,7 +261,7 @@ flowchart LR
 
 ## Work lifecycle
 
-A Work passes through five phases. Each transition adds records and never edits earlier ones.
+An ordinary Work can move from planning to acceptance, pause and resume, or end with a recorded reason. Each transition adds records and never edits earlier ones.
 
 ```mermaid
 stateDiagram-v2
@@ -280,6 +280,10 @@ stateDiagram-v2
     review --> completed: you accept the result
     review --> active: ask for changes
     completed --> active: reopen to revise
+    active --> paused: pause
+    review --> paused: pause
+    paused --> active: resume active work
+    paused --> review: resume pending review
     completed --> [*]
 ```
 
@@ -293,6 +297,8 @@ stateDiagram-v2
 | Ask for changes | You | The revision request. The original scope, checks and previous submission are kept |
 
 At submission, Colvia observes the working folder again and refuses the submission if the observed files include changes outside the approved scope. At acceptance, it compares the current files with the submission you reviewed once more. An accepted Work can be archived; its contents, decisions and follow-up links remain readable afterward.
+
+Discarding or replacing unfinished Work keeps its records readable. The replacement keeps its own approval. [Switching and replacement](work.md#work-lifecycle)
 
 <a id="storage" name="storage"></a>
 

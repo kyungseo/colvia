@@ -45,7 +45,7 @@ class WorkerService:
             if not key.startswith('work:'):continue
             head,_,_,_=head_summary(ref,view)
             if head.payload['workspace']==self.destination.workspace and head.payload['work']!=work:
-                require(head.payload['phase'] not in ('approved','active','review'),'worker-destination-has-active-work')
+                require(head.payload['phase'] not in ('approved','active','review','paused'),'worker-destination-has-active-work')
 
     def _binding(self,ref,load):
         validate_closure([ref],load,self.source.registry,self.source.closure)
@@ -139,6 +139,7 @@ class WorkerService:
         """Human-authorized sole isolated-worker exception; never ordinary accept."""
         text(statement);text(owner,256);text(delegate,256);require(owner!=delegate,'worker-distinct-delegate-required')
         ref,head=self.source._head(work);plan=self._object(link(head,'plan'))
+        require(head.payload['phase'] not in ('paused','discarded'),'lifecycle-work-inactive')
         require(link(head,'approval') is not None,'worker-approved-plan-required')
         context=link(head,'context');require(context is None or context.kind=='composition.membership','worker-parent-grant-refused')
         self.destination.verify();require(plan.payload['workspace']!=self.destination.workspace,'worker-distinct-workspaces-required')

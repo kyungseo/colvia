@@ -80,7 +80,8 @@ Your agent normally runs these commands for you. To run one yourself, use `./col
 | Command | What it does |
 | --- | --- |
 | `guide` | Shows the short startup guide. For a specific step, append a topic such as `guide work` (submission and acceptance) or `guide recovery` (interrupted work). Both forms read verified instructions without opening project records. |
-| `ordinary list` | Lists the project’s Works. |
+| `ordinary list` | The current list hides archived and discarded Work. Choose `--list-mode current`, `archived` or `all`. Unfiltered JSON keeps the full list. |
+| `ordinary lifecycle-preview` · `ordinary lifecycle-apply` | [Pause, resume, discard or replace a Work](work.md#work-lifecycle) |
 | `ordinary view`, `ordinary review`, `ordinary content` | Shows a Work’s state, a submission awaiting review, and retained contents. |
 | `ordinary progress` | Save a note before the first submission. |
 | `ordinary scope-preview` · `ordinary scope-apply` | [Add files before the first submission](work.md#scope-change) |

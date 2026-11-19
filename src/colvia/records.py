@@ -163,6 +163,9 @@ def application_registry():
     from .configuration import schemas as configuration_schemas
     from .lifecycle import schemas as lifecycle_schemas
     from .git_integration import schemas as git_schemas
+    from .work_lifecycle import schema as lifecycle_head_schema
+    head_schema = Schema('work.head',1,{'plan':'decision','approval':'decision','result':'decision','decision':'decision','previous':'provenance','context':'decision'},_head,
+               {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'result':frozenset({'work.submission'}),'decision':frozenset({'work.decision'}),'previous':frozenset({'work.head'}),'context':frozenset({'composition.binding','composition.membership'})}, content=validate_active_link)
     return foundation_registry([scope_schema(),progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
         Schema('observation.policy',1,{'sources':'integrity'},_policy,{'sources':frozenset({'body.complete'})}),
         Schema('observation.snapshot',1,{'tree':'integrity','policy':'integrity','workspace':'decision'},_observation_v1,
@@ -180,8 +183,7 @@ def application_registry():
         Schema('work.submission',2,{'plan':'decision','approval':'decision','observation':'integrity','after':'integrity','previous':'provenance','attribution':'decision'},_submission_v2,
                {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'observation':frozenset({'observation.snapshot'}),'after':MAP_KINDS,'previous':frozenset({'work.submission'}),'attribution':MAP_KINDS},content=_submission_content),
         Schema('work.decision',1,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'worker.authorization'})}),
-        Schema('work.head',1,{'plan':'decision','approval':'decision','result':'decision','decision':'decision','previous':'provenance','context':'decision'},_head,
-               {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'result':frozenset({'work.submission'}),'decision':frozenset({'work.decision'}),'previous':frozenset({'work.head'}),'context':frozenset({'composition.binding','composition.membership'})}, content=validate_active_link),
+        head_schema, lifecycle_head_schema(head_schema),
     ])
 
 

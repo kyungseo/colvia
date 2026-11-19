@@ -356,6 +356,9 @@ class WorkService:
         from . import progress
         if progress.eligible(head) and head.payload['workspace'] == self.workspace.workspace:
             value.update(progress.view(self, work, head, plan.payload['scope'], amendments))
+        if 'schema:work.head:2' in self.store.requirements()['read']:
+            from .work_lifecycle import detail
+            value.update(detail(self,work,head))
         if head.payload['phase']=='completed':value['reopen_receipt']=self._receipt('reopen',work,ref)
         return value
 

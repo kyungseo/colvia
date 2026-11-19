@@ -41,10 +41,13 @@ def credential_finding_detail(finding):
 
 _RELATION_STATES = {
     'planned':'계획', 'approved':'범위 승인됨', 'active':'작업 중', 'review':'결과 검토 중',
-    'completed':'수락 완료', 'open':'검토 후보', 'dismissed':'후보에서 제외됨',
+    'completed':'수락 완료', 'paused':'일시정지', 'discarded':'폐기', 'open':'검토 후보', 'dismissed':'후보에서 제외됨',
     'unavailable':'현재 상태 확인 불가', 'plan-changed':'이전 계획에 대한 연결',
     'record-changed':'이후 후보 기록이 변경됨',
 }
+
+
+FILE_STATUS = {'unchanged':'동일','changed':'변경','created':'생성','deleted':'삭제','unavailable':'확인 불가'}
 
 
 def _relation(title,identifier,state):
@@ -67,12 +70,43 @@ def _followup_text(value):
 
 
 def human(value):
+    if value.get('lifecycle_preview') or 'lifecycle_action' in value:
+        names={'pause':'일시정지','resume':'재개','discard':'폐기','replace':'대체'}
+        if 'lifecycle_action' in value:
+            return names[value['lifecycle_action']]+' 결정을 기록했습니다. 파일은 현재 위치에 그대로 있습니다.'
+        lines=[_printable(value['title'])+' ('+value['work']+') · '+names[value['action']], '사유 · '+_printable(value['reason'])]
+        if value['target']:lines.append('이어갈 Work · '+_relation(value['target_title'],value['target'],value['target_state'])+' (해당 Work의 승인을 따릅니다.)')
+        if value['next_action']:lines.append('다음 행동 · '+_printable(value['next_action']))
+        for item in value['changes_from_plan']:
+            lines.append('승인 시점 대비 · '+display_path(item['path'])+' · '+FILE_STATUS[item['status']])
+        for item in value.get('since_pause',[]):
+            if item['status']!='unchanged':lines.append(display_path(item['path'])+' · '+FILE_STATUS[item['status']])
+        if value['unobserved_paths']:lines.append('관찰하지 못한 경로 · '+str(value['unobserved_paths'])+'개')
+        lines.extend(['파일은 현재 위치에 그대로 남습니다. 적용 후 이전 실행기로 이 기록을 열 수 없습니다.','이 결정을 기록할까요?'])
+        return '\n'.join(lines)
     if 'followup_detail' in value:
         detail=_followup_text(value['followup_detail'])
         if 'work_view' not in value:return detail
         work=dict(value['work_view'])
         work['title']=_printable(work['title'])
         return human(work).rstrip()+'\n'+detail
+    if 'lifecycle' in value or 'replaces' in value:
+        current=dict(value)
+        event=current.pop('lifecycle',None)
+        sources=current.pop('replaces',[])
+        if current.get('state') in ('paused','discarded'):
+            lines=[_printable(current['title'])+' — '+('일시정지' if current['state']=='paused' else '폐기')]
+        else:lines=[human(current)]
+        if event:
+            lines.append('마지막 상태 변경 사유 · '+_printable(event['reason']))
+            if event['next_action']:lines.append('다음 행동 · '+_printable(event['next_action']))
+            if event['target']:lines.append('대체 Work · '+event['target'])
+        if sources:lines.append('이 Work로 이어진 작업 · '+', '.join(sources))
+        for field,label in [('done','한 일'),('checked','확인한 것'),('remaining','남은 일'),('next_action','다음 행동')]:
+            if current.get('saved_progress'):lines.append(label+' · '+_printable(current['saved_progress'][field]))
+        for entry in current.get('since_pause',[]):
+            if entry['status']!='unchanged':lines.append('중단 이후 · '+display_path(entry['path'])+' · '+FILE_STATUS[entry['status']])
+        return '\n'.join(lines)
     if 'error' in value:
         lines=[value['message']];details=value.get('details')
         if details:
@@ -183,7 +217,7 @@ def human(value):
                 lines.append('이전 승인 범위에서 남긴 메모입니다. 현재 승인 계획을 확인하세요.')
             for field,label in [('done','한 일'),('checked','확인한 것'),('remaining','남은 일'),('next_action','다음 행동')]:
                 lines.append(label+' · '+_printable(note[field]))
-            labels={'unchanged':'동일','changed':'변경','created':'생성','deleted':'삭제','unavailable':'확인 불가'}
+            labels=FILE_STATUS
             lines.extend(_printable(item['path'])+' · '+labels[item['status']] for item in note['files'])
             if note['additional_paths_unavailable']:
                 lines.append('추가 경로 확인 불가 · '+str(note['additional_paths_unavailable']))
@@ -229,13 +263,14 @@ def human(value):
         lines=[]
         for item in value['items']:
             title=item.get('title',item.get('work',item.get('candidate','항목')))
-            lines.append(_printable(title)+' — '+item.get('state',''))
+            status=item.get('state','')
+            lines.append(_printable(title)+' — '+_RELATION_STATES.get(status,status))
             if 'followup_detail' in item:
                 lines.append('  '+_followup_text(item['followup_detail']))
             if 'linked_title' in item:
                 lines.append('  관련 Work '+_relation(item['linked_title'],item['linked_work'],item['linked_state']))
         if value.get('next') is not None:lines.append('더 있습니다. 다음 목록을 요청해 주세요.')
-        return '\n'.join(lines) or '등록된 항목이 없습니다.'
+        return '\n'.join(lines) or ('이 목록에 표시할 작업이 없습니다.' if 'list_mode' in value else '등록된 항목이 없습니다.')
     if 'choice' in value:
         return {'none':'후속 작업은 없는 것으로 기록했습니다.','undecided':'후속 작업은 아직 정하지 않았습니다.',
                 'candidate':'후속 후보를 기록했습니다. 아직 시작하지 않았습니다.','work':'이어갈 작업을 기록했습니다. 실행 승인을 대신하지 않습니다.'}[value['choice']]
@@ -382,6 +417,17 @@ def failure(code):
     if code == 'invalid-guide-topic':
         return '다음 안내 중 하나를 선택하세요: ' + ', '.join(TOPIC_NAMES) + '. JSON 출력을 원하면 guide 앞에 --json을 붙이세요.'
     recovery={
+        'work-not-pausable':'작업 중이거나 검토를 기다리는 Work를 선택하세요.',
+        'work-not-paused':'일시정지한 Work를 선택하세요.',
+        'work-not-discardable':'종료한 Work입니다. 상세에서 기록을 확인하세요.',
+        'invalid-replacement':'같은 프로젝트에서 아직 끝나지 않은 다른 일반 Work를 선택하세요.',
+        'lifecycle-independent-work-only':'연결된 하위 작업이나 격리 작업을 먼저 확인하세요.',
+        'lifecycle-grant-in-use':'해당 작업의 위임을 먼저 해제하세요.',
+        'lifecycle-delivery-prepared':'예약한 제출이나 실행 상태를 확인하고 종료한 뒤 다시 시도하세요.',
+        'lifecycle-execution-prepared':'준비한 실행의 상태를 확인하고 정리한 뒤 다시 시도하세요.',
+        'lifecycle-application-prepared':'준비한 격리 작업 적용을 확인한 뒤 다시 시도하세요.',
+        'lifecycle-work-inactive':'일시정지 또는 폐기한 Work입니다. 현재 상태를 확인하세요.',
+        'lifecycle-preview-stale':'파일이나 기록이 바뀌었습니다. 현재 미리보기를 다시 확인하세요.',
         'managed-guide-unavailable':'설치본에서 요청한 안내를 찾을 수 없습니다. 해당 작업을 멈추고 설치 상태를 확인하세요.',
         'managed-guide-changed':'설치한 안내가 검증된 내용과 다릅니다. 해당 작업을 멈추고 설치 상태를 확인하세요.',
         'git-credential-blocked':'Git에 기록할 내용에서 자격증명 형태의 값을 찾았습니다. 설정은 환경변수 참조로 바꾸고 수정본을 제출·수락한 뒤 다시 준비하세요. 커밋 메시지에 있으면 메시지를 수정하세요.',

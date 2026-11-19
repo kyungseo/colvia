@@ -100,7 +100,7 @@ class Uninstall:
             with closing(h.authority(state['project']).store(readonly=True)) as store:
                 for key, ref in scan_map(store.root().heads, store.load):
                     if key.startswith('work:'):
-                        require(ref.kind == 'work.head' and decode_envelope(ref, store.load(ref)).payload['phase'] != 'active',
+                        require(ref.kind == 'work.head' and decode_envelope(ref, store.load(ref)).payload['phase'] not in ('active','paused'),
                                 'uninstall-active-work')
         receipt = decode_canonical(f.read(self.root / 'trust/state.json'))
         slot = h.slots.verify(selected)

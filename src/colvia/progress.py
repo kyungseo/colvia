@@ -21,6 +21,14 @@ def eligible(head):
             and link(head, 'result') is None and link(head, 'context') is None)
 
 
+def validate_fingerprints(files):
+    require(isinstance(files, dict) and len(files) <= MAX_PATHS, 'invalid-progress-files')
+    for path, fingerprint in files.items():
+        require(logical_path(path) == path and isinstance(fingerprint, str) and
+                (fingerprint in (UNAVAILABLE, MISSING) or re.fullmatch('[0-9a-f]{64}', fingerprint)),
+                'invalid-progress-files')
+
+
 def validate_payload(payload):
     fields(payload, {'work', 'workspace', 'files', *NOTE_FIELDS})
     identity(payload)
@@ -28,12 +36,7 @@ def validate_payload(payload):
         value = payload[name]
         require(isinstance(value, str) and 0 < len(value) <= 2048, 'invalid-progress-text')
         require(value.strip() and value.isprintable(), 'invalid-progress-text')
-    files = payload['files']
-    require(isinstance(files, dict) and len(files) <= MAX_PATHS, 'invalid-progress-files')
-    for path, fingerprint in files.items():
-        require(logical_path(path) == path and isinstance(fingerprint, str) and
-                (fingerprint in (UNAVAILABLE, MISSING) or re.fullmatch('[0-9a-f]{64}', fingerprint)),
-                'invalid-progress-files')
+    validate_fingerprints(payload['files'])
     one(payload, 'active')
     one(payload, 'previous', True)
 

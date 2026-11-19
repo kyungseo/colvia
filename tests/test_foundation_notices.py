@@ -30,6 +30,20 @@ class NoticeTests(WorkFixture,unittest.TestCase):
         self.service.accept(operation='accept',work='report',receipt=review['receipt'],statement='Accept this report')
         details=self.details();self.assertEqual('review',details['original']['state']);self.assertEqual('completed',details['current']['state'])
         self.assertFalse(details['click_accepts']);self.assertEqual(['report.md'],details['original']['files'])
+    def test_old_notification_after_pause_and_discard_is_read_only(self):
+        from colvia import work_lifecycle
+        self.finish()
+        for action,state in [('pause','paused'),('discard','discarded')]:
+            args=(self.service,'report',action,'new decision','','')
+            receipt=work_lifecycle.proposal(*args)[0]['receipt']
+            work_lifecycle.apply(*args,receipt,action)
+            root=self.store.root().ref
+            details=self.details()
+            self.assertFalse(details['click_accepts'])
+            self.assertEqual('review',details['original']['state'])
+            self.assertEqual(state,details['current']['state'])
+            self.assertEqual(root,self.store.root().ref)
+
     def test_route_cannot_alias_same_label_in_another_project_instance(self):
         self.finish()
         for project,instance in (('0'*32,self.store.instance),(self.store.project,'0'*32)):

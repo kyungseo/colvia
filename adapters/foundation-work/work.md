@@ -76,3 +76,11 @@ For “하던 일 이어가자” or “pick up where we left off”, read the l
 Use bounded result summaries by default. Put hashes, receipts, raw checks and
 recovery internals in machine output or requested technical details. Keep failure
 records, and do not remove history or evidence simply because a task completed.
+
+## Switch Work, pause, or end it
+
+Read a named Work without changing any Work. “B부터 보자” selects B. “여기까지 하자” stops the conversation. If the person wants to save progress, pause, discard or replace a Work and intent is ambiguous, ask once which action they mean. Prefer the existing note flow for “여기까지 기록해줘”. Do not submit, accept, discard, pause or start another Work on a sign-off.
+
+For an explicit state change, run `--json ordinary lifecycle-preview WORK_ID ACTION --reason REASON`. ACTION is `pause`, `resume`, `discard` or `replace`. For replacement add `--target OTHER_WORK_ID`; if it is new, record its own plan first. For a next step use `--next-action TEXT`. Show the Work(s), reason, destination state, edits that remain, changed or unobserved paths, and older-reader restriction. After confirmation repeat the same arguments with `lifecycle-apply` and the exact `--receipt`. Reread a stale preview. On an uncertain outcome inspect the Work and operation. Never infer approval of B from A.
+
+A paused Work returns to its previous active or review phase. Compare files and read the last note or submission. Use a fresh review receipt for acceptance. For a paused revision, read its last change request when resuming. Selecting B or C does not move, save or reset any working files. Find discarded or archived Work with `ordinary list --list-mode all` or open it by ID.

@@ -261,7 +261,7 @@ flowchart LR
 
 ## Work 수명 주기
 
-Work 하나는 다섯 단계를 거칩니다. 단계가 바뀔 때마다 기록을 추가할 뿐 이전 기록을 고치지 않습니다.
+일반 Work는 계획부터 수락까지 진행하며, 일시정지하거나 사유를 남겨 폐기할 수 있습니다. 단계가 바뀔 때마다 기록을 추가할 뿐 이전 기록을 고치지 않습니다.
 
 ```mermaid
 stateDiagram-v2
@@ -280,6 +280,10 @@ stateDiagram-v2
     review --> completed: 사용자가 결과 수락
     review --> active: 수정 요청
     completed --> active: 다시 열어 수정
+    active --> paused: 일시정지
+    review --> paused: 일시정지
+    paused --> active: 작업 중이던 경우
+    paused --> review: 검토 중이던 경우
     completed --> [*]
 ```
 
@@ -293,6 +297,8 @@ stateDiagram-v2
 | 수정 요청 | 사용자 | 수정 요청 내용. 원래 범위와 검사, 이전 제출본은 유지 |
 
 제출할 때 Colvia는 작업 폴더의 파일 상태를 다시 확인해, 확인 대상 파일에 승인 범위 밖의 변경이 있으면 제출을 거부합니다. 수락할 때는 현재 파일이 검토한 제출본과 같은지 다시 대조합니다. 수락 완료된 Work는 보관 처리할 수 있으며, 보관해도 본문·결정·후속 연결은 그대로 조회됩니다.
+
+미완료 Work를 폐기하거나 다른 Work로 대체하면 기존 기록은 조회할 수 있습니다. 새 Work의 범위는 별도로 승인합니다. [전환과 대체](work.md#work-lifecycle)
 
 <a id="storage" name="storage"></a>
 

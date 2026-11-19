@@ -137,6 +137,8 @@ The [first-submission implementation record](FEAT-20261119-002-pre-submission-pr
 
 Let the user pause a Work for later resumption or end it with a reason. When a changed goal calls for a different Work, confirm the disposition of the old Work, link it to the replacement and remove it from the active list. Preserve the old Work's approvals, submissions and files. Show how unfinished edits will be handled, and obtain approval for the replacement's own scope. Build on the [existing continuation](README.md#continuation-scope-and-remaining-criteria) and [successor criteria](README.md#verifiable-slicing).
 
+[Work lifecycle implementation and compatibility](FEAT-20261119-004-work-lifecycle.md).
+
 ### P2: Candidate priority, project status and dependencies
 
 Add user-set priority to the existing candidate list. Derive the project view from Work and candidate records so it can show active, awaiting review and paused Work, the next action within a Work and any selected follow-up. Use a dependency only when one Work actually waits for another. Reuse the [existing priority and readiness criteria](README.md#continuation-scope-and-remaining-criteria), the [read-only view](README.md#human-readable-projection) and the [blocker criteria](README.md#verifiable-slicing).

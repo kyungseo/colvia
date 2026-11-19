@@ -10,6 +10,8 @@ Colvia는 사람과 AI가 함께 일하는 로컬 워크플로 도구입니다. 
 
 첫 제출 전에 자리를 비울 때는 [중간 메모를 남기고 다음 대화에서 이어가세요](work.md#progress-note).
 
+[다른 Work로 전환하거나 멈추고 다시 시작하기](work.md#work-lifecycle)
+
 [표 수정과 부록 생성을 한 번에 승인하기](work.md#scope-change)
 
 짧은 질문과 직접 부탁한 작은 수정은 [Work 없이 처리할 수 있는 조건](work.md#without-work)을 확인하세요. 기존 Work에 속한 수정은 해당 Work의 기록에서 이어갑니다.
