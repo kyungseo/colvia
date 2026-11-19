@@ -44,7 +44,7 @@ Colvia는 대화 창을 따로 제공하지 않습니다. 평소 쓰는 채팅�
 
 [결과 알림](maintenance.md#notifications)을 누르면 해당 Work가 열립니다. 제출본을 읽고 수락할지는 그때 결정하세요. 수락한 결과를 [Git에 반영](git.md#git-integration)하려면 커밋에 들어갈 변경과 스테이징 상태를 확인하고 따로 승인합니다.
 
-다음 Preview에서는 Colvia로 커밋을 준비할 때 알려진 형태의 키·토큰과 보호 경로를 검사합니다. [자격증명 검사 범위와 예외](git.md#git-credential-check)
+v0.2.0부터는 Colvia로 커밋을 준비할 때 알려진 형태의 키·토큰과 보호 경로를 검사합니다. [자격증명 검사 범위와 예외](git.md#git-credential-check)
 
 <a id="work" name="work"></a>
 

@@ -13,7 +13,7 @@
 
 [Install and connect a project](manual/en/install.md) · [Follow along](manual/en/tutorial.md) · [User guide](manual/en/README.md) · [Colvia at a glance](manual/en/overview.md) · [Supported environments](manual/en/reference.md#environments) · [Release notes and downloads](https://github.com/colvia/downloads/releases)
 
-Current release · [Colvia Preview v0.1.1](https://github.com/colvia/downloads/releases/tag/v0.1.1)
+[Find the currently published Preview](https://github.com/colvia/downloads/releases)
 
 </div>
 
@@ -94,7 +94,7 @@ The agent can compare current files with the accepted submission and show which 
 
 - **Put an accepted result into Git.** Colvia keeps the submission you accepted, so you can compare it with your current files later without making a work-in-progress (WIP) commit. Review the changes to commit and the current staging area, then approve the integration separately. Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result. [Put an accepted result into Git](manual/en/git.md#git-integration)
 
-### Check for credentials before a Git commit · Next Preview
+### Check for credentials before a Git commit · v0.2.0
 
 When you prepare a commit through Colvia, it checks the changes on your device. If it recognizes a hardcoded API key or token, or finds a protected file such as `.env` among the additions or edits, it stops before writing Git objects for those changes. The message points to the location without displaying the value.
 

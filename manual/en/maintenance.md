@@ -127,6 +127,8 @@ To undo an interrupted removal before starting a reinstall, use `-RestoreUninsta
 
 ## Remove this account’s records after a trial
 
+This is a **temporary manual procedure** until Colvia offers automatic removal of all connections and records. Disconnect each project first, then remove the account’s records yourself.
+
 A normal uninstall keeps your Work for reinstallation. Use these steps only when you intend to discard **the Work, approvals, submissions and recovery files for every project in this account**. To keep using other projects, [disconnect only the project you are leaving](#disconnect).
 
 1. In the account that installed Colvia, identify **every project you connected**. [Export any records you want to keep](records.md#backup) to a separate location and verify that you can recover them. In the folder where you originally connected each project, preview and approve [disconnection](#disconnect). You can ask your agent, “Show me what Colvia added to this folder and disconnect it.” Check that your documents, code, Git history, staged changes and existing agent instructions remain. Stop if a folder is missing, disconnection is refused, or you cannot account for all connections. Deleting the records first removes the information needed to detach the remaining folders.

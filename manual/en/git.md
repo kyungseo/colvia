@@ -68,7 +68,7 @@ Accepting a submission keeps a version you can compare with your current files l
 
 <a id="git-credential-check" name="git-credential-check"></a>
 
-### If the credential check stops a commit · Next Preview
+### If the credential check stops a commit · v0.2.0
 
 Before creating Git objects, Colvia checks the selected files and their paths, the commit message, the branch name, the author’s name and email, and the operation ID on your device. It looks for recognizable keys and tokens, private keys, passwords embedded in URLs, and secrets written directly into settings. The check stops at the first finding. It shows the location and, when available, the type and line number. The value stays hidden. Before submitting a revision, you can ask your agent to check the other selected files for the same kind of value and report only the locations. For example, replace a key written directly into Python code with a reference such as `api_key = os.getenv("OPENAI_API_KEY")`, then submit and accept the revision. For a finding in the message, edit the message. This check covers Git changes prepared through Colvia. Previously stored Work and Git history keep their original contents.
 

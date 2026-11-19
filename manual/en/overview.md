@@ -44,7 +44,7 @@ If [an out-of-scope change blocks submission](work.md#review), your files stay i
 
 A [result notification](maintenance.md#notifications) opens the Work for review. Read the submission and decide whether to accept it. To [commit an accepted result to Git](git.md#git-integration), review the proposed changes and the current staging state, then approve the commit separately.
 
-In the next Preview, Colvia will check for known credential patterns and protected paths when you prepare a commit through Colvia. [What the credential check covers](git.md#git-credential-check)
+Starting in v0.2.0, Colvia checks for known credential patterns and protected paths when you prepare a commit through Colvia. [What the credential check covers](git.md#git-credential-check)
 
 <a id="work" name="work"></a>
 
