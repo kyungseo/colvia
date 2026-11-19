@@ -56,6 +56,7 @@ Do not inspect implementation source or generate serialization scripts for ordin
 | When | Read with the project launcher |
 | --- | --- |
 | Plan, approve, start, submit, review or accept | `guide work` |
+| Resume an active Work | `guide work` before editing files or running the planned checks |
 | Inspect or revise a previous submission | `guide revision` and, before submission, `guide work` |
 | Access, connection, move, interruption or uncertain outcome | `guide recovery` |
 | Prepare or apply to Git | `guide git` before preparing a candidate or asking for Git approval |

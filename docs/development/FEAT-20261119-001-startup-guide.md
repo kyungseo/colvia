@@ -105,3 +105,9 @@ No Windows process was executed and no fresh LLM was observed. The Windows concl
 - OS errors revise: missing and wrong-kind path errors use the unavailable guide message. Preserve explicit access-denied and integrity diagnostics. Unexpected OS failures are handled by the existing CLI error boundary.
 - CLI hint and import accept: invalid topics list valid words and explain placement of --json; use the module-level topic constant. Retain the current Korean diagnostic convention and existing Markdown section headings. Product-wide localization and cosmetic heading normalization were not selected.
 - Checks against the final edits were performed by the Driver. The review verdict remains conditional; the two conditions were addressed and documented, with no second reviewer invocation. Local implementation and checks are ready for Owner acceptance. Retain the topic checkout and bounded private inputs for the next commit and release preparation.
+
+## Follow-up check in a fresh Codex conversation
+
+The startup table now directs an agent resuming active work to read the work topic before editing or running the agreed checks. The entry is 71 lines and 4,458 UTF-8 bytes.
+
+On macOS, a fresh Codex CLI session received only a natural-language request to finish yesterday’s report. A synthetic connected folder contained one active Work. Using the packaged guide and a fixture runtime, the agent listed the Work, read its approved file and named check, and opened the work topic. The command trace and report digest confirmed both reads finished before the first edit. It edited only the report, checked that the two counts summed to the reported total, left the priority decision to the user, and submitted for review. The source notes were preserved. An incidental Git status lookup reported that the ordinary folder was outside a Git repository. This single observation covers resuming an active report in Codex.
