@@ -409,7 +409,7 @@ Colvia handles Git in three stages. Your current branch and staging area change 
 | Stage | What happens to Git |
 | --- | --- |
 | Ordinary observation | Reads the repository structure, working tree and index. Changes nothing in the repository. |
-| Candidate preparation | Creates candidate Git objects and Colvia’s preparation record. The current ref and index are not changed. |
+| Candidate preparation | Creates the candidate Git objects and preparation record. The next Preview first runs the [credential check](git.md#git-credential-check). The current ref and index are not changed. |
 | Apply after approval | Applies the reviewed candidate to the ref and index. Changes staged for other files are preserved. |
 
 ```mermaid
@@ -417,8 +417,10 @@ flowchart LR
     Reg["Registered Git executable<br/>pinned path · hash · version"]
     Accept["Work result accepted"] -.->|does not follow automatically| Prepare
     Observe["Ordinary observation"] -->|read| Repo["Working tree · ref · index"]
-    Prepare["Candidate preparation<br/>prepare"] -->|create objects| Objects[("Git object store")]
-    Prepare --> Review["Review the whole candidate and staging<br/>show"]
+    Prepare{"Prepare candidate<br/>Local check passes? (Next Preview)"} -->|No| Stop["Report location; hide value"]
+    Prepare -->|Yes| Build["Build candidate"]
+    Build --> Objects[("Git object store")]
+    Build --> Review["Review changes and staging<br/>show"]
     Review --> Approval{"Your separate<br/>integration approval"}
     Approval -->|approved| Apply["Apply after matching the receipt<br/>apply"]
     Apply -->|change| RefIndex["Current ref · index"]
@@ -431,9 +433,14 @@ flowchart LR
 - **The executable is pinned.** Colvia does not look for Git on `PATH`. It uses only the executable you approved and registered, and checks on every use that its hash still matches the registration.
 - **Observation leaves the repository untouched.** No fetch, index refresh, hook execution, checkout or Git metadata write.
 - **Acceptance is not a commit.** An accepted submission stays in Colvia records, so you can compare it later without a work-in-progress commit.
-- **Candidate preparation creates objects only.** Preparing puts the Git objects needed for the candidate commit into the repository, but no branch points to that commit.
 - **Staging is preserved.** The whole index is retained before integration, and changes staged for other files are kept. When conditions are not met, Colvia stops instead of disabling hooks or resetting the index.
 - **Moving between workspaces is a separate operation.** Moving a submission from one workspace to another is approved one submission at a time.
+
+### Credential screening · Next Preview
+
+For supported images and fonts with matching extensions and signatures, the preview and JSON identify each file and its format. The preview omits their contents because they were not scanned for credentials.
+
+Adding or editing a protected path, or detecting a recognizable credential, stops preparation before new Git objects are written. A candidate that passes still needs separate approval to update the branch and staging area. When a protected file is deleted, the preview shows the deletion and withholds its former contents. [What the check covers](git.md#git-credential-check)
 
 The procedures are in [Working with Git](git.md).
 

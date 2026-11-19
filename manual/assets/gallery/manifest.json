@@ -8,7 +8,8 @@
     "manual/assets/readme-notify.ko.svg": "7dd9a6acd43ea36db8f29ab3a8ca3b852c3253648cd800453216b2c4b0d6f055",
     "manual/assets/readme-split.ko.svg": "f7cf34d65528fa7c90ed3ccf40840f89e3f967fab9d9e4a889fd2317b98ceddb",
     "manual/assets/readme-parallel.ko.svg": "a09cbcf0bed67714850bdee71dd262f4fac94077809a216251b47ea6ee840f4d",
-    "manual/assets/readme-overview.ko.svg": "e7c7f3264a8d85d1fb5bb4d0df533f8f02cca6d9e3710cc8a192d3e7a227cc47"
+    "manual/assets/readme-overview.ko.svg": "e7c7f3264a8d85d1fb5bb4d0df533f8f02cca6d9e3710cc8a192d3e7a227cc47",
+    "manual/assets/readme-credential.ko.svg": "295368af559d1ff38912a8645a32501de9723e96397c94c69a22206cf5839bbb"
   },
   "files": {
     "scope-light.svg": "17e233ca3960170d5857980504999b8e394dcd7e5fa9c6d09c1b0270bb8bd641",
@@ -38,399 +39,459 @@
     "overview-light.svg": "85414832129b53ea2ac3a210025d322cbcc80afac86c646a1a8d261997f82d81",
     "overview-dark.svg": "c448a57359dfc3fa92d6b17da99d27e64cb034850411f44f5e0a39d28f1a5c44",
     "overview-en-light.svg": "84a71b12e95352a9899ffbc409110c534d0c08e8e863e8ba47fd1ad57590ed97",
-    "overview-en-dark.svg": "53d30b89fcf5549699df88eee419b8145dcb5926eafb42ba064d00c4cfddaa4e"
+    "overview-en-dark.svg": "53d30b89fcf5549699df88eee419b8145dcb5926eafb42ba064d00c4cfddaa4e",
+    "credential-light.svg": "96a4da47138635ac68602b0f8782154e3b811e5f065a9b86c1e86139ab6c6bf6",
+    "credential-dark.svg": "1de71333c9fbb0f0ecad24fda07446be27fdcc37760d4426780722b6cec0abf5",
+    "credential-en-light.svg": "278bcd159f3173725c2e66ed9d9f689fa15be2f8d61b612a472b0e06ec7f83bf",
+    "credential-en-dark.svg": "4c5ec1fc7271a3bd43f2cd2cd78d8869da349002b3dedb2fff51d3062700518b"
   },
   "alignments": [
     {
       "file": "scope-light.svg",
       "box": [
-        194.0,
-        72.0,
-        80.0,
-        40.0
+        194,
+        72,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        234.0,
-        92.0
+        234,
+        92
       ]
     },
     {
       "file": "scope-dark.svg",
       "box": [
-        194.0,
-        72.0,
-        80.0,
-        40.0
+        194,
+        72,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        234.0,
-        92.0
+        234,
+        92
       ]
     },
     {
       "file": "scope-en-light.svg",
       "box": [
-        194.0,
-        72.0,
-        80.0,
-        40.0
+        194,
+        72,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        234.0,
-        92.0
+        234,
+        92
       ]
     },
     {
       "file": "scope-en-dark.svg",
       "box": [
-        194.0,
-        72.0,
-        80.0,
-        40.0
+        194,
+        72,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        234.0,
-        92.0
+        234,
+        92
       ]
     },
     {
       "file": "switch-light.svg",
       "box": [
-        138.0,
-        42.0,
-        84.0,
-        38.0
+        138,
+        42,
+        84,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        180.0,
-        61.0
+        180,
+        61
       ]
     },
     {
       "file": "switch-dark.svg",
       "box": [
-        138.0,
-        42.0,
-        84.0,
-        38.0
+        138,
+        42,
+        84,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        180.0,
-        61.0
+        180,
+        61
       ]
     },
     {
       "file": "switch-en-light.svg",
       "box": [
-        138.0,
-        42.0,
-        84.0,
-        38.0
+        138,
+        42,
+        84,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        180.0,
-        61.0
+        180,
+        61
       ]
     },
     {
       "file": "switch-en-dark.svg",
       "box": [
-        138.0,
-        42.0,
-        84.0,
-        38.0
+        138,
+        42,
+        84,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        180.0,
-        61.0
+        180,
+        61
       ]
     },
     {
       "file": "drift-light.svg",
       "box": [
-        120.0,
-        74.0,
-        80.0,
-        40.0
+        120,
+        74,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        160.0,
-        94.0
+        160,
+        94
       ]
     },
     {
       "file": "drift-dark.svg",
       "box": [
-        120.0,
-        74.0,
-        80.0,
-        40.0
+        120,
+        74,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        160.0,
-        94.0
+        160,
+        94
       ]
     },
     {
       "file": "drift-en-light.svg",
       "box": [
-        120.0,
-        74.0,
-        80.0,
-        40.0
+        120,
+        74,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        160.0,
-        94.0
+        160,
+        94
       ]
     },
     {
       "file": "drift-en-dark.svg",
       "box": [
-        120.0,
-        74.0,
-        80.0,
-        40.0
+        120,
+        74,
+        80,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        160.0,
-        94.0
+        160,
+        94
       ]
     },
     {
       "file": "notify-light.svg",
       "box": [
-        104.0,
-        54.0,
-        80.0,
-        38.0
+        104,
+        54,
+        80,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        144.0,
-        73.0
+        144,
+        73
       ]
     },
     {
       "file": "notify-dark.svg",
       "box": [
-        104.0,
-        54.0,
-        80.0,
-        38.0
+        104,
+        54,
+        80,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        144.0,
-        73.0
+        144,
+        73
       ]
     },
     {
       "file": "notify-en-light.svg",
       "box": [
-        104.0,
-        54.0,
-        80.0,
-        38.0
+        104,
+        54,
+        80,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        144.0,
-        73.0
+        144,
+        73
       ]
     },
     {
       "file": "notify-en-dark.svg",
       "box": [
-        104.0,
-        54.0,
-        80.0,
-        38.0
+        104,
+        54,
+        80,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        144.0,
-        73.0
+        144,
+        73
       ]
     },
     {
       "file": "split-light.svg",
       "box": [
-        12.0,
-        86.0,
-        76.0,
-        38.0
+        12,
+        86,
+        76,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        50.0,
-        105.0
+        50,
+        105
       ]
     },
     {
       "file": "split-dark.svg",
       "box": [
-        12.0,
-        86.0,
-        76.0,
-        38.0
+        12,
+        86,
+        76,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        50.0,
-        105.0
+        50,
+        105
       ]
     },
     {
       "file": "split-en-light.svg",
       "box": [
-        12.0,
-        86.0,
-        76.0,
-        38.0
+        12,
+        86,
+        76,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        50.0,
-        105.0
+        50,
+        105
       ]
     },
     {
       "file": "split-en-dark.svg",
       "box": [
-        12.0,
-        86.0,
-        76.0,
-        38.0
+        12,
+        86,
+        76,
+        38
       ],
       "group_width": 64.86946592159761,
       "center": [
-        50.0,
-        105.0
+        50,
+        105
       ]
     },
     {
       "file": "parallel-light.svg",
       "box": [
-        220.0,
-        89.0,
-        62.0,
-        32.0
+        220,
+        89,
+        62,
+        32
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251.0,
-        105.0
+        251,
+        105
       ]
     },
     {
       "file": "parallel-dark.svg",
       "box": [
-        220.0,
-        89.0,
-        62.0,
-        32.0
+        220,
+        89,
+        62,
+        32
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251.0,
-        105.0
+        251,
+        105
       ]
     },
     {
       "file": "parallel-en-light.svg",
       "box": [
-        220.0,
-        89.0,
-        62.0,
-        32.0
+        220,
+        89,
+        62,
+        32
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251.0,
-        105.0
+        251,
+        105
       ]
     },
     {
       "file": "parallel-en-dark.svg",
       "box": [
-        220.0,
-        89.0,
-        62.0,
-        32.0
+        220,
+        89,
+        62,
+        32
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251.0,
-        105.0
+        251,
+        105
       ]
     },
     {
       "file": "overview-light.svg",
       "box": [
-        698.0,
-        68.0,
-        104.0,
-        40.0
+        698,
+        68,
+        104,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        750.0,
-        88.0
+        750,
+        88
       ]
     },
     {
       "file": "overview-dark.svg",
       "box": [
-        698.0,
-        68.0,
-        104.0,
-        40.0
+        698,
+        68,
+        104,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        750.0,
-        88.0
+        750,
+        88
       ]
     },
     {
       "file": "overview-en-light.svg",
       "box": [
-        698.0,
-        68.0,
-        104.0,
-        40.0
+        698,
+        68,
+        104,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        750.0,
-        88.0
+        750,
+        88
       ]
     },
     {
       "file": "overview-en-dark.svg",
       "box": [
-        698.0,
-        68.0,
-        104.0,
-        40.0
+        698,
+        68,
+        104,
+        40
       ],
       "group_width": 64.86946592159761,
       "center": [
-        750.0,
-        88.0
+        750,
+        88
+      ]
+    },
+    {
+      "file": "credential-light.svg",
+      "box": [
+        286,
+        90,
+        106,
+        38
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        339,
+        109
+      ]
+    },
+    {
+      "file": "credential-dark.svg",
+      "box": [
+        286,
+        90,
+        106,
+        38
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        339,
+        109
+      ]
+    },
+    {
+      "file": "credential-en-light.svg",
+      "box": [
+        286,
+        90,
+        106,
+        38
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        339,
+        109
+      ]
+    },
+    {
+      "file": "credential-en-dark.svg",
+      "box": [
+        286,
+        90,
+        106,
+        38
+      ],
+      "group_width": 64.86946592159761,
+      "center": [
+        339,
+        109
       ]
     }
   ],
@@ -609,6 +670,50 @@
       "fonts": {
         "SkinSans-400-submission.woff2": "6b7e070b12b410d1df43906a4e28129da8c0e28c2980344dd09500bfbb2d11b8",
         "SkinSans-700-submission.woff2": "d1677f78e5b8ee5ff3ffc192cc70ba7512b6c3194bdee914559391ab5e312b0b"
+      }
+    },
+    "credential-light.png": {
+      "sha256": "503c976278ef991f5954c44abc61987d4ad8e15bd003ee3e69c99af8a31bd82a",
+      "svg_sha256": "96a4da47138635ac68602b0f8782154e3b811e5f065a9b86c1e86139ab6c6bf6",
+      "width": 1280,
+      "height": 436,
+      "renderer": "Chrome/158.0.8127.36",
+      "font_sha256": {
+        "regular": "1bae3d333e1247d8b96888369e47818e4ee1c6888a2b0bdc6f841892d6e14503",
+        "bold": "9102719e433e5d57f83bf32fd0e3818024682368ab148ffec318ec6a154631a9"
+      }
+    },
+    "credential-dark.png": {
+      "sha256": "6091e086cedb30f8b0d8125862ea6aae843e7fa25ed5da3c0a9299a743aa55b9",
+      "svg_sha256": "1de71333c9fbb0f0ecad24fda07446be27fdcc37760d4426780722b6cec0abf5",
+      "width": 1280,
+      "height": 436,
+      "renderer": "Chrome/158.0.8127.36",
+      "font_sha256": {
+        "regular": "1bae3d333e1247d8b96888369e47818e4ee1c6888a2b0bdc6f841892d6e14503",
+        "bold": "9102719e433e5d57f83bf32fd0e3818024682368ab148ffec318ec6a154631a9"
+      }
+    },
+    "credential-en-light.png": {
+      "sha256": "f03629eca35762dc114d0a5e37c9e2f4af2755da990fb0d546865a5538c201aa",
+      "svg_sha256": "278bcd159f3173725c2e66ed9d9f689fa15be2f8d61b612a472b0e06ec7f83bf",
+      "width": 1280,
+      "height": 436,
+      "renderer": "Chrome/158.0.8127.36",
+      "font_sha256": {
+        "regular": "1bae3d333e1247d8b96888369e47818e4ee1c6888a2b0bdc6f841892d6e14503",
+        "bold": "9102719e433e5d57f83bf32fd0e3818024682368ab148ffec318ec6a154631a9"
+      }
+    },
+    "credential-en-dark.png": {
+      "sha256": "d91c13247fbf744e3d8ae6efd8604052372bfc49aad0294f5cc4c9552bb83af8",
+      "svg_sha256": "4c5ec1fc7271a3bd43f2cd2cd78d8869da349002b3dedb2fff51d3062700518b",
+      "width": 1280,
+      "height": 436,
+      "renderer": "Chrome/158.0.8127.36",
+      "font_sha256": {
+        "regular": "1bae3d333e1247d8b96888369e47818e4ee1c6888a2b0bdc6f841892d6e14503",
+        "bold": "9102719e433e5d57f83bf32fd0e3818024682368ab148ffec318ec6a154631a9"
       }
     }
   }

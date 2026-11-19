@@ -35,7 +35,45 @@ _REFERENCE = re.compile(
     r"(?:\$\{[A-Za-z_]\w*\}|\$(?:env:)?[A-Za-z_]\w*|%[A-Za-z_]\w*%|"
     r"<(?:your-api-key|your-password|redacted)>)\Z", re.ASCII)
 
-REVIEW_HEADER = b'Colvia Git review v3\n'
+REVIEW_HEADER = b'Colvia Git review v4\n'
+ASSET_REVIEW_HEADER = b'Colvia Git asset review v1\n'
+
+# Only file signatures are identified. Asset payloads are never rendered as text.
+_ASSET_SIGNATURES = {
+    'png': ('PNG', (b'\x89PNG\r\n\x1a\n',)),
+    'jpg': ('JPEG', (b'\xff\xd8\xff',)),
+    'jpeg': ('JPEG', (b'\xff\xd8\xff',)),
+    'gif': ('GIF', (b'GIF87a', b'GIF89a')),
+    'webp': ('WebP', (b'RIFF',)),
+    'ico': ('ICO', (b'\x00\x00\x01\x00',)),
+    'woff': ('WOFF', (b'wOFF',)),
+    'woff2': ('WOFF2', (b'wOF2',)),
+    'ttf': ('TTF', (b'\x00\x01\x00\x00', b'true')),
+    'otf': ('OTF', (b'OTTO',)),
+}
+_BLOCKED_EXTENSIONS = frozenset("""
+    pdf zip zipx tar tgz gz gzip bz2 tbz tbz2 xz txz 7z rar zst jar war
+    p12 pfx jks keystore db db3 sqlite sqlite3 mdb accdb
+    exe dll com msi sys scr elf so dylib wasm
+""".split())
+
+
+def file_extension(path):
+    _, dot, suffix = path.rsplit('/', 1)[-1].rpartition('.')
+    return suffix.lower() if dot else ''
+
+
+def opaque_review_path(path):
+    ext = file_extension(path)
+    return ext in _BLOCKED_EXTENSIONS or ext in _ASSET_SIGNATURES
+
+
+def asset_review_prefix(assets):
+    if not assets:
+        return REVIEW_HEADER
+    return ASSET_REVIEW_HEADER + json.dumps(assets, sort_keys=True, ensure_ascii=True).encode('ascii') + b'\n'
+
+
 LINE_LIMIT = 256 * 1024
 
 
@@ -53,6 +91,7 @@ def protected_git_path(path):
     return (filename in ('.env', '.env.local', '.env.production', '.netrc', '_netrc')
             or filename.endswith(('.tfstate', '.tfstate.backup'))
             or re.search(r'\.tfstate\.[0-9]+\.backup\Z', filename) is not None
+            or file_extension(path) in ('p12', 'pfx', 'jks', 'keystore')
             or 'secrets' in parents)
 
 
@@ -143,12 +182,28 @@ def screen_candidate(changes, body, message, identity, operation):
     inspect_chunks([message.encode()], 'commit-message')
     for field, value in identity.items():
         inspect_chunks([value.encode()], 'author-' + field)
+    assets = {}
     for number, path in enumerate(sorted(changes), 1):
         inspect_chunks([path.encode()], 'path-' + str(number))
         if changes[path] is not None:
             if protected_git_path(path):
                 raise GitContentRefusal('protected-path', path, None)
-            inspect_chunks(body(path), path)
+            ext = file_extension(path)
+            if ext in _BLOCKED_EXTENSIONS:
+                raise GitContentRefusal('uninspectable', path, None)
+            if ext in _ASSET_SIGNATURES:
+                name, signatures = _ASSET_SIGNATURES[ext]
+                header = bytearray()
+                for chunk in body(path):
+                    # Exhaust the stream so the retained body digest is verified.
+                    if len(header) < 12:
+                        header.extend(chunk[:12 - len(header)])
+                if not header.startswith(signatures) or (ext == 'webp' and header[8:12] != b'WEBP'):
+                    raise GitContentRefusal('uninspectable', path, None)
+                assets[path] = name
+            else:
+                inspect_chunks(body(path), path)
+    return assets
 
 
 def inspect_chunks(chunks, where):

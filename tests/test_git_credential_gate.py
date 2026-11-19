@@ -1,7 +1,11 @@
+from contextlib import redirect_stdout
+from io import StringIO
 import base64
 import json
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+from colvia import cli
 
 from colvia.credentials import GitContentRefusal, inspect_chunks, screen_candidate
 from colvia.codec import RecordError
@@ -14,6 +18,57 @@ from test_foundation_windows_git import WindowsFixture
 
 
 class CredentialTests(unittest.TestCase):
+    def test_cli_displays_readable_finding_and_preserves_machine_category(self):
+        cases = (
+            ('key-or-token', '키·토큰', 12),
+            ('url-credential', 'URL에 넣은 비밀번호', 2),
+            ('npm-auth-literal', '.npmrc 인증값', 1),
+            ('credential-assignment', '설정에 직접 적은 비밀값', 5),
+            ('protected-path', None, None),
+            ('protected-copy', None, None),
+            ('uninspectable', None, None),
+            ('future-category', None, None),
+        )
+        entry = Mock()
+        entry.workspace.return_value = (Mock(), Mock(), Mock())
+        synthetic_value = 'sk-' + 'x' * 20
+        inputs = {
+            'key-or-token': ('app.py', synthetic_value),
+            'url-credential': ('config', 'https://user:fixture-value@host.invalid/'),
+            'npm-auth-literal': ('.npmrc', '_authToken=fixture-value'),
+            'credential-assignment': ('config', 'password=fixture-value'),
+        }
+        for category, label, line in cases:
+            location = 'example.conf'
+            if category in inputs:
+                location, text = inputs[category]
+                with self.assertRaises(GitContentRefusal) as caught:
+                    inspect_chunks([b'\n' * (line - 1) + text.encode()], location)
+                error = caught.exception
+            else:
+                error = GitContentRefusal(category, location, line)
+            details = [f'"{location}"']
+            if line is not None:
+                details.append(f'{line}행')
+            if label:
+                details.append(label)
+            suffix = '(' + ', '.join(details) + ')'
+            for as_json in (False, True):
+                with self.subTest(category=category, json=as_json):
+                    output = StringIO()
+                    args = (['--json'] if as_json else []) + ['ordinary', 'list']
+                    with patch.object(cli, 'dispatch', side_effect=error), redirect_stdout(output):
+                        self.assertEqual(cli.main(args, entry=entry), 2)
+                    message = output.getvalue().strip()
+                    self.assertNotIn(synthetic_value, message)
+                    self.assertNotIn('fixture-value', message)
+                    if as_json:
+                        receipt = json.loads(message)
+                        self.assertEqual(receipt['finding'], dict(category=category, location=location, line=line))
+                        message = receipt['message']
+                    self.assertIn(suffix, message)
+                    self.assertNotIn(category, message)
+
     def test_exact_paths_and_template_content(self):
         def screen(path, payload):
             screen_candidate({path: {}}, payload, 'Update', {}, 'test')
@@ -109,6 +164,38 @@ class CredentialTests(unittest.TestCase):
             with self.assertRaises(GitContentRefusal):
                 inspect_chunks([text.encode()], 'settings.env')
 
+    def test_asset_signatures_and_extensions(self):
+        examples = {
+            'logo.PNG': ('PNG', b'\x89PNG\r\n\x1a\n'),
+            'photo.jpeg': ('JPEG', b'\xff\xd8\xff'), 'photo.jpg': ('JPEG', b'\xff\xd8\xff'),
+            'badge.gif': ('GIF', b'GIF89a'), 'old.gif': ('GIF', b'GIF87a'),
+            'cover.webp': ('WebP', b'RIFF1234WEBP'), 'favicon.ico': ('ICO', b'\0\0\1\0'),
+            'font.woff': ('WOFF', b'wOFF'), 'font.woff2': ('WOFF2', b'wOF2'),
+            'font.ttf': ('TTF', b'\0\1\0\0'), 'font.otf': ('OTF', b'OTTO'),
+        }
+        for path, (kind, prefix) in examples.items():
+            with self.subTest(path=path):
+                parts = [prefix[:1], prefix[1:], b'synthetic payload']
+                self.assertEqual(screen_candidate({path: {}}, lambda _: iter(parts), 'Add', {}, 'trial'), {path: kind})
+                with self.assertRaisesRegex(GitContentRefusal, 'uninspectable'):
+                    screen_candidate({path: {}}, lambda _: [b'ordinary text'], 'Add', {}, 'trial')
+        for path in ('file.p12', 'file.pfx', 'file.jks', 'file.keystore'):
+            with self.subTest(path=path), self.assertRaisesRegex(GitContentRefusal, 'git-protected-path'):
+                screen_candidate({path: {}}, lambda _: self.fail('opened protected keystore'), 'Add', {}, 'trial')
+        for path in ('file.zip', 'file.DB', 'app.exe', 'file.pdf'):
+            with self.subTest(path=path), self.assertRaisesRegex(GitContentRefusal, 'uninspectable'):
+                screen_candidate({path: {}}, lambda _: [b'plain text'], 'Add', {}, 'trial')
+        for path, data, code in (
+            ('bad.webp', b'RIFF1234WAVE', 'uninspectable'),
+            ('logo.png', b'PASSWORD=synthetic', 'uninspectable'),
+            ('secrets/logo.png', examples['logo.PNG'][1], 'git-protected-path'),
+            ('logo.svg', b'<svg>\npassword=synthetic-value\n</svg>', 'git-credential-blocked'),
+            ('min.js', b'x' * (256 * 1024 + 1), 'uninspectable'),
+        ):
+            with self.subTest(path=path), self.assertRaisesRegex(GitContentRefusal, code):
+                screen_candidate({path: {}}, lambda _: [data], 'Add', {}, 'trial')
+        self.assertEqual(screen_candidate({'min.css': {}}, lambda _: [b'x' * (256 * 1024)], 'Add', {}, 'trial'), {})
+
     def test_uninspectable(self):
         for raw in [b'\xff', b'\x00', b'%PDF-1.7', b'x' * (256*1024+1)]:
             with self.assertRaisesRegex(GitContentRefusal, 'git-content-uninspectable'):
@@ -174,6 +261,95 @@ class GateFixture:
                 self.assertNotIn(self.secret, path.read_bytes(), path.name)
 
 class IntegrationTests(GateFixture, IntegrationFixture, unittest.TestCase):
+    def test_image_and_source_share_a_reviewed_candidate(self):
+        image = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=')
+        (self.root/'other').write_bytes(b'keep staged')
+        self.command('add', 'other')
+        self.record({'logo.png': image, 'report.md': b'updated summary\n'})
+        view = self.candidate()
+        self.assertEqual(view['unchecked_assets'], {'logo.png': 'PNG'})
+        self.assertIn('내용 검사 안 함: "logo.png" (PNG)', human(view))
+        diff = base64.b64decode(view['diff_base64'])
+        self.assertNotIn(b'IHDR', diff)
+        self.assertIn(b'updated summary', diff)
+        self.assertEqual(view, self.integration.preview('candidate'))
+        self.assertEqual(self.integration.apply('candidate', receipt=view['receipt'], statement='apply')['state'], 'completed')
+        self.assertEqual(self.command('show','HEAD:logo.png'), image)
+        self.assertEqual(self.command('diff','--cached','--name-only'), b'other\n')
+        self.assertEqual(self.integration.preview('candidate')['unchecked_assets'], {'logo.png':'PNG'})
+
+    def test_deleted_keystore_hides_old_plaintext(self):
+        self.secret = b'synthetic private contents'
+        self.cleanup_change(self.secret, None, 'project.p12')
+
+    def test_deleted_env_exact_copy_as_image_stops_before_writes(self):
+        image = b'\x89PNG\r\n\x1a\n' + b'synthetic private data'
+        (self.root/'.env').write_bytes(image)
+        self.command('add', '.env')
+        self.command('commit', '-m', 'Synthetic protected file')
+        self.record({'.env': None, 'logo.png': image})
+        before = self.state()
+        with self.assertRaisesRegex(GitContentRefusal, 'git-protected-copy'):
+            self.candidate()
+        after = self.state()
+        self.assertEqual(before[:3], after[:3])  # HEAD, index and Git objects
+        self.assertFalse((self.scratch/'candidate').exists())
+        self.assertIsNone(self.store.head(key('candidate')))
+        self.assertIsNone(self.store.head(PENDING))
+        for relative in set(after[3]) - set(before[3]):
+            audit_path = self.scratch/relative
+            if audit_path.is_file():
+                self.assertNotIn(image, audit_path.read_bytes())
+
+    def test_old_keystore_deletion_requires_new_approval(self):
+        self.assert_old_deletion_refused('project.p12', b'Colvia Git review v3\n')
+
+    def test_ordinary_image_move_keeps_the_review_note(self):
+        image = b'GIF89a' + b'synthetic image bytes'
+        (self.root/'old.gif').write_bytes(image)
+        self.command('add', 'old.gif')
+        self.command('commit', '-m', 'Synthetic image')
+        self.record({'old.gif': None, 'new.gif': image})
+        view = self.candidate()
+        self.assertEqual(view['unchecked_assets'], {'new.gif': 'GIF'})
+        diff = base64.b64decode(view['diff_base64'])
+        self.assertNotIn(image, diff)
+        self.assertIn(b'"old.gif"', diff)
+        self.assertIn(b'file deleted', diff)
+
+    def test_directory_replaced_by_asset_keeps_child_deletion_visible(self):
+        from types import SimpleNamespace
+        parent = self.root/'logo.png'
+        parent.mkdir()
+        child = parent/'note.txt'
+        child.write_text('old note')
+        self.command('add', 'logo.png')
+        self.command('commit', '-m', 'Original folder')
+        old_tree = self.command('rev-parse', 'HEAD^{tree}').decode().strip()
+        head = self.port.tree(old_tree, 'sha1')
+        child.unlink()
+        parent.rmdir()
+        image = b'\x89PNG\r\n\x1a\n' + b'synthetic image bytes'
+        parent.write_bytes(image)
+        self.command('add', 'logo.png')
+        self.command('commit', '-m', 'Replacement image')
+        new_tree = self.command('rev-parse', 'HEAD^{tree}').decode().strip()
+        after = {'logo.png': SimpleNamespace(native=b'logo.png'), 'logo.png/note.txt': None}
+        diff = self.port.review_diff(old_tree, new_tree, head, after, lambda _: [image], {'logo.png': 'PNG'})
+        self.assertIn(b'"logo.png/note.txt"', diff)
+        self.assertIn(b'file deleted', diff)
+        self.assertNotIn(image, diff)
+
+    def test_old_image_preview_requires_new_approval(self):
+        self.record({'logo.png': b'\x89PNG\r\n\x1a\n' + b'synthetic content'})
+        with patch.object(self.port, 'review_diff', return_value=b'Colvia Git review v3\n'), patch.object(self.integration, '_screen_plan'):
+            old = self.candidate()
+        for call in (lambda: self.integration.preview('candidate'),
+                     lambda: self.integration.apply('candidate', receipt=old['receipt'], statement='apply')):
+            with self.assertRaisesRegex(RecordError, 'git-credential-new-preview-required'):
+                call()
+        self.assertIsNone(self.store.head(PENDING))
+
     def test_npm_literal_blocks_before_objects(self):
         self.record({'.npmrc': b'//registry.invalid/:_authToken=unstructured-synthetic'})
         self.check_refusal('Update', '.npmrc')
@@ -327,7 +503,7 @@ class IntegrationTests(GateFixture, IntegrationFixture, unittest.TestCase):
 
     def test_legacy_prepared_secret_cannot_be_shown_or_applied(self):
         self.record({'report.md':self.secret})
-        with patch.object(self.integration, '_screen'), patch.object(self.integration, '_screen_plan'), \
+        with patch.object(self.integration, '_screen', return_value={}), patch.object(self.integration, '_screen_plan'), \
              patch.object(self.port, 'review_diff', return_value=b'diff --git a/report.md b/report.md\n+' + self.secret):
             old = self.candidate()
         for call in [lambda: self.integration.preview('candidate'),
@@ -343,7 +519,7 @@ class IntegrationTests(GateFixture, IntegrationFixture, unittest.TestCase):
         def interrupted(phase):
             if phase == 'ref-observed':
                 raise RuntimeError('synthetic interruption')
-        with patch.object(self.integration, '_screen'), patch.object(self.integration, '_screen_plan'):
+        with patch.object(self.integration, '_screen', return_value={}), patch.object(self.integration, '_screen_plan'):
             view = self.candidate(self.secret.decode())
             with self.assertRaisesRegex(RuntimeError, 'synthetic interruption'):
                 self.integration.apply('candidate', receipt=view['receipt'], statement='apply', event=interrupted)
@@ -357,6 +533,15 @@ class IntegrationTests(GateFixture, IntegrationFixture, unittest.TestCase):
 
 
 class WindowsGateTests(GateFixture, WindowsFixture, unittest.TestCase):
+    def test_font_with_text_shows_unchecked_asset(self):
+        font = b'wOF2' + b'synthetic font payload'
+        self.record({'label.woff2': font, 'report.md': b'plain summary'})
+        view = self.candidate()
+        self.assertEqual(view['unchecked_assets'], {'label.woff2': 'WOFF2'})
+        self.assertIn('내용 검사 안 함: "label.woff2" (WOFF2)', human(view))
+        self.assertNotIn(font, base64.b64decode(view['diff_base64']))
+
+
     def test_last_file_is_refused_before_effect(self):
         self.record({'report.md': b'clean first', 'zz.txt': self.secret})
         self.check_refusal('Update', 'zz.txt')

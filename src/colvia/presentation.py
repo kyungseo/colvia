@@ -19,6 +19,24 @@ def display_path(value):
     return '"'+_printable(value)+'"'
 
 
+_CREDENTIAL_LABELS = {
+    'key-or-token': '키·토큰',
+    'url-credential': 'URL에 넣은 비밀번호',
+    'npm-auth-literal': '.npmrc 인증값',
+    'credential-assignment': '설정에 직접 적은 비밀값',
+}
+
+
+def credential_finding_detail(finding):
+    parts = [display_path(finding['location'])]
+    if finding['line'] is not None:
+        parts.append(f"{finding['line']}행")
+    label = _CREDENTIAL_LABELS.get(finding['category'])
+    if label:
+        parts.append(label)
+    return ', '.join(parts)
+
+
 _RELATION_STATES = {
     'planned':'계획', 'approved':'범위 승인됨', 'active':'작업 중', 'review':'결과 검토 중',
     'completed':'수락 완료', 'open':'검토 후보', 'dismissed':'후보에서 제외됨',
@@ -78,10 +96,16 @@ def human(value):
         if state=='not-applied':return 'Git에 반영되지 않은 것을 확인했습니다. 현재 변경은 그대로 남아 있습니다.'
         if state=='prepared':
             import base64
-            raw=base64.b64decode(value['diff_base64']);patch=raw.decode('utf-8','backslashreplace')
+            from .credentials import asset_review_prefix
+            raw = base64.b64decode(value['diff_base64'])
+            assets = value.get('unchecked_assets', {})
+            notes = [f'내용 검사 안 함: {display_path(path)} ({kind})' for path, kind in assets.items()]
+            if assets:
+                raw = raw.removeprefix(asset_review_prefix(assets))
+            patch=raw.decode('utf-8','backslashreplace')
             patch=''.join(c if c in '\n\t' or c.isprintable() else repr(c)[1:-1] for c in patch)
             return '\n'.join(['Git에 기록할 변경: '+', '.join(value['files']),'대상 브랜치: '+value['branch'],
-                '메시지: '+value['message'],patch,value['question']])
+                '메시지: '+value['message'],*notes,patch,value['question']])
         return 'Git 반영이 중간 상태로 남아 있습니다. 현재 Git 상태를 확인한 뒤 복구 여부를 결정해 주세요.'
     if 'delivery' in value:
         if 'notification' in value:return {'emitted':'결과 알림을 보냈습니다.','failed':'결과는 보존돼 있지만 알림을 보내지 못했습니다.','unknown':'결과는 보존돼 있습니다. 알림 전송 여부는 확인이 필요합니다.'}[value['notification']]
@@ -304,7 +328,7 @@ def failure(code):
         'git-credential-blocked':'Git에 기록할 내용에서 자격증명 형태의 값을 찾았습니다. 설정은 환경변수 참조로 바꾸고 수정본을 제출·수락한 뒤 다시 준비하세요. 커밋 메시지에 있으면 메시지를 수정하세요.',
         'git-protected-path':'비밀 설정용 경로의 파일은 Git에 추가하거나 수정할 수 없습니다. 실제 값은 로컬에 두고 공유할 설정 예시는 별도 파일로 준비하세요.',
         'git-protected-copy':'교체하거나 삭제하는 비밀 설정 파일의 이전 내용이 다른 반영 대상에 그대로 들어 있습니다. 공유할 파일에서 실제 값을 제거한 뒤 다시 제출하세요.',
-        'git-content-uninspectable':'파일의 텍스트를 검사할 수 없어 Git 반영을 멈췄습니다. 검사 가능한 텍스트 파일을 별도로 선택하세요.',
+        'git-content-uninspectable':'이 파일의 형식이나 내용은 Colvia에서 검사할 수 없습니다. 이미지나 글꼴이라면 확장자가 실제 형식과 맞는지 확인하세요. 지원하지 않는 파일을 제외하려면 그 파일을 포함하지 않는 Work만 골라 반영하세요. 파일 자체도 꼭 커밋해야 한다면 민감한 내용이 없는지 직접 검토한 뒤 별도로 커밋하세요.',
         'git-credential-new-preview-required':'이전 Git 미리보기에는 그대로 표시할 수 없는 내용이 있습니다. 새 Git 반영 미리보기를 준비하세요.',
         'uninstall-transition-pending':'Colvia 제거 또는 재설치가 진행 중입니다. 기존 기록은 보존되며 설치 스크립트에서 이어갈 수 있습니다.',
         'uninstall-not-complete':'이전 제거가 완료되지 않았습니다. 같은 제거 작업을 재개해 주세요.',

@@ -334,14 +334,12 @@ def main(argv=None,*,entry=None):
         code=exc.code if isinstance(exc,RecordError) else ('invalid-command-input' if isinstance(exc,(ValueError,TypeError)) else 'access-denied' if isinstance(exc,PermissionError) else 'workspace-access-unavailable')
         if entry is not None and args.group=='execution' and args.action=='readiness' and isinstance(exc,OSError) and not isinstance(exc,PermissionError):code='document-assets-inspection-failed'
         if not isinstance(exc,(RecordError,PermissionError)) and ((args.group=='execution' and args.action in ('start','resolve')) or (args.group=='delivery' and args.action in ('run','finish-execution'))):code=args.group+'-outcome-unknown'
-        from .presentation import display_path
+        from .presentation import credential_finding_detail, display_path
         value=dict(error=code,message=failure(code))
         from .credentials import GitContentRefusal
         if isinstance(exc, GitContentRefusal):
             value['finding'] = exc.finding
-            finding = exc.finding
-            line = f", {finding['line']}행" if finding['line'] is not None else ''
-            value['message'] += f" ({display_path(finding['location'])}{line}, {finding['category']})"
+            value['message'] += f" ({credential_finding_detail(exc.finding)})"
         for name in ('directory','workspace','preparation_state'):
             if getattr(exc,name,None) is not None:value[name]=getattr(exc,name)
         if value.get('directory') is not None:

@@ -63,6 +63,8 @@ class BundleTests(unittest.TestCase):
         from urllib.parse import unquote,urlsplit
         allowed_install_links = {
             'https://colvia.github.io/downloads/',
+            'https://colvia.github.io/downloads/#en',
+            'https://colvia.github.io/downloads/#ko',
             'https://colvia.github.io/downloads/preview/macos-arm64/install.sh',
             'https://colvia.github.io/downloads/preview/windows-x64/install.ps1',
             'https://colvia.github.io/downloads/preview/windows-arm64/install.ps1',

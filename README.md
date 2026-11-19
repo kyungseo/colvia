@@ -13,6 +13,8 @@
 
 [Install and connect a project](manual/en/install.md) · [Follow along](manual/en/tutorial.md) · [User guide](manual/en/README.md) · [Colvia at a glance](manual/en/overview.md) · [Supported environments](manual/en/reference.md#environments) · [Release notes and downloads](https://github.com/colvia/downloads/releases)
 
+Current release · [Colvia Preview v0.1.1](https://github.com/colvia/downloads/releases/tag/v0.1.1)
+
 </div>
 
 Approve the scope proposed by Codex or Claude Code, then review the result and decide whether to accept it. Colvia keeps approvals and submissions on your device. Open the same project to pick up the work in a new chat or with another agent.
@@ -26,7 +28,7 @@ You don’t need to know how to code to get started. Once Colvia is installed, y
 
 Install Codex or Claude Code and sign in before starting.
 
-1. In the operating-system account that will use Colvia, copy and run the command for your platform from the [official installation page](https://colvia.github.io/downloads/). Colvia downloads and verifies the release files and prepares its own Python runtime. On Windows, open regular PowerShell from the Start menu as a standard user. When setup completes, [check the installed version](manual/en/install.md#check-installed-version).
+1. In the operating-system account that will use Colvia, copy and run the command for your platform from the [official installation page](https://colvia.github.io/downloads/#en). Colvia downloads and verifies the release files and prepares its own Python runtime. On Windows, open regular PowerShell from the Start menu as a standard user. When setup completes, [check the installed version](manual/en/install.md#check-installed-version).
 2. Open the project folder in Codex or Claude Code. If it uses Git and you haven’t registered it with Colvia yet, [ask the agent to register Git](manual/en/git.md#git-register) first and open the repository root. Then ask, “Connect this folder to Colvia.” Review the folder, the files Colvia will add, and where it will keep the records. Approve the connection if the preview looks right.
 3. Once the folder is connected, tell the agent what you want to do here in the current chat. In an empty folder, describe what you want to do, such as writing a report or building a web app, in a sentence or two. You can also connect a project you already work in. The agent uses any goal you’ve shared, along with the existing README and project rules, to propose a plan.
 
@@ -89,6 +91,21 @@ The agent can compare current files with the accepted submission and show which 
 ## Git, backups, and moving folders
 
 - **Put an accepted result into Git.** Colvia keeps the submission you accepted, so you can compare it with your current files later without making a work-in-progress (WIP) commit. Review the changes to commit and the current staging area, then approve the integration separately. Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result. [Put an accepted result into Git](manual/en/git.md#git-integration)
+
+### Check for credentials before a Git commit · Next Preview
+
+When you prepare a commit through Colvia, it checks the changes on your device. If it recognizes a hardcoded API key or token, or finds a protected file such as `.env` among the additions or edits, it stops before writing Git objects for those changes. The message points to the location without displaying the value.
+
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/credential-en-dark.png"><img src="manual/assets/gallery/credential-en-light.png" width="640" alt="Colvia checks proposed changes locally, including edits to .env, an AI API key in source code, and a token in .npmrc. A blocked candidate reports a location without revealing the value."></picture>
+</p>
+
+Supported images and fonts can be included when the filename extension matches the file signature. Colvia lists their paths and formats in the preview and skips credential checks inside those files. If you need to commit other binary files, such as PDFs or archives, review their contents yourself and commit them separately with Git.
+
+If a key is hardcoded, change the code to read an environment variable. Leave protected files out of the proposed changes. After correcting a file, submit and accept the revision, then prepare the commit again. Once the check passes, review the candidate and approve the commit separately. [What Colvia checks and how to resolve a finding](manual/en/git.md#git-credential-check)
+
+### Backups and moving folders
+
 - **Back up and restore records.** Export Work records, approvals, submitted contents, and settings. Backups include the file contents Colvia kept before changes and at submission, so store them as you would your project data. Back up project files separately. When restoring Colvia records, check both the Work and its retained contents. [Back up and restore records](manual/en/records.md#backup)
 - **Move a project folder.** After moving a folder on the same local volume, ask your agent, “I moved this project folder. Help me continue with its existing Colvia records.” Review the old and new paths in the preview. Once Colvia verifies it is the same folder, approve updating the connection. See the guide for verified environments and connection requirements. [Moving a folder and keeping its records](manual/en/records.md#move)
 

@@ -10,7 +10,7 @@ import json
 import hashlib,os,stat
 from ..adapters.git import read_file,_absolute
 from ..codec import RecordError,canonical_bytes,decode_canonical,require
-from ..credentials import GitContentRefusal, REVIEW_HEADER, inspect_chunks, protected_git_path, screen_candidate
+from ..credentials import GitContentRefusal, asset_review_prefix, inspect_chunks, opaque_review_path, protected_git_path, screen_candidate
 from ..git_index import Entry,Index,parse,emit,integrate,LIMIT
 from .observation_port import location,selected
 from ..storage.sqlite import _token
@@ -169,7 +169,7 @@ class GitCandidate:
             if previous is None:
                 continue
             oid = previous.oid.hex()
-            if protected_git_path(path) or previous.mode not in (0o100644, 0o100755):
+            if protected_git_path(path) or opaque_review_path(path) or previous.mode not in (0o100644, 0o100755):
                 protected.append(path)
                 continue
             size = int(self.read_objects(['cat-file', '-s', oid], limit=64))
@@ -183,21 +183,23 @@ class GitCandidate:
                 protected.append(path)
         return protected
 
-    def review_diff(self, oldtree, tree, head, after, body):
+    def review_diff(self, oldtree, tree, head, after, body, assets=None):
+        assets = assets or {}
         limit = 16*1024*1024
         protected = self.protected_old_paths(sorted(after), head)
         # Only non-sensitive preimages are eligible for a native patch.
         # A literal exclude also covers deleted paths and avoids rename pairs.
         # Excluding an old file also excludes additions beneath its former
         # pathname. Display each of those replacements explicitly.
-        hidden = set(protected)
+        hidden = set(protected) | set(assets)
         descendants = [p for p in after if any(str(parent) in hidden for parent in PurePosixPath(p).parents)]
-        excludes = [':(top,exclude,literal)' + head[p].native.decode('utf-8') for p in protected]
+        excludes = [':(top,exclude,literal)' + (head.get(p) or after[p]).native.decode('utf-8') for p in sorted(hidden)]
         args = ['diff-tree', '--no-commit-id', '--no-ext-diff', '--no-textconv',
                 '--no-renames', '--no-color', '--text', '-r', '-p', oldtree, tree, '--', *excludes]
-        patch = bytearray(REVIEW_HEADER)
+        patch = bytearray(asset_review_prefix(assets))
+        require(len(patch) < limit, 'git-review-output-limit')
         patch.extend(self.read_objects(args, limit - len(patch)))
-        for path in [*protected, *descendants]:
+        for path in sorted((set(protected) | set(descendants)) - set(assets)):
             note = 'previous content withheld; ' if path in hidden else ''
             patch.extend(('\n' + json.dumps(path, ensure_ascii=False) + ' — ' + note).encode())
             entry = after[path]
@@ -223,10 +225,10 @@ class GitCandidate:
 
     def prepare(self, operation, changes, body, *, message, identity):
         validate_candidate_input(message, identity)
-        screen_candidate(changes, body, message, identity, operation)
-        return self._prepare_screened(operation, changes, body, message=message, identity=identity)
+        assets = screen_candidate(changes, body, message, identity, operation)
+        return self._prepare_screened(operation, changes, body, message=message, identity=identity, assets=assets)
 
-    def _prepare_screened(self,operation,changes,body,*,message,identity):
+    def _prepare_screened(self,operation,changes,body,*,message,identity,assets):
         """Called with pinned body references already inspected before taking the effect lock."""
         require(self.locked,'git-integration-lock-required');_token(operation)
         validate_candidate_input(message, identity)
@@ -272,7 +274,7 @@ class GitCandidate:
         # An empty tree is an object, not a ref. This is safe for an unborn HEAD.
         oldtree=context['ref'] or self.command(['hash-object','-t','tree','-w','--stdin']).stdout.strip().decode()
         require(not context['ref'] or tree!=self.command(['rev-parse',context['ref']+'^{tree}']).stdout.strip().decode(),'git-no-candidate-change')
-        patch=self.review_diff(oldtree, tree, head, after, body)
+        patch=self.review_diff(oldtree, tree, head, after, body, assets)
         self.files.create(area/'diff',patch)
         now,_,_=self.snapshot(paths);require(now==context,'git-candidate-context-changed')
         manifest=dict(operation=operation,context=context,paths=paths,new=commit,tree=tree,i1=digest(i1),diff=digest(patch),message=message,author=identity)
