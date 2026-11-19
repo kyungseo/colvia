@@ -298,7 +298,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [Shorter Colvia startup guidance in new chats](product-evidence-and-followups.md#p1-short-guide-at-the-start-of-a-new-chat) — P1. Read a short guide at entry and load the submission or recovery procedure when needed. [Selected implementation and verification](FEAT-20261119-001-startup-guide.md).
 
-- [Add paths to the same Work](product-evidence-and-followups.md#p1-add-paths-to-the-same-work) — P1. When investigation reveals more files to edit, approve the added paths and checks and continue the same Work.
+- [Add paths to the same Work](product-evidence-and-followups.md#p1-add-paths-to-the-same-work) — P1. [Approve existing edits and named creations together](FEAT-20261119-003-scope-additions.md).
 
 - [Pre-submission progress notes and resuming in a new chat](product-evidence-and-followups.md#p1-record-progress-before-submission) — P1. [First-submission implementation and evidence](FEAT-20261119-002-pre-submission-progress.md).
 

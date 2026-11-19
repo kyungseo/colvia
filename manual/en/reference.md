@@ -83,6 +83,7 @@ Your agent normally runs these commands for you. To run one yourself, use `./col
 | `ordinary list` | Lists the project’s Works. |
 | `ordinary view`, `ordinary review`, `ordinary content` | Shows a Work’s state, a submission awaiting review, and retained contents. |
 | `ordinary progress` | Save a note before the first submission. |
+| `ordinary scope-preview` · `ordinary scope-apply` | [Add files before the first submission](work.md#scope-change) |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | Moves a Work from a recorded plan through scope approval, submission, acceptance, revision requests and archiving. |
 | `candidate list`, `candidate save`, `followup` | Shows and records candidates for later work and a Work’s follow-up choice. |
 | `composition` | Names direct child Works under a parent Work. |
@@ -92,6 +93,13 @@ Your agent normally runs these commands for you. To run one yourself, use `./col
 | `backup status`, `backup export` | Shows backup status and exports records. |
 | `execution readiness` | Inspects the document execution configuration. Document execution is disabled in this Preview. |
 | `manage` | Calls the manager of the same installation. |
+
+Use the same paths, reason and checks for preview and apply. Supply the receipt and the user’s approval statement only on apply.
+
+```text
+ordinary scope-preview WORK_ID --edit table.md --create appendix.md --reason "Appendix" --check "Sources"
+ordinary scope-apply WORK_ID --edit table.md --create appendix.md --reason "Appendix" --check "Sources" --receipt RECEIPT --statement "Approved"
+```
 
 Before the first submission, use the `progress_receipt` from `--json ordinary view WORK_ID`. If `first_project_note` is true, explain the older-version limit before saving. Each field is one line of up to 2,048 characters. Up to the first 128 approved paths are compared. Excess paths and unreadable files are reported as unavailable.
 

@@ -74,7 +74,7 @@ Q12,Other,What are your customer service hours?
 
    Ask, “Show me just the sentences that differ from the last submission.” Ask the agent to submit again after you’ve reviewed the changes. If the new submission looks right, say “I accept this submission.” Check that Colvia recorded the accepted submission and that the original CSV is still there.
 
-If Colvia blocks a submission, ask which file caused it and why. Existing edits stay in the work folder. Review and resolve the changes before submitting again. If you need to edit files outside the approved scope, approve those changes in a separate Work. [Guidance for reviewing and revising work](work.md#review)
+If Colvia blocks a submission, ask which file caused it and why. Existing edits stay in the work folder. Review and resolve the changes before submitting again. Ask for a [scope preview](work.md#scope-change) before touching additional files. If a file has already changed, inspect the edit and decide whether to keep it separately or restore it yourself before requesting a new preview. [Guidance for reviewing and revising work](work.md#review)
 
 ## Team to-do web app
 
@@ -90,7 +90,7 @@ If the agent asks where you’ll run it and how you’ll check it, try:
 
 The agent might propose a small Node.js server and a browser page. If you choose Node.js, check the environment with `node --version` and `npm --version`. Ask the agent to record the run and test commands and the browser address in the project README.
 
-Check the plan for the server, browser page, list storage, test files, and completion criteria. If it fits the first version you want, approve the scope and ask the agent to build it. If something else comes up later, such as adding setup instructions or a configuration file, ask for a separate Work that explains the extra files, why they’re needed, and how to check them.
+Check the plan for the server, browser page, list storage, test files, and completion criteria. If it fits the first version you want, approve the scope and ask the agent to build it. If the web app needs updated setup instructions and a new configuration file, ask for one scope preview before the first submission. Review the paths, reason and checks, then approve both and review them with the app.
 
 ### Run the app and review the result
 

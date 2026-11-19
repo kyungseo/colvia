@@ -83,6 +83,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `ordinary list` | 프로젝트의 Work 목록을 봅니다. |
 | `ordinary view`, `ordinary review`, `ordinary content` | Work의 상태, 검토할 제출본, 보관된 본문을 봅니다. |
 | `ordinary progress` | 첫 제출 전에 진행 메모를 저장합니다. |
+| `ordinary scope-preview` · `ordinary scope-apply` | [첫 제출 전 파일 추가](work.md#scope-change) |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | 계획 기록부터 범위 승인, 제출, 수락, 수정 요청, 보관까지 Work를 진행합니다. |
 | `candidate list`, `candidate save`, `followup` | 다음에 할 일의 후보와 Work의 후속 선택을 보고 기록합니다. |
 | `composition` | 상위 Work에 바로 아래 하위 Work를 지정합니다. |
@@ -92,6 +93,13 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `backup status`, `backup export` | 기록 백업 상태를 보고 내보냅니다. |
 | `execution readiness` | 문서 실행 설정을 확인합니다. 이 Preview에서 문서 실행 기능은 비활성입니다. |
 | `manage` | 같은 설치본의 관리 도구를 호출합니다. |
+
+미리보기와 승인 적용 모두 같은 파일·이유·검사를 지정합니다. 적용할 때만 확인값과 사용자 승인 문구가 필요합니다.
+
+```text
+ordinary scope-preview WORK_ID --edit table.md --create appendix.md --reason "Appendix" --check "Sources"
+ordinary scope-apply WORK_ID --edit table.md --create appendix.md --reason "Appendix" --check "Sources" --receipt RECEIPT --statement "Approved"
+```
 
 첫 제출 전 메모는 `--json ordinary view WORK_ID`에서 받은 `progress_receipt`를 사용합니다. `first_project_note`가 참이면 첫 저장 전 구버전 호환 조건을 알려 주세요. 각 항목은 최대 2,048자의 한 줄입니다. 승인 경로 중 앞의 128개 파일까지 비교하며 한도 밖의 경로나 읽을 수 없는 파일은 확인 불가로 표시합니다.
 

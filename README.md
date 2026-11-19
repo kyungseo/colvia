@@ -53,8 +53,10 @@ Here’s what you can ask when you have a file of customer inquiries.
 
 1. **Approve the scope.** The agent proposes source material, files to create or change, and checks for the result. Colvia records which plan you approved. As soon as you save a plan, Colvia keeps the existing contents of the files in the plan and includes them in backups, even before you approve the plan. List only the files the work needs.
 2. **Review the submission and checks.** The agent submits the report and tells you which checks passed, failed, or could not be run. Colvia checks scope at submission and blocks results that include changes outside it. If Colvia blocks a submission, the changes already made stay in the work folder. Check those changes and resolve the issue before submitting again.
-3. **Accept the result or ask for changes.** Colvia records which submission you accepted. If the approval is still valid and the requested changes fit the approved scope, continue in the same Work. If more files need to change, approve a separate Work covering the extra files, the reason, and any new checks.
+3. **Accept the result or ask for changes.** Colvia records which submission you accepted. If the approval is still valid and the requested changes fit the approved scope, continue in the same Work.
 4. **Record the next step when it helps.** For example, record a decision to draft sample replies for common inquiries. You can find that decision with the report in a new chat.
+
+Before the first submission, you can [approve extra files in the same Work](manual/en/work.md#scope-change) when they serve the same goal. For example, approve editing a table and creating an appendix together, then review one submission.
 
 Colvia keeps the goal, file scope, checks, submission, and decisions together in a **Work**, a single recorded task. You can ask short questions and look up files within the access already granted.
 

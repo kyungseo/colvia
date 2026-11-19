@@ -154,12 +154,32 @@ def human(value):
             value.get('question','이 범위로 진행할까요?')])
     if state=='approved':return '이 범위로 진행하겠습니다. 검사가 끝나면 검토할 결과를 보여드리겠습니다.'
     if state=='active':
+        if value.get('scope_preview'):
+            lines = [title, '기존 승인 파일 · '+', '.join(map(_printable,value['scope'])),
+                     '기존 검사 · '+', '.join(map(_printable,value['existing_checks']))]
+            for key,label in [('excludes','기존 제외'),('edit','추가 수정'),('create','추가 생성'),('checks','추가 검사')]:
+                if value[key]:
+                    lines.append(label+' · '+', '.join(map(_printable,value[key])))
+            lines.append('이유 · '+_printable(value['reason']))
+            lines.append('추가 수정 파일의 원문은 기록과 백업에 보관합니다. 생성 경로는 추가 승인할 때 비어 있어야 합니다.')
+            if value['first_scope_addition']:
+                lines.append('적용하면 이전 실행기로 이 프로젝트 기록을 열거나 새 백업을 복원할 수 없습니다.')
+            lines.append('이 파일과 검사를 기존 작업에 추가할까요?')
+            return '\n'.join(lines)
+        if value.get('scope_added'):
+            return '추가 범위를 승인했습니다. 같은 작업에서 이어가세요.'
         if value.get('progress_saved'):
             return '진척을 기록했습니다. 같은 작업에서 이어갈 수 있습니다.'
+        added = [entry for delta in value.get('scope_additions',[]) for entry in delta['edit'] + delta['create']]
+        scope_line = '추가 승인한 파일 · '+', '.join(map(_printable,added)) if added else ''
         if 'progress' in value:
             note=value['progress']
             lines=[title+' — 마지막 중간 메모']
-            if not note['same_approval']:
+            if scope_line:
+                lines.append(scope_line)
+            if note.get('added_after_note'):
+                lines.append('메모 뒤에 승인한 파일 · '+', '.join(map(_printable,note['added_after_note']))+' (메모 당시 비교 기준 없음)')
+            elif not note['same_approval']:
                 lines.append('이전 승인 범위에서 남긴 메모입니다. 현재 승인 계획을 확인하세요.')
             for field,label in [('done','한 일'),('checked','확인한 것'),('remaining','남은 일'),('next_action','다음 행동')]:
                 lines.append(label+' · '+_printable(note[field]))
@@ -169,6 +189,8 @@ def human(value):
                 lines.append('추가 경로 확인 불가 · '+str(note['additional_paths_unavailable']))
             return '\n'.join(lines)
         context=value.get('rework')
+        if not context and scope_line:
+            return title+' — '+scope_line+'\n기존 파일과 추가 파일을 함께 검사하고 한 번에 제출하세요.'
         if not context:return '작업을 진행할 수 있습니다. 수정과 검사가 끝나면 결과를 제출해 주세요.'
         lines=[title+' — 수정 중입니다.','승인한 수정: '+context['approved_request']]
         differences=context.get('differences',{})
@@ -198,7 +220,8 @@ def human(value):
     if 'operation' in value and 'recorded' in value:return value['message']
     if 'before' in value and 'after' in value:
         lines=[value['title']+' — '+value['path']]
-        for key,label in (('before','작업 전'),('after','제출한 내용')):
+        before_label = '추가 승인 시점' if value.get('before_basis') == 'absent-at-additional-approval' else '작업 전'
+        for key,label in (('before',before_label),('after','제출한 내용')):
             body=value[key];lines.append(label+':')
             lines.append('파일 없음' if not body['exists'] else body['text'] if body['text'] is not None else '본문을 보존했습니다. 이 화면에서는 크기 또는 파일 형식 때문에 표시하지 않습니다.')
         return '\n'.join(lines)
@@ -306,6 +329,17 @@ MESSAGES={
  'execution-qualified-runtime-required':'이 소스 경로에는 검증된 실행환경이 아직 연결되지 않았습니다. 설치본 검증 후 사용할 수 있습니다.',
  'invalid-command-input':'입력한 경로나 옵션 형식을 확인해 주세요. 작업 상태는 상태 조회로 확인할 수 있습니다.',
  'invalid-git-tree':'Git 파일 목록을 해석할 수 없습니다. Git 상태를 확인한 뒤 이어가 주세요.',
+ 'scope-primary-workspace-only':'격리 작업 폴더에서는 범위를 확장할 수 없습니다. 원래 계획을 확인하세요.',
+ 'scope-first-submission-only':'첫 제출 전인 진행 중 일반 작업에서만 파일을 추가할 수 있습니다.',
+ 'scope-preview-stale':'작업 또는 경로가 바뀌었습니다. 추가할 범위를 다시 확인하세요.',
+ 'scope-original-changed':'기존 파일이 처음 상태와 달라 추가하지 않았습니다. 현재 변경을 보존하고 별도로 검토하세요.',
+ 'scope-original-unavailable':'처음에 관찰한 일반 파일인지 확인할 수 없습니다. 이미 생긴 파일은 소급 승인할 수 없습니다.',
+ 'scope-create-occupied':'생성 경로가 이미 사용 중이거나 기존 기록과 겹칩니다. 다른 빈 경로를 선택하세요.',
+ 'scope-parent-uncertain':'기존 상위 폴더와 경로 표기를 확인하세요.',
+ 'scope-path-overlap':'기존 범위 또는 추가하려는 다른 경로와 겹칩니다.',
+ 'scope-protected-path':'보호·제외 경로는 추가할 수 없습니다.',
+ 'scope-history-mismatch':'이전 승인과 추가 승인 기록이 일치하지 않습니다.',
+ 'scope-original-conflict':'생성 경로가 최초 파일 기록과 겹칩니다.',
  'progress-view-stale':'작업이나 메모가 바뀌었습니다. 현재 작업을 다시 열어 내용을 확인하세요.',
  'progress-first-submission-only':'첫 제출 전인 진행 중 일반 작업에서만 중간 메모를 남길 수 있습니다.',
  'progress-work-mismatch':'이 메모가 현재 작업의 기록과 일치하지 않습니다. 작업과 기록 위치를 확인하세요.',

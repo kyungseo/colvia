@@ -70,7 +70,7 @@ You can archive a Work once it is accepted. Archiving does not delete records or
 
 On an active ordinary Work, say “Save our progress for tomorrow.” The agent records what it did, what it checked, what remains and what to do next. If you just say “Let's wrap up,” it asks whether to save. Saving leaves the Work active.
 
-In a new chat, say “Pick up where we left off.” The agent reads the note and approved scope, then compares the files with their state when the note was saved. If the note says to check a source and the report has since changed, inspect the report first. Unavailable comparisons are shown separately. Checks mentioned in a note do not count as a submission's check report. After a submission is sent back, resume from its revision request. A Work that returns to the same approved plan can use its earlier note. If the approval has changed, read the note as history and check the current plan.
+In a new chat, say “Pick up where we left off.” The agent reads the note and approved scope, then compares the files with their state when the note was saved. If the note says to check a source and the report has since changed, inspect the report first. Unavailable comparisons are shown separately. Checks mentioned in a note do not count as a submission's check report. After a submission is sent back, resume from its revision request. A Work that returns to the same approved plan can use its earlier note. After a file addition, the note still compares the paths it observed. Newly approved files have no comparison until you save another note.
 
 Once the first note is saved, this project's records and subsequent backups require a version that supports notes. If you might return to v0.2.0, keep a separate [backup](records.md#backup) before saving that first note.
 
@@ -100,7 +100,11 @@ You can review and accept such a revision in the workspace where you made it. Ap
 
 ### When files outside the approved scope are needed
 
-If implementation uncovers changes to files outside the approved scope, preserve the existing work and checks. Ask for approval of the additional files, the reason and any new checks, and record that scope as a separate Work before editing those files.
+Before editing, tell the agent “Show me what it would take to update the table and add an appendix to this proposal.” On an active ordinary Work before its first submission, the agent shows the files to edit or create, the reason and any extra checks. Approve that proposal to add both files. The original approval, edits and progress note stay with the Work. Review and accept the proposal and appendix in one submission.
+
+An existing file must still match the original observation. Colvia saves its original contents on approval, including in subsequent backups. A new file must have an exact unused path in an existing folder, both at preview and when the approval is recorded. If it was already created, approval cannot be backdated. Use the primary work folder for this operation. If the path is occupied, protected, ignored or ambiguous, review the indicated path before continuing. A different goal or a change after the first submission uses the existing follow-up or revision workflow.
+
+Once you approve the first addition in a project, its records and future backups require a version that supports scope additions. If you need to return to an earlier version, keep a [backup](records.md#backup) before approval.
 
 <a id="follow-up" name="follow-up"></a>
 

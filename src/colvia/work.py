@@ -335,6 +335,11 @@ class WorkService:
     def view(self,work):
         ref,head=self._head(work,same_workspace=False);plan=self._object(link(head,'plan'))
         value=dict(work=work,title=head.payload['title'],state=head.payload['phase'],archived=head.payload['archived'],scope=plan.payload['scope'],checks=plan.payload['checks'])
+        from .scope_addition import history
+        amendments = history(head, self.store.load)
+        if amendments:
+            value['scope_additions'] = [{k:amendment.payload[k] for k in ('edit','create','checks','reason','statement')}
+                                        for amendment,_ in reversed(amendments)]
         result=link(head,'result')
         if result is not None:
             obj=self._object(result);value.update(summary=obj.payload['summary'],files=obj.payload['changed'],revision=obj.payload['revision'])
@@ -350,7 +355,7 @@ class WorkService:
             value['attribution']=attribution_summary(self,obj)
         from . import progress
         if progress.eligible(head) and head.payload['workspace'] == self.workspace.workspace:
-            value.update(progress.view(self, work, head, plan.payload['scope']))
+            value.update(progress.view(self, work, head, plan.payload['scope'], amendments))
         if head.payload['phase']=='completed':value['reopen_receipt']=self._receipt('reopen',work,ref)
         return value
 
@@ -398,5 +403,8 @@ class WorkService:
                 except UnicodeDecodeError:pass
             return dict(exists=True,size=payload['size'],sha256=payload['sha256'],text=text_value,
                         display='text' if text_value is not None else ('too-large' if large else 'binary'))
+        from .scope_addition import history
+        created_later = any(path in amendment.payload['create'] for amendment,_ in history(result, self.store.load))
         return dict(work=work,title=plan.payload['title'],path=path,revision=result.payload['revision'],
+                    before_basis='absent-at-additional-approval' if created_later else 'original-plan',
                     before=value(link(plan,'before')),after=value(link(result,'after')))
