@@ -1,7 +1,7 @@
 """Project overview from one published root. Reading never observes workspace files."""
 from .codec import RecordError, require
 from .maps import map_get, scan_map
-from . import progress, work_lifecycle
+from . import progress, work_lifecycle, work_dependencies
 from .records import application_registry, head_summary, link
 
 WINDOW = 200
@@ -70,6 +70,9 @@ def _row(key, ref, heads, load, workspace):
             progress.validate_content(note, load)
             if not p.get('next_action') or link(saved, 'active') == ref:
                 action = saved.payload['next_action']
+    gate = work_dependencies.parent_gate(head, heads, load)
+    if gate is not None:
+        item['parent_submission'] = gate
     item.update(group=group, next_action=action)
     return item
 
@@ -99,6 +102,11 @@ def project_status(store, workspace, *, limit=20, cursor=None):
     root = store.root()
     after, offset = _position(cursor, root.ref.sha256)
     budget = ReadBudget(store)
+    try:
+        _, dependencies = work_dependencies._snapshot(store.project,root.heads,budget.load)
+        relation_error = None
+    except RecordError as exc:
+        dependencies, relation_error = [], exc.code
     rows = []
     last = None
     more = False
@@ -112,6 +120,15 @@ def project_status(store, workspace, *, limit=20, cursor=None):
         budget.row = 0
         try:
             row = _row(key, ref, root.heads, budget.load, workspace)
+            if row and dependencies:
+                related = work_dependencies.relations(dependencies,row['work'],root.heads,budget.load,limit=4)
+                if related['items']:
+                    if row['state'] == 'active':
+                        for relation in related['items']:
+                            result = relation['result']
+                            if relation['direction'] == 'requires' and result.get('revision_requested'):
+                                relation['continuing_during_revision'] = True
+                    row['dependencies'] = related
         except RecordError as exc:
             row = dict(work=key[5:], group='unavailable', error=exc.code,
                        next_action='기록을 확인한 뒤 다시 조회하기')
@@ -127,9 +144,18 @@ def project_status(store, workspace, *, limit=20, cursor=None):
         next_cursor = _cursor(root.ref.sha256, last, 0)
     require(store.root().ref == root.ref, 'list-changed')
     counts = {group: sum(item['group'] == group for item in page) for group in GROUPS}
+    work_partial = bool(cursor or next_cursor or counts['unavailable'])
+    dependency_partial = bool(relation_error or any(
+        item.get('parent_submission', {}).get('error') or
+        item.get('dependencies', {}).get('more') or
+        any(peer['peer_unavailable'] or peer['result']['status'] == 'unknown'
+            for peer in item.get('dependencies', {}).get('items', []))
+        for item in page))
     return dict(kind='project-status', project=store.project, root=root.ref.sha256,
                 items=page, counts=counts, next=next_cursor,
-                partial=bool(cursor or next_cursor or counts['unavailable']))
+                dependency_error=relation_error,
+                work_partial=work_partial, dependency_partial=dependency_partial,
+                partial=work_partial or dependency_partial)
 
 
 def render(value, printable):
@@ -142,8 +168,10 @@ def render(value, printable):
     if len(items) > 1:
         counts = value['counts']
         lines.append(' · '.join(f'{label} {counts[group]}건' for group, label in GROUPS.items() if counts[group]))
-    if value['partial']:
+    if value.get('work_partial', value['partial']):
         lines.append('일부 기록만 표시합니다. 다른 검토 요청이 있을 수 있습니다.')
+    if value.get('dependency_error'):
+        lines.append('의존 관계 기록을 확인할 수 없습니다.')
     for item in items:
         title = short(item.get('title', item['work']))
         if item.get('resumed'):
@@ -152,6 +180,10 @@ def render(value, printable):
         reason = item.get('reason')
         reason = short(reason) + ' · ' if reason and reason != item['next_action'] else ''
         lines.append(f"{GROUPS[item['group']]} · {title}{place} — {reason}{short(item['next_action'])}")
+        if item.get('parent_submission'):
+            lines.append('  ' + work_dependencies.gate_line(item['parent_submission']))
+        if item.get('dependencies'):
+            lines.extend('  '+line for line in work_dependencies.lines(item['dependencies'],short))
     if not items and not value['partial']:
         lines.append('현재 검토하거나 이어갈 Work가 없습니다. 저장한 후보를 보거나 새 작업을 시작할 수 있습니다.')
     if value['next']:

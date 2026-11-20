@@ -35,6 +35,8 @@ class CompositionTests(WorkFixture,unittest.TestCase):
         review=self.ready_parent()
         self.assertEqual('review',self.service.view('parent')['state'])
         self.assertEqual('completed',self.service.view('child')['state'])
+        from colvia.work_dependencies import show
+        self.assertEqual({'bound':1,'waiting':0,'rebind':0},show(self.store,'parent')['parent_submission'])
         self.service.accept(operation='parent-accept',work='parent',receipt=review['receipt'],statement='통합 결과 수락')
         self.assertEqual('completed',self.service.view('parent')['state'])
 
@@ -70,6 +72,8 @@ class CompositionTests(WorkFixture,unittest.TestCase):
 
     def test_capture_requires_explicit_rebind_new_plan_approval(self):
         self.declare();self.begin('child');self.accept_child();old=self.store.head(work_key('parent'))
+        from colvia.work_dependencies import show
+        self.assertEqual({'waiting':0,'rebind':1,'bound':0},show(self.store,'parent')['parent_submission'])
         planned=self.bind();head=self.service._head('parent')[1]
         self.assertEqual(old,link(head,'previous'));self.assertIsNone(link(head,'approval'))
         self.assertEqual('planned',planned['state'])
@@ -96,7 +100,19 @@ class CompositionTests(WorkFixture,unittest.TestCase):
         self.service.accept(operation='parent-accept',work='parent',receipt=review['receipt'],statement='통합 수락')
         accepted=self.store.head(work_key('parent'));child=self.service.view('child')
         self.service.revise(operation='child-reopen',work='child',receipt=child['reopen_receipt'],statement='추가 수정')
-        self.bind('rebind-incomplete');head=self.service._head('parent')[1]
+        from colvia import work_dependencies as dep
+        self.plan('consumer',('consumer.md',))
+        basis = dep.preview(self.store,'consumer',None,'parent')['basis']
+        dep.apply(self.store,'consumer',None,'parent',basis=basis,request='통합 결과 필요',recorder='agent',operation='link')
+        outcome = dep.show(self.store,'consumer')['items'][0]['result']
+        self.assertEqual('recheck',outcome['status'])
+        parent_decision = link(self.service._head('parent')[1], 'decision')
+        self.assertEqual(parent_decision.sha256, outcome['decision'])
+        # No new child edge: rebinding must not need to open the advisory graph.
+        from unittest.mock import patch
+        with patch.object(dep,'check_graph',side_effect=AssertionError('unrelated graph scan')):
+            self.bind('rebind-incomplete')
+        head=self.service._head('parent')[1]
         self.assertEqual(accepted,link(head,'previous'));self.assertIsNone(link(head,'result'));self.assertIsNone(link(head,'decision'))
         self.service._validate_head(accepted,self.store.load)
         self.assertEqual('review',decode_envelope(old_parent,self.store.load(old_parent)).payload['phase'])

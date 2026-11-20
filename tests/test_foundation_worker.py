@@ -147,6 +147,11 @@ class WorkerTests(WorkerFixture,unittest.TestCase):
         with self.assertRaisesRegex(RecordError,'worker-grant-mismatch'):self.execute(preview,authority='delegated',actor='other')
         self.assertFalse((self.authority/'effects').exists())
         self.execute(preview,authority='delegated',actor='helper');self.assertEqual('completed',self.source.view('source')['state'])
+        from colvia import work_dependencies
+        outcome = work_dependencies._outcome('source', self.store.root().heads, self.store.load)
+        self.assertEqual('accepted', outcome['status'])
+        decision = self.source._object(link(self.source._head('source')[1], 'decision'))
+        self.assertEqual(link(decision,'authorization').sha256, outcome['authorization'])
 
     def test_revoked_grant_cannot_be_used(self):
         self.source_result();self.worker.grant(operation='grant',work='source',owner='owner',delegate='helper',statement='위임')

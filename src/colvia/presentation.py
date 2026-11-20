@@ -70,6 +70,9 @@ def _followup_text(value):
 
 
 def human(value):
+    if value.get('kind') in ('dependency-show','dependency-preview','dependency-change','dependency-history'):
+        from .work_dependencies import render
+        return render(value,_printable)
     if value.get('kind') in ('ranked-candidates', 'priority-preview', 'priority-change', 'priority-unchanged', 'priority-history'):
         from .candidate_priority import render
         return render(value, _printable, _relation)
@@ -427,6 +430,19 @@ def failure(code):
     if code == 'invalid-guide-topic':
         return '다음 안내 중 하나를 선택하세요: ' + ', '.join(TOPIC_NAMES) + '. JSON 출력을 원하면 guide 앞에 --json을 붙이세요.'
     recovery={
+        'composition-dependency-duplicate':'이 하위 결과는 이미 명시한 선행 조건입니다. 중복 관계를 해제한 뒤 하위 Work로 연결하세요.',
+        'dependency-operation-conflict':'이 작업 식별자로 다른 변경이 기록돼 있습니다. 관계 변경 이력을 확인하세요.',
+        'invalid-dependency-cursor':'현재 관계 목록을 다시 연 뒤 다음 페이지를 확인하세요.',
+        'dependency-endpoint-mismatch':'관계에 지정된 Work 기록을 확인할 수 없습니다.',
+        'dependency-work-required':'같은 프로젝트에 기록된 Work를 선택하세요. 후보가 아직 Work가 아니라면 관계를 기록할 수 없습니다.',
+        'dependency-discarded':'폐기한 Work에는 새 관계를 추가할 수 없습니다. 기존 선행 조건을 해제하거나 교체하세요.',
+        'dependency-cycle':'서로의 결과를 기다리게 됩니다. 선행 관계의 방향을 다시 확인하세요.',
+        'dependency-already-present':'이미 필요한 결과로 기록했습니다.',
+        'dependency-not-present':'해제할 관계가 없습니다. 현재 관계를 다시 확인하세요.',
+        'invalid-dependency-selection':'서로 다른 Work와 추가하거나 해제할 선행 조건을 지정하세요.',
+        'dependency-composition-duplicate':'상위 Work의 제출 조건에 이미 포함된 하위 Work입니다.',
+        'dependency-preview-stale':'Work 또는 의존 관계가 바뀌었습니다. 새 미리보기를 확인하세요.',
+        'dependency-limit':'확인 한도 안에서 모든 관계를 검증할 수 없습니다.',
         'priority-preview-stale':'후보나 순위가 바뀌었습니다. 현재 후보와 변경할 값을 다시 확인하세요.',
         'priority-candidate-closed':'열린 후보의 순위만 바꿀 수 있습니다.',
         'priority-operation-conflict':'이미 다른 변경에 사용한 요청입니다. 저장된 결과를 확인하세요.',
