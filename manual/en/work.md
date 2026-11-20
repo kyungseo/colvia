@@ -90,9 +90,11 @@ Once the first note is saved, this project's records and subsequent backups requ
 
 ## What needs my attention today?
 
-Ask “What should I look at today?” in a connected folder. For one Work you get its title and next action on one line. With several, your reviews come first. You can see what needs your review, what you sent back for changes, where a progress note left off, and why a Work is paused. You can start without entering priorities or dependencies.
+Ask “What should I look at today?” in a connected folder. For one Work you get its title and next action on one line. When several are shown, the ones awaiting your review appear first among those checked. You can see what needs your review, what you sent back for changes, where a progress note left off, and why a Work is paused. You can start without entering priorities or dependencies.
 
-Say “Show me that revised proposal” to open the version you just saw. If two items fit, the agent can ask which title or file you meant. A partial overview warns that more review requests may exist. Ask to see the rest to continue.
+Try “Show me that revised proposal.” If the overview you just saw showed a submission awaiting review, this opens that version. If it showed a change request, you can see the version you sent back and what you asked to change. Ask “Has a new revision arrived?” to check again. If titles match, use the file name to tell them apart.
+
+A partial overview suggests what to look at among the records checked. Ask “Show the next page” to see just that page. Ask “What needs my review across the whole project?” to include the remaining pages. To see ideas for future Work, ask “Show the candidates by priority too.” Candidate ranks appear separately. Giving a candidate a high rank does not authorize starting it.
 
 <a id="resume" name="resume"></a>
 
@@ -150,7 +152,7 @@ Say “Set the colleague trial candidate to high.” Choose high, normal or low,
 
 Ask “Why did we change the trial’s priority?” to see when it changed, the old and new levels, the request and any reason you gave. Changes requested in chat are recorded as a user request reported by the agent. Changing a rank leaves the linked Work’s approvals and state intact.
 
-After the first priority change, this project and its new backups require a version that supports candidate priority. If you may need an older version, keep a [backup](records.md#backup) before that first change.
+Once you save the first priority in this project, older versions without priority support cannot open the project or subsequent backups. Clearing every priority does not restore compatibility. The agent explains this and waits for your agreement before saving the first change. If you still need to work in the older version, stop before saving. To keep the option of returning to the pre-change state, make a [backup](records.md#backup) first.
 
 <a id="child-works" name="child-works"></a>
 

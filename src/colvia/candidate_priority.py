@@ -224,7 +224,7 @@ def render(value, printable, relation):
     if kind == 'priority-preview':
         line = f"{printable(value['title'])} · {LABELS[value['old']]} → {LABELS[value['new']]}"
         if value['first_project_priority'] and value['old'] != value['new']:
-            line += '\n첫 순위 저장 뒤에는 순위를 지원하는 버전에서 기록과 새 백업을 열 수 있습니다.'
+            line += '\n첫 순위를 저장하면 이 기능을 지원하지 않는 구버전에서는 이 프로젝트와 이후 백업을 열 수 없습니다. 순위를 모두 지워도 마찬가지입니다.'
         return line
     if kind == 'priority-unchanged':
         return '현재 순위와 같습니다 · ' + LABELS[value['new']]

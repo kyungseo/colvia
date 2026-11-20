@@ -55,7 +55,13 @@ class PriorityTests(WorkFixture, TestCase):
         self.assertEqual([], self.command('priority-history','coworker')['items'])
         self.assertEqual('priority-unchanged', self.change('coworker','unset','clear-empty')['kind'])
         self.assertEqual(root, self.store.root().ref)
+        warning = '이 프로젝트와 이후 백업을 열 수 없습니다.'
+        self.assertNotIn(warning, human(self.command('priority-preview', 'coworker', 'unset')))
+        preview = human(self.command('priority-preview', 'coworker', 'high'))
+        self.assertIn(warning, preview)
+        self.assertIn('순위를 모두 지워도', preview)
         first = self.change('coworker', 'high', 'first')
+        self.assertNotIn(warning, human(self.command('priority-preview', 'other', 'high')))
         self.assertIsNone(first['change']['reason'])
         self.assertIn('에이전트가 전달한 사용자 요청', human(first))
         self.change('coworker','low','second',reason='다음 주 체험')
@@ -185,6 +191,12 @@ class PriorityTests(WorkFixture, TestCase):
         self.assertFalse(self.command('priority-preview','trial','normal')['first_project_priority'])
 
     def test_backup_restore_history_and_old_capability_boundary(self):
+        self.check_backup_compatibility(clear_priority=False)
+
+    def test_clearing_all_priorities_preserves_old_reader_and_backup_boundary(self):
+        self.check_backup_compatibility(clear_priority=True)
+
+    def check_backup_compatibility(self, *, clear_priority):
         self.candidate('trial')
         registry = application_registry()
         old = Registry([s for (k,_),s in registry._schemas.items() if k != priority.KIND])
@@ -195,6 +207,10 @@ class PriorityTests(WorkFixture, TestCase):
         old_head = handle.head('candidate:trial')
         self.change('trial','high','one')
         self.change('trial','normal','two')
+        if clear_priority:
+            self.change('trial', 'unset', 'clear')
+            for role in ('read', 'write'):
+                self.assertIn('schema:planning.priority:1', self.store.requirements()[role])
         with self.assertRaisesRegex(RecordError,'store-reader-capability-unavailable'):
             handle.root()
         gb = AuditBudget(50000,100000,64*1024**2)
@@ -222,4 +238,5 @@ class PriorityTests(WorkFixture, TestCase):
         self.assertEqual(old_head,copy.head('candidate:trial'))
         self.assertEqual(self.store.head('priority:trial'),copy.head('priority:trial'))
         self.assertEqual(priority.history(self.store,'trial'),priority.history(copy,'trial'))
-        self.assertEqual('normal',Planning(copy).candidate('trial')['priority'])
+        expected_priority = 'unset' if clear_priority else 'normal'
+        self.assertEqual(expected_priority, Planning(copy).candidate('trial')['priority'])

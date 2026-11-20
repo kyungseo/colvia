@@ -92,7 +92,13 @@ class BundleTests(unittest.TestCase):
                     else:
                         self.assertEqual(expected + '\n', output.getvalue())
             self.assertIn('read `guide management` before submitting', entry.guide('work'))
+            work_guide = entry.guide('work')
+            for phrase in ('first_project_priority', 'Wait to run `priority-set`',
+                           'even after clearing all priorities', 'A `revision` row',
+                           'among the records checked', 'A high rank grants no permission to start'):
+                self.assertIn(phrase, work_guide)
             short = entry.guide()
+            self.assertIn('Qualify partial results', short)
             self.assertLessEqual(len(short.encode()), 5000)
             self.assertLessEqual(len(short.splitlines()), 75)
             for topic in TOPIC_NAMES:
