@@ -27,7 +27,8 @@ def _followup(p):
 
 def planning_schemas():
     from .candidate_priority import schema as priority_schema
-    return [priority_schema(), Schema('planning.candidate',1,{'work':'provenance','previous':'provenance'},_candidate,
+    from .work_dependencies import schema as dependency_schema
+    return [priority_schema(), dependency_schema(), Schema('planning.candidate',1,{'work':'provenance','previous':'provenance'},_candidate,
                    {'work':frozenset({'work.plan'}),'previous':frozenset({'planning.candidate'})}),
             Schema('planning.followup',1,{'source':'provenance','target':'provenance','previous':'provenance'},_followup,
                    {'source':frozenset({'work.head'}),'target':frozenset({'work.head','planning.candidate'}),'previous':frozenset({'planning.followup'})})]

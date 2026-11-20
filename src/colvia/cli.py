@@ -45,6 +45,20 @@ def parser(*,managed=False):
     status = project.add_parser('status', help='Show the next action for current Work, read-only')
     status.add_argument('--limit', type=int, default=20)
     status.add_argument('--cursor')
+    dependency = sub.add_parser('dependency').add_subparsers(dest='action', required=True)
+    for action in ('show','history'):
+        details = dependency.add_parser(action)
+        details.add_argument('work')
+        details.add_argument('--cursor')
+    for action in ('preview', 'apply'):
+        change = dependency.add_parser(action)
+        change.add_argument('work', help='Work that needs the result')
+        change.add_argument('--remove', metavar='PREVIOUS_PREREQUISITE')
+        change.add_argument('--add', metavar='NEW_PREREQUISITE')
+        if action == 'apply':
+            change.add_argument('--basis', required=True)
+            change.add_argument('--request', required=True)
+            change.add_argument('--recorder', required=True, choices=('agent','operator'))
     operation=sub.add_parser('operation');operation.add_argument('identifier')
     configuration=sub.add_parser('configuration').add_subparsers(dest='action',required=True)
     configuration.add_parser('show')
@@ -178,6 +192,16 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
                     message='기록에 반영된 실행입니다. 작업 상태를 확인해 주세요.' if value is not None else '기록된 완료를 찾지 못했습니다. 외부 효과 여부를 확인하기 전에는 재시도하지 마세요.')
     service=WorkService(store,workspace);planning=Planning(store)
     operation=args.operation or 'op-'+uuid.uuid4().hex
+    if args.group == 'dependency':
+        from . import work_dependencies
+        if args.action == 'history':
+            return work_dependencies.history(store,args.work,parse_cursor(args.cursor))
+        if args.action == 'show':
+            return work_dependencies.show(store,args.work,parse_cursor(args.cursor))
+        if args.action == 'preview':
+            return work_dependencies.preview(store,args.work,args.remove,args.add)
+        return work_dependencies.apply(store,args.work,args.remove,args.add,basis=args.basis,
+                                       request=args.request,recorder=args.recorder,operation=operation)
     if args.group=='git-integration':
         from .git_integration import GitIntegration
         from .platforms.git_port import integration_port
@@ -348,6 +372,8 @@ def parse_cursor(value):
 
 
 def command_readonly(args):
+    if args.group == 'dependency':
+        return args.action in ('show','history','preview')
     if args.group == 'project' and args.action == 'status':
         return True
     return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)

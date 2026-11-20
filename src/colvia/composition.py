@@ -162,6 +162,10 @@ class CompositionService:
             guard(view)
             require(view.head(PROJECT_KEY)==project and view.head(workspace_key(self.work.workspace.workspace))==registration,'connection-changed')
             prospective=_Prospective(view,changes)
+            from .work_dependencies import check_composition_change
+            for key in changes:
+                if key.startswith('composition:'):
+                    check_composition_change(key.removeprefix('composition:'), view, prospective, self.store.project)
             for key,ref in changes.items():
                 if not key.startswith('work:'):continue
                 self.work._validate_head(ref,prospective)
