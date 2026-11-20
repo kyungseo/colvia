@@ -28,6 +28,21 @@ flowchart LR
 
 Colvia has no chat window of its own. You ask in your usual chat, and the agent calls Colvia when it needs to.
 
+When you ask “What needs my attention today?” in a new chat, you are still talking to your agent. The agent can read the project records and distinguish submissions awaiting a reviewer from changes the agent has been asked to make.
+
+```mermaid
+sequenceDiagram
+    participant P as User
+    participant A as Agent
+    participant C as Colvia
+    P->>A: What needs my attention today?
+    A->>C: Read project status
+    C-->>A: Pending reviews, change requests and records checked
+    A-->>P: Proposal revision 2 for review and changes requested to the quote
+```
+
+Reading the summary changes no records and starts no Work. [Open the version awaiting review](work.md#project-status) in the same chat.
+
 <a id="decisions" name="decisions"></a>
 
 ## Three separate decisions
@@ -99,7 +114,7 @@ As a result:
 ## What Colvia does not do
 
 - **It does not control file access.** Use the app or CLI’s permissions to control what the agent can read, write, or run. Apps and agents can edit files they have permission to change. At submission, Colvia checks changes in the files it tracks against the approved scope and stops the submission if it finds a change outside that scope.
-- **It does not run agents itself.** Colvia’s direct agent execution is disabled in the first Preview.
+- **It does not run agents itself.** Colvia’s direct agent execution is disabled in the current Preview.
 - **It does not coordinate concurrent editing by several agents.** Keeping several Works is different from letting several agents edit the same files concurrently.
 - **It does not put results into Git automatically.** You review the changes to commit and the staging state, then approve separately.
 - **It does not handle your conversations.** Messages and materials you share with an agent follow the AI service’s data handling settings.

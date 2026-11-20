@@ -6,7 +6,7 @@ In a project that uses Git, register Git with Colvia before connecting. Acceptin
 
 [Register Git](#git-register) · [Register from the command line](#git-register-cli) · [Put an accepted result into Git](#git-integration) · [Recover an interrupted Git integration](#git-recovery)
 
-For a folder you are connecting for the first time, ask “Set up Git when you connect this folder.” [See the first-connection choices](install.md#connect).
+When connecting a folder for the first time, ask “Set up Git when you connect this folder.” [See the first-connection choices](install.md#connect).
 
 <a id="git-and-colvia-records"></a>
 
@@ -15,6 +15,8 @@ For a folder you are connecting for the first time, ask “Set up Git when you c
 You can approve a scope or ask for revisions before you have anything to commit. Colvia keeps the version you accept. For example, if you accept a report and then switch branches in the same working folder, you can reopen the accepted report and compare it with the one on your current branch.
 
 If you later commit the accepted file, Git keeps its contents too. A colleague who pulls the branch won’t receive your approvals or requests for changes. [Where Colvia keeps these records and why](architecture.md#why-local-records) · [Recover an interrupted Git integration](#git-recovery)
+
+A design note committed to a shared repository lets colleagues read the reasoning behind a decision. On the device that recorded the Work, Colvia can also show which revision the reviewer read and what changes they requested. A colleague cloning the repository receives the committed document. The local Work records stay on the recording device.
 
 <a id="adopt-git"></a>
 
@@ -112,7 +114,7 @@ When the previous contents of the same file contain a recognized credential or c
 
 Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result.
 
-Changing branches, pulling or rebasing during a Work does not automatically approve a new baseline. Colvia keeps changes outside the scope visible and requires checking how to continue. Independently connecting a repository subfolder, or automatically converting a folder between Git and non-Git operation, is outside the first-release path. Symlinks and submodules can remain protected, but are not editable targets.
+Changing branches, pulling or rebasing during a Work does not automatically approve a new baseline. Colvia keeps changes outside the scope visible and requires checking how to continue. Independently connecting a repository subfolder, or automatically converting a folder between Git and non-Git operation, is outside the current Preview’s supported workflow. Symlinks and submodules can remain protected, but are not editable targets.
 
 If hooks are present or automatic integration conditions are not met, Colvia does not disable hooks or reset the index on its own. When continuing through manual Git operations, compare the accepted result with the contents you intend to commit.
 

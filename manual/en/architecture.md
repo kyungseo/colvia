@@ -284,6 +284,15 @@ stateDiagram-v2
     review --> paused: pause
     paused --> active: resume active work
     paused --> review: resume pending review
+    %% Discarding or replacing an unfinished Work leaves its original record discarded.
+    planned --> discarded
+    approved --> discarded
+    active --> discarded
+    review --> discarded
+    paused --> discarded
+    discarded --> [*]
+    state "Discarded" as discarded
+    state "Paused" as paused
     completed --> [*]
 ```
 
@@ -299,6 +308,23 @@ stateDiagram-v2
 At submission, Colvia observes the working folder again and refuses the submission if the observed files include changes outside the approved scope. At acceptance, it compares the current files with the submission you reviewed once more. An accepted Work can be archived; its contents, decisions and follow-up links remain readable afterward.
 
 Discarding or replacing unfinished Work keeps its records readable. The replacement keeps its own approval. [Switching and replacement](work.md#work-lifecycle)
+
+<a id="review-prerequisite" name="review-prerequisite"></a>
+
+### What needs to happen before drafting the email?
+
+In this example, you linked two tasks so the cover email waits for acceptance of the proposal. Colvia looks up the decision about the specific revision the reviewer read.
+
+```mermaid
+flowchart TD
+    A["The agent submits proposal revision 2"] --> B{"The reviewer reads revision 2"}
+    B -->|Ask the agent for changes| C["Colvia records the change request for revision 2"]
+    C --> D["Email draft still awaits proposal acceptance"]
+    B -->|Accept as submitted| E["Colvia records acceptance of revision 2"]
+    E --> F["Prerequisite for the email draft met"]
+```
+
+Archiving the accepted proposal preserves its acceptance. If the reviewer reopens the accepted proposal for changes, the email draft’s prerequisite is unmet again. If the proposal is discarded or replaced, choose which result the draft should wait for. Unavailable records are reported separately. Starting the draft is a separate decision. [Inspect or change a dependency](work.md#work-dependencies)
 
 <a id="storage" name="storage"></a>
 
@@ -429,7 +455,7 @@ Colvia handles Git in three stages. Your current branch and staging area change 
 | Stage | What happens to Git |
 | --- | --- |
 | Ordinary observation | Reads the repository structure, working tree and index. Changes nothing in the repository. |
-| Candidate preparation | Creates the candidate Git objects and preparation record. The next Preview first runs the [credential check](git.md#git-credential-check). The current ref and index are not changed. |
+| Candidate preparation | Creates the candidate Git objects and preparation record. Colvia [checks for credentials](git.md#git-credential-check) before creating Git objects. The current ref and index are not changed. |
 | Apply after approval | Applies the reviewed candidate to the ref and index. Changes staged for other files are preserved. |
 
 ```mermaid
@@ -437,7 +463,7 @@ flowchart LR
     Reg["Registered Git executable<br/>pinned path · hash · version"]
     Accept["Work result accepted"] -.->|does not follow automatically| Prepare
     Observe["Ordinary observation"] -->|read| Repo["Working tree · ref · index"]
-    Prepare{"Prepare candidate<br/>Local check passes? (Next Preview)"} -->|No| Stop["Report location; hide value"]
+    Prepare{"Prepare candidate<br/>Local check passes?"} -->|No| Stop["Report location; hide value"]
     Prepare -->|Yes| Build["Build candidate"]
     Build --> Objects[("Git object store")]
     Build --> Review["Review changes and staging<br/>show"]
@@ -456,7 +482,9 @@ flowchart LR
 - **Staging is preserved.** The whole index is retained before integration, and changes staged for other files are kept. When conditions are not met, Colvia stops instead of disabling hooks or resetting the index.
 - **Moving between workspaces is a separate operation.** Moving a submission from one workspace to another is approved one submission at a time.
 
-### Credential screening · Next Preview
+<a id="credential-screening--next-preview"></a>
+
+### Credential screening before Git object creation
 
 For supported images and fonts with matching extensions and signatures, the preview and JSON identify each file and its format. The preview omits their contents because they were not scanned for credentials.
 

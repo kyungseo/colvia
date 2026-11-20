@@ -4,7 +4,7 @@
 
 How to assign work in a connected project, review a submission and accept it or ask for changes, and pick the work up in a new chat. Colvia keeps the goal, file scope, checks, submission, and decisions together in a **Work**, a single recorded task.
 
-[Start](#start) · [What needs my attention?](#project-status) · [Delegate and review](#review) · [Pick up in a new chat](#resume) · [Revise an earlier result](#revise) · [Find a recorded next step](#follow-up) · [Child Works and isolated folders](#child-works)
+[Start](#start) · [What needs my attention today?](#project-status) · [Delegate and review](#review) · [Pick up in a new chat](#resume) · [Revise an earlier result](#revise) · [Find a recorded next step](#follow-up) · [Child Works and isolated folders](#child-works)
 
 ```mermaid
 flowchart LR
@@ -90,9 +90,9 @@ Once the first note is saved, this project's records and subsequent backups requ
 
 ## What needs my attention today?
 
-Ask “What should I look at today?” in a connected folder. For one Work you get its title and next action on one line. When several are shown, the ones awaiting your review appear first among those checked. You can see what needs your review, what you sent back for changes, where a progress note left off, and why a Work is paused. You can start without entering priorities or dependencies.
+Ask “What needs my attention today?” in a connected folder. For one Work you get its title and next action on one line. When several are shown, the ones awaiting your review appear first among those checked. You can see what needs your review, where a reviewer requested changes, where a progress note left off, and why a Work is paused. You can start without entering priorities or dependencies.
 
-Try “Show me that revised proposal.” If the overview you just saw showed a submission awaiting review, this opens that version. If it showed a change request, you can see the version you sent back and what you asked to change. Ask “Has a new revision arrived?” to check again. If titles match, use the file name to tell them apart.
+Try “Show me revision 2 of the proposal.” If the overview you just saw showed a submission awaiting review, this opens that version. If it showed a change request, you can see the version the reviewer read and what they asked the agent to change. Ask “Has a new revision arrived?” to check again. If titles match, use the file name to tell them apart.
 
 A partial overview suggests what to look at among the records checked. Ask “Show the next page” to see just that page. Ask “What needs my review across the whole project?” to include the remaining pages. To see ideas for future Work, ask “Show the candidates by priority too.” Candidate ranks appear separately. Giving a candidate a high rank does not authorize starting it.
 
@@ -160,11 +160,15 @@ The [decision history command](reference.md#decision-history-command) shows the 
 
 ## See which result another Work needs
 
+A candidate’s priority says what you would like to tackle first. Recording “Let’s write instructions next” after accepting a result preserves a follow-up decision. A dependency identifies the result another Work is waiting for.
+
 Tell your agent, “Wait for me to accept the installation guide before inviting colleagues.” If both tasks already have a Work, the project overview will show why the invitations are waiting. Open the guide’s Work to see who needs its result. You can ask “Why are the invitations waiting?” or “Show all the results we need.” A priority, a suggested next task or two tasks mentioned together leaves this list unchanged.
 
 You can name several prerequisites. For each one, look for the accepted revision, a pending review or revision request, or a paused Work. Archiving an accepted result keeps it available. Reopening the result puts the prerequisite back on the waiting list. If the Work was discarded or replaced, choose whether to remove or replace that prerequisite. If Colvia cannot check a record, it shows that the result is unknown. A short overview can show just the first few relationships.
 
-To change a relationship, say “The invitation no longer needs the guide” or “Have the invitation wait for the checklist instead of the guide.” You can ask who recorded the change and what was requested. These reminders leave both Works’ approval, submission and acceptance steps in your hands. A parent Work’s existing child submission requirements still apply. If a child changes after the parent result was accepted, you can see the accepted revision and the need to recheck the child. When selecting new children, a duplicate or circular prerequisite must be resolved first.
+To change a relationship, say “The invitation no longer needs the guide” or “Have the invitation wait for the checklist instead of the guide.” You can ask who recorded the change and what was requested. The link explains the wait. It neither blocks starting a Work nor grants permission to start it. Each Work keeps its own approvals, submissions and acceptance. A parent Work’s existing child submission requirements still apply. If a child changes after the parent result was accepted, you can see the accepted revision and the need to recheck the child. When selecting new children, a duplicate or circular prerequisite must be resolved first.
+
+Preparing a trial with a colleague? Ask which revision of the instructions was accepted and what the invitation is waiting for. For a release, ask whether the notes need review and which results publication depends on. The summary draws on the work and relationships you recorded. Check for tasks you have not recorded before calling the entire trial or release ready.
 
 The first time you save a dependency in a project, older versions without this feature can no longer open the project or its later backups. Removing all relationships keeps that format. If you need the earlier state, keep a [backup](records.md#backup) before you agree to the first change.
 
@@ -197,10 +201,12 @@ If a missing worktree blocks a command, [check its Git registration](git.md#git-
 
 <a id="limits" name="limits"></a>
 
-## What to know in the first Preview
+<a id="what-to-know-in-the-first-preview"></a>
+
+## What to know in the current Preview
 
 - Keeping several Works is different from letting several agents edit the same files concurrently. Do not assume actual concurrent execution is supported in the first release. Overlapping changes or an unresolved interruption require checking the current state before proceeding.
-- Colvia’s direct agent execution for document tasks is disabled in the first Preview. Working in the ordinary Codex or Claude Code CLI or desktop app is separate from this feature. You can inspect the current configuration with the [document execution availability check](reference.md#execution-readiness).
+- Colvia’s direct agent execution for document tasks is disabled in the current Preview. Working in the ordinary Codex or Claude Code CLI or desktop app is separate from this feature. You can inspect the current configuration with the [document execution availability check](reference.md#execution-readiness).
 - Messages and materials you share with an agent follow the AI service’s data handling settings.
 
 ---

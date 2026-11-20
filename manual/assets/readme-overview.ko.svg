@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="340" viewBox="0 0 960 340" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif"><title id="title">처음 한 번 연결하고, 그 뒤에는 Work 단위로 이어갑니다</title><desc id="desc">처음에는 Colvia를 설치하고 프로젝트 폴더에서 에이전트에게 연결을 요청한 뒤 미리보기를 확인합니다. 그 뒤에는 목표와 계획에서 후보를 고르고, Work마다 범위를 승인하고 결과를 수락한 다음 다음 할 일로 이어갑니다.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="424" viewBox="0 0 960 424" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif"><title id="title">설치와 연결, 새 일과 하던 일</title><desc id="desc">사용할 계정에 설치한 뒤 폴더마다 연결 내용을 확인하고 승인합니다. 새 일은 작업안을 보고 범위를 승인합니다. 제출본을 검토해 수락하거나 수정을 요청합니다. 하던 일은 프로젝트 현황에서 이어갑니다.</desc>
 <style>
 .bg{fill:#FAF9F6}.frame{fill:none;stroke:#E4E0D8}
 .ink{fill:#2B2A27}.mut{fill:#6B675F}
@@ -25,10 +25,11 @@
 }
 </style>
 <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="ah"/></marker></defs>
-<rect x="1" y="1" width="958" height="338" rx="16" class="bg"/><rect x="1" y="1" width="958" height="338" rx="16" class="frame"/>
-<text x="28" y="40" class="mut" font-size="13" font-weight="600" text-anchor="start">처음 한 번</text>
+<rect x="1" y="1" width="958" height="422" rx="16" class="bg"/><rect x="1" y="1" width="958" height="422" rx="16" class="frame"/>
+<rect x="27" y="19" width="137" height="26" rx="8" class="rec"/>
+<text x="95.5" y="32" text-anchor="middle" dominant-baseline="central" class="workt" font-size="16" font-weight="700">처음 연결할 때</text>
 <rect x="52" y="70" width="40" height="26" rx="3" class="icon"/><path d="M44 102 H100" class="icon"/>
-<text x="72" y="130" class="ink" font-size="13.5" font-weight="400" text-anchor="middle">Colvia 설치</text>
+<text x="72" y="130" class="ink" font-size="13.5" font-weight="400" text-anchor="middle">계정에 설치</text>
 <path d="M110 88 H150" class="ln" marker-end="url(#ah)"/>
 <path d="M162 74 H180 L186 80 H206 V104 H162 Z" class="icon"/>
 <text x="184" y="130" class="ink" font-size="13.5" font-weight="400" text-anchor="middle">프로젝트 폴더</text>
@@ -45,35 +46,46 @@
 <rect x="698" y="68" width="104" height="40" rx="9" class="col"/>
 <g transform="translate(710.0,79.0) scale(0.2812)"><path d="M27.9 45.7 A14 14 0 1 1 22 19 C29 19 31 30 36.5 30 C42 30 44 21 49.5 21 L56 21" class="sym"/></g>
 <text x="761.0" y="93.0" class="colt" font-size="14" font-weight="600" text-anchor="middle">Colvia</text>
-<path d="M802 88 H834" class="ln" marker-end="url(#ah)"/>
-<rect x="836" y="68" width="96" height="40" rx="9" class="note"/>
-<text x="884.0" y="93.0" class="ink" font-size="13.5" font-weight="500" text-anchor="middle">미리보기</text>
-<circle cx="930" cy="70" r="10.5" class="dec"/>
-<path d="M925.5 70 L929 73.6 L935 66.2" class="dect"/>
-<path d="M884 110 V170 H100 V204" class="lnd" marker-end="url(#ah)"/>
-<text x="28" y="168" class="mut" font-size="13" font-weight="600" text-anchor="start">그 뒤 매일</text>
-<rect x="40" y="206" width="122" height="48" rx="9" class="note"/>
-<text x="101.0" y="228.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">목표·계획</text>
-<text x="101.0" y="245.0" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">프로젝트 문서</text>
-<path d="M162 230 H196" class="ln" marker-end="url(#ah)"/>
-<rect x="198" y="210" width="108" height="40" rx="9" class="note"/>
-<text x="252.0" y="235.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">후보 목록</text>
-<path d="M306 230 H340" class="ln" marker-end="url(#ah)"/>
-<rect x="342" y="210" width="92" height="40" rx="9" class="work"/>
-<text x="388.0" y="235.0" class="workt" font-size="15" font-weight="600" text-anchor="middle">Work</text>
-<text x="388" y="274" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">큰 일은 하위 Work로</text>
-<path d="M434 230 H518" class="ln" marker-end="url(#ah)"/>
-<circle cx="476" cy="230" r="10.5" class="dec"/>
-<path d="M471.5 230 L475 233.6 L481 226.2" class="dect"/>
-<text x="476" y="260" class="mut" font-size="12" font-weight="400" text-anchor="middle">범위</text>
-<rect x="520" y="210" width="92" height="40" rx="9" class="note"/>
-<text x="566.0" y="235.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">결과</text>
-<path d="M612 230 H696" class="ln" marker-end="url(#ah)"/>
-<circle cx="654" cy="230" r="10.5" class="dec"/>
-<path d="M649.5 230 L653 233.6 L659 226.2" class="dect"/>
-<text x="654" y="260" class="mut" font-size="12" font-weight="400" text-anchor="middle">수락</text>
-<rect x="698" y="210" width="120" height="40" rx="9" class="note"/>
-<text x="758.0" y="235.0" class="ink" font-size="14" font-weight="500" text-anchor="middle">다음 할 일</text>
-<path d="M758 250 V300 H252 V254" class="ln" marker-end="url(#ah)"/>
-<text x="505" y="318" class="mut" font-size="12" font-weight="400" text-anchor="middle">다음 Work로 계속</text>
+<path d="M802 88 H816" class="ln" marker-end="url(#ah)"/>
+<rect x="821" y="59" width="124" height="58" rx="8" class="work"/>
+<text x="883" y="77" text-anchor="middle" dominant-baseline="central" class="ink" font-size="14" font-weight="600">미리보기 확인</text>
+<text x="883" y="100" text-anchor="middle" dominant-baseline="central" class="workt" font-size="12" font-weight="600">연결 승인</text>
+<path d="M884 119 V146 Q884 153 877 153 H103 Q95 153 95 161 V166" class="lnd" marker-end="url(#ah)"/>
+<path d="M27 182 H18 Q12 182 12 188 V369 Q12 375 18 375 H24" class="ln" marker-end="url(#ah)"/>
+<path d="M12 241 H24" class="ln" marker-end="url(#ah)"/>
+<circle cx="12" cy="241" r="2.3" class="ah"/>
+<rect x="27" y="169" width="137" height="26" rx="8" class="rec"/>
+<text x="95.5" y="182" text-anchor="middle" dominant-baseline="central" class="workt" font-size="16" font-weight="700">연결한 뒤에는</text>
+<rect x="27" y="213" width="137" height="56" rx="8" class="work"/>
+<text x="95.5" y="230" text-anchor="middle" dominant-baseline="central" class="workt" font-size="15" font-weight="600">새 일 맡기기</text>
+<text x="95.5" y="253" text-anchor="middle" dominant-baseline="central" class="mut" font-size="12" font-weight="400">하려는 일 말하기</text>
+<rect x="197" y="213" width="160" height="56" rx="8" class="note"/>
+<text x="277.0" y="230" text-anchor="middle" dominant-baseline="central" class="ink" font-size="15" font-weight="600">범위 승인</text>
+<text x="277.0" y="253" text-anchor="middle" dominant-baseline="central" class="mut" font-size="12" font-weight="400">제안받은 계획</text>
+<rect x="390" y="213" width="160" height="56" rx="8" class="agent"/>
+<text x="470.0" y="230" text-anchor="middle" dominant-baseline="central" class="ink" font-size="15" font-weight="600">작업 · 검사</text>
+<text x="470.0" y="253" text-anchor="middle" dominant-baseline="central" class="mut" font-size="12" font-weight="400">검토용 제출</text>
+<rect x="583" y="213" width="160" height="56" rx="8" class="work"/>
+<text x="663.0" y="230" text-anchor="middle" dominant-baseline="central" class="workt" font-size="15" font-weight="600">결과 검토</text>
+<text x="663.0" y="253" text-anchor="middle" dominant-baseline="central" class="mut" font-size="12" font-weight="400">수락 또는 수정 요청</text>
+<rect x="776" y="213" width="159" height="56" rx="8" class="note"/>
+<text x="855.5" y="230" text-anchor="middle" dominant-baseline="central" class="ink" font-size="15" font-weight="600">수락</text>
+<text x="855.5" y="253" text-anchor="middle" dominant-baseline="central" class="mut" font-size="12" font-weight="400">다음 일은 선택</text>
+<path d="M166 241 h25" class="ln" marker-end="url(#ah)"/>
+<path d="M359 241 h25" class="ln" marker-end="url(#ah)"/>
+<path d="M552 241 h25" class="ln" marker-end="url(#ah)"/>
+<path d="M745 241 h25" class="ln" marker-end="url(#ah)"/>
+<path d="M662 271 V291 Q662 298 655 298 H477 Q470 298 470 291 V274" class="ln" marker-end="url(#ah)"/>
+<text x="566" y="315" text-anchor="middle" dominant-baseline="central" class="mut" font-size="13" font-weight="400">수정 요청</text>
+<path d="M28 336 H932" class="frame"/>
+<rect x="27" y="352" width="137" height="46" rx="8" class="work"/>
+<text x="95" y="375" text-anchor="middle" dominant-baseline="central" class="workt" font-size="15" font-weight="600">하던 일 이어가기</text>
+<path d="M166 375 H189" class="ln" marker-end="url(#ah)"/>
+<rect x="197" y="352" width="257" height="46" rx="8" class="note"/>
+<text x="325" y="375" text-anchor="middle" dominant-baseline="central" class="ink" font-size="14" font-weight="600">“오늘 내가 볼 건 뭐지?”</text>
+<path d="M456 375 H480" class="ln" marker-end="url(#ah)"/>
+<rect x="489" y="352" width="225" height="46" rx="8" class="note"/>
+<text x="601" y="375" text-anchor="middle" dominant-baseline="central" class="ink" font-size="14" font-weight="600">검토할 일 · 고칠 일 확인</text>
+<path d="M716 375 H738" class="ln" marker-end="url(#ah)"/>
+<text x="839" y="375" text-anchor="middle" dominant-baseline="central" class="workt" font-size="14" font-weight="600">같은 Work에서 계속</text>
 </svg>

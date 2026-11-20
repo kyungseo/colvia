@@ -11,6 +11,18 @@ Write for someone who opened the page to make a decision or do one thing. Lead w
 - Put implementation details in the architecture or operations reference. Move earlier exercise identities and results to development records; user pages link there when useful. Keep unfinished release checks and review logs in development records. Separate existing behavior, tested environments and future directions.
 - Write English and Korean for their own readers. Keep examples, numbers, conditions, decision authority and destinations equivalent. Use natural language in examples and real commands in command blocks. Label an illustrative exchange instead of presenting it as observed output.
 
+### Examples to consult when revising a guide
+
+Use these pairs when writing new material or editing an existing passage. Choose wording that fits the reader and the record. Keep adding a pair here when it resolves a recurring ambiguity.
+
+| If a draft says | Show the reader | Why |
+| --- | --- | --- |
+| “Changes were requested” | “The reviewer asked the agent to show the currency next to each amount.” | Name the requester, recipient and requested change when they are known. The reader may be someone other than the original reviewer. |
+| “The email draft is scheduled” | “The reviewer accepted revision 2, so the prerequisite for drafting the email is met. Starting the draft is a separate decision.” | Identify the exact result and what its acceptance changes. Starting the draft remains a separate decision. |
+| “A proposal is available” | “One proposal is waiting for your review. Ask to see revision 2.” | Give the count, the version and a next action the reader can take in the same chat. Label an illustrated chat reply as an example. |
+
+In Korean, “금액 옆에 통화 단위를 표시해 달라고 요청했습니다” leaves the requester and recipient implicit. When the record supports the roles, use “검토자가 에이전트에게 금액 옆에 통화 단위를 표시해 달라고 요청했습니다.” Use “내가” or “you” for a past decision only when the context establishes who made it. Apply the same distinction in captions, diagram arrows and alt text.
+
 ## Conditions and evidence
 
 State the available behavior and what the reader needs to do. Keep conditions that change a decision or action: prerequisites, authority, scope, recovery, destructive effects and known limits. Missing validation does not by itself mean a feature is unsupported; removing a caveat must not broaden a support or behavior claim.

@@ -76,6 +76,12 @@ Q12,Other,What are your customer service hours?
 
 If Colvia blocks a submission, ask which file caused it and why. Existing edits stay in the work folder. Review and resolve the changes before submitting again. Ask for a [scope preview](work.md#scope-change) before touching additional files. If a file has already changed, inspect the edit and decide whether to keep it separately or restore it yourself before requesting a new preview. [Guidance for reviewing and revising work](work.md#review)
 
+### The next day, pick up from a change request
+
+While you are reviewing a submitted report, ask your agent, “Add one actual inquiry as an example for each complaint.” Open a new chat in the same project and ask, “What did I ask the agent to change in the report?” You can find the report you read and the change you requested. If you already accepted it, keep that decision and skip this exercise.
+
+Once the agent submits revision 2 of the report, read the examples and decide whether to accept it. In a new chat, you can also [start with the work awaiting review](work.md#project-status).
+
 ## Team to-do web app
 
 ### Decide what goes into the first version

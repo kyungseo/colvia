@@ -284,6 +284,15 @@ stateDiagram-v2
     review --> paused: 일시정지
     paused --> active: 작업 중이던 경우
     paused --> review: 검토 중이던 경우
+    %% 미완료 작업을 폐기하거나 대체하면 기존 Work는 폐기 상태가 된다.
+    planned --> discarded
+    approved --> discarded
+    active --> discarded
+    review --> discarded
+    paused --> discarded
+    discarded --> [*]
+    state "폐기됨" as discarded
+    state "일시정지" as paused
     completed --> [*]
 ```
 
@@ -299,6 +308,23 @@ stateDiagram-v2
 제출할 때 Colvia는 작업 폴더의 파일 상태를 다시 확인해, 확인 대상 파일에 승인 범위 밖의 변경이 있으면 제출을 거부합니다. 수락할 때는 현재 파일이 검토한 제출본과 같은지 다시 대조합니다. 수락 완료된 Work는 보관 처리할 수 있으며, 보관해도 본문·결정·후속 연결은 그대로 조회됩니다.
 
 미완료 Work를 폐기하거나 다른 Work로 대체하면 기존 기록은 조회할 수 있습니다. 새 Work의 범위는 별도로 승인합니다. [전환과 대체](work.md#work-lifecycle)
+
+<a id="review-prerequisite" name="review-prerequisite"></a>
+
+### 메일 초안 작성을 시작하려면 어떤 조건이 필요한가요?
+
+메일 초안이 제안서 수락을 기다리도록 두 작업을 연결한 예입니다. Colvia는 제안서의 어느 판을 보고 내린 결정인지 확인합니다.
+
+```mermaid
+flowchart TD
+    A["에이전트가 제안서 2판을 제출"] --> B{"검토자가 2판을 검토"}
+    B -->|에이전트에게 수정 요청| C["Colvia가 2판에 대한 수정 요청을 기록"]
+    C --> D["메일 초안은 제안서 수락 대기"]
+    B -->|변경 없이 수락| E["Colvia가 2판의 수락을 기록"]
+    E --> F["메일 초안의 선행 조건 충족"]
+```
+
+수락한 제안서를 보관해도 수락 기록은 유효합니다. 수락한 제안서에 다시 수정을 요청하면 메일 초안은 다시 수락을 기다립니다. 제안서 작업을 폐기하거나 다른 작업으로 대체했다면 앞으로 어느 결과를 기다릴지 정하세요. 확인할 수 없는 기록은 별도로 표시됩니다. 조건을 충족한 뒤 메일 초안 작업을 시작할지는 별도로 정합니다. [작업 관계 확인과 변경](work.md#work-dependencies)
 
 <a id="storage" name="storage"></a>
 
@@ -429,7 +455,7 @@ Colvia가 Git을 다루는 방식은 세 단계로 나뉩니다. 현재 브랜�
 | 단계 | Git에 일어나는 일 |
 | --- | --- |
 | 읽기 전용 확인 | 저장소 구조와 working tree·index를 읽습니다. 저장소를 바꾸지 않습니다. |
-| 후보 준비 | 후보 Git 객체와 준비 기록을 만듭니다. 다음 Preview에서는 먼저 [자격증명 검사](git.md#git-credential-check)를 거칩니다. 현재 ref와 index는 바꾸지 않습니다. |
+| 후보 준비 | 후보 Git 객체와 준비 기록을 만듭니다. Git 객체를 만들기 전에 [자격증명을 검사합니다](git.md#git-credential-check). 현재 ref와 index는 바꾸지 않습니다. |
 | 승인 후 적용 | 검토한 후보를 ref와 index에 반영합니다. 다른 파일에 스테이징한 변경은 보존합니다. |
 
 ```mermaid
@@ -437,7 +463,7 @@ flowchart LR
     Reg["등록한 Git 실행 파일<br/>경로 · 해시 · 버전 고정"]
     Accept["Work 결과 수락"] -.->|자동으로 이어지지 않음| Prepare
     Observe["읽기 전용 확인"] -->|읽기| Repo["working tree · ref · index"]
-    Prepare{"후보 준비<br/>로컬 검사 통과? (다음 Preview)"} -->|아니요| Stop["값을 숨기고 위치 안내"]
+    Prepare{"후보 준비<br/>로컬 검사 통과?"} -->|아니요| Stop["값을 숨기고 위치 안내"]
     Prepare -->|예| Build["후보 생성"]
     Build --> Objects[("Git 객체 저장소")]
     Build --> Review["변경 미리보기와 스테이징 검토<br/>show"]
@@ -456,7 +482,9 @@ flowchart LR
 - **스테이징을 보존합니다.** 반영 전에 index 전체를 보관하고, 다른 파일에 스테이징한 변경을 유지합니다. 조건이 맞지 않으면 hook을 끄거나 index를 초기화하지 않고 멈춥니다.
 - **작업 폴더 사이의 이동은 별도 작업입니다.** 한 작업 폴더의 제출본을 다른 작업 폴더에 옮기는 일은 한 건씩 승인합니다.
 
-### 자격증명 검사 · 다음 Preview
+<a id="자격증명-검사--다음-preview"></a>
+
+### Git 객체를 만들기 전 자격증명 검사
 
 확장자와 서명이 일치하는 지원 이미지·글꼴은 미리보기와 JSON에 경로·형식을 남깁니다. 이 파일은 내용 검사를 생략하므로 미리보기에 본문을 넣지 않습니다.
 

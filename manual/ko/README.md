@@ -10,6 +10,16 @@ Colvia Preview 사용 안내입니다. Codex나 Claude Code에서 작업 범위�
 2. [설치와 프로젝트 연결](install.md) — 사용할 운영체제 계정에 설치하고 프로젝트 폴더를 연결합니다.
 3. [따라 하기](tutorial.md) — 고객 문의 보고서나 팀용 할 일 웹앱을 만들며 승인·검토·수락을 직접 해 봅니다.
 
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="../assets/gallery/overview-dark.png"><img src="../assets/gallery/overview-light.png" width="900" alt="사용할 계정에 설치한 뒤 폴더마다 연결 내용을 확인하고 승인합니다. 새 일은 작업안을 보고 범위를 승인합니다. 제출본을 검토해 수락하거나 수정을 요청합니다. 하던 일은 프로젝트 현황에서 이어갑니다."></picture><br>
+<em>Colvia는 사용할 계정에 한 번 설치하고, 작업할 폴더마다 연결을 승인합니다. 연결한 뒤에는 새 일을 맡기거나 같은 폴더에서 하던 일을 이어가세요.</em>
+</p>
+
+## 다시 프로젝트를 열었다면
+
+- 첫 제출 전에 남긴 메모가 있다면 [마지막 메모와 지금 파일을 비교](work.md#progress-note)하세요.
+- “오늘 내가 볼 건 뭐지?”라고 물으면 [검토할 일과 수정 요청](work.md#project-status)을 구분해 볼 수 있습니다. [어떤 판을 보고 결정했는지](work.md#decision-history), [다른 작업이 무엇을 기다리는지](work.md#work-dependencies)도 확인할 수 있습니다.
+
 ## 사용하기
 
 | 안내 | 다루는 내용 |
@@ -18,6 +28,8 @@ Colvia Preview 사용 안내입니다. Codex나 Claude Code에서 작업 범위�
 | [Git과 함께 쓰기](git.md) | Git 등록, 수락한 결과를 Git에 반영하기, 중단된 Git 통합 복구, [기존 폴더에서 Git 시작](git.md#adopt-git) |
 | [기록과 백업, 폴더 이동](records.md) | Colvia가 보관하는 내용, 백업과 복원, 폴더를 옮긴 뒤 이어가기 |
 | [업데이트, 알림, 연결 해제와 제거](maintenance.md) | 업데이트와 중단 복구, 알림 설정, 프로젝트 연결 해제, 기록을 보존하는 제거와 재설치 |
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="../assets/gallery/scope-dark.png"><img src="../assets/gallery/scope-light.png" width="420" alt="사람이 범위를 승인하고 에이전트가 준비한 결과를 읽어 수락하거나 수정을 요청합니다."></picture></p>
 
 ## 더 알아보기
 

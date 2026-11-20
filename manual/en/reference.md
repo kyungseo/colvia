@@ -4,6 +4,8 @@
 
 Look up supported environments, storage locations, commands, and terms here. The procedures themselves are in each guide.
 
+To see project status and decision history in chat, start with [opening a version from the project summary](work.md#project-status) or [finding the reason for a change request](work.md#decision-history). Use the commands below when you want to inspect the records yourself.
+
 [Supported environments](#environments) · [Files and folders](#locations) · [Command summary](#commands) · [Glossary](#glossary) · [When something goes wrong](#problems)
 
 <a id="environments" name="environments"></a>
@@ -30,7 +32,7 @@ The space and processing time needed for records and backups depend on the numbe
 
 ### Check document execution availability
 
-Direct agent invocation is disabled in the first Preview. Run the installed launcher’s `execution readiness` to inspect its current configuration. The check leaves project records closed and does not start a model. If the check reports missing or changed files, inspect the reported state.
+Direct agent invocation is disabled in the current Preview. Run the installed launcher’s `execution readiness` to inspect its current configuration. The check leaves project records closed and does not start a model. If the check reports missing or changed files, inspect the reported state.
 
 <a id="locations" name="locations"></a>
 

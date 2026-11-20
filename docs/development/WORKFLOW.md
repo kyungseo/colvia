@@ -114,6 +114,8 @@ Commit, push, PR creation, merge, public release and actual adopter application 
 
 At the existing release preparation and archive review points, use the [documentation and package checks](user-documentation.md#check-affected-guidance) for the affected guidance.
 
+- Compare the direction sections in both READMEs with the release contents and remove goals that have already shipped.
+
 When preparing a Colvia release on GitHub, load `github-release-guide`. Use `first-public` when making the private source repository public and `version-release` for new releases from a public repository. Start with read-only Assess and reuse applicable evidence from the release record. In Guided mode, show the exact target and effect, recheck the preconditions, obtain the Owner's approval for the specific action, and verify the observed result before continuing. Source visibility, repository settings, Git refs and GitHub Release objects have separate approval boundaries.
 
 Use Colvia's existing release plan for signing, Pages deployment and installation checks. Approval for a Pages deployment covers the specified installation files at the public URL. A GitHub Release or a change to source visibility requires its own approval.
