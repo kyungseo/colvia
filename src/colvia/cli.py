@@ -41,6 +41,10 @@ def parser(*,managed=False):
         manager=sub.add_parser('manage',add_help=False,help='Use this verified installation manager')
         manager.add_argument('--help',action='store_true',dest='manager_help');manager.add_argument('--json',action='store_true',dest='manager_json')
         manager.add_argument('arguments',nargs=argparse.REMAINDER)
+    project = sub.add_parser('project').add_subparsers(dest='action', required=True)
+    status = project.add_parser('status', help='Show the next action for current Work, read-only')
+    status.add_argument('--limit', type=int, default=20)
+    status.add_argument('--cursor')
     operation=sub.add_parser('operation');operation.add_argument('identifier')
     configuration=sub.add_parser('configuration').add_subparsers(dest='action',required=True)
     configuration.add_parser('show')
@@ -149,6 +153,9 @@ def effect_authority(args,authority):
 
 
 def dispatch(args,store,workspace,authority=None,*,available_features=None,display=False):
+    if args.group == 'project' and args.action == 'status':
+        from .project_status import project_status
+        return project_status(store, workspace.workspace, limit=args.limit, cursor=args.cursor)
     if args.group=='operation':
         value=store.operation_result(args.identifier)
         return dict(operation=args.identifier,recorded=value is not None,
@@ -314,6 +321,8 @@ def parse_cursor(value):
 
 
 def command_readonly(args):
+    if args.group == 'project' and args.action == 'status':
+        return True
     return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action=='list') or (args.group=='followup' and args.choice is None)
 
 

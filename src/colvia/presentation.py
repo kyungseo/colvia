@@ -70,6 +70,9 @@ def _followup_text(value):
 
 
 def human(value):
+    if value.get('kind') == 'project-status':
+        from .project_status import render
+        return render(value, _printable)
     if value.get('lifecycle_preview') or 'lifecycle_action' in value:
         names={'pause':'일시정지','resume':'재개','discard':'폐기','replace':'대체'}
         if 'lifecycle_action' in value:
