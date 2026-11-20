@@ -27,3 +27,7 @@ The first-connection increment covers an empty or populated unconnected folder. 
 기준 소스 `a9d5a47d3ee8583bccf93a57f892c4c5103417d9`. 후보 목록의 변경 직전 SHA-256은 `139e0c4e2cad407b34d18d81593eeedcb92460e0afd935486958f16e52c731ed`, 등록 직후는 `4917b4a5b1e7de3c496583d48209bb1d4d82c0c0a8d2c1a07e983d15df635740`다. `New Source Candidates`에 아래 한 행을 추가했다. 기존 연결 범위 문서는 날짜를 붙인 연결만 추가했다.
 
 > - [일반 폴더를 Git 프로젝트로 전환](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — 첫 Preview 이후 P1. 연결된 일반 폴더를 같은 Colvia 프로젝트로 유지하면서 Git을 사용한다.
+
+## Existing connected folders
+
+The manager can preview and adopt Git for a connected plain folder once every Work is completed or discarded and there are no pending effects. The same project and workspace retain their Work and decisions. A required transition record fences older clients before any project file effect. An unfinished Work after external initialization still needs a separate recovery design. See the [Git guide](../../manual/en/git.md#adopt-git) and the focused transition tests.

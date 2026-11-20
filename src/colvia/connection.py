@@ -44,11 +44,12 @@ def rebind_payload(p):
 
 
 def connection_schemas():
+    from .git_transition_record import schema as transition_schema
     return [Schema('project.binding',1,{},binding_payload,{}),
             Schema('workspace.registration',1,{'project':'decision'},workspace_payload,{'project':frozenset({'project.binding'})}),
             Schema('connection.rebind',1,{'old':'decision','new':'decision'},rebind_payload,
                    {'old':frozenset({'project.binding'}),'new':frozenset({'project.binding'})}),
-            identities.schema(), identities.move_schema()]
+            identities.schema(), identities.move_schema(), transition_schema()]
 
 
 def workspace_key(workspace):

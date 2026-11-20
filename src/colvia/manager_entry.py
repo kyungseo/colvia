@@ -89,6 +89,19 @@ def parser(*,bound=False):
     identity.add_argument('--operation',required=True)
     for name in ('identity-status','identity-resume'):
         commands.add_parser(name).add_argument('operation')
+    preview = commands.add_parser('git-transition-preview')
+    preview.add_argument('root', type=Path)
+    apply = commands.add_parser('git-transition-apply')
+    apply.add_argument('--plan', type=Path, required=True)
+    apply.add_argument('--receipt', required=True)
+    apply.add_argument('--statement', required=True)
+    apply.add_argument('--operation', required=True)
+    commands.add_parser('git-transition-cancel').add_argument('operation')
+    commands.add_parser('git-transition-resume-preview').add_argument('operation')
+    resume = commands.add_parser('git-transition-resume')
+    resume.add_argument('operation')
+    resume.add_argument('--receipt')
+    resume.add_argument('--statement')
     preview=commands.add_parser('move-preview');preview.add_argument('project');preview.add_argument('root',type=Path)
     apply=commands.add_parser('move-apply');apply.add_argument('--plan',type=Path,required=True)
     apply.add_argument('--receipt',required=True);apply.add_argument('--statement',required=True)
@@ -173,6 +186,25 @@ def run(args,entry):
                     'identity-review-changed')
             return setup.start(operation=args.operation,plan=value['plan'],receipt=args.receipt,statement=args.statement)
         return setup.status(args.operation) if args.command=='identity-status' else setup.resume(args.operation)
+    if args.command.startswith('git-transition-'):
+        from .git_transition import GitTransition
+        setup = GitTransition(home, entry.git(), runtime_lease=entry.lease)
+        if args.command == 'git-transition-preview':
+            from .adapters.git import read_file
+            from .binding import Locator
+            from .git_transition import MARKER
+            owner = Locator.parse(read_file(args.root/MARKER, 16384), kind='plain')
+            return setup.preview(owner.project, args.root)
+        if args.command == 'git-transition-cancel':
+            return setup.resume(args.operation, cancel=True)
+        if args.command == 'git-transition-resume-preview':
+            return setup.resume(args.operation, preview=True)
+        if args.command == 'git-transition-resume':
+            require(bool(args.receipt) == bool(args.statement), 'git-transition-review-changed')
+            return setup.resume(args.operation, receipt=args.receipt, statement=args.statement)
+        value = decode_canonical(home.files.read(args.plan, 8 * 1024 * 1024))
+        require(value['receipt'] == args.receipt, 'git-transition-review-changed')
+        return setup.start(operation=args.operation, plan=value['plan'], receipt=args.receipt, statement=args.statement)
     if args.command.startswith('move-'):
         from .move_setup import MoveSetup
         setup=MoveSetup(home,entry.git(),runtime_lease=entry.lease)
@@ -340,7 +372,7 @@ def main(argv=None,*,entry=None):
             require(args.command not in ('repair-preview','repair-apply'),'explicit-recovery-entry-required')
             if entry is None:entry=ManagedEntry(args.management_root,pointer=pointer)
             result=run(args,entry)
-        if args.command=='git-register-preview' or (args.json and args.command in ('connect-preview','move-preview')):
+        if args.command=='git-register-preview' or (args.json and args.command in ('connect-preview','move-preview','git-transition-preview')):
             raw = canonical_bytes(result)
             if hasattr(sys.stdout, 'buffer'):
                 sys.stdout.buffer.write(raw)
@@ -375,6 +407,27 @@ def main(argv=None,*,entry=None):
             print(result['question'])
         elif args.command in ('identity-apply','identity-status','identity-resume'):
             print(f"연결 재검증: 완료 {len(result['completed'])}개 · 남음 {len(result['remaining'])}개")
+        elif args.command == 'git-transition-preview':
+            from .presentation import display_path
+            print(display_path(result['plan']['root']['path']))
+            print(result['question'])
+        elif args.command == 'git-transition-cancel':
+            print('전환 예약을 취소했습니다. 현재 Git 저장소와 작업 파일은 그대로입니다.')
+        elif args.command == 'git-transition-resume-preview':
+            from .presentation import display_path
+            print(display_path(result['root']))
+            changes = result['changes_since_first_review']
+            print('첫 확인 뒤 작업 파일 변경: ' + ('있음' if changes['working_files'] else '없음'))
+            for path in changes['examples']:
+                print('  ' + display_path(path))
+            if changes['git_fields']:
+                print('Git 변경 항목: ' + ', '.join(changes['git_fields']))
+            print('현재 스테이징한 경로 수: ' + str(changes['staged_count']))
+            for path in changes['staged_examples']:
+                print('  ' + display_path(path))
+            print(result['question'])
+        elif args.command in ('git-transition-apply', 'git-transition-resume'):
+            print('기존 작업 기록을 보존하고 Git 연결로 전환했습니다.')
         elif args.command=='move-preview':
             from .presentation import display_path
             plan=result['plan']

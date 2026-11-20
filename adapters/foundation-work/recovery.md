@@ -58,3 +58,5 @@ the prepared release and receipt before an explicitly authorized resume. A
 missing preparation or expired verification needs diagnosis, not a new download
 loop. Preserve interrupted Git integration locks; do not remove `index.lock` or
 make another commit while recovery is pending.
+
+If the same folder gained a Git repository, follow the connected-folder transition in `guide management`. A location change and a change of repository kind have different previews.

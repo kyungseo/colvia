@@ -414,6 +414,8 @@ Operations that leave an effect outside the records, such as updating Git’s re
 
 ## The Git boundary
 
+A connected ordinary folder can adopt Git after all its Work is finished or discarded. The manager records the approved change in the existing project before publishing either connection marker. It retains the project and workspace IDs and the original decisions. A client that cannot read the transition record cannot write to that project. [Using Git in a connected folder](git.md#adopt-git)
+
 Colvia handles Git in three stages. Your current branch and staging area change only after you review a candidate and approve it separately.
 
 | Stage | What happens to Git |

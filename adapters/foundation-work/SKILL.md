@@ -17,7 +17,7 @@ Read the project rules. Run `./colvia --json ordinary list --list-mode current` 
 Follow each non-null `next` with the same filter and `--cursor` plus its returned JSON argument.
 An empty current list can hide archived or discarded Work. Only a complete empty `--list-mode all` establishes that this connection has no Work.
 If a lookup fails, explain what is known, read `guide recovery`, and stop affected
-writes until you can verify the folder, access and Work state. For a new connection, preview first. Ask plain or Git only if offered and undecided. See `guide management`. You can still help in conversation.
+writes until you can verify the folder, access and Work state. For a new connection, preview first. Ask plain or Git only if offered and undecided. For Git setup or conversion, open `guide management`. You can still help in conversation.
 
 Check for a matching Work first. For a general request to continue, resume the
 only active or review Work when the full list establishes there is exactly one.
