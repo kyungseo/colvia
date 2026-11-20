@@ -8,6 +8,16 @@ In a project that uses Git, register Git with Colvia before connecting. Acceptin
 
 For a folder you are connecting for the first time, ask “Set up Git when you connect this folder.” [See the first-connection choices](install.md#connect).
 
+<a id="adopt-git"></a>
+
+## Start using Git in a connected folder
+
+In the same folder, ask “I'd like to manage this folder with Git.” Once you have [registered Git](#git-register), the agent checks the folder and its existing Work. The preview offers to create an empty `main` branch or use the repository you already created with `git init`. Approving it keeps your working files, staged changes, Work history and accepted results. Ask for a first commit or a remote separately when you need one.
+
+Use a single project root on the same volume as the Colvia records. All Work must be finished or discarded, including any Work under review or paused. If you have yet to initialize Git, you can finish the Work first. If you already initialized Git and conversion is blocked, keep the files and connection information in place. Submodules, linked worktrees, ongoing Git operations and a Git-tracked Colvia locator also require attention before conversion.
+
+After an interruption, ask the agent to resume the Git conversion. It uses the same operation ID. If your working files or staging have changed, review their current state and approve it again. The preview shows which Git settings or references changed and examples of working and staged paths. An index refresh by another Git client can also require confirmation. If another program initialized Git before Colvia applied its first project change, ask the agent to cancel the reservation and preview the existing repository. You can still read results accepted before the conversion. To revise those results or put them into Git, agree on the scope in a new Work.
+
 <a id="git-register" name="git-register"></a>
 
 ## Register Git

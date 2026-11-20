@@ -81,6 +81,8 @@ class GitIntegration:
             require(head.payload['phase']=='completed','git-accepted-result-required')
             self.work._validate_head(ref,self.store.load)
             plan=self.obj(link(head,'plan'));result=self.obj(link(head,'result'))
+            from .git_transition_record import require_current_approval
+            require_current_approval(self.store, plan)
             if current:
                 require(self.work._result_agrees(plan,result),'git-accepted-files-changed')
             observed=self.obj(link(result,'observation'));tree=link(observed,'tree')

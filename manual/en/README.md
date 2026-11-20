@@ -15,7 +15,7 @@ This guide covers Colvia Preview. It explains how to approve a work scope in Cod
 | Guide | What it covers |
 | --- | --- |
 | [Assign and review work](work.md) | Starting a task, approving scope, reviewing and accepting a submission, asking for changes, picking up in a new chat, follow-ups, child Works and isolated folders |
-| [Working with Git](git.md) | Registering Git, putting an accepted result into Git, recovering an interrupted Git integration |
+| [Working with Git](git.md) | Registering Git, putting an accepted result into Git, recovering an interrupted Git integration, [adopting Git in a connected folder](git.md#adopt-git) |
 | [Records, backups, and moving folders](records.md) | What Colvia keeps, backup and restore, continuing after moving a folder |
 | [Updates, notifications, disconnecting, and removal](maintenance.md) | Updating and recovering an interrupted update, notifications, disconnecting a project, removing and reinstalling while keeping records |
 

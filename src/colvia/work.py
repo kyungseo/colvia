@@ -327,6 +327,8 @@ class WorkService:
         ref,head=self._head(work);require(head.payload['phase'] in ('review','completed'),'work-not-reviewable');text(statement)
         require(receipt==self._receipt('accept' if head.payload['phase']=='review' else 'reopen',work,ref),'stale-result-receipt')
         planref=link(head,'plan');plan=self._object(planref);result=link(head,'result')
+        from .git_transition_record import require_current_approval
+        require_current_approval(self.store, plan)
         decision,raw=record('work.decision',dict(work=work,workspace=self.workspace.workspace,action='request-changes',statement=statement),{'result':('decision',result),'authorization':('decision',None)})
         newhead=self._head_record(planref,plan.payload,'active',approval=link(head,'approval'),result=result,decision=decision,previous=ref)
         self._publish(operation,work,ref,newhead,[(decision,raw)])
