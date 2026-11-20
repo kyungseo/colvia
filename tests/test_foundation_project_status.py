@@ -71,13 +71,20 @@ class ProjectStatusTests(WorkFixture, unittest.TestCase):
         receipt = self.service.review('proposal')['receipt']
         self.service.revise(operation='revision-request', work='proposal', receipt=receipt, statement='출처 추가')
         path, = original['submitted_paths']
+        returned = next(row for row in self.status()['items'] if row['work'] == 'proposal')
+        self.assertEqual('revision', returned['group'])
+        self.assertEqual(original['submission'], returned['submission'])
+        self.assertEqual(1, returned['revision'])
+        self.assertEqual('출처 추가', returned['next_action'])
         (self.root/path).write_text('proposal second')
         self.submit('proposal', operation='second-submission')
         ref = json.loads(self.output('--json','ordinary','content',original['work'],path,
                                      '--revision',str(original['revision'])))
         self.assertEqual(original['submission'], ref['submission'])
         self.assertEqual('proposal first', ref['after']['text'])
-        self.assertEqual(2, self.status()['items'][0]['revision'])
+        revised = next(row for row in self.status()['items'] if row['work'] == 'proposal')
+        self.assertEqual(('review', 2), (revised['group'], revised['revision']))
+        self.assertNotEqual(returned['submission'], revised['submission'])
 
     def test_paused_review_is_not_counted_again_and_terminal_items_are_hidden(self):
         self.start()

@@ -8,7 +8,7 @@ One published root supplies the Work heads, associated plans, decisions, submiss
 
 The screen and JSON use the same rows. Within a scan window, review comes first, followed by revisions, ongoing Work, paused Work and plans. Equivalent rows have a stable Work ID order. Each page contains up to 20 actions. The reader looks at up to 200 head-map keys per window and caps detail reads per row and window. Counts apply to the displayed rows. Unreadable details and partial pages warn that other review requests may exist. A change of published root invalidates the cursor.
 
-The agent keeps the project, workspace, Work and submission reference behind the title. It can open the recorded revision and compare its submission hash even when another version has since arrived. Identical titles may need a short clarification. Looking at a row neither authorizes an action nor checks working files.
+The agent keeps the project, workspace, Work and submission reference behind the title. It can open the recorded revision and compare its submission hash even when another version has since arrived. Identical titles may need a short clarification. The revision row identifies the returned submission and the requested changes until a new submission reaches review. The installed guide qualifies partial recommendations and aggregates same-root pages for a project-wide answer. Unreadable rows keep that answer incomplete. Candidate ordering is a separate lookup. Looking at a row neither authorizes an action nor checks working files.
 
 ## Verification
 
