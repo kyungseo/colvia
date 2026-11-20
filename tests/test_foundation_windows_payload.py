@@ -14,6 +14,7 @@ class NativeIdentityDouble:
         s=Path(path).lstat();require(not stat.S_ISLNK(s.st_mode),'synthetic-reparse-refused')
         return dict(identity=(s.st_dev,s.st_ino),directory=stat.S_ISDIR(s.st_mode),links=s.st_nlink,size=s.st_size,write=s.st_mtime_ns,change=s.st_ctime_ns)
 class FileDouble(PosixFiles):
+    def _stream_handle(self,h):return h.open("rb")
     api=NativeIdentityDouble()
 class WindowsPayloadAlgorithmTests(unittest.TestCase):
     def setUp(self):
@@ -39,5 +40,10 @@ class WindowsPayloadAlgorithmTests(unittest.TestCase):
         with self.assertRaisesRegex(RecordError,'inventory-mismatch'):self.verify()
         path.write_bytes(b'fixture');os.link(path,self.root/'duplicate')
         with self.assertRaisesRegex(RecordError,'inventory-mismatch'):self.verify()
+
+class PinnedPayloadTests(WindowsPayloadAlgorithmTests):
+    def verify(self,**kw):
+        from colvia.updates.windows_payload import verify_pinned_inventory
+        verify_pinned_inventory(self.root,self.entries,self.manifest,self.sha,self.files,**kw)
 
 if __name__=='__main__':unittest.main()

@@ -67,9 +67,9 @@ def configured_git(home):
 
 
 class ManagedEntry:
-    def __init__(self,root,*,pointer):
+    def __init__(self,root,*,pointer,files=None):
         os_name,architecture=current_platform()
-        self.home=ManagerHome(root,os_name=os_name,architecture=architecture);self.pointer=pointer
+        self.home=ManagerHome(root,os_name=os_name,architecture=architecture,files=files);self.pointer=pointer
         self.lease=RuntimeLease(self.home.slots,expected_pointer=pointer);slot=self.lease.verified
         manifest=decode_canonical(self.home.files.read(self.home.slots.root/'slots'/slot.slot/'manifest.json',4*1024*1024))
         require(process_runtime()==(slot.python,manifest['python_version'],manifest['sqlite_version']),'dedicated-runtime-mismatch')

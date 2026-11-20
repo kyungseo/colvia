@@ -5,7 +5,7 @@ request OS grants or start a process. Detail reads revalidate the retained event
 and distinguish its original result from current state, even after disconnection.
 """
 from pathlib import Path
-import re,uuid
+import hashlib,re,uuid
 from .codec import canonical_bytes,decode_canonical,decode_envelope,ObjectRef,RecordError,require
 from .binding import _uuid
 from .storage.sqlite import _token
@@ -47,26 +47,44 @@ class NoticeRoutes:
         require(type(event) is str and re.fullmatch('[0-9a-f]{32}',event),'notice-event-id-invalid')
         self.files.private_directory(self.root)
         value=decode_canonical(self.files.read(self.root/(event+'.json')));route_value(value);return value
-    def details(self,event,entry):
+    def details(self,event,entry,*,original_only=False,route_digest=None):
         from .managed_entry import ManagedAuthority
         from .cli import read_locator
         value=self.read(event);ref=route_value(value)
+        if route_digest is not None or original_only:
+            require(hashlib.sha256(canonical_bytes(value)).hexdigest()==route_digest,'notice-route-changed')
         authority=ManagedAuthority(self.home.root/'authorities'/value['project'],project=value['project'],
             slots=self.home.slots,pointer=entry.pointer,files=self.files)
         store=authority.store(readonly=True)
         try:
             require(store.instance==value['instance'],'notice-instance-changed')
-            service=WorkService(store,UnavailableWorkspace());notices=Notices(DeliveryService(service))
-            recorded,_,request=notices.event(value['delivery'],ref=ref)
-            require(recorded.payload['receiver']==value['receiver'],'notice-receiver-mismatch')
-            registration=decode_envelope(link(request,'registration'),store.load(link(request,'registration')))
-            workspace=workspace_payload(registration.payload)
+            with store.read_snapshot() as records:
+                historical = Notices(DeliveryService(WorkService(records, UnavailableWorkspace())))
+                recorded, request, original = historical.original_details(
+                    value['delivery'], project=value['project'], instance=value['instance'], event_ref=ref)
+                require(recorded.payload['receiver'] == value['receiver'], 'notice-receiver-mismatch')
+                if original_only:
+                    return original
+                registration_ref = link(request, 'registration')
+                registration = decode_envelope(registration_ref, records.load(registration_ref))
+                workspace = workspace_payload(registration.payload)
+                work = request.payload['work']
+            service = WorkService(store, UnavailableWorkspace())
             try:
                 git=entry.git();root=Path(workspace.root.path)
                 service.workspace=LocalWorkspace(store,root,workspace.workspace,git=git,locator_reader=lambda:read_locator(root,git))
             except (OSError,RecordError) as exc:
                 service.workspace=UnavailableWorkspace(exc.code if isinstance(exc,RecordError) else 'workspace-access-unavailable')
-            return notices.details(value['delivery'],project=value['project'],instance=value['instance'],event_ref=ref)
+            notices = Notices(DeliveryService(service))
+            from .delivery.service import notice_key
+            for _ in range(2):
+                before = store.root().ref
+                details = notices.current_details(work, original)
+                # A workspace refusal cannot conceal retirement or a route change.
+                require(store.head(notice_key(value['delivery'])) == ref, 'notice-route-mismatch')
+                if store.root().ref == before:
+                    return details
+            raise RecordError('notice-current-state-changed')
         finally:store.close()
 
 
@@ -78,6 +96,9 @@ class RoutedReceiver:
         event=self.routes.persist(route)
         # Exceptions and lost acknowledgements are handled by Notices.emit;
         # neither route creation nor an old event ever authorizes re-emission.
+        if hasattr(self.receiver, 'emit_bound'):
+            digest = hashlib.sha256(canonical_bytes(dict(version=1, **route))).hexdigest()
+            return self.receiver.emit_bound(event, digest)
         return self.receiver.emit(event)
 
 

@@ -215,6 +215,23 @@ class ValidationView:
         return self.snapshot
 
 
+class _RecordSnapshot:
+    """Read published objects and heads from one guarded transaction."""
+
+    def __init__(self, store):
+        self.project = store.project
+        self.instance = store.instance
+        self._load = store._load
+        self._heads = store._root().heads
+
+    def load(self, ref):
+        require(self._load is not None, 'record-snapshot-closed')
+        return self._load(ref)
+
+    def head(self, key):
+        return map_get(self._heads, key, self.load)
+
+
 class GenerationStore:
     def __init__(self, path: Path, *, project: str, instance: str, generation: str,
                  readonly: bool = False, active_check: Callable[[], None],
@@ -420,6 +437,17 @@ class GenerationStore:
         view = _VALIDATIONS.get().get(self.identity)
         if view is not None: return view.head(key)
         with self._transaction(): return map_get(self._root().heads,key,self._load)
+
+    @contextmanager
+    def read_snapshot(self):
+        require(self.readonly, 'record-snapshot-readonly-required')
+        require(not self.db.in_transaction, 'record-snapshot-already-open')
+        with self._transaction():
+            snapshot = _RecordSnapshot(self)
+            try:
+                yield snapshot
+            finally:
+                snapshot._load = None
 
     def has_active_imports(self):
         with self._transaction():

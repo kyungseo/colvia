@@ -18,7 +18,7 @@ const noticeReadLimit = 60 * time.Second
 // Audit only the fixed read operation, not its result body or the environment.
 // New files receive an explicit owner-only ACL; existing ACLs never change.
 func noticeRead(self string, args ...string) (string, error) {
-	if !(len(args) == 1 && args[0] == "notice-identity" || len(args) == 3 && args[0] == "notice-detail" && args[1] == "--event" && validNoticeKey(args[2])) {
+	if !(len(args) == 1 && args[0] == "notice-identity" || len(args) == 5 && (args[0] == "notice-detail" || args[0] == "notice-original") && args[1] == "--event" && validNoticeKey(args[2]) && args[3] == "--route-sha256" && digestPattern.MatchString(args[4])) {
 		return "", errors.New("notice-read-arguments")
 	}
 	if err := privateRoot(noticeRoot); err != nil {
@@ -53,7 +53,7 @@ func noticeRead(self string, args ...string) (string, error) {
 	enc := json.NewEncoder(log)
 	started := time.Now().UTC()
 	event := ""
-	if len(args) == 3 {
+	if len(args) == 5 {
 		event = args[2]
 	}
 	if err = enc.Encode(map[string]any{"stage": "started", "operation": args[0], "event": event, "utc": started.Format(time.RFC3339Nano), "limit_seconds": 60}); err != nil {

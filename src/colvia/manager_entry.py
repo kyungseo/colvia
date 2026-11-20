@@ -72,7 +72,10 @@ def parser(*,bound=False):
     git_register.add_argument('--plan', type=Path, required=True)
     git_register.add_argument('--receipt', required=True)
     git_register.add_argument('--replace', action='store_true')
-    detail=commands.add_parser('notice-detail');detail.add_argument('--event',required=True)
+    for command in ('notice-detail','notice-original'):
+        detail=commands.add_parser(command)
+        detail.add_argument('--event',required=True)
+        detail.add_argument('--route-sha256',required=command=='notice-original')
     for name in ('notice-enable','notice-disable','notice-check','notice-registration-resume','notice-identity','notice-registration-status'):commands.add_parser(name)
     notice=commands.add_parser('notice-send');notice.add_argument('project');notice.add_argument('delivery')
     restore=commands.add_parser('restore-prepare');restore.add_argument('archive',type=Path);restore.add_argument('--operation',required=True)
@@ -141,7 +144,7 @@ def finish(advance,operation):
 
 def run(args,entry):
     entry.lease.check();home=entry.home
-    if args.command.startswith('notice-') and args.command!='notice-detail':
+    if args.command.startswith('notice-') and args.command not in ('notice-original','notice-detail'):
         from .notice_manager import receiver,send
         if args.command=='notice-send':return send(entry,args.project,args.delivery)
         port=receiver(home)
@@ -151,12 +154,15 @@ def run(args,entry):
         if args.command=='notice-identity':
             require(args.receiver_source is not None,'notice-receiver-source-required');return port.identity(args.receiver_source)
         return port.check(port.receiver_identity)
-    if args.command=='notice-detail':
+    if args.command in ('notice-original','notice-detail'):
+        if args.command=='notice-original':
+            require(args.receiver_source is not None,'notice-receiver-source-required')
         if args.receiver_source is not None:
             from .notice_manager import receiver
             receiver(home).identity(args.receiver_source)
         from .notice_routes import NoticeRoutes
-        return NoticeRoutes(home).details(args.event,entry)
+        return NoticeRoutes(home).details(args.event,entry,original_only=args.command=='notice-original',
+                                          route_digest=args.route_sha256)
     if args.command=='status':
         _,selected=home.slots.selection()
         return dict(state='ready',release=entry.lease.verified.release,projects=len(home.projects()),
@@ -370,7 +376,12 @@ def main(argv=None,*,entry=None):
             else:result=recovery.home.inspect_update(args.operation)
         else:
             require(args.command not in ('repair-preview','repair-apply'),'explicit-recovery-entry-required')
-            if entry is None:entry=ManagedEntry(args.management_root,pointer=pointer)
+            if entry is None:
+                files=None
+                if sys.platform=='win32' and args.receiver_source is not None and args.command in ('notice-identity','notice-detail','notice-original'):
+                    from .storage.windows import NoticeReaderFiles
+                    files=NoticeReaderFiles()
+                entry=ManagedEntry(args.management_root,pointer=pointer,files=files)
             result=run(args,entry)
         if args.command=='git-register-preview' or (args.json and args.command in ('connect-preview','move-preview','git-transition-preview')):
             raw = canonical_bytes(result)
@@ -379,6 +390,9 @@ def main(argv=None,*,entry=None):
             else:
                 sys.stdout.write(raw.decode('utf-8'))
         elif args.json:print(json.dumps(result,ensure_ascii=False,sort_keys=True))
+        elif args.command=='notice-original':
+            print(result.get('title') or '맡긴 작업 결과')
+            print(result.get('summary') or '맡긴 작업의 실행 결과가 준비되었습니다.')
         elif args.command=='notice-detail':
             from .notice_routes import detail_text
             print(detail_text(result))

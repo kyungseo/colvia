@@ -15,6 +15,9 @@ from test_foundation_execution_history import grant,Chain,BIRTH
 class JournalFixture(WorkFixture):
     def setUp(self):
         super().setUp()
+        self.initialize_execution_fixture()
+
+    def initialize_execution_fixture(self):
         from colvia.configuration import Configuration
         config=Configuration(self.store);preview=config.preview(['official-execution'])
         config.apply(operation='fixture-enable',features=['official-execution'],receipt=preview['receipt'],statement='Enable synthetic fixture execution')
