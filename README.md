@@ -4,7 +4,7 @@
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo-hero-dark.svg">
-    <img src="assets/brand/logo-hero-light.svg" width="320" alt="Colvia">
+    <img src="assets/brand/logo-hero-light.svg" width="320" alt="Colvia — Human-led AI work">
   </picture>
 
 **Colvia is a local workflow tool for working with AI agents.**
@@ -40,7 +40,7 @@ Install Codex or Claude Code and sign in before starting.
 
 1. In the operating-system account that will use Colvia, copy and run the command for your platform from the [official installation page](https://colvia.github.io/downloads/#en). Colvia downloads and verifies the release files and prepares its own Python runtime. On Windows, open regular PowerShell from the Start menu as a standard user. When setup completes, [check the installed version](manual/en/install.md#check-installed-version).
 2. Open the project folder in Codex or Claude Code. If it uses Git and you haven’t registered it with Colvia yet, [ask the agent to register Git](manual/en/git.md#git-register) first and open the repository root. Then ask, “Connect this folder to Colvia.” Review the folder, the files Colvia will add, and where it will keep the records. Approve the connection if the preview looks right. When the connection preview offers Git, you can start with a regular folder or set up Git. If you start without Git, finish any open Work before you [switch to Git and keep your records](manual/en/git.md#adopt-git).
-3. Once the folder is connected, tell the agent what you want to do here in the current chat. In an empty folder, describe what you want to do, such as writing a report or building a web app, in a sentence or two. You can also connect a project you already work in. The agent uses any goal you’ve shared, along with the existing README and project rules, to propose a plan.
+3. Once the folder is connected, start with what you want in the same chat, such as “Build me a to-do app.” Your agent proposes a single plan covering the files it will create or change and how it will check that the app works. If the scope looks right, approve the whole plan at once. In an existing project, the agent uses any goal you’ve already shared, along with the README and project rules, to shape its plan.
 
 In a regular folder, you can assign a report, proposal, or meeting brief, then review the submitted version or compare it with the current files.
 
@@ -199,8 +199,8 @@ If a key is hardcoded, change the code to read an environment variable. Leave pr
 
 | Who | What they do |
 | --- | --- |
-| You | Choose the goal and scope, grant necessary access, and decide whether to accept the result. |
-| Codex and Claude Code | Read the project rules, propose a task, do the work, and run the checks. |
+| You | Describe the result you want, grant the access needed, and approve the scope your agent proposes. When the agent submits the result, review it and either accept it or ask for changes. |
+| Codex and Claude Code | Read the project rules and propose which files to create or change and how to check the result. Once you approve the scope, do the work and submit it with the check results. |
 | Colvia | Helps the agent find the project’s Work and keeps plans, approvals, submissions, and decisions on your device. |
 
 Colvia keeps plans, approvals, submissions, and decisions in the operating system’s user data folder. It puts the launcher, connection information, and guidance in the project folder. To see how the components and record storage fit together, read the [architecture guide](manual/en/architecture.md).

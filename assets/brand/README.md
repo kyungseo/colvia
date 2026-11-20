@@ -7,7 +7,7 @@ The selected symbol is R6-1, Open C. Use **Colvia** as the name and **AI Work Ha
 | Use | Asset |
 | --- | --- |
 | Logo on a light / dark background | `logo-light.svg` / `logo-dark.svg` |
-| Centered README introduction | `logo-hero-light.svg` / `logo-hero-dark.svg` |
+| Centered README introduction with “Human-led AI work” | `logo-hero-light.svg` / `logo-hero-dark.svg` |
 | First introduction with descriptor | `logo-intro-light.svg` / `logo-intro-dark.svg` |
 | Monochrome / inherited color | `symbol-black.svg`, `symbol-white.svg`, `symbol-current.svg` |
 | App icon, both themes | `icon.svg`, `png/icon-*.png` |

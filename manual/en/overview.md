@@ -12,8 +12,8 @@ Colvia is a local workflow tool for working with AI agents. Approve the scope pr
 
 | Who | What they do |
 | --- | --- |
-| You | Choose the goal and scope, grant necessary access, and decide whether to accept the result. |
-| Codex and Claude Code | Read the project rules, propose a task, do the work, and run the checks. |
+| You | Describe the result you want, grant the access needed, and approve the scope your agent proposes. When the agent submits the result, review it and either accept it or ask for changes. |
+| Codex and Claude Code | Read the project rules and propose which files to create or change and how to check the result. Once you approve the scope, do the work and submit it with the check results. |
 | Colvia | Checks file changes against the approved scope at submission. Keeps plans, approvals, submissions, and decisions on your device so the agent can find and resume the same Work. |
 
 ```mermaid

@@ -96,7 +96,13 @@ If the agent asks where you’ll run it and how you’ll check it, try:
 
 The agent might propose a small Node.js server and a browser page. If you choose Node.js, check the environment with `node --version` and `npm --version`. Ask the agent to record the run and test commands and the browser address in the project README.
 
-Check the plan for the server, browser page, list storage, test files, and completion criteria. If it fits the first version you want, approve the scope and ask the agent to build it. If the web app needs updated setup instructions and a new configuration file, ask for one scope preview before the first submission. Review the paths, reason and checks, then approve both and review them with the app.
+Here’s how the conversation might go just before you approve the first version.
+
+> **You** “I want to be able to add a task and mark it complete.”
+>
+> **Agent** “I’ve listed the files for the page, server, list storage, and tests in the plan. I’ll add a task in one tab, mark it complete in the other, and refresh both tabs to check that they show the same status.”
+
+If the files and checks in the plan match the first version you want, approve them together by saying, “Go ahead with that scope.” If the agent later needs to update the setup instructions and add a configuration file outside the plan, review the reason and checks for both files before approving the extra scope. You decide whether to accept the app after you review the submission.
 
 ### Run the app and review the result
 
