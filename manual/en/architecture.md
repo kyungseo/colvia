@@ -16,7 +16,7 @@ Read when needed · [The Git boundary](#git-boundary) · [Installation and updat
 
 A progress note before the first submission is a separate SQLite record linked to the active Work. Saving changes the latest-note reference while preserving plan approval, submission and acceptance records.
 
-An additional approval links the previous active Work to the effective plan. The original plan and retained contents stay intact. Earlier notes compare only the files observed for that note.
+An additional approval links the previous active Work to the effective plan. The original plan and retained contents stay intact. Earlier notes compare only the files observed for that note. An amendment during revision also identifies the exact submission, its plan and the request that returned it. Each submission keeps the plan and approval used for that revision.
 
 <a id="overview" name="overview"></a>
 

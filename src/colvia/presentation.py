@@ -203,6 +203,8 @@ def human(value):
         if value.get('scope_preview'):
             lines = [title, '기존 승인 파일 · '+', '.join(map(_printable,value['scope'])),
                      '기존 검사 · '+', '.join(map(_printable,value['existing_checks']))]
+            if 'revision' in value:
+                lines.append(f"{value['revision']}판 수정 요청 · " + _printable(value['revision_request']))
             for key,label in [('excludes','기존 제외'),('edit','추가 수정'),('create','추가 생성'),('checks','추가 검사')]:
                 if value[key]:
                     lines.append(label+' · '+', '.join(map(_printable,value[key])))
@@ -381,7 +383,10 @@ MESSAGES={
  'invalid-command-input':'입력한 경로나 옵션 형식을 확인해 주세요. 작업 상태는 상태 조회로 확인할 수 있습니다.',
  'invalid-git-tree':'Git 파일 목록을 해석할 수 없습니다. Git 상태를 확인한 뒤 이어가 주세요.',
  'scope-primary-workspace-only':'격리 작업 폴더에서는 범위를 확장할 수 없습니다. 원래 계획을 확인하세요.',
- 'scope-first-submission-only':'첫 제출 전인 진행 중 일반 작업에서만 파일을 추가할 수 있습니다.',
+ 'scope-first-submission-only':'첫 제출 전이거나 수정 요청을 받은 진행 중 일반 작업에서 파일을 추가할 수 있습니다.',
+ 'scope-peer-overlap':'추가하려는 경로가 다른 작업의 제출 근거와 겹칩니다. 양쪽 파일과 제출본을 확인하세요.',
+ 'scope-peer-read-limit':'다른 작업의 제출 이력이 조회 한도를 넘었습니다. 파일을 보존하고 별도 작업으로 진행하세요.',
+ 'scope-peer-history-uncertain':'다른 작업의 제출 이력을 대조할 수 없습니다. 기록과 파일을 보존하고 확인하세요.',
  'scope-preview-stale':'작업 또는 경로가 바뀌었습니다. 추가할 범위를 다시 확인하세요.',
  'scope-original-changed':'기존 파일이 처음 상태와 달라 추가하지 않았습니다. 현재 변경을 보존하고 별도로 검토하세요.',
  'scope-original-unavailable':'처음에 관찰한 일반 파일인지 확인할 수 없습니다. 이미 생긴 파일은 소급 승인할 수 없습니다.',

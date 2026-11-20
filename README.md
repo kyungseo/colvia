@@ -56,7 +56,7 @@ Here’s what you can ask when you have a file of customer inquiries.
 3. **Accept the result or ask for changes.** Colvia records which submission you accepted. If the approval is still valid and the requested changes fit the approved scope, continue in the same Work.
 4. **Record the next step when it helps.** For example, record a decision to draft sample replies for common inquiries. You can find that decision with the report in a new chat.
 
-Before the first submission, you can [approve extra files in the same Work](manual/en/work.md#scope-change) when they serve the same goal. For example, approve editing a table and creating an appendix together, then review one submission.
+Before the first submission or while revising a result you sent back, you can [approve extra files in the same Work](manual/en/work.md#scope-change) when they serve the same goal. For example, approve editing a table and creating an appendix together, then review one submission.
 
 Colvia keeps the goal, file scope, checks, submission, and decisions together in a **Work**, a single recorded task. You can ask short questions and look up files within the access already granted.
 

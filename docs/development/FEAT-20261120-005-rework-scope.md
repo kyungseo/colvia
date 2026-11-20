@@ -1,0 +1,11 @@
+# Approve extra files during revision
+
+A returned submission may need a change to another file to meet the same goal. The user can approve a named edit or creation before changing the file. The Work keeps its revision request. The next submission uses the expanded plan and advances the revision number. An older submission can be opened under its own plan, including after the user has accepted and then reopened the Work.
+
+Approval version 3 binds the revised plan to the active Work, returned submission, earlier plan and revision decision. The preview rejects paths covered by another open, approved Work. To compare later peer submissions, the reader verifies the snapshot of peer heads against the immutable operation index for that approval. Submission checks subsequent peer revisions for changes to the granted paths and pins the project root until publication. A conflicting change or incomplete comparison stops submission. Unrecorded authorship is outside this check. Existing file and backup permissions and the first-submission limit for progress notes still apply.
+
+The [Work guide](../../manual/en/work.md#scope-change) describes the preview and the reader requirement. Earlier approvals retain their original format. The [development index](README.md) also links to the decision history, status and dependency features that read these records.
+
+Focused checks covered three revisions, two additions to one returned revision, reopening an accepted result, pause and resume, read-only decision history and the dependency on the revised result. Synthetic conflicts covered both submission orders, a peer restoring its baseline, a changed publication during submission and an incomplete peer comparison. A scope grant does not reserve the path for every other Work. The tests also exercised inconsistent head records through the read and publication paths.
+
+A v0.3.0 fixture and its backup remained readable by the candidate. After the first revision amendment the older reader refused that store and its new backup. Publication interrupted before replacing the head retained the old scope. Fixture archives for macOS ARM64 and Windows x64 and ARM64 were checked against the source and the advertised read/write capabilities. Platform installation belongs to release qualification.

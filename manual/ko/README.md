@@ -34,7 +34,7 @@ Colvia Preview 사용 안내입니다. Codex나 Claude Code에서 작업 범위�
 | 에이전트가 폴더나 기록에 접근하지 못해요 | [접근이 막혔을 때](install.md#access) |
 | 첫 제출 전에 자리를 비우고 싶어요 | [중간 메모 남기기](work.md#progress-note) |
 | A를 두고 B부터 하고 싶어요 | [다른 Work로 전환하거나 멈추고 다시 시작하기](work.md#work-lifecycle) |
-| 첫 제출 전 파일 추가 | [표 수정과 부록 생성을 한 번에 승인하기](work.md#scope-change) |
+| 첫 제출 전 또는 수정 요청 후 파일 추가 | [표 수정과 부록 생성을 한 번에 승인하기](work.md#scope-change) |
 | 어제 맡긴 일을 새 대화에서 이어가고 싶어요 | [새 대화나 다른 에이전트에서 이어가기](work.md#resume) |
 | 제출이 거부됐어요 | [맡기고 검토하기](work.md#review) |
 | 수락한 결과를 커밋하고 싶어요 | [Git에 결과 반영하기](git.md#git-integration) |

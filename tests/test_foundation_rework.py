@@ -52,8 +52,14 @@ class ReworkTests(WorkFixture,unittest.TestCase):
 
     def test_missing_checks_cannot_admit_peer(self):
         self.scenario()
-        with self.assertRaisesRegex(RecordError,'attribution-checks-required'):
-            self.service.submit(operation='checks',work='report',summary='내용',checks=[dict(name='원본 보존',status='unavailable',detail='미확인')])
+        checks = [dict(name='원본 보존', status='unavailable', detail='미확인')]
+        before = self.store.root().ref
+        with self.assertRaisesRegex(RecordError, 'check-report-mismatch'):
+            self.service.submit(operation='incomplete', work='report', summary='내용', checks=checks)
+        checks.append(dict(name='집계 대조', status='passed', detail='확인'))
+        with self.assertRaisesRegex(RecordError, 'attribution-checks-required'):
+            self.service.submit(operation='checks', work='report', summary='내용', checks=checks)
+        self.assertEqual(before, self.store.root().ref)
 
 
     def test_new_service_reads_request_diff_and_current_block_without_writing(self):

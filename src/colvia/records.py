@@ -153,7 +153,7 @@ def _head(payload):
 
 
 def application_registry():
-    from .scope_addition import schema as scope_schema, validate_active_link
+    from .scope_addition import schema as scope_schema, rework_schema, validate_active_link
     from .progress import schema as progress_schema
     from .planning import planning_schemas
     from .composition import schemas as composition_schemas
@@ -166,7 +166,7 @@ def application_registry():
     from .work_lifecycle import schema as lifecycle_head_schema
     head_schema = Schema('work.head',1,{'plan':'decision','approval':'decision','result':'decision','decision':'decision','previous':'provenance','context':'decision'},_head,
                {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'result':frozenset({'work.submission'}),'decision':frozenset({'work.decision'}),'previous':frozenset({'work.head'}),'context':frozenset({'composition.binding','composition.membership'})}, content=validate_active_link)
-    return foundation_registry([scope_schema(),progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
+    return foundation_registry([rework_schema(),scope_schema(),progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
         Schema('observation.policy',1,{'sources':'integrity'},_policy,{'sources':frozenset({'body.complete'})}),
         Schema('observation.snapshot',1,{'tree':'integrity','policy':'integrity','workspace':'decision'},_observation_v1,
                {'tree':TREE_KINDS,'policy':frozenset({'observation.policy'}),'workspace':frozenset({'workspace.registration'})}),
@@ -239,6 +239,17 @@ def decode_policy(ref,load):
     return Policy(tuple(sources),tuple(tuple(p) for p in obj.payload['config']),obj.payload['tool'])
 
 
+def check_previous_submission(result, older, approval):
+    require(older.ref.kind == 'work.submission' and link(result, 'previous') == older.ref
+            and all(older.payload[k] == result.payload[k] for k in ('work', 'workspace'))
+            and older.payload['revision'] + 1 == result.payload['revision'], 'submission-sequence-mismatch')
+    require(approval.ref == link(result, 'approval') and link(approval, 'plan') == link(result, 'plan'),
+            'approval-plan-mismatch')
+    if link(older, 'plan') != link(result, 'plan') or link(older, 'approval') != approval.ref:
+        require(approval.ref.version == 3 and link(approval, 'submission') == older.ref
+                and link(approval, 'submitted_plan') == link(older, 'plan'), 'rework-scope-binding')
+
+
 def head_summary(ref,load):
     """Check selected record relationships without traversing body/history graphs."""
     registry=application_registry()
@@ -253,13 +264,24 @@ def head_summary(ref,load):
     if approval is not None:
         obj=get(approval,'work.approval');common(obj)
         require(link(obj,'plan')==plan.ref,'approval-plan-mismatch')
+    phase = head.payload['phase']
+    revising = phase == 'active' or (phase in ('paused', 'discarded') and head.payload.get('origin') == 'active')
+    if approval is not None and approval.version == 3:
+        require(link(head, 'result') is not None and phase != 'approved', 'rework-scope-binding')
     result=None;decision=None
     if link(head,'result') is not None:
         result=get(link(head,'result'),'work.submission');common(result)
-        require(link(result,'plan')==plan.ref and link(result,'approval')==approval,'submission-approval-mismatch')
+        if link(result,'plan')!=plan.ref or link(result,'approval')!=approval:
+            require(approval is not None and approval.version == 3
+                    and revising
+                    and link(obj,'submission')==result.ref and link(obj,'decision')==link(head,'decision')
+                    and link(obj,'submitted_plan')==link(result,'plan'),'submission-approval-mismatch')
+            old_approval = get(link(result, 'approval'), 'work.approval')
+            common(old_approval)
+            require(link(old_approval, 'plan') == link(result, 'plan'), 'submission-approval-mismatch')
     if link(head,'decision') is not None:
         decision=get(link(head,'decision'),'work.decision');common(decision)
         require(result is not None and link(decision,'result')==result.ref,'decision-result-mismatch')
         if head.payload['phase']=='completed':require(decision.payload['action']=='accept','acceptance-required')
-        elif head.payload['phase']=='active':require(decision.payload['action']=='request-changes','rework-decision-required')
+        elif revising:require(decision.payload['action']=='request-changes','rework-decision-required')
     return head,plan,result,decision

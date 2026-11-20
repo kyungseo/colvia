@@ -16,7 +16,7 @@ from .maps import read_map
 from .observation import verify_scope,policy_transition,relocated_policy
 from .connection_identity import contexts_match, ROLES
 from .connection import Connections
-from .records import (observation_identity, application_registry,operation_closure,record,link,encode_observation,
+from .records import (check_previous_submission, observation_identity, application_registry,operation_closure,record,link,encode_observation,
                       decode_policy,text,head_summary,submission_input)
 from .storage.sqlite import _token
 from .tree import read_tree
@@ -89,8 +89,7 @@ class WorkService:
         resultref=link(head,'result')
         if resultref is not None:
             result=self._object(resultref,load);common(result)
-            require(link(result,'plan')==planref and link(result,'approval')==approval,'submission-approval-mismatch')
-            sizes+=self._validate_result(plan,result,load)
+            sizes+=self._validate_result(self._object(link(result,'plan'),load),result,load)
         from .composition import validate_context
         validate_context(head,plan,self._object(resultref,load) if resultref else None,load,validate_capture=self._validate_capture)
         submission_size(sizes)
@@ -136,8 +135,8 @@ class WorkService:
         if previous is not None:
             older=self._object(previous,load);common(older)
             require(older.ref.version!=2 or result.ref.version==2,'attribution-protection-removed')
-            require(older.payload['revision']+1==result.payload['revision'],'submission-sequence-mismatch')
-        else:require(result.payload['revision']==1,'submission-sequence-mismatch')
+            check_previous_submission(result, older, approval)
+        else:require(result.payload['revision']==1 and approval.ref.version != 3,'submission-sequence-mismatch')
         if result.ref.version==2:require(all(c["status"]=="passed" for c in result.payload["checks"]),"attribution-checks-required")
         submission_size(before_sizes+sizes)
         return sizes
@@ -345,7 +344,7 @@ class WorkService:
         result=link(head,'result')
         if result is not None:
             obj=self._object(result);value.update(summary=obj.payload['summary'],files=obj.payload['changed'],revision=obj.payload['revision'])
-            try:value['current_matches']=self._result_agrees(plan,obj)
+            try:value['current_matches']=self._result_agrees(self._object(link(obj,'plan')),obj)
             except (OSError,RecordError) as exc:
                 value['current_matches']=None
                 value['current_unavailable']=exc.code if isinstance(exc,RecordError) else 'workspace-access-unavailable'
@@ -380,7 +379,6 @@ class WorkService:
         from .maps import map_get
         require(type(text_limit) is int and 0<=text_limit<=1024*1024,'invalid-text-limit')
         ref,head=self._head(work,same_workspace=False);plan=self._object(link(head,'plan'))
-        require(path in plan.payload['scope'],'path-not-in-work-scope')
         current=link(head,'result');require(current is not None,'work-result-required')
         result=self._object(current)
         if revision is not None:
@@ -389,10 +387,10 @@ class WorkService:
             while result.payload['revision']!=revision:
                 previous=link(result,'previous');require(previous is not None,'result-revision-not-found')
                 older=self._object(previous)
-                require(older.ref.kind=='work.submission' and older.payload['work']==work and
-                        older.payload['workspace']==plan.payload['workspace'] and link(older,'plan')==plan.ref and
-                        older.payload['revision']+1==result.payload['revision'],'submission-sequence-mismatch')
+                check_previous_submission(result, older, self._object(link(result, 'approval')))
                 steps+=1;require(steps<=10000,'history-page-limit');result=older
+        plan=self._object(link(result,'plan'))
+        require(path in plan.payload['scope'],'path-not-in-work-scope')
         def value(mapping):
             body=map_get(mapping,path,self.store.load)
             if body is None:return dict(exists=False)
