@@ -1,5 +1,9 @@
 # 일반 폴더를 Git 프로젝트로 전환
 
+## First connection candidate · 2026-11-20
+
+The first-connection increment covers an empty or populated unconnected folder. The person may keep it plain, or approve Git initialization and connection together. A missing account registration can be included in the same receipt. A local operation journal retains the selected project and the prepared, empty repository. Native Git observation and the ordinary connection path remain in use. The installed manuals and on-demand manager guide describe cancellation before apply, release of the reservation before connection files are prepared, and resumption by operation ID. After preparation, restart checks the approved repository identity and preserves new staging. Changes to existing connected projects, Work records, first commits and remotes belong to separate decisions.
+
 ## Owner 계획 결정 · 2026-11-16
 
 등록판 `plain-to-git-project-conversion-r1`. 첫 Preview 이후 **P1로** 등록한다. 대상은 Colvia가 이미 연결된 일반 폴더를 Git으로 관리하고, 같은 프로젝트의 Work·승인·제출본과 보존 본문을 이어 가는 흐름이다. [기존 연결 범위 검토의 ‘연결 뒤 Git 유무가 바뀜’](record-foundation/connection-edge-scope.md#첫-공개와-후속-기능)에서 이어받는다. 이번 결정의 범위는 후보 등록이다.

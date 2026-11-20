@@ -6,6 +6,8 @@ Git을 사용하는 프로젝트에서는 연결 전에 Git을 Colvia에 등록�
 
 [Git 등록하기](#git-register) · [명령으로 등록하기](#git-register-cli) · [Git에 결과 반영하기](#git-integration) · [중단된 Git 반영 복구하기](#git-recovery)
 
+처음 연결하는 폴더라면 “이 폴더를 연결하면서 Git도 시작해 주세요”라고 요청하세요. [첫 연결에서 선택할 수 있는 방법](install.md#connect)을 확인할 수 있습니다.
+
 <a id="git-register" name="git-register"></a>
 
 ## Git 등록하기

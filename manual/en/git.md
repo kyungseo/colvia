@@ -6,6 +6,8 @@ In a project that uses Git, register Git with Colvia before connecting. Acceptin
 
 [Register Git](#git-register) · [Register from the command line](#git-register-cli) · [Put an accepted result into Git](#git-integration) · [Recover an interrupted Git integration](#git-recovery)
 
+For a folder you are connecting for the first time, ask “Set up Git when you connect this folder.” [See the first-connection choices](install.md#connect).
+
 <a id="git-register" name="git-register"></a>
 
 ## Register Git

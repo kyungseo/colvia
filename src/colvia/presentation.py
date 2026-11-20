@@ -417,6 +417,14 @@ def failure(code):
     if code == 'invalid-guide-topic':
         return '다음 안내 중 하나를 선택하세요: ' + ', '.join(TOPIC_NAMES) + '. JSON 출력을 원하면 guide 앞에 --json을 붙이세요.'
     recovery={
+        'first-git-cancel-too-late':'연결 파일 적용이 준비되었습니다. 기존 연결 작업 번호로 connect-resume을 실행하세요.',
+        'first-git-cancelled':'취소한 첫 연결입니다. 현재 폴더에서 새 연결 미리보기를 확인하세요.',
+        'first-git-repository-changed':'Git 저장소의 현재 상태가 연결 계획과 달라졌습니다. 폴더와 스테이징을 보존했습니다. 연결 파일 적용 전이라면 connect-cancel로 예약을 취소한 뒤 새 미리보기를 확인하세요.',
+        'first-git-init-incomplete':'빈 Git 저장소 준비가 중단되었습니다. 같은 연결 작업 번호로 재개하세요.',
+        'first-git-connection-pending':'첫 연결이 진행 중입니다. 원래 연결 작업 번호로 connect-resume을 실행하세요.',
+        'first-git-unconnected-folder-required':'이미 Git을 사용하는 폴더입니다. 저장소의 최상위 폴더에서 기존 Git 연결 미리보기를 확인하세요.',
+        'first-git-option-required':'Git 실행 파일을 함께 등록하려면 첫 연결 미리보기에서 --init-git을 선택하세요.',
+        'first-git-use-registration':'이 계정에 등록한 Git이 있습니다. 기존 등록을 사용해 첫 연결 미리보기를 확인하세요.',
         'work-not-pausable':'작업 중이거나 검토를 기다리는 Work를 선택하세요.',
         'work-not-paused':'일시정지한 Work를 선택하세요.',
         'work-not-discardable':'종료한 Work입니다. 상세에서 기록을 확인하세요.',

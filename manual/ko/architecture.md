@@ -559,7 +559,7 @@ Colvia 소스 저장소의 `src/colvia` 기준입니다.
 | 관리 서비스 | `management.py`, `project_setup.py`, `lifecycle.py`, `move_setup.py`, `backup_service.py`, `restore_manager.py`, `updates/` |
 | 기록 규칙(domain) | `records.py`, `schemas.py`, `codec.py`, `graph.py`, `maps.py`, `tree.py`, `bodies.py`, `observation.py`, `binding.py`, `effects.py` |
 | 저장소 | `storage/sqlite.py`, `storage/authority.py` |
-| Git과 작업 폴더 | `adapters/git.py`, `observe.py`, `workspace.py`, `git_registration.py` |
+| Git과 작업 폴더 | `adapters/git.py`, `observe.py`, `workspace.py`, `git_registration.py`, `first_git.py` |
 | 플랫폼 구현 | `platforms/` |
 | 선택 기능 | `execution/` |
 | 네이티브 실행기 | 저장소의 `distribution/foundation-launcher/` |
