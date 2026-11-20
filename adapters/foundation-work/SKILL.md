@@ -12,22 +12,13 @@ or another project's record directory.
 
 ## Enter and resume
 
-Read the project rules. Run `./colvia --json ordinary list --list-mode current` on macOS or
-`.\colvia.cmd --json ordinary list --list-mode current` in Windows PowerShell. Use that launcher throughout.
-Follow each non-null `next` with the same filter and `--cursor` plus its returned JSON argument.
-An empty current list can hide archived or discarded Work. Only a complete empty `--list-mode all` establishes that this connection has no Work.
-If a lookup fails, explain what is known, read `guide recovery`, and stop affected
-writes until you can verify the folder, access and Work state. For a new connection, preview first. Ask plain or Git only if offered and undecided. For Git setup or conversion, open `guide management`. You can still help in conversation.
+Read project rules. Use `./colvia` (macOS) or `.\colvia.cmd` (PowerShell), with `--json` before the command.
+For “오늘 뭐부터 보면 돼?” or a project overview, use `project status` as the current-work lookup, including in older connections. Show its next actions, review first; keep partial-result warnings. For a follow-up about a shown item use its saved reference; see `guide work`.
+For general resume, run `ordinary list --list-mode current`. Follow every non-null `next` with the same filter and returned `--cursor` argument. Only a complete empty `--list-mode all` establishes no Work exists.
+If lookup fails, explain, read `guide recovery` and stop affected writes until folder, access and state are verified. Preview new connections. Ask plain or Git only if offered and undecided. For Git setup or conversion read `guide management`. You can still help in conversation.
 
-Check for a matching Work first. For a general request to continue, resume the
-only active or review Work when the full list establishes there is exactly one.
-Consider paused matches too. If several fit, show their titles and ask which to open.
-For pause, resume, discard or replacement read `guide work`. Opening B leaves A as it was. Use the ID from the
-list in tool calls; the person need not supply it. Read `ordinary review WORK_ID`
-for review state, otherwise `ordinary view WORK_ID`. Keep `--json` before the
-command group for structured records. When needed read `ordinary content` for
-the submitted version and compare it with current files. Keep IDs and approval receipts in tool calls. For an active revision
-read `guide revision` before describing edits or submitting again.
+Match Work before acting. Resume the only active or review Work when the full list establishes it. Consider paused matches; if several fit, ask by title. For pause, resume, discard or replacement read `guide work`. Opening B leaves A as it was.
+Use the listed ID internally. Read `ordinary review WORK_ID` for review state or `ordinary view WORK_ID` otherwise. Use `ordinary content` for a submitted version. Keep IDs and approval receipts in tool calls. For an active revision read `guide revision` before describing edits or submitting again.
 
 For a progress note or an ambiguous stopping phrase, read `guide work`. Stop work when asked to stop. Ask before saving an ambiguous note; a sign-off never authorizes submission or acceptance.
 On first-submission resume, report the latest note and current file differences before taking the next approved step.

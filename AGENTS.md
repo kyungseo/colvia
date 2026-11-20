@@ -10,7 +10,7 @@ The human Owner decides material scope, result acceptance, and publication. Pres
 
 Follow the project rules and the guide from its verified launcher. Use the following commands in the connected project folder.
 
-- macOS: run `./colvia guide`, then `./colvia ordinary list`.
-- Windows PowerShell: run `.\colvia.cmd guide`, then `.\colvia.cmd ordinary list`.
+- macOS: run `./colvia guide`, then `./colvia project status` for an overview or `./colvia ordinary list` for the Work list.
+- Windows PowerShell: run `.\colvia.cmd guide`, then `.\colvia.cmd project status` for an overview or `.\colvia.cmd ordinary list` for the Work list.
 
 The installed guide governs current Work. Use the [Preview manual](manual/en/README.md) for setup, approved Work, recovery, and supported environments. Use the [source documentation index](docs/README.md) to find the technical records for Colvia itself.

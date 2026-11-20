@@ -255,14 +255,23 @@ def verify_map(root: ObjectRef, load: Callable[[ObjectRef], bytes]) -> None:
             require(subtotal == count, 'map-count-mismatch')
 
 
-def scan_map(root: ObjectRef, load: Callable[[ObjectRef], bytes]):
+def scan_map(root: ObjectRef, load: Callable[[ObjectRef], bytes], *, after: str | None = None):
     """Deterministic bounded traversal for paged lists; never load value graphs."""
+    if after is not None:
+        _key(after)
+    route = _hash(after) if after is not None else ()
     pending=[(root,())];size=count=0
     while pending:
-        ref,prefix=pending.pop();raw=load(ref);size+=len(raw);count+=1
+        ref,prefix=pending.pop()
+        if after is not None and prefix < route[:len(prefix)]:
+            continue
+        raw=load(ref);size+=len(raw);count+=1
         require(size<=MAP_BYTES_LIMIT and count<=MAP_LIMIT,'map-read-limit')
         leaf,items=_node(ref,raw,prefix)
         if leaf:
-            yield from items
+            if after is not None and prefix == route[:len(prefix)]:
+                yield from ((key, value) for key, value in items if key > after)
+            else:
+                yield from items
         else:
             pending.extend((child,(*prefix,key)) for key,child in reversed(items))

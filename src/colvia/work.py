@@ -411,5 +411,6 @@ class WorkService:
         from .scope_addition import history
         created_later = any(path in amendment.payload['create'] for amendment,_ in history(result, self.store.load))
         return dict(work=work,title=plan.payload['title'],path=path,revision=result.payload['revision'],
+                    submission=result.ref.sha256,
                     before_basis='absent-at-additional-approval' if created_later else 'original-plan',
                     before=value(link(plan,'before')),after=value(link(result,'after')))

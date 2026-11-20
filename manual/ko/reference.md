@@ -80,6 +80,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | 명령 | 하는 일 |
 | --- | --- |
 | `guide` | 짧은 시작 안내를 엽니다. 제출·수락은 `guide work`, 중단 후 복구는 `guide recovery`처럼 필요한 주제를 붙여 읽을 수 있습니다. 두 방식 모두 프로젝트 기록을 열지 않고 설치본에서 검증한 안내를 읽습니다. |
+| `project status` | 현재 Work에서 내 검토와 다음 행동을 보여 줍니다. 일부만 표시하면 더 볼 수 있습니다. |
 | `ordinary list` | 현재 목록에서 보관·폐기 항목을 숨깁니다. `--list-mode current`, `archived`, `all`을 선택할 수 있습니다. JSON 무옵션은 기존 전체 목록입니다. |
 | `ordinary lifecycle-preview` · `ordinary lifecycle-apply` | [중단·재개·폐기·대체](work.md#work-lifecycle) |
 | `ordinary view`, `ordinary review`, `ordinary content` | Work의 상태, 검토할 제출본, 보관된 본문을 봅니다. |

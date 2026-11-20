@@ -8,6 +8,7 @@ Use the [document language guide](document-ownership.md#document-language) when 
 
 - [Record foundation and public runtime](FEAT-20261106-002-record-foundation.md) — Design revisions and implementation preparation.
 - [Document and artifact placement](document-ownership.md) — existing source, installed-guide and private-evidence rules.
+- [Read-only project status](FEAT-20261120-001-project-status.md) — Current Work, next actions, partial views and opening a shown submission.
 - [Product evidence and retained follow-ups](product-evidence-and-followups.md) — contracts, observed limits and the small public-safe intake from private trials.
 - [Record-preserving uninstall and reinstall](record-preserving-uninstall-followup.md#첫-preview-반영--2026-11-17) — Included in the first Preview. Remove the installed files and reinstall under the same account with existing Work and submissions intact.
 

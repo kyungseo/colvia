@@ -145,6 +145,8 @@ Let the user pause a Work for later resumption or end it with a reason. When a c
 
 Add user-set priority to the existing candidate list. Derive the project view from Work and candidate records so it can show active, awaiting review and paused Work, the next action within a Work and any selected follow-up. Use a dependency only when one Work actually waits for another. Reuse the [existing priority and readiness criteria](README.md#continuation-scope-and-remaining-criteria), the [read-only view](README.md#human-readable-projection) and the [blocker criteria](README.md#verifiable-slicing).
 
+The [read-only project status candidate](FEAT-20261120-001-project-status.md) derives the first overview from existing Work. Recording candidate priority and explicit prerequisites remains a separate step.
+
 ### P3: Milestones when needed
 
 Reconsider when users repeatedly need to track several Works against a shared outcome or date that the current direct parent-child relationship cannot represent. Assess that gap with the [existing work decomposition criteria](README.md#verifiable-slicing) before adding a separate milestone record.

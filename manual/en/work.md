@@ -4,7 +4,7 @@
 
 How to assign work in a connected project, review a submission and accept it or ask for changes, and pick the work up in a new chat. Colvia keeps the goal, file scope, checks, submission, and decisions together in a **Work**, a single recorded task.
 
-[Start](#start) · [Delegate and review](#review) · [Pick up in a new chat](#resume) · [Revise an earlier result](#revise) · [Find a recorded next step](#follow-up) · [Child Works and isolated folders](#child-works)
+[Start](#start) · [What needs my attention?](#project-status) · [Delegate and review](#review) · [Pick up in a new chat](#resume) · [Revise an earlier result](#revise) · [Find a recorded next step](#follow-up) · [Child Works and isolated folders](#child-works)
 
 ```mermaid
 flowchart LR
@@ -85,6 +85,14 @@ On an active ordinary Work, say “Save our progress for tomorrow.” The agent 
 In a new chat, say “Pick up where we left off.” The agent reads the note and approved scope, then compares the files with their state when the note was saved. If the note says to check a source and the report has since changed, inspect the report first. Unavailable comparisons are shown separately. Checks mentioned in a note do not count as a submission's check report. After a submission is sent back, resume from its revision request. A Work that returns to the same approved plan can use its earlier note. After a file addition, the note still compares the paths it observed. Newly approved files have no comparison until you save another note.
 
 Once the first note is saved, this project's records and subsequent backups require a version that supports notes. If you might return to v0.2.0, keep a separate [backup](records.md#backup) before saving that first note.
+
+<a id="project-status" name="project-status"></a>
+
+## What needs my attention today?
+
+Ask “What should I look at today?” in a connected folder. For one Work you get its title and next action on one line. With several, your reviews come first. You can see what needs your review, what you sent back for changes, where a progress note left off, and why a Work is paused. You can start without entering priorities or dependencies.
+
+Say “Show me that revised proposal” to open the version you just saw. If two items fit, the agent can ask which title or file you meant. A partial overview warns that more review requests may exist. Ask to see the rest to continue.
 
 <a id="resume" name="resume"></a>
 

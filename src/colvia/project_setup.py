@@ -21,7 +21,7 @@ from .effects import guard
 from .storage.authority import Authority
 from .storage.sqlite import _token
 
-BLOCK=b'<!-- colvia:managed:start -->\nThis project uses Colvia to retain agreed scope, submitted results and human decisions.\nRead `./colvia guide` once, then `./colvia ordinary list` for current work. Use command help only for the next needed action.\nProject rules still apply. An approved task includes preparation of its reviewable result; final result acceptance remains separate.\nDo not quote internal identifiers or instruction paths in normal replies.\n<!-- colvia:managed:end -->\n'
+BLOCK=b'<!-- colvia:managed:start -->\nThis project uses Colvia to retain agreed scope, submitted results and human decisions.\nRead `./colvia guide` once. For a project overview use `./colvia project status`; for the Work list use `./colvia ordinary list`. Use command help only for the next needed action.\nProject rules still apply. An approved task includes preparation of its reviewable result; final result acceptance remains separate.\nDo not quote internal identifiers or instruction paths in normal replies.\n<!-- colvia:managed:end -->\n'
 
 def sha(raw):return hashlib.sha256(raw).hexdigest()
 def topology_value(top):
