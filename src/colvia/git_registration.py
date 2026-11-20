@@ -40,30 +40,35 @@ def preview_registration(home, lease, executable):
 
 
 def register_git(home, lease, plan, receipt, *, replace=False):
+    with home.files.exclusion(home.root / 'management.lock'), lease.hold():
+        return register_locked(home, lease, plan, receipt, replace=replace)
+
+
+def register_locked(home, lease, plan, receipt, *, replace=False, approved=False):
     require(type(plan) is dict and type(plan.get('executable')) is str and
             type(plan.get('expires_at')) is int and _sha256(canonical_bytes(plan)) == receipt,
             'git-registration-review-changed')
-    with home.files.exclusion(home.root / 'management.lock'), lease.hold():
+    if not approved:
         require(0 < plan['expires_at'] - int(time.time()) <= _REVIEW_SECONDS,
                 'git-registration-review-changed')
-        current, previous_raw, previous, stamp = _registration_plan(
-            home, lease, plan['executable'], plan['expires_at'])
-        require(current == plan, 'git-registration-review-changed')
-        same = previous is not None and previous['path'] == plan['executable'] and previous['sha256'] == plan['sha256']
-        if same:
-            return dict(state='already-registered', **previous)
-        require(previous is None or replace, 'git-registration-replacement-required')
-        git = Git(plan['executable'], expected_sha256=plan['sha256'], expected_stamp=stamp)
-        tool = dict(path=str(git.executable), sha256=git.sha256, version=git.version)
-        path = home.root / 'tools.json'
-        data = canonical_bytes(dict(version=1, git=tool))
-        if previous_raw is None:
-            home.files.create(path, data)
-        else:
-            home.files.replace(path, data, previous_raw)
-        try:
-            saved = home.files.read(path, 32 * 1024)
-        except (OSError, RecordError) as error:
-            raise RecordError('git-registration-outcome-unknown') from error
-        require(saved == data, 'git-registration-outcome-unknown')
-        return dict(state='registered', **tool)
+    current, previous_raw, previous, stamp = _registration_plan(
+        home, lease, plan['executable'], plan['expires_at'])
+    require(current == plan, 'git-registration-review-changed')
+    same = previous is not None and previous['path'] == plan['executable'] and previous['sha256'] == plan['sha256']
+    if same:
+        return dict(state='already-registered', **previous)
+    require(previous is None or replace, 'git-registration-replacement-required')
+    git = Git(plan['executable'], expected_sha256=plan['sha256'], expected_stamp=stamp)
+    tool = dict(path=str(git.executable), sha256=git.sha256, version=git.version)
+    path = home.root / 'tools.json'
+    data = canonical_bytes(dict(version=1, git=tool))
+    if previous_raw is None:
+        home.files.create(path, data)
+    else:
+        home.files.replace(path, data, previous_raw)
+    try:
+        saved = home.files.read(path, 32 * 1024)
+    except (OSError, RecordError) as error:
+        raise RecordError('git-registration-outcome-unknown') from error
+    require(saved == data, 'git-registration-outcome-unknown')
+    return dict(state='registered', **tool)

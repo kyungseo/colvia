@@ -294,7 +294,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0. The [implementation and verification record](FEAT-20261118-001-git-credential-gate.md) covers the selected local check before Git objects are written.
 
-- [Convert a connected plain folder to a Git project](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — P1, after the first Preview. Enable Git while retaining the existing Colvia project.
+- [Convert a connected plain folder to a Git project](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) — P1, after the first Preview. First-connection Git choice under review. Conversion of a connected project with retained Work remains a follow-up.
 
 - [Shorter Colvia startup guidance in new chats](product-evidence-and-followups.md#p1-short-guide-at-the-start-of-a-new-chat) — P1. Read a short guide at entry and load the submission or recovery procedure when needed. [Selected implementation and verification](FEAT-20261119-001-startup-guide.md).
 

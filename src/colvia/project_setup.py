@@ -37,8 +37,22 @@ class ProjectSetup:
         # pinned over each short native setup step, never over a user wait.
         with self.home.files.exclusion(self.home.root/'management.lock'):
             with self.runtime_lease.hold() if self.runtime_lease else nullcontext():yield
-    def preview(self,root):
-        with self.runtime_lease.hold() if self.runtime_lease else nullcontext():return self._preview(root)
+    def preview(self,root,*,init_git=False,git_executable=None):
+        with self.runtime_lease.hold() if self.runtime_lease else nullcontext():
+            require(init_git or git_executable is None, 'first-git-option-required')
+            preview = self._preview(root)
+            if init_git:
+                from .first_git import git_preview
+                return git_preview(self, preview, executable=git_executable)
+            if preview['plan']['topology']['kind'] == 'plain':
+                from .first_git import unavailable_reason
+                reason = unavailable_reason(self.home, preview['plan'])
+                preview['git_choice_available'] = reason is None
+                if reason:
+                    preview['git_choice_unavailable_reason'] = reason
+                    return preview
+                preview['question'] = '일반 폴더로 연결할까요? Git을 쓰려면 새 Git 저장소를 만드는 미리보기를 먼저 확인하세요.'
+            return preview
     def require_identity_capability(self,top):
         if self.runtime_lease is not None and persistent(top.root):
             slot=self.runtime_lease.verified
@@ -53,9 +67,11 @@ class ProjectSetup:
         entry=self.home.root/'bin'/('colvia.exe' if self.home.os_name=='windows' else 'colvia');raw=self.home.files.read(entry,64*1024*1024)
         require(sha(raw)==registry['sha256'] and (self.home.os_name=='windows' or entry.stat().st_mode&0o111),'managed-entry-changed')
         return entry,registry
-    def _plan(self,root,project,instance,workspace,nonce):
+    def _plan(self,root,project,instance,workspace,nonce,*,reservation=None):
         root=Path(root);top=discover(root,self.git);require_connection_root(location(root),top)
         self.require_identity_capability(top)
+        from .first_git import check_reservation
+        check_reservation(self.home, top.root, reservation)
         check_connection_boundary(self.home, self.git, top, overlap_code='connect-project-overlap', historical=True)
         entry,inventory=self._entry();launcher_name,launcher_mode,launcher=project_launcher(entry,self.home.root,self.home.os_name);locator=Locator(project,instance,1,nonce,workspace if top.kind=='plain' else None)
         locator_root=Path(top.common.path) if top.kind=='git' else root
@@ -95,34 +111,40 @@ class ProjectSetup:
         _token(operation);require(type(statement) is str and 0<len(statement)<=16384,'connect-statement-required')
         require(receipt==sha(canonical_bytes(plan)),'connect-review-changed')
         with self.management():
+            if plan.get('action') == 'first-connect-git':
+                from .first_git import begin
+                return begin(self, operation, plan, receipt, statement)
             actual=self._plan(plan['root'],plan['project'],plan['instance'],plan['workspace'],plan['nonce'])
             require(canonical_bytes(actual)==canonical_bytes(plan),'connect-review-changed')
             area=self.home.root/'operations'/operation;self.home.files.create_directory(area)
             self.home.files.create(area/'connect.json',canonical_bytes(dict(version=1,operation=operation,plan=plan,receipt=receipt,statement=statement)))
             authority=Authority.create(self.home.root/'authorities'/plan['project'],project=plan['project'],instance=plan['instance'],generation='initial',files=self.home.files)
-            store=authority.store()
-            try:
-                top=discover(Path(plan['root']),self.git)
-                require(canonical_bytes(topology_value(top)) == canonical_bytes(plan['topology']), 'connect-topology-changed')
-                locator=Locator.parse(canonical_bytes(plan['locator']),kind=top.kind)
-                binding=ProjectBinding(locator,top.kind,top.common if top.kind=='git' else top.root)
-                Connections(store).connect(operation=operation+'-binding',binding=binding,observed=top,
-                    workspace=WorkspaceRegistration(plan['workspace'],top.root,top.gitdir),verify_topology=lambda:discover(Path(plan['root']),self.git))
-                binding_ref=store.head(PROJECT_KEY);entries=[]
-                for c in self._changes(plan):
-                    owned=c['after'] if c['before'] is None else c['after'][len(c['before']):]
-                    entries.append(dict(role=c['role'],root=c['root'],path=c['path'],owned=b64(owned),existed=c['before'] is not None,mode=c['mode']))
-                config=record('project.integration',dict(entries=entries),{'binding':('decision',binding_ref),'workspace':('decision',store.head(workspace_key(plan['workspace'])))})
-                registry=application_registry()
-                def check(view):
-                    guard(view);require(view.head(PROJECT_KEY)==binding_ref,'connect-binding-changed')
-                    validate_closure([config[0]],view,registry,operation_closure(registry))
-                store.commit_heads(operation=operation+'-integration',expected={'project:integration':None},
-                    changes={'project:integration':config[0]},objects=[config],validate=check)
-                service=ConnectFiles(store,self._port(authority,plan));changes=self._changes(plan);preview=service.preview(changes)
-                service.begin(operation=operation,changes=changes,receipt=preview['receipt'],statement=statement)
-            finally:store.close()
+            self._prepare_connection(authority, plan, operation, statement)
         return dict(operation=operation,state='pending',project=plan['project'])
+    def _prepare_connection(self,authority,plan,operation,statement):
+        store=authority.store()
+        try:
+            top=discover(Path(plan['root']),self.git)
+            require(canonical_bytes(topology_value(top)) == canonical_bytes(plan['topology']), 'connect-topology-changed')
+            locator=Locator.parse(canonical_bytes(plan['locator']),kind=top.kind)
+            binding=ProjectBinding(locator,top.kind,top.common if top.kind=='git' else top.root)
+            Connections(store).connect(operation=operation+'-binding',binding=binding,observed=top,
+                workspace=WorkspaceRegistration(plan['workspace'],top.root,top.gitdir),verify_topology=lambda:discover(Path(plan['root']),self.git))
+            binding_ref=store.head(PROJECT_KEY);entries=[]
+            for c in self._changes(plan):
+                owned=c['after'] if c['before'] is None else c['after'][len(c['before']):]
+                entries.append(dict(role=c['role'],root=c['root'],path=c['path'],owned=b64(owned),existed=c['before'] is not None,mode=c['mode']))
+            config=record('project.integration',dict(entries=entries),{'binding':('decision',binding_ref),'workspace':('decision',store.head(workspace_key(plan['workspace'])))})
+            registry=application_registry()
+            def check(view):
+                guard(view);require(view.head(PROJECT_KEY)==binding_ref,'connect-binding-changed')
+                validate_closure([config[0]],view,registry,operation_closure(registry))
+            store.commit_heads(operation=operation+'-integration',expected={'project:integration':None},
+                changes={'project:integration':config[0]},objects=[config],validate=check)
+            service=ConnectFiles(store,self._port(authority,plan));changes=self._changes(plan);preview=service.preview(changes)
+            service.begin(operation=operation,changes=changes,receipt=preview['receipt'],statement=statement)
+        finally:store.close()
+
     def _resume_context(self,operation,*,readonly=False):
         """Caller owns management/runtime exclusion; never reacquire its locks."""
         _token(operation)
@@ -153,7 +175,13 @@ class ProjectSetup:
         finally:store.close()
 
     def resume(self,operation,*,event=lambda _:None):
-        with self.management():return self._resume_locked(operation,event=event)
+        _token(operation)
+        with self.management():
+            area = self.home.root/'operations'/operation
+            if os.path.lexists(area/'first-git.json'):
+                from .first_git import resume
+                return resume(self, area, operation, event)
+            return self._resume_locked(operation,event=event)
 
     def _detach_port(self,authority,locations):
         if self.home.os_name=='windows':

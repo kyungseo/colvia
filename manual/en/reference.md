@@ -119,7 +119,7 @@ Call it as `colvia-manage` or through the project launcher’s `manage`. Some co
 | `status` | Shows the installed version and state. |
 | `update`, `update-status`, `update-resume` | Updates, and inspects and resumes an interrupted update. |
 | `update-rollback-preview`, `update-rollback` | Reverses the installation files changed by an update that stopped before the new runtime was selected. This is not a downgrade command. |
-| `connect-preview`, `connect` | Connects a project folder. |
+| `connect-preview`, `connect`, `connect-resume`, `connect-cancel` | Connects a folder. For a new local repository, preview with `connect-preview ROOT --init-git`. If Git is unregistered, add `--git-executable ABSOLUTE_PATH` to include account registration in the preview. After approval, use `connect` with the saved plan, receipt, statement and operation ID. Resume with `connect-resume OPERATION`. Before connection files are prepared, use `connect-cancel OPERATION` to release the reservation. |
 | `detach-preview`, `detach` | Disconnects a project. |
 | `move-preview`, `move-apply`, `move-status`, `move-resume` | Carries an existing connection over to a moved folder. |
 | `git-register-preview`, `git-register` | Registers the Git executable to use. |

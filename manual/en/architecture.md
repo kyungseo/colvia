@@ -559,7 +559,7 @@ Paths are relative to `src/colvia` in the Colvia source repository.
 | Management services | `management.py`, `project_setup.py`, `lifecycle.py`, `move_setup.py`, `backup_service.py`, `restore_manager.py`, `updates/` |
 | Domain and record rules | `records.py`, `schemas.py`, `codec.py`, `graph.py`, `maps.py`, `tree.py`, `bodies.py`, `observation.py`, `binding.py`, `effects.py` |
 | Store | `storage/sqlite.py`, `storage/authority.py` |
-| Git and workspaces | `adapters/git.py`, `observe.py`, `workspace.py`, `git_registration.py` |
+| Git and workspaces | `adapters/git.py`, `observe.py`, `workspace.py`, `git_registration.py`, `first_git.py` |
 | Platform implementations | `platforms/` |
 | Optional feature | `execution/` |
 | Native launcher | `distribution/foundation-launcher/` in the repository |

@@ -23,7 +23,7 @@ class GitRegistrationTests(GitFixture, unittest.TestCase):
         super().setUp()
         self.management = ManagerHome.create(self.home / 'manager', os_name='macos', architecture='arm64')
         self.manager = self.management.slots
-        selected = self.slot('one', 1)
+        selected = self.slot('one', 1, extra=('schema:connection.identity:1', 'schema:observation.snapshot:2'))
         self.manager.initialize(selected)
         native = self.management.root / 'bin' / 'colvia'
         native.parent.mkdir(mode=0o700)

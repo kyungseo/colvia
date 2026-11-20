@@ -119,7 +119,7 @@ ordinary progress WORK_ID --receipt RECEIPT --done "…" --checked "…" --remai
 | `status` | 설치한 버전과 상태를 봅니다. |
 | `update`, `update-status`, `update-resume` | 업데이트하고, 중단된 업데이트의 상태를 확인하고 재개합니다. |
 | `update-rollback-preview`, `update-rollback` | 새 런타임을 선택하기 전에 중단된 업데이트에서 바꾼 설치 파일을 되돌립니다. 이전 버전으로 되돌리는(downgrade) 명령이 아닙니다. |
-| `connect-preview`, `connect` | 프로젝트 폴더를 연결합니다. |
+| `connect-preview`, `connect`, `connect-resume`, `connect-cancel` | 폴더를 연결합니다. 새 로컬 저장소를 만들려면 `connect-preview ROOT --init-git`으로 미리보세요. 등록한 Git이 없으면 `--git-executable 절대경로`를 추가해 계정 등록도 함께 확인합니다. 승인한 계획·확인값·승인 문구·작업 번호로 `connect`를 실행하고, 중단되면 `connect-resume 작업번호`로 이어갑니다. 연결 파일 적용 준비 전에는 `connect-cancel 작업번호`로 예약을 취소할 수 있습니다. |
 | `detach-preview`, `detach` | 프로젝트 연결을 해제합니다. |
 | `move-preview`, `move-apply`, `move-status`, `move-resume` | 옮긴 폴더에 기존 연결을 이어 줍니다. |
 | `git-register-preview`, `git-register` | 사용할 Git 실행 파일을 등록합니다. |

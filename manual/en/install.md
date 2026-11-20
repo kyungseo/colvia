@@ -48,6 +48,8 @@ After installation, open the project folder in Codex or Claude Code and ask:
 
 > Connect this folder to Colvia.
 
+If the folder has never been connected and does not use Git, the preview offers Git when the folder is on the same volume as Colvia’s local records and the two directories do not overlap. When offered, choose “Use a regular folder” or “Start using Git here.” Both work with an empty folder or one that already holds files. For Git, check the path, the new local repository and its initial branch (`main`). If Colvia also needs to register Git for your account, the same preview identifies the executable. Approve if those details are right. You can cancel at the preview. Your files stay unstaged, and you can decide on a first commit or a remote later. If connection stops after approval, ask the agent to resume the same connection using its operation ID. Before Colvia prepares the project connection files, you can also ask it to cancel the reservation and preview again. Any repository or account registration already created stays in place.
+
 Connect an empty folder to start something new, such as writing a report or building a web app. You can also connect a project you already work in. If the project uses Git, [ask the agent to register Git](git.md#git-register) before connecting the repository root.
 
 In the connection preview, check the folder, the launcher and guidance Colvia will add, and where it will store records. Then approve the connection. Colvia uses your existing project rules and appends its guidance to the agent instructions where applicable.

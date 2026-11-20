@@ -23,6 +23,7 @@ Use the actual command result, not an assumed permission setting:
 `workspace-registration-required` needs the manager's connection preview; it is
 not an empty Work list. A non-null `next` means there are more pages. A new folder
 without a verified connection must use that preview before any record writes.
+For an interrupted first connection, use the original operation ID with `connect-resume`. If setup stopped before connection files were prepared, the person may instead cancel the reservation with `connect-cancel OPERATION` and request a fresh preview. This preserves Git state and account registration. See `guide management`.
 For `connection-move-review-required`, use the installed manager's
 `move-preview` with the existing project ID and new absolute root. Review the
 verified old and new locations. Use the exact canonical preview and receipt

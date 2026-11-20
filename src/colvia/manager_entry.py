@@ -97,10 +97,12 @@ def parser(*,bound=False):
         commands.add_parser(name).add_argument('operation')
     commands.add_parser('repair-preview')
     repair=commands.add_parser('repair-apply');repair.add_argument('--receipt',required=True);repair.add_argument('--operation',required=True)
-    connect=commands.add_parser('connect-preview');connect.add_argument('root',type=Path)
+    connect=commands.add_parser('connect-preview');connect.add_argument('root',type=Path);connect.add_argument('--init-git',action='store_true',help='Preview creating a local Git repository for a first connection')
+    connect.add_argument('--git-executable',help='Also preview registering this absolute Git executable for the account')
     apply=commands.add_parser('connect');apply.add_argument('--plan',type=Path,required=True)
     apply.add_argument('--receipt',required=True);apply.add_argument('--statement',required=True);apply.add_argument('--operation',required=True)
     resume=commands.add_parser('connect-resume');resume.add_argument('operation')
+    cancel=commands.add_parser('connect-cancel',help='Cancel first Git setup before connection files are applied');cancel.add_argument('operation')
     detach=commands.add_parser('detach-preview');detach.add_argument('project');detach.add_argument('root',type=Path)
     detach=commands.add_parser('detach');detach.add_argument('project');detach.add_argument('root',type=Path)
     detach.add_argument('--receipt',required=True);detach.add_argument('--statement',required=True);detach.add_argument('--operation',required=True)
@@ -193,8 +195,11 @@ def run(args,entry):
     if args.command=='update-status':
         from .updates.release import inspect_release
         return inspect_release(home,args.operation)
+    if args.command == 'connect-cancel':
+        from .first_git import cancel
+        return cancel(ProjectSetup(home, runtime_lease=entry.lease), args.operation)
     setup=ProjectSetup(home,entry.git(),runtime_lease=entry.lease)
-    if args.command=='connect-preview':return setup.preview(args.root)
+    if args.command=='connect-preview':return setup.preview(args.root,init_git=args.init_git,git_executable=args.git_executable)
     if args.command=='connect':
         value=decode_canonical(home.files.read(args.plan,8*1024*1024))
         # Accept the exact preview envelope, never an executable command file.
@@ -356,7 +361,12 @@ def main(argv=None,*,entry=None):
         elif args.command=='git-register':
             print('Colvia Git 등록 확인: '+result['version'])
         elif args.command=='connect-preview':
+            if result['plan'].get('action') == 'first-connect-git':
+                print('연결할 폴더: '+repr(result['plan']['basis']['root']))
+                git = result['plan']['git']
+                print('Git: '+repr(git['path'])+' · SHA-256 '+git['sha256'])
             print('변경할 파일: '+', '.join(result['files']));print(result['question'])
+        elif args.command=='connect-cancel':print('첫 연결 예약을 취소했습니다. 기존 자료와 이미 생성된 Git 저장소·계정 등록은 그대로입니다.')
         elif args.command=='detach-preview':print('Colvia가 추가한 연결과 안내를 제거하고 작업 기록은 보존합니다. 해제할까요?')
         elif args.command=='identity-preview':
             for row in result['plan']['census']:

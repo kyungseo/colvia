@@ -26,7 +26,7 @@ Colvia records each task you scope and review as a **Work**. Granting file or co
 
    > Connect this folder to Colvia.
 
-4. In the preview, check the folder, the files Colvia will add, and where it will store the records. Approve the connection if those details are right. If the app or CLI blocks access, [check the permissions it needs](install.md#access).
+4. In the preview, check the folder, the files Colvia will add, and where it will store the records. Approve the connection if those details are right. If the app or CLI blocks access, [check the permissions it needs](install.md#access). For this exercise, choose “Use a regular folder” unless you want Git.
 5. In the current chat, tell the agent what you want to do in a sentence or two. If you’ve already shared a goal, the agent can use it and your project rules to propose a plan. In an empty folder, you could start with “I’d like to make a team to-do app.”
 
 Pick either exercise to start. If you try both, install Colvia once and connect a new folder for each exercise.
