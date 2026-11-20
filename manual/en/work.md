@@ -142,6 +142,16 @@ If you’ve submitted a meeting report in the same connected project, open a new
 
 If the record says “No follow-up,” you recorded a decision to leave it without a follow-up. If there’s no recorded choice or you deferred the decision, the next step is still open. If you see a candidate or a Work, check whether the work you would continue already has an approved scope.
 
+<a id="candidate-priority" name="candidate-priority"></a>
+
+## Set or check a candidate’s priority
+
+Say “Set the colleague trial candidate to high.” Choose high, normal or low, or ask to clear the priority. An unset priority is distinct from low. Asking to see a candidate only reads its record.
+
+Ask “Why did we change the trial’s priority?” to see when it changed, the old and new levels, the request and any reason you gave. Changes requested in chat are recorded as a user request reported by the agent. Changing a rank leaves the linked Work’s approvals and state intact.
+
+After the first priority change, this project and its new backups require a version that supports candidate priority. If you may need an older version, keep a [backup](records.md#backup) before that first change.
+
 <a id="child-works" name="child-works"></a>
 
 ## Child Works and results from isolated folders

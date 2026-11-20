@@ -140,6 +140,22 @@ def parser(*,managed=False):
     candidate=sub.add_parser('candidate').add_subparsers(dest='action',required=True)
     save=candidate.add_parser('save');save.add_argument('candidate');save.add_argument('--title',required=True);save.add_argument('--reason',required=True);save.add_argument('--work');save.add_argument('--dismiss',action='store_true')
     listed=candidate.add_parser('list');listed.add_argument('--limit',type=int,default=20);listed.add_argument('--cursor')
+    from .candidate_priority import LEVELS
+    for name in ('priority-preview', 'priority-set'):
+        change = candidate.add_parser(name)
+        change.add_argument('candidate')
+        change.add_argument('level', choices=LEVELS)
+        if name == 'priority-set':
+            change.add_argument('--basis', required=True)
+            change.add_argument('--request', required=True)
+            change.add_argument('--recorder', required=True, choices=('agent', 'operator'))
+            change.add_argument('--reason')
+    for name in ('priority-history', 'ranked'):
+        query = candidate.add_parser(name)
+        if name == 'priority-history':
+            query.add_argument('candidate')
+        query.add_argument('--limit', type=int, default=20)
+        query.add_argument('--cursor')
     follow=sub.add_parser('followup');follow.add_argument('work');follow.add_argument('--choice',choices=('candidate','work','none','undecided'));follow.add_argument('--target');follow.add_argument('--statement')
     return p
 
@@ -300,6 +316,17 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
         return getattr(worker,args.action)(operation=operation,application=args.application)
     if args.group=='candidate':
         if args.action=='list':return planning.candidates(limit=args.limit,cursor=parse_cursor(args.cursor),display=display)
+        from . import candidate_priority
+        if args.action == 'priority-preview':
+            return candidate_priority.preview(store, args.candidate, args.level)[0]
+        if args.action == 'priority-set':
+            return candidate_priority.apply(store, args.candidate, args.level, basis=args.basis,
+                                            request=args.request, reason=args.reason,
+                                            recorder=args.recorder, operation=operation)
+        if args.action == 'priority-history':
+            return candidate_priority.history(store, args.candidate, limit=args.limit, cursor=parse_cursor(args.cursor))
+        if args.action == 'ranked':
+            return candidate_priority.ranked(planning, limit=args.limit, cursor=parse_cursor(args.cursor), display=display)
         from .planning import candidate_key
         return planning.save_candidate(operation=operation,candidate=args.candidate,title=args.title,reason=args.reason,
             work=args.work,state='dismissed' if args.dismiss else 'open',expected=store.head(candidate_key(args.candidate)))
@@ -323,7 +350,7 @@ def parse_cursor(value):
 def command_readonly(args):
     if args.group == 'project' and args.action == 'status':
         return True
-    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action=='list') or (args.group=='followup' and args.choice is None)
+    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)
 
 
 def main(argv=None,*,entry=None):

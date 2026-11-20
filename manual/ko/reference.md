@@ -87,6 +87,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `ordinary progress` | 첫 제출 전에 진행 메모를 저장합니다. |
 | `ordinary scope-preview` · `ordinary scope-apply` | [첫 제출 전 파일 추가](work.md#scope-change) |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | 계획 기록부터 범위 승인, 제출, 수락, 수정 요청, 보관까지 Work를 진행합니다. |
+| `candidate ranked`, `candidate priority-history`, `candidate priority-preview`, `candidate priority-set` | 열린 후보의 순위와 변경 이력을 확인합니다. [사용 예](work.md#candidate-priority) |
 | `candidate list`, `candidate save`, `followup` | 다음에 할 일의 후보와 Work의 후속 선택을 보고 기록합니다. |
 | `composition` | 상위 Work에 바로 아래 하위 Work를 지정합니다. |
 | `worker` | 격리 폴더의 제출본을 대상 폴더에 반영합니다. |

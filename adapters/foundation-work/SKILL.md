@@ -29,6 +29,8 @@ For a recorded next step use `followup WORK_ID` or `candidate list`; plain outpu
 shows the linked plan or candidate. Distinguish absent, explicitly none and
 deferred. A recorded link gives no permission to start its target.
 
+For explicit candidate priority changes or ranked candidates, read `guide work`.
+
 ## Choose the next action
 
 An explicitly requested typo, spacing or punctuation correction may proceed
