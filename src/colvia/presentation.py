@@ -70,6 +70,9 @@ def _followup_text(value):
 
 
 def human(value):
+    if value.get('kind') == 'work-history':
+        from .work_history import render
+        return render(value, _printable)
     if value.get('kind') in ('dependency-show','dependency-preview','dependency-change','dependency-history'):
         from .work_dependencies import render
         return render(value,_printable)
@@ -434,6 +437,7 @@ def failure(code):
         'dependency-operation-conflict':'이 작업 식별자로 다른 변경이 기록돼 있습니다. 관계 변경 이력을 확인하세요.',
         'invalid-dependency-cursor':'현재 관계 목록을 다시 연 뒤 다음 페이지를 확인하세요.',
         'dependency-endpoint-mismatch':'관계에 지정된 Work 기록을 확인할 수 없습니다.',
+        'work-history-cursor':'기록이 바뀌었거나 다른 Work의 페이지입니다. 해당 Work의 결정 이력을 다시 열어 주세요.',
         'dependency-work-required':'같은 프로젝트에 기록된 Work를 선택하세요. 후보가 아직 Work가 아니라면 관계를 기록할 수 없습니다.',
         'dependency-discarded':'폐기한 Work에는 새 관계를 추가할 수 없습니다. 기존 선행 조건을 해제하거나 교체하세요.',
         'dependency-cycle':'서로의 결과를 기다리게 됩니다. 선행 관계의 방향을 다시 확인하세요.',
