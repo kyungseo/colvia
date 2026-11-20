@@ -10,6 +10,16 @@ This guide covers Colvia Preview. It explains how to approve a work scope in Cod
 2. [Install Colvia and connect a project](install.md) — install for your operating-system account, then connect a project folder.
 3. [Follow along](tutorial.md) — write a customer inquiry report or build a team to-do web app, and try approving, reviewing and accepting for yourself.
 
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="../assets/gallery/overview-en-dark.png"><img src="../assets/gallery/overview-en-light.png" width="900" alt="Install in your account, then preview and approve each folder connection. For a new task, approve the scope, review the submission and accept it or request changes. Use project status to pick up existing work."></picture><br>
+<em>Install Colvia once in the account you use, then approve the connection for each folder. In a connected folder, start a new task or pick up where you left off.</em>
+</p>
+
+## Returning to a project
+
+- If you left a note before the first submission, [compare it with the files as they are now](work.md#progress-note).
+- Ask “What needs my attention today?” to [see what needs review and what needs revision](work.md#project-status). You can also find [the version behind a decision](work.md#decision-history) or [the result another task is waiting for](work.md#work-dependencies).
+
 ## Using Colvia
 
 | Guide | What it covers |
@@ -18,6 +28,8 @@ This guide covers Colvia Preview. It explains how to approve a work scope in Cod
 | [Working with Git](git.md) | Registering Git, putting an accepted result into Git, recovering an interrupted Git integration, [adopting Git in a connected folder](git.md#adopt-git) |
 | [Records, backups, and moving folders](records.md) | What Colvia keeps, backup and restore, continuing after moving a folder |
 | [Updates, notifications, disconnecting, and removal](maintenance.md) | Updating and recovering an interrupted update, notifications, disconnecting a project, removing and reinstalling while keeping records |
+
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="../assets/gallery/scope-en-dark.png"><img src="../assets/gallery/scope-en-light.png" width="420" alt="Approve the scope, then review the result and accept it or request changes."></picture></p>
 
 ## Learn more
 

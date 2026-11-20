@@ -4,6 +4,8 @@
 
 찾아볼 때 쓰는 자료입니다. 절차는 각 안내 페이지에 있습니다.
 
+현황과 결정 이력을 채팅에서 확인하려면 [현황에서 검토할 판을 열기](work.md#project-status)나 [수정 요청의 이유 찾기](work.md#decision-history)부터 보세요. 아래 명령은 같은 기록을 직접 확인하고 싶을 때 사용합니다.
+
 [지원 환경](#environments) · [파일과 폴더 위치](#locations) · [명령 요약](#commands) · [용어](#glossary) · [문제가 생겼을 때](#problems)
 
 <a id="environments" name="environments"></a>
@@ -30,7 +32,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 
 ### 문서 실행 준비 상태 확인
 
-첫 Preview에서 Colvia의 에이전트 직접 호출 기능은 비활성입니다. 설치된 실행기의 `execution readiness`로 현재 설정을 확인할 수 있습니다. 이 명령은 프로젝트 기록을 열거나 모델을 시작하지 않습니다. 필요한 파일이 바뀌었거나 없다면 표시된 상태를 확인하세요.
+현재 Preview에서 Colvia의 에이전트 직접 호출 기능은 비활성입니다. 설치된 실행기의 `execution readiness`로 현재 설정을 확인할 수 있습니다. 이 명령은 프로젝트 기록을 열거나 모델을 시작하지 않습니다. 필요한 파일이 바뀌었거나 없다면 표시된 상태를 확인하세요.
 
 <a id="locations" name="locations"></a>
 

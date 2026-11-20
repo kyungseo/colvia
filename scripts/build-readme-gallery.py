@@ -11,12 +11,76 @@ ET.register_namespace('',NS)
 def tag(n):return '{'+NS+'}'+n
 def el(n,**attrs):return ET.Element(tag(n),{k.replace('_','-'):str(v) for k,v in attrs.items()})
 TRANSLATE={'나':'You','범위':'Scope','다시 고치기':'Revise','수락':'Accept','월요일':'Monday','수요일':'Wednesday','기록':'Records','범위 · 수락한 제출본 · 다음 할 일':'Scope · accepted submission · next steps','수락한 제출본':'Accepted submission','현재 파일':'Current file','변경 내용':'Changes','일정 항목 수정':'Schedule item edited','알림':'Notice / inbox','알림 · 수신함':'Notice / inbox','상위 Work':'Parent','전체 결과':'Combined result','격리 폴더 1':'Isolated folder 1','격리 폴더 2':'Isolated folder 2','대상 폴더':'Destination','한 건씩 합치기':'One at a time','처음 한 번':'ONE-TIME SETUP','Colvia 설치':'Install Colvia','프로젝트 폴더':'Project folder','“Colvia 연결해 줘”':'“Connect Colvia”','미리보기':'Preview','그 뒤 매일':'EVERYDAY WORK','목표·계획':'Goals & plan','프로젝트 문서':'Project documents','후보 목록':'Candidates','큰 일은 하위 Work로':'Split into child Work','결과':'Result','다음 할 일':'Next steps','다음 Work로 계속':'Continue with the next Work','대조 요청':'Compare'}
-TITLES={'scope':('범위를 정하고 결과를 검토합니다','Agree on scope, then review the result'),'switch':('같은 프로젝트 기록에서 이어갑니다','Pick up from the same project records'),'drift':('수락한 제출본과 현재 파일 비교하기','Compare the accepted submission with current files'),'notify':('준비한 결과를 알리고 사람이 검토합니다','Notify the owner and review the prepared result'),'split':('하위 결과와 전체 결과를 따로 검토합니다','Review child results and the combined result separately'),'parallel':('격리 폴더의 결과를 한 건씩 반영합니다','Apply results from isolated folders one at a time'),'overview':('처음 연결한 뒤 Work 단위로 이어갑니다','Connect once, then continue through Work')}
-DESC={'scope':('사람이 범위를 승인하고 에이전트가 Work를 준비합니다. 결과를 검토해 수정하거나 수락합니다.','You approve the scope; the agent prepares the Work. Review the result, request revisions or accept it.'),'switch':('월요일의 범위·수락한 제출본·다음 할 일을 프로젝트에 기록합니다. 수요일의 에이전트가 같은 기록에서 이어갑니다.','Keep Monday’s scope, accepted submission and next steps in the project. Wednesday’s agent resumes from those records.'),'drift':('수락한 제출본과 현재 파일을 비교해 바뀐 내용을 확인합니다.','Compare the accepted submission with current files to see what changed.'),'notify':('확인한 단계와 기한 안에 준비된 결과를 제출합니다. 알림이나 수신함에서 결과를 찾고 사람이 수락합니다.','Submit the prepared result within the confirmed step and deadline. Find it through a notification or the inbox; acceptance stays with you.'),'split':('하위 Work의 결과를 각각 수락한 뒤 전체 결과는 사람이 따로 검토하고 수락합니다.','Accept each child Work result, then review and accept the combined result separately.'),'parallel':('에이전트가 격리 폴더에서 준비한 결과를 검토하고, 승인한 제출본은 Colvia로 대상 폴더에 한 건씩 반영합니다.','Review the agent’s submissions from isolated folders. Use Colvia to apply approved submissions to the destination one at a time.'),'overview':('처음에는 설치 후 연결 미리보기를 확인합니다. 이후 후보를 골라 Work의 범위와 결과를 결정하고 다음 작업으로 이어갑니다. 점선은 설치에서 일상 사용으로의 전환입니다.','After installation, confirm the project connection preview. Then select a candidate, approve the Work scope, review the result and continue. The dashed line marks the transition from setup to daily use.')}
+TITLES={'scope':('범위를 정하고 결과를 검토합니다','Agree on scope, then review the result'),'switch':('같은 프로젝트 기록에서 이어갑니다','Pick up from the same project records'),'drift':('수락한 제출본과 현재 파일 비교하기','Compare the accepted submission with current files'),'notify':('준비한 결과를 알리고 사람이 검토합니다','Notify the owner and review the prepared result'),'split':('하위 결과와 전체 결과를 따로 검토합니다','Review child results and the combined result separately'),'parallel':('격리 폴더의 결과를 한 건씩 반영합니다','Apply results from isolated folders one at a time'),'overview':('설치와 연결, 새 일과 하던 일', 'Connect a folder, start a task or pick up existing work')}
+DESC={'scope':('사람이 범위를 승인하고 에이전트가 Work를 준비합니다. 결과를 검토해 수정하거나 수락합니다.','You approve the scope; the agent prepares the Work. Review the result, request revisions or accept it.'),'switch':('월요일의 범위·수락한 제출본·다음 할 일을 프로젝트에 기록합니다. 수요일의 에이전트가 같은 기록에서 이어갑니다.','Keep Monday’s scope, accepted submission and next steps in the project. Wednesday’s agent resumes from those records.'),'drift':('수락한 제출본과 현재 파일을 비교해 바뀐 내용을 확인합니다.','Compare the accepted submission with current files to see what changed.'),'notify':('확인한 단계와 기한 안에 준비된 결과를 제출합니다. 알림이나 수신함에서 결과를 찾고 사람이 수락합니다.','Submit the prepared result within the confirmed step and deadline. Find it through a notification or the inbox; acceptance stays with you.'),'split':('하위 Work의 결과를 각각 수락한 뒤 전체 결과는 사람이 따로 검토하고 수락합니다.','Accept each child Work result, then review and accept the combined result separately.'),'parallel':('에이전트가 격리 폴더에서 준비한 결과를 검토하고, 승인한 제출본은 Colvia로 대상 폴더에 한 건씩 반영합니다.','Review the agent’s submissions from isolated folders. Use Colvia to apply approved submissions to the destination one at a time.'),'overview':('사용할 계정에 설치한 뒤 폴더마다 연결 내용을 확인하고 승인합니다. 새 일은 작업안을 보고 범위를 승인합니다. 제출본을 검토해 수락하거나 수정을 요청합니다. 하던 일은 프로젝트 현황에서 이어갑니다.', 'Install in your account, then preview and approve each folder connection. For a new task, approve the scope, review the submission and accept it or request changes. Use project status to pick up existing work.')}
 
-TRANSLATE.update({'보호 파일 추가·수정': 'Add or edit a protected file', 'AI API 키 직접 입력': 'Hardcoded AI API key', '인증 토큰 직접 입력': 'Literal auth token', '로컬 검사': 'Local check', '커밋 준비 중단': 'Commit blocked', '예: .npmrc 2행': 'e.g. .npmrc, line 2'})
+TRANSLATE.update({'추가·수정': 'Added or edited', 'AI API 키': 'AI API key', '인증 토큰': 'Auth token', '로컬 검사': 'Local check', '커밋 준비 중단': 'Commit blocked', '예: .npmrc 2행': 'e.g. .npmrc, line 2'})
 TITLES['credential'] = ('Git 반영 전 자격증명 검사', 'Credential check before a Git commit')
 DESC['credential'] = ('.env 추가·수정, 소스에 적은 AI API 키, .npmrc 인증 토큰을 Colvia가 로컬에서 검사하고 차단 위치를 알려 줍니다.', 'Colvia checks proposed changes locally, including edits to .env, an AI API key in source code, and a token in .npmrc. A blocked candidate reports a location without revealing the value.')
+
+TITLES['status'] = ('오늘 내가 볼 건 뭐지?', 'What needs my attention today?')
+DESC['status'] = ('프로젝트 기록에서 검토할 일, 에이전트가 고칠 일, 수락을 기다리는 일을 확인합니다.', 'Project records show what needs review, which changes the agent was asked to make, and which result another task needs.')
+TITLES['workflow'] = ('한 작업을 맡기고 검토하는 흐름', 'From a plan to a reviewed result')
+DESC['workflow'] = ('사용자가 범위를 승인하고 제출본을 검토합니다. 범위 밖 변경이 있으면 Colvia가 제출을 멈춥니다. 승인 범위와 제출한 판, 수락과 수정 요청이 기록에 남습니다.', 'You approve the scope and review the submission. Colvia stops submission if tracked changes exceed the scope. It keeps the approved scope, submitted version and decision.')
+TITLES['system'] = ('작업 파일과 Colvia 기록의 저장 위치', 'Where project files and Colvia records live')
+DESC['system'] = ('프로젝트 폴더에는 현재 파일과 선택한 Git 저장소가 있습니다. Colvia는 별도 사용자 데이터 폴더의 프로젝트별 SQLite 데이터베이스에 승인과 제출본, 결정을 보관합니다. git push로는 커밋한 이력을 원격에 보냅니다.', 'Your project folder holds current files and, optionally, a Git repository. Colvia stores each project’s approvals, submissions and decisions in a SQLite database in your local user data folder. A Git push sends committed history to the remote.')
+PROJECT_LABELS = {
+    '작업 기록': 'Work records',
+    '내 검토': 'Your review',
+    '제안서 2판': 'Proposal · rev 2',
+    '에이전트가 고칠 일': 'For the agent to revise',
+    '견적표': 'Price quote',
+    '수락 대기': 'Awaiting acceptance',
+    '메일 초안': 'Cover email',
+    '사용자': 'You',
+    '범위 승인': 'Approve scope',
+    '제안받은 계획': 'Proposed plan',
+    '작업과 검사': 'Work and test',
+    '검토용 제출': 'Submit for review',
+    '승인 범위 대조': 'Check scope',
+    '범위 밖이면 제출 멈춤': 'Stop if out of scope',
+    '결과 검토': 'Review result',
+    '수락 또는 수정 요청': 'Accept or ask for changes',
+    '에이전트': 'Agent',
+    'Colvia': 'Colvia',
+    '에이전트에게 수정 요청': 'Ask the agent to revise',
+    'Colvia 기록: 승인한 범위 · 제출한 판 · 수락·수정 요청': 'Colvia records: approved scope · submitted version · acceptance or change request',
+    '프로젝트 폴더': 'Project folder',
+    '현재 파일': 'Current files',
+    '문서 · 코드 · 프로젝트 규칙': 'Documents, code and project rules',
+    'Git 저장소 (선택)': 'Git repository (optional)',
+    '내 기기의 사용자 데이터 폴더': 'User data folder on your device',
+    'Colvia 기록': 'Colvia records',
+    '승인한 범위 · 제출본': 'Approved scope and submissions',
+    '수락 · 수정 요청': 'Acceptance and change requests',
+    'git push': 'git push',
+    '원격 Git 저장소 · 커밋한 이력': 'Git remote · committed history',
+    'git push로 올라가지 않습니다': 'Not sent by git push',
+    '프로젝트별 DB (SQLite)': 'Project database (SQLite)',
+}
+
+OVERVIEW_LABELS = {
+    '처음 연결할 때': 'First connection',
+    '계정에 설치': 'Install once',
+    '미리보기 확인': 'Check preview',
+    '연결 승인': 'Approve connection',
+    '연결한 뒤에는': 'Once connected',
+    '새 일 맡기기': 'Start a new task',
+    '하려는 일 말하기': 'Describe the goal',
+    '제안받은 계획': PROJECT_LABELS['제안받은 계획'],
+    '범위 승인': 'Approve scope',
+    '작업 · 검사': 'Work and test',
+    '검토용 제출': 'Submit for review',
+    '결과 검토': PROJECT_LABELS['결과 검토'],
+    '수락 또는 수정 요청': PROJECT_LABELS['수락 또는 수정 요청'],
+    '수락': 'Accept',
+    '다음 일은 선택': 'Next step is optional',
+    '수정 요청': 'Request changes',
+    '하던 일 이어가기': 'Resume a task',
+    '“오늘 내가 볼 건 뭐지?”': '“What needs my attention today?”',
+    '검토할 일 · 고칠 일 확인': 'Find work to review or revise',
+    '같은 Work에서 계속': 'Continue the same Work',
+}
 
 def style_rules(css,theme):
     light,dark=css.split('@media',1)
@@ -40,13 +104,15 @@ def build(scene,lang,theme,fonts):
         if node.tag==tag('rect') and node.get('rx')=='9':node.set('rx','7')
     st=el('style');st.text='\n'.join("@font-face{font-family:'SkinSans-Subset';font-style:normal;font-weight:"+str(w)+";src:url(data:font/woff2;base64,"+base64.b64encode(fonts[w]).decode()+") format('woff2');}" for w in fonts);root.insert(2,st)
     # A 4.8-unit visible open arrowhead for a 1.6-unit shaft. No strokeWidth multiplier.
-    marker=root.find('.//'+tag('marker'));marker.attrib.update({'viewBox':'0 0 12 12','refX':'9','refY':'6','markerWidth':'7.2','markerHeight':'7.2','markerUnits':'userSpaceOnUse','orient':'auto'})
-    for child in list(marker):marker.remove(child)
-    marker.append(el('path',d='M2 2 L10 6 L2 10',fill='none',stroke=rules['ln']['stroke'],stroke_width='2',stroke_linecap='round',stroke_linejoin='round'))
-    dashed=ET.fromstring(ET.tostring(marker))
-    dashed.set('id','ah-dashed');dashed[0].set('stroke',rules['lnd']['stroke']);root.find(tag('defs')).append(dashed)
-    for n in root.iter():
-        if n.get('class')=='lnd' and n.get('marker-end'):n.set('marker-end','url(#ah-dashed)')
+    marker = root.find('.//' + tag('marker'))
+    if marker is not None:
+        marker.attrib.update({'viewBox':'0 0 12 12','refX':'9','refY':'6','markerWidth':'7.2','markerHeight':'7.2','markerUnits':'userSpaceOnUse','orient':'auto'})
+        for child in list(marker):marker.remove(child)
+        marker.append(el('path',d='M2 2 L10 6 L2 10',fill='none',stroke=rules['ln']['stroke'],stroke_width='2',stroke_linecap='round',stroke_linejoin='round'))
+        dashed=ET.fromstring(ET.tostring(marker))
+        dashed.set('id','ah-dashed');dashed[0].set('stroke',rules['lnd']['stroke']);root.find(tag('defs')).append(dashed)
+        for n in root.iter():
+            if n.get('class')=='lnd' and n.get('marker-end'):n.set('marker-end','url(#ah-dashed)')
     # Original Colvia rectangles remain. Replace the baseline-positioned pair with
     # the approved outlines, centered by actual ink bounds in the same rectangle.
     g=json.loads((ROOT/'assets/brand/source/geometry.json').read_text(encoding='utf-8'));alignments=[]
@@ -64,15 +130,16 @@ def build(scene,lang,theme,fonts):
         root.insert(idx+1,a);root.insert(idx+2,b);alignments.append({'box':[x,y,w,h],'group_width':total,'center':[cx,cy]})
     # Center single/two-line labels inside existing boxes, preserving all positions.
     boxes=[n for n in root if n.tag==tag('rect') and n.get('class') in ('agent','note','work')]
-    for box in boxes:
+    for box in boxes if scene not in ('workflow','system','overview') else []:
         x,y,w,h=(float(box.get(k)) for k in ('x','y','width','height'))
         texts=[n for n in root if n.tag==tag('text') and x<=float(n.get('x',0))<=x+w and y<float(n.get('y',0))<y+h]
         for i,t in enumerate(texts):t.set('y',str(y+h/2+(i-(len(texts)-1)/2)*17));t.set('dominant-baseline','central')
     for n in root.iter(tag('text')):
         n.set('font-weight','700' if int(n.get('font-weight','400'))>=600 else '400')
         if scene=='notify' and n.text=='알림':n.text='알림 · 수신함'
-        if scene=='overview' and n.text=='그 뒤 매일':n.set('y','160')
-        if lang=='en' and n.text in TRANSLATE:n.text=TRANSLATE[n.text]
+        if lang=='en' and scene=='overview' and n.text in OVERVIEW_LABELS:n.text=OVERVIEW_LABELS[n.text]
+        elif lang=='en' and scene in ('workflow','status','system'):n.text=PROJECT_LABELS[n.text]
+        elif lang=='en' and n.text in TRANSLATE:n.text=TRANSLATE[n.text]
         if scene=='split' and n.text=='Combined result':
             n.set('y','125');n.set('font-size','10.5');n.text=None
             a=ET.SubElement(n,tag('tspan'),{'x':'332','dy':'0'});a.text='Combined'
@@ -96,6 +163,8 @@ def build(scene,lang,theme,fonts):
 
 def all_text():
     chars=set(''.join(TRANSLATE.values())+''.join(TRANSLATE.keys()))
+    chars.update(''.join(PROJECT_LABELS.values()))
+    chars.update(''.join(OVERVIEW_LABELS.values()))
     for p in (ROOT/'manual/assets').glob('readme-*.ko.svg'):
         for t in ET.parse(p).iter(tag('text')):chars.update(t.text or '')
     return ''.join(sorted(chars))

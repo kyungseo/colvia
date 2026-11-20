@@ -8,11 +8,14 @@ Colvia is a local workflow tool for working with AI agents. Approve the scope pr
 2. [Say what you want to do in the current chat](work.md#start). In an empty folder, a sentence such as “I want to summarize the meeting in one page” is enough to start. You can also connect a project you already work in. The agent uses any goal you’ve shared and the existing project material to propose a plan. Saving a plan keeps the existing contents of the files it lists. These contents and later submissions are kept in records and backups.
 3. [Review the result](work.md#review) and [see the recorded follow-up](work.md#follow-up). Open the same project in a new chat to continue. The agent needs access to both the connected folder and the record folder.
 
-Pause before submitting? [Save progress and return in a new chat](work.md#progress-note).
-
 [Switch Work, pause and resume](work.md#work-lifecycle)
 
 [Approve a table edit and a new appendix together](work.md#scope-change)
+
+## Returning to a project
+
+- Before stepping away, [leave a progress note](work.md#progress-note) if you haven’t submitted the work yet. When you return, compare the note with your current files.
+- Ask “What needs my attention today?” to [see what needs review and what needs revision](work.md#project-status). You can also find [the version behind a decision](work.md#decision-history) or [the result another task is waiting for](work.md#work-dependencies).
 
 For short questions and small corrections you request directly, check [when you can skip creating a Work](work.md#without-work). Continue edits that belong to an existing Work using its records.
 

@@ -23,7 +23,11 @@
     "SkinSans-400-comparison.woff2": "df8c6e00ae67ad583a437b9307d81c5353f6893449d199d35d64f328db211be2",
     "SkinSans-700-comparison.woff2": "492a9f1951d4ed32504b93379622cd446fdf6fc1c930ff974148f1b4fa063676",
     "SkinSans-400-credential.woff2": "1bae3d333e1247d8b96888369e47818e4ee1c6888a2b0bdc6f841892d6e14503",
-    "SkinSans-700-credential.woff2": "9102719e433e5d57f83bf32fd0e3818024682368ab148ffec318ec6a154631a9"
+    "SkinSans-700-credential.woff2": "9102719e433e5d57f83bf32fd0e3818024682368ab148ffec318ec6a154631a9",
+    "SkinSans-400-status.woff2": "ac5fa07d2c26e2d53cbc6624d0255941a4aa36f82b8f6d9bb68d7ba88b07d96e",
+    "SkinSans-700-status.woff2": "8e47b2753e0fd3d26cc05a3968e2fa9e2dd16a38019263b1923bce5c3cf36d9c",
+    "SkinSans-400-overview.woff2": "4d045a8044f3f2e7bd442d485a188e5d41e68ce24e4c8f55ffe0738dba098703",
+    "SkinSans-700-overview.woff2": "4aa0dcccc103df070cda8b1d26a398dbca13b4e9f772d37e7829e69b338ff58e"
   },
   "coverage": "Default embedded labels. Expanded adds Hangul glyphs for split and parallel. Submission covers switch. Comparison covers the revised drift labels. Credential covers the Git check labels.",
   "characters": " &-./12?ABCDEGIKMNOPRSTUVWYabcdefghijklmnoprstuvwxy·“”간건결계고공과그금기나느다달대더뒤라락로록리림매목문미번범보본상서설속수시신씩알어업연요월위으은음일작젝조준줘지짐쪽처청치큰통트파판폴표프하한할함합해획후",
@@ -52,6 +56,20 @@
         "credential"
       ],
       "characters": ",:HL가검단력밋비사예인입접정중증직추커컬키토행호"
+    },
+    "status": {
+      "scenes": [
+        "status",
+        "workflow",
+        "system"
+      ],
+      "characters": "(),:FLQq가검게격견규남내는니데드또력멈메면밋밖받별사선소습승안않에올용원의이인자장재저적전정제초출춤칙칠커코택터토현"
+    },
+    "overview": {
+      "scenes": [
+        "overview"
+      ],
+      "characters": "Fq가같검내는늘던때또려말맡뭐받볼사새선승안에오용이인정제출칠택토확"
     }
   }
 }
