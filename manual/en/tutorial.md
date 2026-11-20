@@ -64,7 +64,7 @@ Q12,Other,What are your customer service hours?
    > Go ahead with that scope. Keep the source inquiries intact and edit only report.md.
 
 2. When the report is submitted for review, check the changed files and test results. Expect 5 refund, 4 shipping, 2 usage, and 1 other inquiry, for a total of 12.
-3. Open the same project in a new chat and ask the question below. If several Works have similar titles, select this report.
+3. Open a new chat in the same project and ask the question below. If several Works have similar titles, select this report.
 
    > Show me what I need to review in the weekly inquiry report. Which files changed, and what decision do you need from me?
 
@@ -98,18 +98,22 @@ The agent might propose a small Node.js server and a browser page. If you choose
 
 Here’s how the conversation might go just before you approve the first version.
 
-> **You** “I want to be able to add a task and mark it complete.”
+> **You** “I want to add tasks, assign someone to each one, and mark tasks complete. When I reopen the app, I should still see the list, the assignees, and which tasks are complete.”
 >
-> **Agent** “I’ve listed the files for the page, server, list storage, and tests in the plan. I’ll add a task in one tab, mark it complete in the other, and refresh both tabs to check that they show the same status.”
+> **Agent** “I’ve listed the files for the page, server, list storage, and tests in the plan. I’ll add a task in one tab, then assign it to someone and mark it complete in the other. I’ll check that both tabs show the same list, assignees, and completion status after a refresh and again after a server restart.”
 
-If the files and checks in the plan match the first version you want, approve them together by saying, “Go ahead with that scope.” If the agent later needs to update the setup instructions and add a configuration file outside the plan, review the reason and checks for both files before approving the extra scope. You decide whether to accept the app after you review the submission.
+If the files and checks in the plan match the first version you want, approve them together by saying, “Go ahead with that scope.”
+
+Suppose the agent restarts the server and the task it just added disappears. If the problem is in the storage code covered by the plan you approved, the agent can fix it and rerun the same restart check. In the same chat, you don’t have to say “keep going” each time the agent makes an in-scope fix and checks it. If Codex or Claude Code asks for permission to run a command, respond to that prompt separately.
+
+If the fix needs a configuration file outside the plan, the agent explains why the file needs to change and how it will check the change. It proposes adding the file and waits for your approval before editing it. The agent keeps the agreed criteria even when a check fails. If the criteria themselves need to change, it proposes a new plan for you to approve.
 
 ### Run the app and review the result
 
 1. Run the app using the commands in its project README. Open the same address in two browser tabs. In the first tab, add “Draft refund guidance” and “Update shipping delay policy.”
-2. Refresh the second tab and check that both items appear. Assign someone to a task and mark an item complete. Refresh the first tab and check that it shows the same state. Restart the server and check that the list and completion status survive.
-3. Ask the agent to record which checks it ran and what it couldn’t confirm in the submission. This exercise checks that two tabs on the same computer share a list.
-4. Open the same project in a new chat and ask, “Show me the last submission for the to-do app, the checks that ran, and what I need to decide.” Review the result, say “I accept this first version” if it’s ready, and confirm that acceptance was recorded. To save a next step, try “I’d like to hide completed tasks from the list.” [Find a recorded next step](work.md#follow-up)
+2. Refresh the second tab and check that both items appear. Assign one item to someone and mark it complete. Refresh the first tab and check that it shows the same assignee and completion status. Restart the server and check that both items, the assignee, and the completion status are still there.
+3. When the agent submits the app, it records one result for each planned check: passed, failed, or couldn’t run. If a check failed along the way and the agent made a fix, ask it to describe the fix in the submission summary.
+4. Open a new chat in the same project and ask, “Show me the last submission for the to-do app, its check results, and what I need to decide.” You can save a new idea, such as hiding completed tasks, as a [follow-up candidate](work.md#follow-up). Review the submitted version and its check results. If it works as requested, say “I accept this first version.” If something still needs work, ask for changes.
 
 ## What to try next
 
