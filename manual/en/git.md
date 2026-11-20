@@ -8,6 +8,14 @@ In a project that uses Git, register Git with Colvia before connecting. Acceptin
 
 For a folder you are connecting for the first time, ask “Set up Git when you connect this folder.” [See the first-connection choices](install.md#connect).
 
+<a id="git-and-colvia-records"></a>
+
+## Git keeps a file history. Why does Colvia keep records too?
+
+You can approve a scope or ask for revisions before you have anything to commit. Colvia keeps the version you accept. For example, if you accept a report and then switch branches in the same working folder, you can reopen the accepted report and compare it with the one on your current branch.
+
+If you later commit the accepted file, Git keeps its contents too. A colleague who pulls the branch won’t receive your approvals or requests for changes. [Where Colvia keeps these records and why](architecture.md#why-local-records) · [Recover an interrupted Git integration](#git-recovery)
+
 <a id="adopt-git"></a>
 
 ## Start using Git in a connected folder
@@ -80,7 +88,7 @@ Git’s bulk cleanup can affect several registrations. Preserve the contents of 
 
 ## Put an accepted result into Git
 
-Accepting a submission keeps a version you can compare with your current files later. You can make that comparison without a work-in-progress (WIP) commit. To put the accepted submission into Git, review the selected files, the change preview and your current staging area, then approve the integration separately.
+To put [the version you accepted](#git-and-colvia-records) into Git, review the selected files, the change preview and your current staging area, then approve the integration separately.
 
 <a id="git-credential-check" name="git-credential-check"></a>
 

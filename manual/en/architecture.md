@@ -338,6 +338,12 @@ flowchart LR
 
 Ordinary commands use only the one generation the active pointer names. An operation that replaces the whole store, such as a restore, never overwrites the existing database file. It creates a new generation and then moves the pointer. Writes can be blocked while a generation switch is in progress. Earlier generations are kept and are never written again. If the instance named by the connection information differs from the active pointer, Colvia treats the connection as stale or foreign and does not open it.
 
+<a id="why-local-records"></a>
+
+### Why records live outside Git history and the project folder
+
+Scope approval and acceptance can both happen before a commit. Colvia stores those decisions in the user-data directory, so they remain available when you switch branches. A plain folder keeps its history if you [start using Git later](git.md#adopt-git). SQLite lets Colvia save a decision and its link to the reviewed submission in one transaction without requiring a database server.
+
 A project has one set of records, and each worktree of the same repository is registered as its own workspace under that project connection. A Work belongs to the workspace it was created in.
 
 ### Inside SQLite

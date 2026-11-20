@@ -98,7 +98,13 @@ The agent can compare current files with the accepted submission and show which 
 
 ## Git, backups, and moving folders
 
-- **Put an accepted result into Git.** Colvia keeps the submission you accepted, so you can compare it with your current files later without making a work-in-progress (WIP) commit. Review the changes to commit and the current staging area, then approve the integration separately. Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result. [Put an accepted result into Git](manual/en/git.md#git-integration)
+- **Put an accepted result into Git.** Review the changes to commit and the current staging area, then approve the integration separately. Colvia preserves changes staged for other files. To protect your staged changes, Colvia stops if the staged content for a selected file matches neither the current commit nor the accepted result. [Put an accepted result into Git](manual/en/git.md#git-integration)
+
+### Git keeps a file history. Why does Colvia keep records too?
+
+Git records the changes you commit. Colvia records the changes you approved for the agent and which version you accepted or asked it to revise. If you accepted an edit yesterday and changed the file again today, you can compare the current file with the version you accepted, even if you didn’t commit it yesterday.
+
+If you later commit that version, Git keeps the same file content too. Colvia stores your approvals and review decisions outside the project folder, so `git push` doesn’t share them. [Working with Git](manual/en/git.md#git-and-colvia-records)
 
 ### Check for credentials before a Git commit · v0.2.0
 
