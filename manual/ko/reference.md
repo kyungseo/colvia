@@ -85,7 +85,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `ordinary lifecycle-preview` · `ordinary lifecycle-apply` | [중단·재개·폐기·대체](work.md#work-lifecycle) |
 | `ordinary view`, `ordinary review`, `ordinary content` | Work의 상태, 검토할 제출본, 보관된 본문을 봅니다. |
 | `ordinary progress` | 첫 제출 전에 진행 메모를 저장합니다. |
-| `ordinary scope-preview` · `ordinary scope-apply` | [첫 제출 전 파일 추가](work.md#scope-change) |
+| `ordinary scope-preview` · `ordinary scope-apply` | [첫 제출 전 또는 수정 요청 후 파일 추가](work.md#scope-change) |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | 계획 기록부터 범위 승인, 제출, 수락, 수정 요청, 보관까지 Work를 진행합니다. |
 | <a id="decision-history-command" name="decision-history-command"></a> `ordinary history WORK` | 최근 결정부터 당시 문구와 출처를 확인합니다. 이전 기록은 `next`를 `--cursor`에 전달해 봅니다. JSON 항목을 다시 열려면 그 항목의 `open`을 커서로 쓰고 `--limit 1`을 지정하세요. [사용 예](work.md#decision-history) |
 | `dependency show WORK`, `dependency history WORK` | 필요한 결과, 이 결과를 기다리는 Work, 변경 요청 이력을 조회합니다. 남은 항목은 `next`를 `--cursor`에 전달해 봅니다. [사용 예](work.md#work-dependencies) |

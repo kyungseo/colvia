@@ -85,7 +85,7 @@ def _head_event(reader, work, current, previous):
     approval = link(head, 'approval')
     if approval and changed('approval'):
         approved = reader.object(approval, 'work.approval')
-        if approval.version == 2:
+        if approval.version in (2, 3):
             require(link(approved,'basis') == previous, 'scope-history-mismatch')
             return event('scope', approval, approved.payload['statement'], reason=approved.payload['reason'])
         return event('approve', approval, approved.payload['statement'])

@@ -57,7 +57,7 @@ For “하던 일 이어가자” or “pick up where we left off”, read the l
 - After approval, record it and start the work. Edit within scope and perform the
   checks that establish the requested result. Preserve source materials and leave
   business choices such as prioritization to the person unless explicitly delegated.
-  For the same goal before a first submission, use `ordinary scope-preview WORK_ID` with repeated
+  For the same goal before a first submission or during an explicitly requested revision, use `ordinary scope-preview WORK_ID` with repeated
   `--edit` (existing) or `--create` (absent) paths, `--reason` and any added `--check`.
   “B도 확인해 봐” asks to read. “B도 고쳐야겠다” requests a proposal. Show existing scope, exclusions,
   checks, the delta, retained original contents and backup compatibility before asking once.
@@ -65,8 +65,10 @@ For “하던 일 이어가자” or “pick up where we left off”, read the l
   `ordinary scope-apply` with identical arguments, its receipt and a short approval statement.
   An ambiguous yes, refusal, silence or a progress note grants no added scope. Revise and show a
   changed proposal again. Reopen the current Work after a stale preview or unknown outcome.
-  Never assume a pending proposal survived a chat. A different goal or post-submission request
-  uses the follow-up or revision flow. Do not undo files or retrospectively approve existing edits.
+  Never assume a pending proposal survived a chat. For a returned submission, show its revision and the recorded request before approving the delta.
+  Continue from the current plan and review the next submission separately. Keep earlier revisions under
+  their own plans. If peer submissions conflict with added paths or cannot be checked, preserve the drafts
+  and explain the conflict. Use a follow-up Work for a different goal. Do not undo files or retrospectively approve existing edits.
 - In reports, distinguish source-supported facts, interpretations and proposed
   actions. Counts or categories in supplied data alone do not establish gaps in
   the project's existing documents (such as customer guides or help documents),

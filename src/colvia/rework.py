@@ -6,7 +6,7 @@ only regular additions with a v1 submitted peer proof can augment comparison.
 from dataclasses import asdict
 from .codec import RecordError,require
 from .maps import read_map,scan_map
-from .records import link,head_summary,decode_policy,observation_identity
+from .records import check_previous_submission,link,head_summary,decode_policy,observation_identity
 from .connection import Connections
 from .connection_identity import contexts_match
 from .tree import read_tree,canonical_entries
@@ -111,8 +111,7 @@ def effective_entries(service,plan,result,load):
     if result.ref.version==1:return entries
     adopted=attribution(result,load);previous=link(result,'previous')
     require(previous is not None,'attribution-rework-required');older=service._object(previous,load)
-    require(older.payload['work']==plan.payload['work'] and link(older,'plan')==plan.ref and
-            older.payload['revision']+1==result.payload['revision'],'submission-sequence-mismatch')
+    check_previous_submission(result, older, service._object(link(result, 'approval'), load))
     carried=attribution(older,load)
     require(all(adopted.get(p)==ref for p,ref in carried.items()),'attribution-protection-removed')
     observation=service._object(link(result,'observation'),load)
@@ -189,13 +188,19 @@ def select(service,head,plan,current):
     """Live discovery, bounded current heads only. No records are written."""
     load=service.store.load;baseline,original=service._baseline(plan)
     previous=service._object(link(head,'result')) if link(head,'result') else None
-    carried=attribution(previous,load);entries=effective_entries(service,plan,previous,load) if carried else original
+    carried=attribution(previous,load)
+    entries=effective_entries(service,service._object(link(previous,'plan')),previous,load) if carried else original
+    snapshot = None
+    if link(head, 'approval').version == 3:
+        from .scope_addition import check_peer_submissions
+        snapshot = service.store.root()
+        check_peer_submissions(service, head, snapshot)
     scope=frozenset(plan.payload['scope']);scope_index=PathIndex(scope)
     outside=[i for i in changes(entries,current.snapshot.entries) if i['path'] not in scope]
     adopted=dict(carried);pinned={}
     if not outside:
         if adopted:entries=_live_proof(service,plan,adopted,baseline,original,current)
-        return entries,adopted,pinned,None
+        return entries,adopted,pinned,snapshot.ref if snapshot else None
     if previous is None or head.payload['phase']!='active' or link(head,'decision') is None:
         raise SubmissionBlocked('outside-scope-change',outside,'처음 제출하는 작업의 범위 밖 변경입니다.')
     decision=service._object(link(head,'decision'));require(decision.payload['action']=='request-changes','rework-decision-required')
@@ -216,8 +221,9 @@ def select(service,head,plan,current):
     index=PathIndex(e['path'] for e in entries)
     overlap=[i for i in outside if index.overlaps(i['path']) or scope_index.overlaps(i['path'])]
     if overlap:raise SubmissionBlocked('outside-scope-change',overlap,'추가 파일의 경로가 기존 보호 범위와 겹칩니다.')
-    root=service.store.root().ref;count=0;candidates_read=0
-    for key,ref in scan_map(service.store.root().heads,load):
+    snapshot = snapshot or service.store.root()
+    root=snapshot.ref;count=0;candidates_read=0
+    for key,ref in scan_map(snapshot.heads,load):
         if not key.startswith('work:'):continue
         count+=1;require(count<=MAX_HEADS,'attribution-discovery-limit')
         if key=='work:'+plan.payload['work']:continue
