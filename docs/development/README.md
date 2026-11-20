@@ -8,6 +8,7 @@ Use the [document language guide](document-ownership.md#document-language) when 
 
 - [Record foundation and public runtime](FEAT-20261106-002-record-foundation.md) — Design revisions and implementation preparation.
 - [Document and artifact placement](document-ownership.md) — existing source, installed-guide and private-evidence rules.
+- [Read one Work’s decision history](FEAT-20261120-004-work-decision-history.md) — Decisions, their exact plans and revisions, and the limits of the recorded wording.
 - [Explicit Work dependencies](FEAT-20261120-003-work-dependencies.md) — Advisory prerequisites, result evidence and relationship history.
 - [Candidate priority and reported user requests](FEAT-20261120-002-candidate-priority.md) — Priority history, linked Work boundaries and backup compatibility.
 - [Read-only project status](FEAT-20261120-001-project-status.md) — Current Work, next actions, partial views and opening a shown submission.

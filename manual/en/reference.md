@@ -87,6 +87,7 @@ Your agent normally runs these commands for you. To run one yourself, use `./col
 | `ordinary progress` | Save a note before the first submission. |
 | `ordinary scope-preview` · `ordinary scope-apply` | [Add files before the first submission](work.md#scope-change) |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | Moves a Work from a recorded plan through scope approval, submission, acceptance, revision requests and archiving. |
+| <a id="decision-history-command" name="decision-history-command"></a> `ordinary history WORK` | Read recorded decisions and their source references, newest first. Follow `next` with `--cursor`. To reopen an entry from JSON, use its `open` cursor with `--limit 1`. [Example](work.md#decision-history) |
 | `dependency show WORK`, `dependency history WORK` | See prerequisites, Works depending on this result, or the recorded requests. Follow `next` with `--cursor` for more. [Example](work.md#work-dependencies) |
 | `dependency preview WORK --add SOURCE`, `dependency apply` | Preview and record an explicit request. Use `--remove SOURCE` to clear, or both flags to replace. Apply the same flags with `--basis`, `--request`, `--recorder` and a global `--operation` ID. |
 | `candidate ranked`, `candidate priority-history`, `candidate priority-preview`, `candidate priority-set` | Read open candidates by priority or inspect their change history. [Example](work.md#candidate-priority) |

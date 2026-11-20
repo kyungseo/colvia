@@ -87,6 +87,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | `ordinary progress` | 첫 제출 전에 진행 메모를 저장합니다. |
 | `ordinary scope-preview` · `ordinary scope-apply` | [첫 제출 전 파일 추가](work.md#scope-change) |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | 계획 기록부터 범위 승인, 제출, 수락, 수정 요청, 보관까지 Work를 진행합니다. |
+| <a id="decision-history-command" name="decision-history-command"></a> `ordinary history WORK` | 최근 결정부터 당시 문구와 출처를 확인합니다. 이전 기록은 `next`를 `--cursor`에 전달해 봅니다. JSON 항목을 다시 열려면 그 항목의 `open`을 커서로 쓰고 `--limit 1`을 지정하세요. [사용 예](work.md#decision-history) |
 | `dependency show WORK`, `dependency history WORK` | 필요한 결과, 이 결과를 기다리는 Work, 변경 요청 이력을 조회합니다. 남은 항목은 `next`를 `--cursor`에 전달해 봅니다. [사용 예](work.md#work-dependencies) |
 | `dependency preview WORK --add SOURCE`, `dependency apply` | 명시한 관계 변경을 미리 보고 기록합니다. `--remove SOURCE`로 해제하거나 두 옵션을 함께 써서 교체합니다. 적용할 때는 같은 옵션과 `--basis`, `--request`, `--recorder`, 전역 `--operation` ID를 지정합니다. |
 | `candidate ranked`, `candidate priority-history`, `candidate priority-preview`, `candidate priority-set` | 열린 후보의 순위와 변경 이력을 확인합니다. [사용 예](work.md#candidate-priority) |

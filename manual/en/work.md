@@ -144,6 +144,16 @@ If you’ve submitted a meeting report in the same connected project, open a new
 
 If the record says “No follow-up,” you recorded a decision to leave it without a follow-up. If there’s no recorded choice or you deferred the decision, the next step is still open. If you see a candidate or a Work, check whether the work you would continue already has an approved scope.
 
+<a id="decision-history" name="decision-history"></a>
+
+## Find out why you asked for a change
+
+Ask “Why did we remove the market-size figure from the proposal?” In the same Work you can find the version you reviewed, what the revision request said, and whether you accepted a later version. Ask to see that earlier version if you need to check the wording in the file.
+
+If the request said “Remove the figure because the source is unreliable,” the reason is in that record. If it said only “Remove the figure,” the request is recorded and the reason may be missing. A suggestion in a progress note is shown as a note. If you explain your reason today, the agent can distinguish that later explanation in the conversation. You can keep approving work or asking for changes without supplying a reason.
+
+The [decision history command](reference.md#decision-history-command) shows the newest entries first. If one entry cannot be opened, you can still see earlier decisions that can be read. If the chain of records breaks, the history shows where the lookup stopped.
+
 <a id="work-dependencies" name="work-dependencies"></a>
 
 ## See which result another Work needs

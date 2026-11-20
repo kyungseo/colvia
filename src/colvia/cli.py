@@ -80,6 +80,10 @@ def parser(*,managed=False):
         if action in ('apply','recover'):command.add_argument('--statement',required=True)
 
     ordinary=sub.add_parser('ordinary').add_subparsers(dest='action',required=True)
+    history = ordinary.add_parser('history', help='Read decisions and context for one Work, newest first')
+    history.add_argument('work')
+    history.add_argument('--limit', type=int, default=20)
+    history.add_argument('--cursor')
     plan=ordinary.add_parser('plan');plan.add_argument('work')
     for name in ('title','goal'):plan.add_argument('--'+name,required=True)
     for name in ('path','check'):plan.add_argument('--'+name,action='append',required=True)
@@ -230,6 +234,9 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
             graph_budget=AuditBudget(100000,1000000,4*1024**3),registry=application_registry())
     if args.group=='ordinary':
         action=args.action
+        if action == 'history':
+            from .work_history import history
+            return history(store, args.work, limit=args.limit, cursor=parse_cursor(args.cursor))
         if action=='plan':return service.plan(operation=operation,work=args.work,title=args.title,goal=args.goal,scope=args.path,checks=args.check,excludes=args.exclude,replace_receipt=args.replace_receipt)
         if action in ('approve','accept','revise'):return getattr(service,action)(operation=operation,work=args.work,receipt=args.receipt,statement=args.statement)
         if action in ('scope-preview','scope-apply'):
@@ -376,7 +383,7 @@ def command_readonly(args):
         return args.action in ('show','history','preview')
     if args.group == 'project' and args.action == 'status':
         return True
-    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)
+    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','history','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)
 
 
 def main(argv=None,*,entry=None):
