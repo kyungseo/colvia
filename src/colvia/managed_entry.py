@@ -33,6 +33,13 @@ class ManagedAuthority(Authority):
     def store(self,*,readonly=False):
         return open_managed_store(self,self.slots,readonly=readonly,expected_pointer=self.runtime_pointer)
 
+def authority_for_locator(entry, locator):
+    authority = ManagedAuthority(entry.home.root / 'authorities' / locator.project, project=locator.project,
+                                 slots=entry.home.slots, pointer=entry.pointer, files=entry.home.files)
+    require(authority.pointer_value()['instance'] == locator.instance, 'stale-or-foreign-binding')
+    return authority
+
+
 def read_git_registration(home):
     try:
         raw = home.files.read(home.root / 'tools.json', 32 * 1024)
@@ -149,9 +156,7 @@ class ManagedEntry:
         from .connection_boundary import workspace_topology
         self.lease.check();git=self.git();topology=workspace_topology(root,git)
         root=Path(topology.root.path);locator=read_locator(root,git)
-        authority=ManagedAuthority(self.home.root/'authorities'/locator.project,project=locator.project,
-            slots=self.home.slots,pointer=self.pointer,files=self.home.files)
-        require(authority.pointer_value()['instance']==locator.instance,'stale-or-foreign-binding')
+        authority=authority_for_locator(self, locator)
         store=authority.store(readonly=readonly)
         try:
             connections=Connections(store);_,binding=connections.binding()
