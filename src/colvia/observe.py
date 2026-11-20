@@ -9,11 +9,11 @@ import stat
 
 from .adapters.git import discover
 from .adapters.opaque_git import inspect_gitlink,placeholders
-from .binding import WorkspaceRegistration
+from .binding import Topology,WorkspaceRegistration
 from .codec import require
 from .observation import Policy,policy_transition
 from .platforms.posix import ObservationBudget,Snapshot
-from .platforms.observation_port import snapshot
+from .platforms.observation_port import directory_location, snapshot
 from .platforms.structural import StructuralProof,prove
 from .tree import logical_path
 
@@ -29,15 +29,22 @@ class Observation:
 
 def observe(root:Path,budget:ObservationBudget,*,git=None,registrations:tuple[WorkspaceRegistration,...]=(),
             protected=frozenset(),previous_containers=frozenset(),previous_policy=None,
-            approved_policy_paths=frozenset(),cancelled=lambda:False):
+            approved_policy_paths=frozenset(),plain_repository=None,cancelled=lambda:False):
     topology=discover(root,git)
     actual_root=Path(topology.root.path)
     opaque={};opaque_state={};opaque_bytes=0
-    if topology.kind=='plain':
+    if topology.kind=='plain' or plain_repository is not None:
         proof=StructuralProof({},frozenset(),frozenset())
+        native = topology
+        if plain_repository is not None:
+            require(native == plain_repository, 'project-topology-changed')
+            admin, live_identity = directory_location(actual_root / '.git')
+            require(admin == native.gitdir, 'structural-boundary-changed')
+            proof = StructuralProof({'.git': live_identity}, frozenset(), frozenset())
+            topology = Topology('plain', native.root)
         policy=Policy((),(),'plain-observation-v1')
-        result=snapshot(actual_root,budget,protected=protected,cancelled=cancelled,reject_nested_git=True,reject_nested_colvia=True)
-        require(discover(root,git)==topology,'project-topology-changed')
+        result=snapshot(actual_root,budget,boundaries=proof.boundaries,protected=protected,cancelled=cancelled,reject_nested_git=True,reject_nested_colvia=True)
+        require(discover(root,git)==native,'project-topology-changed')
     else:
         proof=prove(topology,registrations,previous_containers=previous_containers,protected=protected)
         index=git.index(actual_root)

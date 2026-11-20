@@ -27,6 +27,7 @@ class ExactParser(argparse.ArgumentParser):
 def parser(*,managed=False):
     p=ExactParser(prog='colvia' if managed else 'colvia-source',description='Work and project records.' if managed else 'Unactivated source foundation; installed launcher remains separate.')
     if managed:
+        p.add_argument('--finish-plain-work', action='store_true', help='Finish existing ordinary Work after running git init')
         p.add_argument('--root',default=None,help='Project workspace; authority is resolved from its verified connection')
     else:
         p.add_argument('--source-development',action='store_true',required=True)
@@ -324,6 +325,11 @@ def main(argv=None,*,entry=None):
     store = None
     args.operation=args.operation or 'op-'+uuid.uuid4().hex
     try:
+        if getattr(args, 'finish_plain_work', False):
+            from .external_init import finish
+            value = finish(entry, args)
+            print(json.dumps(value, ensure_ascii=False, sort_keys=True) if args.json else human(value))
+            return 0
         if args.group=='guide':
             require(not extras and len(args.topics) <= 1, 'invalid-guide-topic')
             topic = args.topics[0] if args.topics else None

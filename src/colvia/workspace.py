@@ -19,12 +19,15 @@ class LocalWorkspace:
         self.budget=budget or ObservationBudget(100000,2*1024*1024*1024)
         self.connections=Connections(store)
 
+    def topology(self):
+        from .connection_boundary import workspace_topology
+        return workspace_topology(self.root, self.git)
+
     def verify(self):
         from .connection_identity import PROJECT_IDENTITY
         self.store.pin_workspace_location(PROJECT_IDENTITY, self.store.head(PROJECT_IDENTITY))
         reference,registration,bound=self.connections.workspace(self.workspace)
-        from .connection_boundary import workspace_topology
-        topology=workspace_topology(self.root,self.git)
+        topology=self.topology()
         current=topology.common if topology.kind=='git' else topology.root
         locator=self.locator_reader()
         if locator==bound.locator and topology.kind==bound.kind and revalidates(bound.location,current):

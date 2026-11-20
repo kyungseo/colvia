@@ -123,7 +123,7 @@ Inventory `src/hv2ref` and the remaining `.hrn`-era runtime, entry instructions,
 
 The Owner set the priorities below for candidate registration against source revision `58e8b1e44ef25f57b7fe9e73e9341560936d7262`. The [existing plain-folder-to-Git conversion candidate](plain-to-git-project-conversion-followup.md#owner-계획-결정--2026-11-16) keeps its P1 priority.
 
-For the source implementation of Git adoption with terminal Work, see [existing connected folders](plain-to-git-project-conversion-followup.md#existing-connected-folders). Projects initialized externally while Work remains unfinished still require a recovery path.
+For the source implementation of Git adoption with terminal Work, see [existing connected folders](plain-to-git-project-conversion-followup.md#existing-connected-folders). For unfinished ordinary Work after external initialization, see [finish Work before adoption](plain-to-git-project-conversion-followup.md#finish-work-after-external-initialization).
 
 ### P1: Add paths to the same Work
 

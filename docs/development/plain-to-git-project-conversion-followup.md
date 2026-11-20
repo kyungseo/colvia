@@ -30,4 +30,8 @@ The first-connection increment covers an empty or populated unconnected folder. 
 
 ## Existing connected folders
 
-The manager can preview and adopt Git for a connected plain folder once every Work is completed or discarded and there are no pending effects. The same project and workspace retain their Work and decisions. A required transition record fences older clients before any project file effect. An unfinished Work after external initialization still needs a separate recovery design. See the [Git guide](../../manual/en/git.md#adopt-git) and the focused transition tests.
+The manager can preview and adopt Git for a connected plain folder once every Work is completed or discarded and there are no pending effects. The same project and workspace retain their Work and decisions. A required transition record fences older clients before any project file effect. For Work that is still open after external initialization, use the finishing path below. See the [Git guide](../../manual/en/git.md#adopt-git) and the focused transition tests.
+
+## Finish Work after external initialization
+
+Source implementation based on the idle-project conversion. The explicit managed finish mode retains the plain workspace and existing approvals. A verified single-root Git directory is the only additional observation boundary. The ordinary baseline, ignored-file coverage, review receipts, explicit discard, logical backup and final Git conversion retain their existing contracts. No new persisted record is needed for finishing. Focused coverage is in `tests/test_external_init_finish.py`. Installed qualification and release remain separate.
