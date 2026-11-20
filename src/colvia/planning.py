@@ -26,7 +26,8 @@ def _followup(p):
 
 
 def planning_schemas():
-    return [Schema('planning.candidate',1,{'work':'provenance','previous':'provenance'},_candidate,
+    from .candidate_priority import schema as priority_schema
+    return [priority_schema(), Schema('planning.candidate',1,{'work':'provenance','previous':'provenance'},_candidate,
                    {'work':frozenset({'work.plan'}),'previous':frozenset({'planning.candidate'})}),
             Schema('planning.followup',1,{'source':'provenance','target':'provenance','previous':'provenance'},_followup,
                    {'source':frozenset({'work.head'}),'target':frozenset({'work.head','planning.candidate'}),'previous':frozenset({'planning.followup'})})]
@@ -116,6 +117,9 @@ class Planning:
         obj=self._obj(ref);require(obj.ref.kind=='planning.candidate' and obj.payload['candidate']==candidate,'wrong-candidate')
         work=obj.payload['work']
         result=dict(candidate=candidate,title=obj.payload['title'],reason=obj.payload['reason'],state=obj.payload['state'],linked_work=work)
+        from .candidate_priority import current_event
+        event = current_event(self.store, candidate, self.store.head('priority:' + candidate))
+        result['priority'] = event.payload['new'] if event else 'unset'
         if work is not None:
             plan=link(obj,'work')
             result['linked_state']=self._work_link_state(work,plan)

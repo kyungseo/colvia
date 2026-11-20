@@ -70,6 +70,9 @@ def _followup_text(value):
 
 
 def human(value):
+    if value.get('kind') in ('ranked-candidates', 'priority-preview', 'priority-change', 'priority-unchanged', 'priority-history'):
+        from .candidate_priority import render
+        return render(value, _printable, _relation)
     if value.get('kind') == 'project-status':
         from .project_status import render
         return render(value, _printable)
@@ -267,7 +270,11 @@ def human(value):
         for item in value['items']:
             title=item.get('title',item.get('work',item.get('candidate','항목')))
             status=item.get('state','')
-            lines.append(_printable(title)+' — '+_RELATION_STATES.get(status,status))
+            line = _printable(title)+' — '+_RELATION_STATES.get(status,status)
+            if item.get('priority', 'unset') != 'unset':
+                from .candidate_priority import LABELS
+                line += ' · ' + LABELS[item['priority']]
+            lines.append(line)
             if 'followup_detail' in item:
                 lines.append('  '+_followup_text(item['followup_detail']))
             if 'linked_title' in item:
@@ -420,6 +427,10 @@ def failure(code):
     if code == 'invalid-guide-topic':
         return '다음 안내 중 하나를 선택하세요: ' + ', '.join(TOPIC_NAMES) + '. JSON 출력을 원하면 guide 앞에 --json을 붙이세요.'
     recovery={
+        'priority-preview-stale':'후보나 순위가 바뀌었습니다. 현재 후보와 변경할 값을 다시 확인하세요.',
+        'priority-candidate-closed':'열린 후보의 순위만 바꿀 수 있습니다.',
+        'priority-operation-conflict':'이미 다른 변경에 사용한 요청입니다. 저장된 결과를 확인하세요.',
+        'priority-request-required':'순위를 바꿔 달라는 사용자 요청을 짧게 적어 주세요.',
         'first-git-cancel-too-late':'연결 파일 적용이 준비되었습니다. 기존 연결 작업 번호로 connect-resume을 실행하세요.',
         'first-git-cancelled':'취소한 첫 연결입니다. 현재 폴더에서 새 연결 미리보기를 확인하세요.',
         'first-git-repository-changed':'Git 저장소의 현재 상태가 연결 계획과 달라졌습니다. 폴더와 스테이징을 보존했습니다. 연결 파일 적용 전이라면 connect-cancel로 예약을 취소한 뒤 새 미리보기를 확인하세요.',

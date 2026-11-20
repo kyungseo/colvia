@@ -87,6 +87,7 @@ Your agent normally runs these commands for you. To run one yourself, use `./col
 | `ordinary progress` | Save a note before the first submission. |
 | `ordinary scope-preview` · `ordinary scope-apply` | [Add files before the first submission](work.md#scope-change) |
 | `ordinary plan`, `plan-review`, `approve`, `start`, `submit`, `accept`, `revise`, `archive` | Moves a Work from a recorded plan through scope approval, submission, acceptance, revision requests and archiving. |
+| `candidate ranked`, `candidate priority-history`, `candidate priority-preview`, `candidate priority-set` | Read open candidates by priority or inspect their change history. [Example](work.md#candidate-priority) |
 | `candidate list`, `candidate save`, `followup` | Shows and records candidates for later work and a Work’s follow-up choice. |
 | `composition` | Names direct child Works under a parent Work. |
 | `worker` | Applies a submission from an isolated folder to a destination folder. |
