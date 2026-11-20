@@ -30,14 +30,15 @@ for(const [theme,colors] of Object.entries({light:['#1F5F5B','#1E2A28'],dark:['#
 }
 // README hero: center actual symbol ink against the complete two-line text block.
 for(const [theme,colors] of Object.entries({light:['#1F5F5B','#1E2A28'],dark:['#8CC6BC','#ECE6DA']})){
- const sb=geometry.symbol.bounds,cb=geometry.colvia.bounds,db=geometry.descriptor.bounds;
+ const sb=geometry.symbol.bounds,cb=geometry.colvia.bounds,db=geometry.readmeTagline.bounds;
  const cs=48/64,ds=14/64,ch=cb[3]*cs,dh=db[3]*ds,gapY=11,blockH=ch+gapY+dh;
- const ss=blockH/sb[3],symbolW=sb[2]*ss,textW=Math.max(cb[2]*cs,db[2]*ds),gapX=24;
+ const ss=blockH/sb[3],symbolW=sb[2]*ss,textW=Math.max(cb[2]*cs,db[2]*ds),gapX=18;
  const width=Math.ceil(symbolW+gapX+textW+40),height=104,left=(width-symbolW-gapX-textW)/2,top=(height-blockH)/2;
+ const textCenter=left+symbolW+gapX+textW/2;
  const b=`<path fill="${colors[0]}" transform="translate(${left-sb[0]*ss} ${top-sb[1]*ss}) scale(${ss})" d="${geometry.symbol.path}"/>`
-  +`<path fill="${colors[1]}" transform="translate(${left+symbolW+gapX-cb[0]*cs} ${top-cb[1]*cs}) scale(${cs})" d="${geometry.colvia.path}"/>`
-  +`<path fill="${colors[1]}" transform="translate(${left+symbolW+gapX-db[0]*ds} ${top+ch+gapY-db[1]*ds}) scale(${ds})" d="${geometry.descriptor.path}"/>`;
- const name=`logo-hero-${theme}`,data=svg(width,height,b,'Colvia — AI Work Harness');put(name+'.svg',data);
+  +`<path fill="${colors[1]}" transform="translate(${textCenter-(cb[0]+cb[2]/2)*cs} ${top-cb[1]*cs}) scale(${cs})" d="${geometry.colvia.path}"/>`
+  +`<path fill="${colors[1]}" transform="translate(${textCenter-(db[0]+db[2]/2)*ds} ${top+ch+gapY-db[1]*ds}) scale(${ds})" d="${geometry.readmeTagline.path}"/>`;
+ const name=`logo-hero-${theme}`,data=svg(width,height,b,'Colvia — '+geometry.readmeTagline.text);put(name+'.svg',data);
  put(name+'.png',await sharp(Buffer.from(data),{density:144}).resize(width*2,height*2).png().toBuffer());
 }
 const [x,y,w,h]=geometry.symbol.bounds,s=72/w,dx=64-s*(x+w/2),dy=64-s*(y+h/2);
@@ -54,5 +55,5 @@ put('colvia.ico',Buffer.concat([header,...sizes.map(n=>rasters.get(n))]));
 const chunks=[];for(const [type,n] of Object.entries({icp4:16,icp5:32,icp6:64,ic07:128,ic08:256,ic09:512,ic10:1024,ic11:32,ic12:64,ic13:256,ic14:512})){const b=rasters.get(n),h=Buffer.alloc(8);h.write(type);h.writeUInt32BE(b.length+8,4);chunks.push(h,b);}
 const ih=Buffer.alloc(8);ih.write('icns');ih.writeUInt32BE(8+chunks.reduce((a,b)=>a+b.length,0),4);put('colvia.icns',Buffer.concat([ih,...chunks]));
 const inputs={};for(const n of ['geometry.json','r6-1-open-c.svg','Inter-SemiBold.otf','Inter-Medium.otf','LICENSE.txt'])inputs[n]=hash(fs.readFileSync(path.join(source,n)));
-put('manifest.json',JSON.stringify({schema:1,selection:'R6-1 Open C',name:'Colvia',descriptor:'AI Work Harness',palette:{teal:'#1F5F5B',ivory:'#F6F1E7',mint:'#8CC6BC'},renderer:sharp.versions,inputs,files},null,2)+'\n');
+put('manifest.json',JSON.stringify({schema:1,selection:'R6-1 Open C',name:'Colvia',descriptor:'AI Work Harness',readmeTagline:geometry.readmeTagline.text,palette:{teal:'#1F5F5B',ivory:'#F6F1E7',mint:'#8CC6BC'},renderer:sharp.versions,inputs,files},null,2)+'\n');
 console.log(JSON.stringify({files:Object.keys(files).length,output:out}));

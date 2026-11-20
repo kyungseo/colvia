@@ -85,7 +85,8 @@ for name in ["Inter-SemiBold", "Inter-Medium"] {
 let result:[String:Any]=[
  "symbol":["path":svg(outlined),"bounds":bounds(outlined),"centerline_cubic":svg(p),"conversion":"CoreGraphics stroked outline; SVG circular arc approximated by cubic segments <= 45 degrees; stroke expanded at 100x then scaled back"],
  "colvia":textPath("Colvia","Inter-SemiBold"),
- "descriptor":textPath("AI Work Harness","Inter-Medium")
+ "descriptor":textPath("AI Work Harness","Inter-Medium"),
+ "readmeTagline":textPath("Human-led AI work","Inter-Medium")
 ]
 let out=try JSONSerialization.data(withJSONObject:result,options:[.prettyPrinted,.sortedKeys])
 FileHandle.standardOutput.write(out)
