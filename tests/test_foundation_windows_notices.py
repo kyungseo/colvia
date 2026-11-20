@@ -85,5 +85,18 @@ class WindowsNoticeTests(unittest.TestCase):
         with self.assertRaisesRegex(RecordError,'event-id-invalid'):port.emit("'; bad",runner=runner,system_directory=self.base/'system')
         self.assertEqual(1,len(calls));self.assertFalse(port.check(port.receiver_identity)['os_consent_verified'])
 
+    def test_old_receiver_still_gets_its_supported_activation_format(self):
+        from types import SimpleNamespace
+        port = self.port()
+        port.change(enable=True)
+        scripts = []
+        def capture(args, **kwargs):
+            scripts.append(args[-1])
+            return SimpleNamespace(code=0)
+        event, digest = 'a' * 32, 'b' * 64
+        self.assertEqual('emitted', port.emit(event, route_digest=digest, runner=capture, system_directory=self.base/'system'))
+        self.assertIn('b:' + event, scripts[0])
+        self.assertNotIn(digest, scripts[0])
+
 if __name__=='__main__':unittest.main()
 

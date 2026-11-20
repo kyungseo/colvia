@@ -305,3 +305,11 @@ class WindowsFiles:
                     except OSError:
                         if primary is None:raise
                         primary.add_note('Native unlock failed; handle closure remains required.')
+
+
+class NoticeReaderFiles(WindowsFiles):
+    """Verify one inventory using live NTFS handles for its duration only."""
+
+    def verify_runtime_inventory(self, root, expected, manifest_raw, manifest_sha256, *, cancelled=lambda: False):
+        from ..updates.windows_payload import verify_pinned_inventory
+        return verify_pinned_inventory(root, expected, manifest_raw, manifest_sha256, self, cancelled=cancelled)

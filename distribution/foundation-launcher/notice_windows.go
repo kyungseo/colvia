@@ -55,11 +55,11 @@ func create(self, outer, iid, out uintptr) uintptr {
 	return qi(ptr(&callback), iid, out)
 }
 func activate(self, app, args, data, count uintptr) uintptr {
-	key := str(args, 40)
-	if str(app, 64) != appID || count != 0 || len(key) != 34 || (key[:2] != "v:" && key[:2] != "b:") {
+	key := str(args, 101)
+	if str(app, 64) != appID || count != 0 || (len(key) != 34 && len(key) != 99) || (key[:2] != "v:" && key[:2] != "b:") {
 		return 0x80070057
 	}
-	if _, err := hex.DecodeString(key[2:]); err != nil || strings.ToLower(key) != key {
+	if _, err := hex.DecodeString(key[2:34]); err != nil || strings.ToLower(key) != key || (len(key) == 99 && (key[34] != ':' || !digestPattern.MatchString(key[35:]))) {
 		return 0x80070057
 	}
 	select {
@@ -161,10 +161,12 @@ func noticeWindow(self string, root string) error {
 	type rendered struct {
 		sequence uint64
 		text     string
+		final    bool
 	}
 	results := make(chan rendered, 4)
 	var sequence uint64
 	busy := false
+	pending := ""
 	deadline := time.Now().Add(time.Minute)
 	for window != 0 || time.Now().Before(deadline) {
 		for {
@@ -181,14 +183,11 @@ func noticeWindow(self string, root string) error {
 				return nil
 			}
 		}
-		incoming := inbox
-		if busy {
-			incoming = nil
-		}
+		// Only the newest notification may replace the text in this window.
 		select {
-		case id := <-incoming:
-			busy = true
+		case id := <-inbox:
 			sequence++
+			pending = id
 			if window == 0 {
 				window, _, _ = user.NewProc("CreateWindowExW").Call(0, ptr(class), ptr(utf("Colvia · 맡긴 작업")), 0x10ca0000, 100, 100, 640, 380, 0, 0, module, 0)
 				if window == 0 {
@@ -206,20 +205,41 @@ func noticeWindow(self string, root string) error {
 			user.NewProc("SetWindowTextW").Call(editor, ptr(utf("작업 기록을 확인하고 있습니다.")))
 			user.NewProc("ShowWindow").Call(window, 5)
 			user.NewProc("SetForegroundWindow").Call(window)
-			go func(n uint64, key string) {
-				text, err := noticeRead(self, "notice-detail", "--event", key)
-				if err != nil || text == "" {
-					text = noticeFailureText(err)
-				}
-				results <- rendered{n, strings.ReplaceAll(strings.ReplaceAll(text, "\x00", "�"), "\n", "\r\n")}
-			}(sequence, id)
 		case data := <-results:
-			busy = false
+			if data.final {
+				busy = false
+			}
 			if data.sequence == sequence {
 				user.NewProc("SetWindowTextW").Call(editor, ptr(utf(data.text)))
 			}
 		default:
 			time.Sleep(25 * time.Millisecond)
+		}
+		if !busy && pending != "" {
+			id := pending
+			pending = ""
+			busy = true
+			go func(n uint64, key string) {
+				event, digest, ok := strings.Cut(key, ":")
+				if !ok {
+					results <- rendered{n, "이전 알림입니다. 프로젝트에서 해당 작업의 결과를 확인해 주세요.", true}
+					return
+				}
+				args := []string{"notice-original", "--event", event, "--route-sha256", digest}
+				text, err := noticeRead(self, args...)
+				if err != nil || text == "" {
+					results <- rendered{n, noticeFailureText(err), true}
+					return
+				}
+				format := func(s string) string { return strings.ReplaceAll(strings.ReplaceAll(s, "\x00", "�"), "\n", "\r\n") }
+				results <- rendered{n, format(text + "\n\n현재 작업 상태를 확인하고 있습니다."), false}
+				args[0] = "notice-detail"
+				text, err = noticeRead(self, args...)
+				if err != nil || text == "" {
+					text = noticeFailureText(err)
+				}
+				results <- rendered{n, format(text), true}
+			}(sequence, id)
 		}
 	}
 	return nil

@@ -506,7 +506,7 @@ prepared:
 	// The Windows notification receiver is bound to its own verified executable,
 	// not to an arbitrary source string from a command line.
 	if runtime.GOOS == "windows" && manager && !repair && len(args) > 0 &&
-		(args[0] == "notice-identity" || args[0] == "notice-detail") {
+		(args[0] == "notice-identity" || args[0] == "notice-detail" || args[0] == "notice-original") {
 		self, err := os.Executable()
 		if err != nil {
 			return err
@@ -535,6 +535,7 @@ func (e *productEnded) Error() string { return fmt.Sprintf("product exited with 
 
 func runProduct(command []string) error {
 	child := exec.Command(command[0], command[1:]...)
+	configureNoticeChild(child, command)
 	child.Stdin = os.Stdin
 	child.Stdout = os.Stdout
 	child.Stderr = os.Stderr

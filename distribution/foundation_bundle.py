@@ -41,6 +41,26 @@ def wrapper(module):
             "if __name__=='__main__':raise SystemExit(main())\n").encode()
 
 
+def check_windows_receiver(stream, architecture):
+    """Read the PE header before hashing this same input for the inventory."""
+    def read_at(offset, size):
+        stream.seek(offset)
+        data = stream.read(size)
+        require(len(data) == size, 'bundle-notice-executable-invalid')
+        return data
+
+    require(read_at(0, 2) == b'MZ', 'bundle-notice-executable-invalid')
+    pe = int.from_bytes(read_at(60, 4), 'little')
+    require(read_at(pe, 4) == b'PE\x00\x00', 'bundle-notice-executable-invalid')
+    machine = int.from_bytes(read_at(pe + 4, 2), 'little')
+    require(machine == {'arm64': 0xaa64, 'x64': 0x8664}[architecture], 'bundle-notice-architecture')
+    optional_size = int.from_bytes(read_at(pe + 20, 2), 'little')
+    require(optional_size >= 70 and read_at(pe + 24, 2) == b'\x0b\x02', 'bundle-notice-executable-invalid')
+    subsystem = int.from_bytes(read_at(pe + 24 + 68, 2), 'little')
+    require(subsystem == 2, 'bundle-notice-gui-required')
+    stream.seek(0)
+
+
 def _identity(path):
     info=path.lstat()
     require(stat.S_ISREG(info.st_mode) and info.st_nlink==1,'bundle-input-not-regular')
@@ -48,7 +68,7 @@ def _identity(path):
 
 
 def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,licenses,output,
-             release,sequence,os_name,architecture,python_entry,python_version,sqlite_version,notice_app=None,document_assets=False):
+             release,sequence,os_name,architecture,python_entry,python_version,sqlite_version,notice_app=None,document_assets=False,windows_notice_entry=None):
     source,runtime,verifier,native_entry,anchor,output=map(Path,(source,runtime,verifier,native_entry,anchor,output))
     _token(release);require(type(sequence) is int and sequence>0,'bundle-sequence-invalid')
     require((os_name,architecture) in (('macos','arm64'),('windows','arm64'),('windows','x64')),'bundle-platform-unavailable')
@@ -62,6 +82,8 @@ def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,
     require(all(_url(configuration[k])==configuration[k] for k in ('metadata_url','target_url')),'bundle-update-origin')
     require(type(document_assets) is bool,'bundle-document-option')
     require(not document_assets or (os_name,architecture)==('macos','arm64'),'bundle-document-platform')
+    if os_name == 'windows':
+        require(windows_notice_entry is not None, 'bundle-windows-notice-entry-required')
     inputs={};generated={};identities={};captured={}
     def add(name,path,*,execution_asset=False):
         name=_portable(name);path=Path(path)
@@ -87,6 +109,9 @@ def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,
         add('adapters/colvia-work/'+filename, source/'adapters/foundation-work'/filename)
     executable='native/colvia.exe' if os_name=='windows' else 'native/colvia'
     add(executable,native_entry);add('trust/root.json',anchor)
+    if windows_notice_entry is not None:
+        require(os_name=='windows','bundle-notice-platform')
+        add('native/colvia-notice.exe',windows_notice_entry)
     if notice_app is not None:
         from colvia.updates.notice_app import PARTS,PREFIX
         require(os_name=='macos','bundle-notice-platform')
@@ -138,10 +163,12 @@ def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,
         else:
             path=inputs[name]
             with path.open('rb') as stream:
+                if name=='native/colvia-notice.exe':
+                    check_windows_receiver(stream,architecture)
                 while raw:=stream.read(1024*1024):h.update(raw);size+=len(raw);require(size<=1024**3,'bundle-file-limit')
             require(_identity(path)==identities[name] and size==identities[name][2],'bundle-input-changed')
             mode='100755' if identities[name][-1]&0o111 else '100644'
-        if name in (executable,'runtime/'+python_entry):require(mode=='100755','bundle-executable-required')
+        if name in (executable,'runtime/'+python_entry,'native/colvia-notice.exe'):require(mode=='100755','bundle-executable-required')
         total+=size;require(total<=4*1024**3,'bundle-size-limit')
         inventory.append(dict(path=name,kind='regular',size=size,sha256=h.hexdigest(),mode=mode))
     indexed_inputs={row['path']:row for row in inventory}

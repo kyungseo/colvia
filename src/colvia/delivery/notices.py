@@ -27,7 +27,7 @@ class Notices:
             link(state,'authorization')==link(event,'authorization') and link(state,'attempt')==link(event,'attempt') and
             request.payload['receiver']==event.payload['receiver'],'notice-outcome-mismatch')
         return event,state,request
-    def details(self,delivery,*,project,instance,event_ref):
+    def original_details(self,delivery,*,project,instance,event_ref):
         require(project==self.store.project and instance==self.store.instance,'notice-route-mismatch')
         event,state,request=self.event(delivery,ref=event_ref)
         require(self.store.head(notice_key(delivery))==event.ref,'notice-route-mismatch')
@@ -42,11 +42,18 @@ class Notices:
             _,_,_,_,history=ExecutionJournal(self.service).read(executed.payload['run'],ref=executed.ref)
             original=dict(kind='executed',run=executed.payload['run'],status=history.terminal,
                 document_write_effect=history.effect(),work_submitted=False)
-        try:current=self.service.view(request.payload['work'])
+        return event, request, original
+
+    def details(self,delivery,*,project,instance,event_ref):
+        _, request, original = self.original_details(delivery, project=project, instance=instance, event_ref=event_ref)
+        return self.current_details(request.payload['work'], original)
+
+    def current_details(self, work, original):
+        try:current=self.service.view(work)
         except RecordError as exc:current=dict(unavailable=exc.code)
         try:self.service.workspace.verify();connected=True
         except (OSError,RecordError):connected=False
-        return dict(work=request.payload['work'],original=original,current=current,workspace_connected=connected,
+        return dict(work=work,original=original,current=current,workspace_connected=connected,
             next_action='review_in_project' if connected else 'reconnect_project',click_accepts=False)
     def emit(self,*,operation,delivery,port):
         event,_,_=self.event(delivery);emission=emission_key(delivery)

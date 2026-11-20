@@ -22,6 +22,35 @@ class BundleTests(unittest.TestCase):
             guides={'manual/en/README.md':self.guide,'manual/ko/README.md':self.guide},licenses={'LICENSE':self.notice,'THIRD_PARTY_NOTICES.md':self.notice},
             output=self.root/'bundle.zip',release='synthetic',sequence=1,os_name='macos',architecture='arm64',python_entry='python',python_version='3.14.7',sqlite_version='3.54.0')
     def tearDown(self):self.tmp.cleanup()
+    def windows_receiver(self, architecture, *, subsystem=2):
+        import struct
+        header = bytearray(256)
+        header[:2] = b'MZ'
+        struct.pack_into('<I', header, 60, 96)
+        header[96:100] = b'PE\x00\x00'
+        for offset,value in ((100,{'arm64':0xaa64, 'x64':0x8664}[architecture]), (116,112), (120,0x20b), (188,subsystem)):
+            struct.pack_into('<H',header,offset,value)
+        gui = self.root/'receiver.exe'
+        gui.write_bytes(header)
+        gui.chmod(0o700)
+        return gui
+
+    def test_windows_bundle_refuses_missing_receiver_before_writing_zip(self):
+        for architecture in ('arm64','x64'):
+            with self.subTest(architecture=architecture):
+                self.kw.update(os_name='windows',architecture=architecture)
+                with self.assertRaisesRegex(RecordError,'bundle-windows-notice-entry-required'):
+                    bundle.assemble(**self.kw)
+                self.assertFalse(self.kw['output'].exists())
+
+    def test_windows_bundle_rejects_console_or_wrong_architecture_receiver(self):
+        self.kw.update(os_name='windows',windows_notice_entry=self.windows_receiver('arm64',subsystem=3))
+        with self.assertRaisesRegex(RecordError,'bundle-notice-gui-required'):
+            bundle.assemble(**self.kw)
+        self.kw.update(architecture='x64',windows_notice_entry=self.windows_receiver('arm64'))
+        with self.assertRaisesRegex(RecordError,'bundle-notice-architecture'):
+            bundle.assemble(**self.kw)
+
     def test_packaged_wrappers_resolve_bundled_code_in_isolated_python(self):
         result=bundle.assemble(**self.kw);self.assertFalse(result['runtime_execution_verified'])
         with zipfile.ZipFile(self.kw['output']) as z:
@@ -46,7 +75,11 @@ class BundleTests(unittest.TestCase):
     def test_windows_generated_manifest_passes_slot_validation(self):
         for architecture in ('arm64','x64'):
             self.kw.update(os_name='windows',architecture=architecture,output=self.root/(architecture+'.zip'))
-            result=bundle.assemble(**self.kw)
+            gui = self.windows_receiver(architecture)
+            result=bundle.assemble(**self.kw,windows_notice_entry=gui)
+            with zipfile.ZipFile(self.kw['output']) as archive:
+                self.assertEqual(gui.read_bytes(),archive.read('native/colvia-notice.exe'))
+                self.assertEqual(self.native.read_bytes(),archive.read('native/colvia.exe'))
             staged=self.stage_checked(result)
             for filename in GUIDE_FILES.values():
                 self.assertEqual((self.kw['source']/'adapters/foundation-work'/filename).read_bytes(),

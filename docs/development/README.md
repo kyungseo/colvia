@@ -2,6 +2,8 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
+- [Windows notification detail latency](PATCH-20261121-001-windows-notice-detail-latency.md) — Visible result timing and integrity checks.
+
 - [Public and installed guides for returning to a project](CHORE-20261120-001-public-work-guides.md) — Reader journeys, bilingual diagrams and package verification.
 
 - [Development records and documentation checkpoints](CHORE-20261117-003-development-record-and-documentation-checkpoints.md) — Implementation of the DR-0003 amendment and checks against representative cases.

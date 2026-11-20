@@ -61,11 +61,19 @@ class WindowsNotices:
         target=value['target'];require(self.state()==self.expected(target),'notice-registration-changed')
         if target is not None:self.executable(target)
         return target
-    def candidate_bytes(self):
+    def candidate_bytes(self, *, with_format=False):
         _,state=self.home.slots.selection();slot=self.home.slots.verify(state['selected'])
         from ..updates.installation import configuration
         location=self.home.slots.root/'slots'/slot.slot;config=configuration(self.files,location)
-        raw=self.files.read(location/config['native_entry'],64*1024*1024);return raw
+        manifest = self.files.read(location/'manifest.json',4*1024*1024)
+        require(hashlib.sha256(manifest).hexdigest() == slot.manifest_sha256,'slot-manifest-mismatch')
+        inventory = {item['path']:item for item in decode_canonical(manifest)['inventory']}
+        name = 'native/colvia-notice.exe'
+        if name not in inventory:
+            name = config['native_entry']
+        raw = self.files.read(location/name,64*1024*1024)
+        require(hashlib.sha256(raw).hexdigest() == inventory[name]['sha256'],'notice-native-file-changed')
+        return (raw, name=='native/colvia-notice.exe') if with_format else raw
     def candidate(self):
         raw=self.candidate_bytes();target=hashlib.sha256(raw).hexdigest()
         root=self.home.root/'notification-tools'
@@ -166,15 +174,30 @@ class WindowsNotices:
         require(Path(source)==self.executable(target),'notice-receiver-source-mismatch')
         return dict(app=self.app,cls=self.cls)
 
-    def check(self,identity):
+    def check(self,identity,*,activation_format=False):
         require(identity==dict(id='windows-user',version=1),'notice-receiver-mismatch')
         require(not self.files.exists(self.home.root/'notice-registration.pending'),'notice-registration-pending')
         target=self.current();require(target is not None,'notice-registration-required')
-        require(hashlib.sha256(self.candidate_bytes()).hexdigest()==target,'notice-registration-update-required')
+        if activation_format:
+            raw, bound = self.candidate_bytes(with_format=True)
+        else:
+            raw = self.candidate_bytes()
+        require(hashlib.sha256(raw).hexdigest()==target,'notice-registration-update-required')
+        if activation_format:
+            return bound
         return dict(state='registered',receiver=dict(id='windows-user',version=1),os_consent_verified=False)
-    def emit(self,event,*,runner=None,system_directory=None):
+    def emit_bound(self,event,digest):
+        require(type(digest) is str and re.fullmatch('[0-9a-f]{64}',digest),'notice-route-digest-invalid')
+        return self.emit(event,route_digest=digest)
+
+    def emit(self,event,*,runner=None,system_directory=None,route_digest=None):
         require(type(event) is str and re.fullmatch('[0-9a-f]{32}',event),'notice-event-id-invalid')
-        self.check(dict(id='windows-user',version=1))
+        if route_digest is not None:
+            require(type(route_digest) is str and re.fullmatch('[0-9a-f]{64}',route_digest),'notice-route-digest-invalid')
+            if self.check(self.receiver_identity,activation_format=True):
+                event=event+':'+route_digest
+        else:
+            self.check(self.receiver_identity)
         if system_directory is None:
             import ctypes
             api=ctypes.WinDLL('kernel32',use_last_error=True);buf=ctypes.create_unicode_buffer(32768)
