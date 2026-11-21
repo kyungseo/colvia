@@ -122,7 +122,7 @@ Before the first submission, you can [approve extra files in the same Work](manu
 
 You can ask short questions and look up files within the access already granted.
 
-You can skip creating a Work for a typo, spacing, or punctuation correction you explicitly request. The edit must follow your project rules and granted access, preserve meaning and behavior, and need no separate result review, retention, or handoff. If the edit belongs to an existing Work, check that Work’s approved scope and continue with its records. [Assign and review work](manual/en/work.md#review)
+Try “Update the list-work example in the README to use the current command.” If the example has one verifiable correction, your agent can make it within your project rules and granted access. An independent edit needs no Work when there’s no separate review, record or handoff to keep. For a change to an existing result, continue in the same Work within its approved scope. [Small corrections and follow-up edits](manual/en/work.md#without-work)
 
 ### Pick up a coding task
 

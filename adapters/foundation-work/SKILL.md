@@ -17,7 +17,7 @@ For “오늘 뭐부터 보면 돼?” or “다음 진행할 작업은?”, run
 For general resume, run `ordinary list --list-mode current`. Follow every non-null `next` with the same filter and returned `--cursor` argument. Only a complete empty `--list-mode all` establishes no Work exists.
 If lookup fails, explain, read `guide recovery` and stop affected writes until folder, access and state are verified. Preview new connections. Ask plain or Git only if offered and undecided. For Git setup or conversion read `guide management`. You can still help in conversation.
 
-Match Work before acting. Resume the only active or review Work when the full list establishes it. Consider paused matches; if several fit, ask by title. For pause, resume, discard or replacement read `guide work`. Opening B leaves A as it was.
+For a request to continue a Work, match it before acting. Resume the only active or review Work when the full list establishes it. Consider paused matches; if several fit, ask by title. For pause, resume, discard or replacement read `guide work`. Opening B leaves A as it was.
 Use the listed ID internally. Read `ordinary review WORK_ID` for review state or `ordinary view WORK_ID` otherwise. Use `ordinary content` for a submitted version. Keep IDs and approval receipts in tool calls. For an active revision read `guide revision` before describing edits or submitting again.
 
 For a progress note or an ambiguous stopping phrase, read `guide work`. Stop work when asked to stop. Ask before saving an ambiguous note; a sign-off never authorizes submission or acceptance.
@@ -33,12 +33,12 @@ For decisions made earlier, candidate priorities or Work dependencies, read `gui
 
 ## Choose the next action
 
-An explicitly requested typo, spacing or punctuation correction may proceed
-without a new Work if it preserves meaning and behavior, fits project rules and
-granted access, and needs no separate review, retained result or handoff. Use a
-matching Work's valid scope and revision procedure when one exists.
+- For a follow-up, identify the Work from the request or conversation. Check its goal, state and approved scope. Continue active work; use `guide revision` for a concrete change to a submitted or accepted version. Preserve earlier decisions. For other states use `guide work` before editing.
+- For an independent correction (a typo that preserves meaning and behavior, or a factual update), edit directly if the target is explicit, access and project rules permit it, current evidence gives one answer in context (e.g. command help), and you can verify it immediately. Preserve existing edits and staging; report the change and check. No history scan or extra question is needed solely to classify it.
+- Use a Work for material choices, high-impact guidance (e.g. deletion or permissions), or required review, retention or handoff. Honor a request for a submission or acceptance record. Resolve conflicting evidence before editing.
 
-For changes that need review, a retained result or handoff, use a Work.
+On any route, if the edit needs more scope, stop before editing outside the request or approval. Report what changed within scope and propose the addition; wait for approval.
+
 For a new task, use the stated aim and existing project materials. Read
 `guide plan` before proposing a Work. Before recording a plan, explain that
 listed files' existing contents are saved and may enter backups, exclude secrets

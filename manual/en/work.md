@@ -42,7 +42,11 @@ You can discuss project goals and rules later, or include them when you review t
 
 ### What you can do without a Work
 
-You can skip creating a Work for a typo, spacing, or punctuation correction you explicitly request. The edit must follow your project rules and granted access, preserve meaning and behavior, and need no separate result review, retention, or handoff. If the edit belongs to an existing Work, check that Work’s approved scope and continue with its records.
+To refine a result, ask “Could you also fix the last example in the guide I just accepted?” If the goal and approved scope still fit, your agent continues in the same Work. You can request a change while reviewing a version or after accepting it. Earlier versions and decisions stay on record, and you can review and accept the next version.
+
+For an independent correction, just ask “Update the list-work example in the README to use the current command.” The agent checks the current version’s command help to find the right command for that example. If the answer is clear and immediately verifiable, your project rules and granted access allow the edit, and no separate review, retained result or handoff is needed, the agent corrects the example and reports the change and check without opening a Work. The same applies to a typo that leaves the meaning intact.
+
+Use a Work when you need to choose between disconnecting a folder and deleting its data, or when an error in deletion or permissions guidance could cause harm. Also use a Work if your project requires review or you want a record of the submission and your decision. If another file needs to change, the agent explains why and proposes the extra scope before editing it. You decide separately whether to apply changes to Git.
 
 <a id="review" name="review"></a>
 
