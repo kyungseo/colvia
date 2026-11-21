@@ -90,6 +90,9 @@ def parser(*,managed=False):
     plan.add_argument('--exclude',action='append',default=[]);plan.add_argument('--replace-receipt')
     for name in ('approve','accept','revise'):
         command=ordinary.add_parser(name);command.add_argument('work');command.add_argument('--receipt',required=True);command.add_argument('--statement',required=True)
+        if name == 'approve':
+            command.add_argument('--start', action='store_true',
+                                 help='Start only when the user also approved carrying out this exact plan.')
     for name in ('start','review','view','plan-review'):
         ordinary.add_parser(name).add_argument('work')
     for action in ('scope-preview','scope-apply'):
@@ -238,7 +241,10 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
             from .work_history import history
             return history(store, args.work, limit=args.limit, cursor=parse_cursor(args.cursor))
         if action=='plan':return service.plan(operation=operation,work=args.work,title=args.title,goal=args.goal,scope=args.path,checks=args.check,excludes=args.exclude,replace_receipt=args.replace_receipt)
-        if action in ('approve','accept','revise'):return getattr(service,action)(operation=operation,work=args.work,receipt=args.receipt,statement=args.statement)
+        if action == 'approve':
+            return service.approve(operation=operation, work=args.work, receipt=args.receipt,
+                                   statement=args.statement, start=args.start)
+        if action in ('accept','revise'):return getattr(service,action)(operation=operation,work=args.work,receipt=args.receipt,statement=args.statement)
         if action in ('scope-preview','scope-apply'):
             from . import scope_addition
             delta = dict(edit=args.edit, create=args.create, checks=args.check, reason=args.reason)

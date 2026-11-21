@@ -6,6 +6,7 @@ shown record and local authority instance; they are not human authentication.
 """
 from __future__ import annotations
 import hashlib
+from uuid import uuid4
 from contextlib import contextmanager
 
 from .bodies import descriptor,submission_size
@@ -205,13 +206,15 @@ class WorkService:
                               '이 계획대로 진행하는 것까지 승인했다면 다시 묻지 않고 시작합니다. '
                               '계획이 달라졌다면 변경 내용을 보고 진행 여부를 정해 주세요.'))
 
-    def approve(self,*,operation,work,receipt,statement):
+    def approve(self,*,operation,work,receipt,statement,start=False):
         ref,head=self._head(work);require(head.payload['phase']=='planned','plan-not-awaiting-approval')
         require(receipt==self._receipt('approve',work,ref),'stale-plan-receipt');text(statement)
         planref=link(head,'plan');plan=self._object(planref)
         approved,raw=record('work.approval',dict(work=work,workspace=self.workspace.workspace,statement=statement),{'plan':('decision',planref)})
         newhead=self._head_record(planref,plan.payload,'approved',approval=approved,previous=ref)
-        self._publish(operation,work,ref,newhead,[(approved,raw)])
+        approved_ref = self._publish(operation,work,ref,newhead,[(approved,raw)])
+        if start:
+            return self.start(operation='op-' + uuid4().hex, work=work, expected_approval_head=approved_ref)
         return dict(work=work,state='approved')
 
     def _observe_from_plan(self,plan,extra=()):
@@ -237,8 +240,10 @@ class WorkService:
         require(now.snapshot.entries==observed.snapshot.entries and now.topology==observed.topology and
                 now.opaque==observed.opaque,'workspace-observation-changed')
 
-    def start(self,*,operation,work):
+    def start(self,*,operation,work,expected_approval_head=None):
         ref,head=self._head(work);require(head.payload['phase']=='approved','plan-approval-required')
+        if expected_approval_head is not None:
+            require(ref == expected_approval_head, 'stale-plan-receipt')
         planref=link(head,'plan');plan=self._object(planref)
         _,entries,current=self._observe_from_plan(plan)
         require(tuple(entries)==current.snapshot.entries,'plan-baseline-changed')
