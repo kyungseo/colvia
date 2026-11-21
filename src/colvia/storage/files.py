@@ -153,6 +153,13 @@ class PosixFiles:
         require(self.read(path)==expected,'lifecycle-pointer-conflict')
         path.unlink(); self.sync_directory(path.parent)
 
+    def empty_lock(self, path):
+        try:
+            self.create(path, b'')
+        except FileExistsError:
+            require(self.read(path) == b'', 'detach-lock-invalid')
+        return self.exclusion(path)
+
     @contextmanager
     def exclusion(self,path:Path,timeout=5,*,shared=False):
         import fcntl

@@ -25,9 +25,7 @@ class ManagedFiles:
     def exclusion(self):
         require(not self.locked,'detach-lock-reentry')
         lock=self.authority/'detach.lock'
-        try:self.files.create(lock,b'')
-        except FileExistsError:require(self.files.read(lock)==b'','detach-lock-invalid')
-        with self.files.exclusion(lock):
+        with self.files.empty_lock(lock):
             self.locked=True
             try:yield
             finally:self.locked=False
