@@ -284,15 +284,35 @@ class WindowsFiles:
         with a.ancestors(path):
             require(self.read(path)==expected,'lifecycle-pointer-conflict');a.ok(a.DeleteFileW(local_path(path)))
         self.sync_directory(Path(path).parent)
+    def empty_lock(self, path):
+        return self.exclusion(path, create_empty=True)
+
     @contextmanager
-    def exclusion(self,path,timeout=5,*,shared=False,allow_parent_move=False):
+    def exclusion(self,path,timeout=5,*,shared=False,allow_parent_move=False,create_empty=False):
         require(type(timeout) in (int,float) and 0<timeout<=30,'invalid-lock-timeout');a=self.api
         with ExitStack() as handles:
             parents = handles.enter_context(ExitStack())
             parents.enter_context(a.ancestors(path))
-            h = handles.enter_context(a.opened(path,access=0x80020000 if shared else 0xc0020000,
-                                               share=7 if allow_parent_move else 3,disposition=3))
+            access = 0x80020000 if shared else 0xc0020000
+            share = 7 if allow_parent_move else 3
+            if create_empty:
+                # A zero-byte lock is complete at CREATE_NEW. Using its final
+                # name also handles racing creators without preparing a sibling.
+                self.private_directory(Path(path).parent)
+                with a.security() as descriptor:
+                    try:
+                        h = handles.enter_context(a.opened(path, access=access, share=share,
+                                                           disposition=1, security=descriptor))
+                    except FileExistsError:
+                        h = handles.enter_context(a.opened(path, access=access, share=share))
+                    else:
+                        a.ok(a.FlushFileBuffers(h))
+                        self.sync_directory(Path(path).parent)
+            else:
+                h = handles.enter_context(a.opened(path, access=access, share=share))
             before=a.state(h,path);a.private(h);require(not before['directory'] and before['links']==1,'unsafe-lifecycle-lock')
+            if create_empty:
+                require(before['size'] == 0, 'detach-lock-invalid')
             overlap=a.Overlapped();deadline=time.monotonic()+timeout;locked=False
             try:
                 while True:

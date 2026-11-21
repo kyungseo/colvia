@@ -1,8 +1,11 @@
 """Portable refusal checks; no native Windows qualification is claimed here."""
+from contextlib import contextmanager, nullcontext
+import ctypes
+from pathlib import Path
 import sys,unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from colvia.codec import RecordError
-from colvia.storage.windows import API,local_path
+from colvia.storage.windows import API, WindowsFiles, local_path
 
 class WindowsStorageContractTests(unittest.TestCase):
     def test_portable_path_rejects_remote_devices_ads_aliases_and_normalization(self):
@@ -28,3 +31,36 @@ class WindowsStorageContractTests(unittest.TestCase):
         with patch('colvia.storage.files.sys.platform','win32'),patch('colvia.storage.windows.WindowsFiles',side_effect=RecordError('unavailable')):
             from colvia.storage.files import platform_files
             with self.assertRaisesRegex(RecordError,'unavailable'):platform_files()
+
+    def test_reopening_empty_lock_uses_the_same_final_file(self):
+        path = Path('authority') / 'detach.lock'
+        contents = {}
+        api = Mock()
+        api.ancestors.return_value = nullcontext()
+        api.security.return_value = nullcontext(object())
+        api.Overlapped = ctypes.c_uint32
+
+        @contextmanager
+        def opened(target, *, disposition=3, **kwargs):
+            self.assertEqual(path, target)
+            if disposition == 1:
+                if target in contents:
+                    raise FileExistsError(target)
+                contents[target] = b''
+            yield target
+
+        api.opened = opened
+        api.state.side_effect = lambda handle, target: dict(directory=False, links=1, size=len(contents[target]))
+        files = WindowsFiles(api=api)
+        with patch.object(files, 'private_directory'), patch.object(files, 'sync_directory') as sync:
+            for _ in range(3):
+                with files.empty_lock(path):
+                    self.assertEqual({path: b''}, contents)
+            sync.assert_called_once_with(path.parent)
+            contents[path] = b'user data'
+            with self.assertRaisesRegex(RecordError, 'detach-lock-invalid'), files.empty_lock(path):
+                self.fail('nonempty lock admitted')
+            self.assertEqual(b'user data', contents[path])
+        self.assertEqual(3, api.LockFileEx.call_count)
+        self.assertEqual(3, api.UnlockFileEx.call_count)
+        api.MoveFileExW.assert_not_called()
