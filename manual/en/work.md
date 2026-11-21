@@ -38,6 +38,16 @@ If you already know what to do, ask for it directly. The agent can answer a shor
 
 You can discuss project goals and rules later, or include them when you review the proposed scope. Check the file names and changes before approving that scope. Before recording the plan, review [what Colvia keeps](records.md#retained-contents).
 
+### Record decisions and reasons where your team can find them
+
+Try “Record why we chose batch delivery over sending each item separately, using our team’s usual format.” If your team uses a brief to compare options and a decision record to explain what it chose and why, the agent follows that convention. If the record and its index both need edits, the agent proposes both files in one plan. If the team is still deciding, the agent records the alternatives and open question in a draft. You can accept the wording of that draft while the policy still awaits team review.
+
+Once the record is in the shared repository, colleagues can sync their checkout and follow the usual index to find the decision’s status and rationale. You can reopen the version you accepted in Colvia on your device.
+
+Colleagues need wiki access to read a decision kept only in the team wiki. If the repository has no link, syncing alone won’t help them find it. Where team sharing rules allow, the agent can propose adding a link to the existing index. If the agent lacks write access, it can prepare wording for someone who can post it. In a folder without a shared format, an existing note suitable for the intended readers can be enough.
+
+The agent reuses a check result when it covers the same change under the same conditions. It briefly explains a project rule when the rule changes what you can expect. For instance, if committing a document automatically publishes it and you only authorized a draft, the agent prepares the draft and stops before committing to explain the publication step.
+
 <a id="without-work" name="without-work"></a>
 
 ### What you can do without a Work
