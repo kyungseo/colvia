@@ -200,7 +200,10 @@ class WorkService:
         plan=self._object(link(head,'plan'))
         return dict(work=work,title=plan.payload['title'],goal=plan.payload['goal'],scope=plan.payload['scope'],
                     checks=plan.payload['checks'],excludes=plan.payload['excludes'],state='planned',
-                    receipt=self._receipt('approve',work,ref),question='이 범위로 진행할까요?')
+                    receipt=self._receipt('approve',work,ref),
+                    question=('기록에만 동의했다면 여기서 멈춥니다. '
+                              '이 계획대로 진행하는 것까지 승인했다면 다시 묻지 않고 시작합니다. '
+                              '계획이 달라졌다면 변경 내용을 보고 진행 여부를 정해 주세요.'))
 
     def approve(self,*,operation,work,receipt,statement):
         ref,head=self._head(work);require(head.payload['phase']=='planned','plan-not-awaiting-approval')

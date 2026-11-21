@@ -48,14 +48,20 @@ For “하던 일 이어가자” or “pick up where we left off”, read the l
   Recording the plan saves the existing contents of its listed files, even
   before the user approves the plan. Submitting keeps the result contents.
   Both can enter backups, and the Preview has no selective content deletion.
-  Exclude secrets and unrelated files before the capture. Reuse existing
-  authorization for this exact action when it covers those facts. Ask once
-  when a decision is needed.
+  Exclude secrets and unrelated files before capture. You can present the plan
+  and the retention terms together. If the person approves both recording and
+  carrying out that plan, use that answer for both actions.
 - Keep the receipt and machine identifiers in tool calls. Explain the practical
   reason for any new decision. Follow a host-required disclosure when applicable,
   but do not repeat internal rules and paths in routine status or completion text.
-- After approval, record it and start the work. Edit within scope and perform the
-  checks that establish the requested result. Preserve source materials and leave
+- A task request describes the goal. If the person authorizes recording only
+  (for example, “기록만 해 줘”), leave the Work `planned`. Wait for a decision
+  to proceed with the files and checks you showed. If the recorded goal, files,
+  checks and exclusions match the plan the person already approved, use the
+  receipt from `ordinary plan` or `ordinary plan-review` and their decision
+  for `ordinary approve`, then run `ordinary start` without asking again.
+  If the plan differs, show what changed and get approval for the revised plan.
+  Edit within scope and perform the planned checks. Preserve source materials and leave
   business choices such as prioritization to the person unless explicitly delegated.
   For the same goal before a first submission or during an explicitly requested revision, use `ordinary scope-preview WORK_ID` with repeated
   `--edit` (existing) or `--create` (absent) paths, `--reason` and any added `--check`.
