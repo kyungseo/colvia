@@ -47,6 +47,19 @@ class CLITests(unittest.TestCase):
         self.assertIn('검토를 기다리는 상태가 아닙니다',refused['message'])
         self.assertNotIn('현재 상태를 확인하지 못해',refused['message'])
         self.assertEqual('completed',self.call('ordinary','view','report')['state'])
+    def test_approve_start_uses_current_receipt_and_records_one_approval(self):
+        plan = self.plan()
+        self.assertEqual('planned', self.call('ordinary', 'view', 'report')['state'])
+        args = ['ordinary', 'approve', 'report', '--start', '--statement', 'Proceed with this plan', '--receipt']
+        refused = self.call(*args, 'wrong-receipt', code=2)
+        self.assertEqual('stale-plan-receipt', refused['error'])
+        self.assertEqual('planned', self.call('ordinary', 'view', 'report')['state'])
+        self.assertEqual('active', self.call(*args, plan['receipt'])['state'])
+        self.call(*args, plan['receipt'], code=2)
+        items = self.call('ordinary', 'history', 'report')['items']
+        self.assertEqual(['Proceed with this plan'], [i['text'] for i in items if i['kind'] == 'approve'])
+        self.assertEqual('active', self.call('ordinary', 'view', 'report')['state'])
+
     def test_file_read_denial_does_not_claim_record_folder_or_lose_work(self):
         plan=self.plan()
         self.call('ordinary','approve','report','--receipt',plan['receipt'],'--statement','진행')

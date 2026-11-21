@@ -49,6 +49,30 @@ class WorkFixture:
 
 
 class WorkTests(WorkFixture,unittest.TestCase):
+    def test_combined_start_refuses_file_drift_after_approval_is_persisted(self):
+        from unittest.mock import patch
+        plan = self.plan(scope=('source.csv',))
+        start = self.service.start
+        def edit_after_approval(**kwargs):
+            head = self.store.head(work_key('report'))
+            self.assertEqual(kwargs['expected_approval_head'], head)
+            self.assertEqual('approved', self.service.view('report')['state'])
+            (self.root / 'source.csv').write_text('changed after approval')
+            return start(**kwargs)
+
+        with patch.object(self.service, 'start', side_effect=edit_after_approval):
+            with self.assertRaisesRegex(RecordError, 'plan-baseline-changed'):
+                self.service.approve(operation='approve', work='report', receipt=plan['receipt'],
+                                     statement='Proceed with this plan', start=True)
+        ref = self.store.head(work_key('report'))
+        head = decode_envelope(ref, self.store.load(ref))
+        approval = link(head, 'approval')
+        decision = decode_envelope(approval, self.store.load(approval))
+        self.assertEqual('approved', head.payload['phase'])
+        self.assertEqual('Proceed with this plan', decision.payload['statement'])
+        self.assertEqual(link(head, 'plan'), link(decision, 'plan'))
+        self.assertEqual('changed after approval', (self.root / 'source.csv').read_text())
+
     def test_one_approval_submission_prepares_review_and_one_acceptance(self):
         self.start();(self.root/'report.md').write_bytes(b'# Report\ncomparison\n')
         review=self.submit();self.assertTrue(review['current_matches']);self.assertEqual('review',review['state'])

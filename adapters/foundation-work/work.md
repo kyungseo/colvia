@@ -58,8 +58,15 @@ For “하던 일 이어가자” or “pick up where we left off”, read the l
   (for example, “기록만 해 줘”), leave the Work `planned`. Wait for a decision
   to proceed with the files and checks you showed. If the recorded goal, files,
   checks and exclusions match the plan the person already approved, use the
-  receipt from `ordinary plan` or `ordinary plan-review` and their decision
-  for `ordinary approve`, then run `ordinary start` without asking again.
+  receipt from `ordinary plan` or `ordinary plan-review`.
+  For example, if it returned Work `readme-update`, use the project launcher:
+  Run `--json ordinary approve readme-update --start --receipt RECEIPT --statement "DECISION"`,
+  substituting the returned receipt and the person's actual decision to proceed.
+  Begin editing only when the command returns `state: active` for this Work.
+  Approval and start are recorded separately. If the project files change before
+  start, the approval remains and start is refused. Inspect the Work before
+  deciding how to proceed. To record scope approval while deferring the start,
+  omit `--start`; the existing `ordinary start` command remains available.
   If the plan differs, show what changed and get approval for the revised plan.
   Edit within scope and perform the planned checks. Preserve source materials and leave
   business choices such as prioritization to the person unless explicitly delegated.
