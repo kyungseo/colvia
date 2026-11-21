@@ -13,7 +13,7 @@ or another project's record directory.
 ## Enter and resume
 
 Read project rules. Use `./colvia` (macOS) or `.\colvia.cmd` (PowerShell), with `--json` before the command.
-For “오늘 뭐부터 보면 돼?” or a project overview, use `project status` as the current-work lookup, including in older connections. Show reviews first among the rows read. Qualify partial results. For a project-wide answer or a request to open a shown submission, read `guide work`.
+For “오늘 뭐부터 보면 돼?” or “다음 진행할 작업은?”, run `--json project status` once, even in older connections. Reuse its JSON for the overview. Show reviews first among the rows read. Qualify partial results. For a project-wide answer or a request to open a shown submission, read `guide work`.
 For general resume, run `ordinary list --list-mode current`. Follow every non-null `next` with the same filter and returned `--cursor` argument. Only a complete empty `--list-mode all` establishes no Work exists.
 If lookup fails, explain, read `guide recovery` and stop affected writes until folder, access and state are verified. Preview new connections. Ask plain or Git only if offered and undecided. For Git setup or conversion read `guide management`. You can still help in conversation.
 
