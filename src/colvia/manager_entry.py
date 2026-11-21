@@ -304,7 +304,7 @@ def main(argv=None,*,entry=None):
             code=trust_failure(exc)
             if code is None:raise
             print(json.dumps(dict(error=code,message='복구 후보의 신뢰를 확인하지 못했습니다. 기존 기록과 설치본은 보존됩니다.'),ensure_ascii=False));return 2
-    if entry is None and argv and argv[0] in ('bootstrap-uninstall-preview','bootstrap-uninstall',
+    if entry is None and argv and argv[0] in ('bootstrap-purge-preview','bootstrap-purge','bootstrap-purge-resume','bootstrap-uninstall-preview','bootstrap-uninstall',
                                                'bootstrap-uninstall-resume','bootstrap-uninstall-restore',
                                                'bootstrap-reinstall-resume'):
         command=argv[0].removeprefix('bootstrap-')
@@ -313,13 +313,16 @@ def main(argv=None,*,entry=None):
         p.add_argument('--bootstrap-stage',required=True,type=Path,action=RuntimeOptionOnce)
         p.add_argument('--bootstrap-manifest-sha256',required=True,action=RuntimeOptionOnce)
         if command!='reinstall-resume':p.add_argument('--operation',required=True,action=RuntimeOptionOnce)
-        if command in ('uninstall','uninstall-resume','uninstall-restore'):
+        if command in ('purge', 'purge-preview'):
+            p.add_argument('--exclude-unavailable',action='store_true')
+        if command in ('purge','purge-resume','uninstall','uninstall-resume','uninstall-restore'):
             p.add_argument('--receipt',required=True,action=RuntimeOptionOnce)
         a=p.parse_args(argv[1:])
         try:
             from .updates.installation import bootstrap
             result=bootstrap(a.management_root,a.bootstrap_stage,a.bootstrap_manifest_sha256,
-                             maintenance=(command,getattr(a,'operation',None),getattr(a,'receipt',None)))
+                             maintenance=(command,getattr(a,'operation',None),getattr(a,'receipt',None)),
+                             exclude_unavailable=getattr(a,'exclude_unavailable',False))
             print(json.dumps(result,ensure_ascii=False,sort_keys=True));return 0
         except (RecordError,OSError,ValueError,TypeError,KeyError) as exc:
             print(failure(exc.code if isinstance(exc,RecordError) else 'installation-unavailable'));return 2

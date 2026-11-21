@@ -19,7 +19,7 @@ Colvia는 사람과 AI가 함께 일하는 로컬 워크플로 도구입니다. 
 
 짧은 질문과 직접 부탁한 작은 수정은 [Work 없이 처리할 수 있는 조건](work.md#without-work)을 확인하세요. 기존 Work에 속한 수정은 해당 Work의 기록에서 이어갑니다.
 
-설치한 뒤에는 [업데이트와 복구](maintenance.md#update), [연결 해제](maintenance.md#disconnect), [기록을 보존하는 제거](maintenance.md#uninstall) 안내를 참고하세요.
+설치한 뒤에는 [업데이트와 복구](maintenance.md#update), [연결 해제](maintenance.md#disconnect), [기록 보존 제거](maintenance.md#uninstall), [기록까지 완전 제거](maintenance.md#remove-all) 안내를 참고하세요.
 
 폴더를 옮겼다면 새 작업 전에 [에이전트에게 새 위치에서 기존 기록을 이어 달라고 요청하세요](records.md#move).
 

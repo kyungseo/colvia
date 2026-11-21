@@ -315,7 +315,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [Candidate priority, project status, and dependencies](product-evidence-and-followups.md#p2-candidate-priority-project-status-and-dependencies) — P2. Show priorities and next actions from existing candidate and Work records and identify genuine dependencies.
 
-- [Complete removal across connected projects](record-preserving-uninstall-followup.md#p2-여러-프로젝트를-포함한-완전-제거--2026-11-17) — P2. Let a user review and confirm removal of this account's project connections, installation, Colvia records, and recovery files in one operation.
+- [Complete removal across connected projects](record-preserving-uninstall-followup.md#p2-여러-프로젝트를-포함한-완전-제거--2026-11-17) — P2. The implementation candidate covers one approval for project cleanup followed by account record and backup removal. Existing manual cleanup remains available.
 
 - [Milestones](product-evidence-and-followups.md#p3-milestones-when-needed) — P3 (conditional). Revisit when users repeatedly need to group Works or track shared dates beyond the existing parent-child relationship.
 

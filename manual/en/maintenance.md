@@ -16,6 +16,8 @@ Procedures you need after installation. Each one has a different reach, so check
 
 ## Update
 
+Updating keeps your Work. When you stop using Colvia, choose whether to [keep your records](#uninstall) or [remove them permanently](#remove-all).
+
 Ask your agent, “Update Colvia.” Use the same account that installed Colvia. The agent can run the installed manager if it has access to the installation and can reach the official download site. If the app asks for permission, review the command and approve it there. If the agent cannot run the update in that account, use your terminal.
 
 To update it yourself, rerun the command you originally used from the [official installation page](https://colvia.github.io/downloads/#en). If `colvia-manage` is on your `PATH`, you can also run `colvia-manage update`. For a default installation, use the full path below without changing your `PATH`.
@@ -125,9 +127,27 @@ To undo an interrupted removal before starting a reinstall, use `-RestoreUninsta
 
 <a id="remove-all" name="remove-all"></a>
 
-## Remove this account’s records after a trial
+## Permanently remove Colvia and this account’s Work records
 
-This is a **temporary manual procedure** until Colvia offers automatic removal of all connections and records. Disconnect each project first, then remove the account’s records yourself.
+Ask your agent, “Remove Colvia completely. Show me what will be deleted first.” [Export any Work you want to keep](records.md#backup) outside the management folder. The preview lists managed project files, Work counts by state, built-in backups and installation files. If a folder has moved or cannot be verified, you can make it available again or exclude it. Connection files may remain in excluded folders and shared Git directories.
+
+Save the official installer as described above. Run the preview from the account that installed Colvia. In Windows PowerShell, load the script into `$installer` as shown above.
+
+| Step | macOS Terminal | Windows PowerShell |
+| --- | --- | --- |
+| Preview | `/bin/sh ./install.sh --purge-preview remove-all` | `& $installer -PurgePreview remove-all` |
+| Apply after approving the list | `/bin/sh ./install.sh --purge remove-all RECEIPT` | `& $installer -Purge remove-all -Receipt RECEIPT` |
+| Resume an interrupted removal | `/bin/sh ./install.sh --resume-purge remove-all RECEIPT` | `& $installer -ResumePurge remove-all -Receipt RECEIPT` |
+
+To exclude all unverified folders, append `--exclude-unavailable` on macOS or `-ExcludeUnavailable` on Windows to both the preview and apply commands. Review the exclusions and files first. Once you approve this list, replace `RECEIPT` with its preview receipt. Colvia disconnects the verified projects first, preserves your files and Git staging, and deletes account databases and built-in backups last.
+
+If another operation is writing, let it finish. If removal stops, keep the operation ID and receipt and resume the same operation. If ownership or file contents have changed, check the error and remaining paths. After removal, check any exclusions and the preparation folder printed by the installer. The last manual step below covers preparation folders from earlier installers.
+
+Excluded folders keep their files. Their Work records in this account are erased with the other records. If the writer lock persists, close apps using Colvia. `remove-all` is an example operation ID. If that name was already used before approval, preview with a new ID. Once removal starts, resume using the original ID and receipt. If a managed file changed during removal, keep a copy of your edit and restore the approved contents and location before resuming. If you cannot restore them, stop and retain the remaining files and removal journal.
+
+If you already uninstalled while keeping records, the preview reports `records-retained-after-uninstall`. Use the manual procedure below to check the steps you have completed and clean up the remaining files. Its final step also covers old installer folders listed under `retained_preparation_paths`.
+
+### Manual cleanup with an older installer
 
 A normal uninstall keeps your Work for reinstallation. Use these steps only when you intend to discard **the Work, approvals, submissions and recovery files for every project in this account**. To keep using other projects, [disconnect only the project you are leaving](#disconnect).
 
