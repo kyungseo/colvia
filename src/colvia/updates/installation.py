@@ -176,7 +176,7 @@ class FirstInstall:
 
 
 
-def bootstrap(root,stage,digest,*,launch=os.execv,resume_operation=None,repair_operation=None,repair_resume=False,renewal=None,refresh_operation=None,refresh_receipt=None,retry_operation=None,rollback_operation=None,rollback_receipt=None,release_receipt=None,inspect_initial=False,quarantine_operation=None,quarantine_receipt=None,maintenance=None):
+def bootstrap(root,stage,digest,*,launch=os.execv,resume_operation=None,repair_operation=None,repair_resume=False,renewal=None,refresh_operation=None,refresh_receipt=None,retry_operation=None,rollback_operation=None,rollback_receipt=None,release_receipt=None,inspect_initial=False,quarantine_operation=None,quarantine_receipt=None,maintenance=None,exclude_unavailable=False):
     files=platform_files();os_name,architecture=current_platform();root=Path(root);stage=Path(stage)
     require(root.is_absolute() and stage.is_absolute(),'installation-absolute-path-required')
     require(type(inspect_initial) is bool and int(inspect_initial)+sum(v is not None for v in (resume_operation,repair_operation,refresh_operation,retry_operation,rollback_operation,quarantine_operation))<=1,'installation-repair-mode-conflict')
@@ -205,6 +205,18 @@ def bootstrap(root,stage,digest,*,launch=os.execv,resume_operation=None,repair_o
     manifest=decode_canonical(files.read(stage/'manifest.json',4*1024*1024))
     require(process_runtime()==(slot.python,manifest['python_version'],manifest['sqlite_version']),'dedicated-runtime-mismatch')
     config=configuration(files,stage);anchor=files.read(stage/config['anchor'],512*1024)
+    if maintenance and maintenance[0] in ('purge-preview','purge','purge-resume'):
+        from .purge import CompleteRemoval
+        action, operation, receipt = maintenance
+        removal = CompleteRemoval(root, files, os_name, architecture, operation)
+        if action != 'purge-resume':
+            from ..manager_entry import update_configuration
+            own = update_configuration(removal._home())
+            require(all(own[k] == config[k] for k in ('channel','metadata_url','target_url','target')),
+                    'installation-channel-changed')
+        if action == 'purge-preview':
+            return removal.preview(exclude_unavailable, current_preparation=stage.parent)
+        return removal.apply(receipt, resume=action=='purge-resume', exclude=exclude_unavailable)
     if maintenance_home or maintenance is not None:
         from ..manager_entry import update_configuration
         from .release import ReleaseUpdate

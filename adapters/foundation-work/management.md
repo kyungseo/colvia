@@ -41,3 +41,5 @@ notification nor clicking it accepts the Work. No desktop or OS qualification
 may be inferred from these commands being present.
 
 For an interrupted update, read `guide recovery`.
+
+When asked to remove Colvia completely, open the installed maintenance guide at `manual/en/maintenance.md#remove-all` (Korean: `manual/ko/maintenance.md#remove-all`). Show the project paths, exclusions, Work records and backups before seeking one explicit approval. Keep the operation ID and receipt to resume. Use the record-preserving uninstall for ordinary removal.

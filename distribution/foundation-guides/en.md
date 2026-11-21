@@ -19,7 +19,7 @@ Colvia is a local workflow tool for working with AI agents. Approve the scope pr
 
 For short questions and small corrections you request directly, check [when you can skip creating a Work](work.md#without-work). Continue edits that belong to an existing Work using its records.
 
-After installation, see [updates and recovery](maintenance.md#update), [disconnecting a project](maintenance.md#disconnect), and [removing Colvia while keeping records](maintenance.md#uninstall).
+After installation, see [updates and recovery](maintenance.md#update), [disconnecting a project](maintenance.md#disconnect), [removing Colvia while keeping records](maintenance.md#uninstall), and [permanently removing account records](maintenance.md#remove-all).
 
 If you moved the project folder, [ask your agent to reconnect the existing records at its new location](records.md#move) before starting new work.
 

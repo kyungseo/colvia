@@ -18,11 +18,12 @@ Install Colvia once for the operating-system account that will use it. Connect e
 
 Copy and run the installation command for your operating system from the [official installation page](https://colvia.github.io/downloads/#en). Colvia downloads and verifies the release files and prepares its own Python runtime. When setup completes, [check the installed version](#check-installed-version). See [updates and recovery](maintenance.md#update) for what to do after installation.
 
-After a trial, you can [uninstall and keep your records](maintenance.md#uninstall) or [use the temporary manual procedure to remove project connections and account records](maintenance.md#remove-all).
+After a trial, you can [uninstall and keep your records](maintenance.md#uninstall) or [remove project connections and account records permanently](maintenance.md#remove-all).
 
 On Windows, open ordinary PowerShell from the Start menu as a standard user. If Colvia reports that it cannot verify the installation location from an app shell, continue in ordinary PowerShell. If it reports a lack of disk space, check the required and available space shown in the message.
 
 <a id="check-installed-version" name="check-installed-version"></a>
+
 
 ### Check the installed version
 

@@ -285,9 +285,13 @@ class WindowsFiles:
             require(self.read(path)==expected,'lifecycle-pointer-conflict');a.ok(a.DeleteFileW(local_path(path)))
         self.sync_directory(Path(path).parent)
     @contextmanager
-    def exclusion(self,path,timeout=5,*,shared=False):
+    def exclusion(self,path,timeout=5,*,shared=False,allow_parent_move=False):
         require(type(timeout) in (int,float) and 0<timeout<=30,'invalid-lock-timeout');a=self.api
-        with a.ancestors(path),a.opened(path,access=0x80020000 if shared else 0xc0020000,share=3,disposition=3) as h:
+        with ExitStack() as handles:
+            parents = handles.enter_context(ExitStack())
+            parents.enter_context(a.ancestors(path))
+            h = handles.enter_context(a.opened(path,access=0x80020000 if shared else 0xc0020000,
+                                               share=7 if allow_parent_move else 3,disposition=3))
             before=a.state(h,path);a.private(h);require(not before['directory'] and before['links']==1,'unsafe-lifecycle-lock')
             overlap=a.Overlapped();deadline=time.monotonic()+timeout;locked=False
             try:
@@ -297,7 +301,13 @@ class WindowsFiles:
                     if error!=33:raise C.WinError(error)
                     if time.monotonic()>=deadline:raise RecordError('lifecycle-busy')
                     time.sleep(min(0.02,max(0,deadline-time.monotonic())))
-                require(a.state(h,path)==before,'lifecycle-lock-replaced');yield
+                require(a.state(h,path)==before,'lifecycle-lock-replaced')
+                if allow_parent_move:
+                    # The lock stays on the original file object until the account
+                    # directory has been atomically retired. A different manager's
+                    # ordinary ancestor handle still prevents that retirement.
+                    parents.close()
+                yield
             finally:
                 if locked:
                     primary=sys.exception()

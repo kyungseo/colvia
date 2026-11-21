@@ -13,6 +13,7 @@ from ..codec import require,decode_canonical
 from ..tree import canonical_entries
 from ..worker_state import path_namespace
 from .package import _portable
+from .purge_stage import WINDOWS_CLEAN
 from .space import STAGING_ALLOWANCE
 
 @dataclass(frozen=True)
@@ -370,6 +371,24 @@ elif [ "$#" -ne 0 ]; then
     case "$operation" in ''|*[!A-Za-z0-9._-]*|[!A-Za-z0-9]*) echo 'Invalid installation operation.' >&2; exit 2;; esac
     [ "${{#operation}}" -le 160 ] || exit 2
     case "$action" in
+      --purge-preview|--purge|--resume-purge)
+        case "$operation" in *[!a-z0-9-]*|[!a-z0-9]*) exit 2;; esac
+        [ "${{#operation}}" -le 64 ] || exit 2
+        shift 2
+        case "$action" in
+          --purge-preview) command=bootstrap-purge-preview;;
+          --purge) command=bootstrap-purge;;
+          --resume-purge) command=bootstrap-purge-resume;;
+        esac
+        if [ "$action" = --purge-preview ]; then
+            if [ "$#" -eq 0 ]; then set -- --operation "$operation"
+            elif [ "$#" -eq 1 ] && [ "$1" = --exclude-unavailable ]; then set -- --operation "$operation" --exclude-unavailable
+            else exit 2; fi
+        else
+            if [ "$#" -eq 1 ]; then set -- --operation "$operation" --receipt "$1"
+            elif [ "$#" -eq 2 ] && [ "$action" = --purge ] && [ "$2" = --exclude-unavailable ]; then set -- --operation "$operation" --receipt "$1" --exclude-unavailable
+            else exit 2; fi
+        fi;;
       --uninstall-preview)
         [ "$#" -eq 2 ] || exit 2
         command=bootstrap-uninstall-preview; set -- --operation "$operation";;
@@ -405,6 +424,7 @@ parent="$HOME/Library/Application Support"
 [ -d "$parent" ] && [ ! -L "$parent" ] || {{ echo 'The user application-data folder is unavailable.' >&2; exit 2; }}
 {_MAC_EXISTING}stage="$parent/Colvia-bootstrap-{bundle.sha256[:16]}-$$"
 /bin/mkdir -m 700 "$stage"
+stage_identity=$(/usr/bin/stat -f "%d:%i" "$stage")
 echo "Preparing Colvia. Recovery files: $stage"
 /usr/bin/curl --proto '=https' --tlsv1.2 --fail --silent --show-error --max-time 120 --max-redirs 0 --output "$stage/bundle.zip" '{url}'
 [ "$(/usr/bin/wc -c < "$stage/bundle.zip" | /usr/bin/tr -d ' ')" = '{bundle.length}' ] || {{ echo 'Download length mismatch; nothing installed.' >&2; exit 3; }}
@@ -414,23 +434,42 @@ actual=$(/usr/bin/shasum -a 256 "$stage/bundle.zip")
 /bin/mkdir -m 700 "$stage/runtime"
 /usr/bin/ditto -x -k "$stage/bundle.zip" "$stage/runtime"
 /bin/chmod 700 "$stage/runtime/{bundle.python}"
+case "$command" in
+  bootstrap-purge*)
+    "$stage/runtime/{bundle.python}" -I -B "$stage/runtime/{bundle.manager}" "$command" --management-root "$parent/Colvia" --bootstrap-stage "$stage/runtime" --bootstrap-manifest-sha256 '{bundle.manifest_sha256}' "$@" || exit $?
+    "$stage/runtime/{bundle.python}" -I -B -c 'import sys;from pathlib import Path;sys.path.insert(0,str(Path(sys.argv[1])/"runtime/lib"));from colvia.updates.purge_stage import clean_macos;clean_macos(*sys.argv[1:])' "$stage" '{bundle.sha256}' "$stage_identity" || {{ echo "Account operation succeeded; verify the remaining preparation directory: $stage" >&2; exit 4; }}
+    exit 0;;
+esac
 exec "$stage/runtime/{bundle.python}" -I -B "$stage/runtime/{bundle.manager}" "$command" --management-root "$parent/Colvia" --bootstrap-stage "$stage/runtime" --bootstrap-manifest-sha256 '{bundle.manifest_sha256}' "$@"
 '''
     require(bundle.os_name=='windows','bootstrap-platform-unavailable')
     machine = {'arm64': '0xAA64', 'x64': '0x8664'}[bundle.architecture]
     return f'''#requires -Version 5.1
-param([string]$ResumeInstall = '', [string]$RepairRuntime = '', [string]$ResumeRepair = '', [string]$RetryInstall = '', [string]$RefreshInstall = '', [string]$RollbackPreview = '', [string]$RollbackUpdate = '', [string]$Receipt = '', [string]$Renewal = '', [string]$RollbackReceipt = '', [string]$QuarantinePreview = '', [string]$ReplaceInstall = '', [switch]$InstallStatus, [string]$UninstallPreview = '', [string]$Uninstall = '', [string]$ResumeUninstall = '', [string]$RestoreUninstall = '', [switch]$ResumeReinstall)
+param([string]$ResumeInstall = '', [string]$RepairRuntime = '', [string]$ResumeRepair = '', [string]$RetryInstall = '', [string]$RefreshInstall = '', [string]$RollbackPreview = '', [string]$RollbackUpdate = '', [string]$Receipt = '', [string]$Renewal = '', [string]$RollbackReceipt = '', [string]$QuarantinePreview = '', [string]$ReplaceInstall = '', [switch]$InstallStatus, [string]$UninstallPreview = '', [string]$Uninstall = '', [string]$ResumeUninstall = '', [string]$RestoreUninstall = '', [switch]$ResumeReinstall, [string]$PurgePreview = '', [string]$Purge = '', [string]$ResumePurge = '', [switch]$ExcludeUnavailable)
 $managerArgs = @('bootstrap-install-or-update')
 if ($InstallStatus) {{
     if (@(@($ResumeInstall, $RepairRuntime, $ResumeRepair, $RetryInstall, $RefreshInstall, $RollbackPreview, $RollbackUpdate, $QuarantinePreview, $ReplaceInstall) | Where-Object {{ $_ -ne '' }}).Count -gt 0) {{ throw 'Choose one recovery action.' }}
     $managerArgs = @('bootstrap-install-status')
 }}
-$maintenance = @($UninstallPreview, $Uninstall, $ResumeUninstall, $RestoreUninstall) | Where-Object {{ $_ -ne '' }}
+$maintenance = @($PurgePreview, $Purge, $ResumePurge, $UninstallPreview, $Uninstall, $ResumeUninstall, $RestoreUninstall) | Where-Object {{ $_ -ne '' }}
 $maintenanceCount = @($maintenance).Count + [int][bool]$ResumeReinstall
 $otherCount = @(@($ResumeInstall, $RepairRuntime, $ResumeRepair, $RetryInstall, $RefreshInstall, $RollbackPreview, $RollbackUpdate, $QuarantinePreview, $ReplaceInstall) | Where-Object {{ $_ -ne '' }}).Count + [int][bool]$InstallStatus
 if ($maintenanceCount -gt 1 -or ($maintenanceCount -gt 0 -and $otherCount -gt 0)) {{ throw 'Choose one maintenance action.' }}
 foreach ($name in $maintenance) {{
     if ($name -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{{0,109}}$') {{ throw 'Invalid installation operation.' }}
+}}
+foreach ($id in @($PurgePreview,$Purge,$ResumePurge)) {{
+    if ($id -ne '' -and $id -cnotmatch '^[a-z0-9][a-z0-9-]{{0,63}}$') {{ throw 'Invalid complete removal operation.' }}
+}}
+if ($PurgePreview -ne '') {{ $managerArgs = @('bootstrap-purge-preview', '--operation', $PurgePreview) }}
+if ($Purge -ne '' -or $ResumePurge -ne '') {{
+    if ($Receipt -notmatch '^[0-9a-f]{{64}}$') {{ throw 'A complete removal preview receipt is required.' }}
+    if ($Purge -ne '') {{ $managerArgs = @('bootstrap-purge', '--operation', $Purge, '--receipt', $Receipt) }}
+    else {{ $managerArgs = @('bootstrap-purge-resume', '--operation', $ResumePurge, '--receipt', $Receipt) }}
+}}
+if ($ExcludeUnavailable) {{
+    if ($PurgePreview -eq '' -and $Purge -eq '') {{ throw 'Choose which folders to exclude during preview.' }}
+    $managerArgs += '--exclude-unavailable'
 }}
 if ($UninstallPreview -ne '') {{ $managerArgs = @('bootstrap-uninstall-preview', '--operation', $UninstallPreview) }}
 if ($Uninstall -ne '' -or $ResumeUninstall -ne '') {{
@@ -536,4 +575,5 @@ $python = Join-Path $runtime '{bundle.python}'
 $manager = Join-Path $runtime '{bundle.manager}'
 & $python -I -B $manager @managerArgs --management-root (Join-Path $parent 'Colvia') --bootstrap-stage $runtime --bootstrap-manifest-sha256 '{bundle.manifest_sha256}'
 if ($LASTEXITCODE -ne 0) {{ throw ('Colvia preparation stopped; preserve ' + $stage) }}
+{WINDOWS_CLEAN.replace('BUNDLE_SHA', bundle.sha256)}
 '''
