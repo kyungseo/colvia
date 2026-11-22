@@ -157,6 +157,7 @@ def application_registry():
     from .progress import schema as progress_schema
     from .planning import planning_schemas
     from .composition import schemas as composition_schemas
+    from .group_records import schemas as group_schemas, validate_decision as group_decision
     from .worker_records import schemas as worker_schemas
     from .execution.records import schemas as execution_schemas
     from .delivery.records import schemas as delivery_schemas
@@ -166,7 +167,7 @@ def application_registry():
     from .work_lifecycle import schema as lifecycle_head_schema
     head_schema = Schema('work.head',1,{'plan':'decision','approval':'decision','result':'decision','decision':'decision','previous':'provenance','context':'decision'},_head,
                {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'result':frozenset({'work.submission'}),'decision':frozenset({'work.decision'}),'previous':frozenset({'work.head'}),'context':frozenset({'composition.binding','composition.membership'})}, content=validate_active_link)
-    return foundation_registry([rework_schema(),scope_schema(),progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
+    return foundation_registry([rework_schema(),scope_schema(),progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*group_schemas(),*execution_schemas(),
         Schema('observation.policy',1,{'sources':'integrity'},_policy,{'sources':frozenset({'body.complete'})}),
         Schema('observation.snapshot',1,{'tree':'integrity','policy':'integrity','workspace':'decision'},_observation_v1,
                {'tree':TREE_KINDS,'policy':frozenset({'observation.policy'}),'workspace':frozenset({'workspace.registration'})}),
@@ -183,6 +184,7 @@ def application_registry():
         Schema('work.submission',2,{'plan':'decision','approval':'decision','observation':'integrity','after':'integrity','previous':'provenance','attribution':'decision'},_submission_v2,
                {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'observation':frozenset({'observation.snapshot'}),'after':MAP_KINDS,'previous':frozenset({'work.submission'}),'attribution':MAP_KINDS},content=_submission_content),
         Schema('work.decision',1,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'worker.authorization'})}),
+        Schema('work.decision',2,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},content=group_decision),
         head_schema, lifecycle_head_schema(head_schema),
     ])
 

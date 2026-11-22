@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="360" height="210" viewBox="0 0 360 210" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif"><title id="title">격리 폴더의 결과를 한 건씩 반영</title><desc id="desc">에이전트가 격리 폴더에서 준비한 결과를 검토하고, 승인한 제출본을 Colvia로 한 건씩 대상 폴더에 반영합니다.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="210" viewBox="0 0 360 210" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif"><title id="title">두 제출본과 통합 검사를 보고 함께 수락·반영</title><desc id="desc">macOS에서 두 제출본과 통합 검사 결과를 검토하고 한 번의 결정으로 두 결과를 수락해 원래 폴더에 반영합니다.</desc>
 <style>
 .bg{fill:#FAF9F6}.frame{fill:none;stroke:#E4E0D8}
 .ink{fill:#2B2A27}.mut{fill:#6B675F}
@@ -30,20 +30,17 @@
 <text x="43" y="106" class="ink" font-size="13" font-weight="600" text-anchor="middle">Agent</text>
 <path d="M74 105 H85 M94 59 H85 V151 H94" class="lnd"/>
 <rect x="96" y="40" width="105" height="38" rx="9" class="agent"/>
-<text x="148.5" y="59" class="ink" font-size="12.5" font-weight="500" text-anchor="middle">격리 폴더 1</text>
+<text x="148.5" y="59" class="ink" font-size="12.5" font-weight="500" text-anchor="middle">제출본 1</text>
 <rect x="96" y="132" width="105" height="38" rx="9" class="agent"/>
-<text x="148.5" y="151" class="ink" font-size="12.5" font-weight="500" text-anchor="middle">격리 폴더 2</text>
+<text x="148.5" y="151" class="ink" font-size="12.5" font-weight="500" text-anchor="middle">제출본 2</text>
 <path d="M201 59 C217 59 203 98 218 98" class="ln" marker-end="url(#ah)"/>
 <path d="M201 151 C217 151 203 112 218 112" class="ln" marker-end="url(#ah)"/>
-<circle cx="211" cy="72" r="8" class="note"/>
-<text x="211" y="72" class="ink" font-size="10" font-weight="600" text-anchor="middle">1</text>
-<circle cx="211" cy="138" r="8" class="note"/>
-<text x="211" y="138" class="ink" font-size="10" font-weight="600" text-anchor="middle">2</text>
 <rect x="220" y="89" width="62" height="32" rx="9" class="col"/>
 <g transform="translate(218,96) scale(0.25)"><path d="M27.9 45.7 A14 14 0 1 1 22 19 C29 19 31 30 36.5 30 C42 30 44 21 49.5 21 L56 21" class="sym"/></g>
 <text x="259" y="110" class="colt" font-size="12" font-weight="600" text-anchor="middle">Colvia</text>
 <path d="M282 105 H292" class="ln" marker-end="url(#ah)"/>
 <rect x="294" y="86" width="62" height="38" rx="9" class="work"/>
-<text x="325" y="105" class="workt" font-size="10" font-weight="600" text-anchor="middle">대상 폴더</text>
-<text x="286" y="147" class="mut" font-size="11.5" font-weight="400" text-anchor="middle">한 건씩 합치기</text>
+<text x="325" y="105" class="workt" font-size="10" font-weight="600" text-anchor="middle">원래 폴더</text>
+<text x="180" y="191" class="mut" font-size="12" font-weight="400" text-anchor="middle">통합 검사 · 함께 수락 · 한 번에 반영</text>
+<text x="180" y="24" class="mut" font-size="10" font-weight="400" text-anchor="middle">macOS · 두 결과 함께</text>
 </svg>

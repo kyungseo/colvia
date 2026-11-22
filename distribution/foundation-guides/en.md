@@ -12,6 +12,8 @@ Colvia is a local workflow tool for working with AI agents. Approve the scope pr
 
 [Approve a table edit and a new appendix together](work.md#scope-change)
 
+[Accept and apply two submissions together on macOS](work.md#grouped-acceptance)
+
 ## Returning to a project
 
 - Before stepping away, [leave a progress note](work.md#progress-note) if you haven’t submitted the work yet. When you return, compare the note with your current files.

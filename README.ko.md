@@ -155,15 +155,17 @@ Codex와 Claude Code를 모두 이용 중이라면 같은 프로젝트에서 두
 
 ## 큰 작업을 나눠 진행하기
 
-“로그인 오류는 네가 고치고, 설치 안내는 Claude Code에 맡겨서 동시에 진행하고 싶어.” Git 프로젝트라면 첫 에이전트에게 이렇게 요청하세요. 두 번째 앱에서 열 폴더와 붙여 넣을 첫 요청을 함께 받을 수 있습니다. [두 에이전트에 서로 다른 일 맡기기](manual/ko/work.md#child-works)
+“CSV 서버와 다운로드 버튼을 두 에이전트에 나눠 맡기고, 두 제출본과 통합 검사 결과를 보고 한 번에 수락·반영하고 싶어.” macOS에서는 기존 큰 일 나누기 안에서 두 Work를 이렇게 묶을 수 있습니다. 같은 Git 저장소에 작업 폴더 두 개와 결과를 받을 원래 폴더를 따로 준비합니다. 두 일은 서로 다른 일반 파일을 바꿔야 합니다.
 
-같은 폴더에서 큰 일을 하위 Work로 나누면 각 결과를 검토하고 수락할 수 있습니다. 격리 폴더(같은 저장소에 등록한 별도 Git 작업 폴더)의 결과를 옮길 때는 **어느 제출본을 어느 폴더에 반영할지** 확인합니다. 아직 검토 중인 제출본이라면 반영과 수락을 함께 승인하고, Colvia는 반영을 마치고 대상 파일을 확인한 뒤 그 제출본의 수락을 기록합니다. 이미 수락한 제출본은 반영만 승인합니다.
+두 계획과 통합 검사 범위를 함께 승인하고, 권한을 제한한 Claude Code 작업자 세션 두 개를 직접 여세요. 결과가 준비되면 정확한 두 제출본의 변경 내용, 반영 대상과 합친 파일의 검사 결과를 봅니다. 한 번의 결정으로 두 결과를 수락하고 원래 폴더에 반영합니다. 필수 검사가 실패하거나 실행되지 못하면 수락을 보류합니다. Git 커밋과 push는 별도로 결정합니다.
 
 <p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-dark.png"><img src="manual/assets/gallery/parallel-light.png" width="480" alt="검토자가 격리 폴더의 제출본을 확인하고 승인하면 대상 폴더에 한 건씩 반영합니다."></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-dark.png"><img src="manual/assets/gallery/parallel-light.png" width="480" alt="두 제출본과 통합 검사 결과를 검토한 뒤 한 번의 결정으로 두 결과를 수락하고 원래 폴더에 반영합니다."></picture>
 </p>
 
-제출본은 한 건씩 반영합니다. 대상 폴더에 승인됐거나 진행 중이거나 검토 중인 다른 Work가 없는지 확인하세요. 지정한 격리 Work의 반영과 수락은 안내에 나온 조건에서 위임할 수 있습니다. 여러 결과를 모았다면 반영된 파일과 검사 결과를 보고 전체 결과를 직접 수락하세요. 중단된 반영의 재개 조건도 상세 안내에서 확인할 수 있습니다. [하위 Work와 격리 폴더의 결과 적용](manual/ko/work.md#child-works)
+처음 묶기 전에 검증된 기록 백업을 보관하고 작업 파일도 따로 보존하세요. 묶음을 지원하지 않는 구버전은 변경된 프로젝트 기록과 이후 백업을 열 수 없습니다. [두 제출본을 함께 수락·반영하기](manual/ko/work.md#grouped-acceptance)
+
+격리 폴더의 결과를 개별 승인·반영하거나, 큰 목표를 하위 Work로 나누고 상위 결과를 따로 검토하는 흐름도 사용할 수 있습니다. [기존 개별 진행 방법](manual/ko/work.md#child-works)
 
 <a id="git-백업-폴더-이동"></a>
 
@@ -233,6 +235,6 @@ Linux는 현재 지원 대상에 포함되지 않습니다. Colvia를 사용할 
 - **그때의 판단을 한 장으로.** 한 Work의 결정을 시간순으로 모아, 어느 판을 보며 남긴 말인지와 나중에 덧붙인 해석을 구분해 보여 주려 합니다.
 - **팀으로.** 팀 저장소에서도 내 승인·수락 기록은 내 기기에 두고 작업 결과만 팀 커밋에 담는 방법부터 안내하려 합니다. 이어서 팀원들이 각자 에이전트에게 맡긴 일과 수락한 결과를 함께 확인하는 방법을 검토합니다.
 
-여러 Work의 결과를 모아 검토하는 방법과 Linux·추가 에이전트 지원, 여러 프로젝트와 외부 도구를 연결하는 방법도 살펴보고 있습니다. 배포한 기능은 [릴리스 노트](https://github.com/colvia/downloads/releases)에서 확인하세요.
+세 개 이상 Work의 결과를 모아 검토하는 방법과 Linux·추가 에이전트 지원, 여러 프로젝트와 외부 도구를 연결하는 방법도 살펴보고 있습니다. 배포한 기능은 [릴리스 노트](https://github.com/colvia/downloads/releases)에서 확인하세요.
 
 [문제가 생겼을 때](manual/ko/reference.md#problems) · [문의·버그 신고](CONTRIBUTING.ko.md#질문하거나-버그를-신고하려면) · [비공개 보안 제보](SECURITY.md) · [기여 안내](CONTRIBUTING.ko.md) · [Apache License 2.0](LICENSE)

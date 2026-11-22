@@ -279,6 +279,8 @@ def check_peer_submissions(service, head, snapshot):
 
 
 def review(service, work, edit, create, checks, reason):
+    from .group_guard import guard as group_guard
+    group_guard(service.store,work)
     edit, create = sorted(edit), sorted(create)
     snapshot = service.store.root()
     headref, head = service._head(work)

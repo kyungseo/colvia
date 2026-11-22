@@ -15,6 +15,8 @@ This guide covers Colvia Preview. It explains how to approve a work scope in Cod
 <em>Install Colvia once in the account you use, then approve the connection for each folder. In a connected folder, start a new task or pick up where you left off.</em>
 </p>
 
+[Accept and apply two submissions together on macOS](work.md#grouped-acceptance)
+
 ## Returning to a project
 
 - If you left a note before the first submission, [compare it with the files as they are now](work.md#progress-note).

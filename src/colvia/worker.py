@@ -41,6 +41,8 @@ class WorkerService:
                 view.head(workspace_key(self.destination.workspace))==destination_ref,'worker-connection-changed')
 
     def _competitors(self,view,work):
+        from .group_guard import guard_workspaces
+        guard_workspaces(view,{self.destination.workspace})
         for key,ref in read_map(view.root().heads,view).items():
             if not key.startswith('work:'):continue
             head,_,_,_=head_summary(ref,view)
@@ -87,6 +89,8 @@ class WorkerService:
         return current
 
     def _live(self,binding,view,*,source=True,destination=True):
+        from .group_guard import guard as group_guard
+        group_guard(view,binding.payload['work'])
         reviewing=self._object(link(binding,'source_head'),view).payload['phase']=='review'
         if destination:self.destination.verify()
         if source and reviewing:self.source.workspace.verify()
@@ -99,7 +103,8 @@ class WorkerService:
 
     def prepare(self,*,operation,application,work):
         """Record an exact reviewable request; do not stage or alter user files."""
-        _token(application);ref,head=self.source._head(work)
+        _token(application);require(not application.startswith('group-'),'worker-application-prefix-reserved')
+        ref,head=self.source._head(work)
         require(head.payload['phase'] in ('review','completed'),'worker-source-not-reviewable')
         require(self.source.workspace.workspace!=self.destination.workspace,'worker-distinct-workspaces-required')
         require(link(head,'result').version==1,'attributed-result-not-supported')
@@ -148,6 +153,8 @@ class WorkerService:
             scope=plan.payload['scope'],owner=owner,delegate=delegate,state='revoked' if revoke else 'active',statement=statement),
             {'plan':('decision',plan.ref),'previous':('provenance',old)})
         def validate(view):
+            from .group_guard import guard as group_guard
+            group_guard(view,work)
             guard(view);require(view.head(work_key(work))==ref,'worker-source-selection-changed')
             self.source._validate_head(ref,view);self.source.workspace.verify();self.destination.verify()
             validate_closure([pair[0]],view,self.source.registry,self.source.closure)

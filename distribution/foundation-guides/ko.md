@@ -12,6 +12,8 @@ Colvia는 사람과 AI가 함께 일하는 로컬 워크플로 도구입니다. 
 
 [표 수정과 부록 생성을 한 번에 승인하기](work.md#scope-change)
 
+[macOS에서 두 제출본을 함께 수락·반영하기](work.md#grouped-acceptance)
+
 ## 다시 프로젝트를 열었다면
 
 - 첫 제출 전에 자리를 비울 때는 [중간 메모를 남기세요](work.md#progress-note). 돌아오면 메모와 현재 파일을 비교해 이어갈 수 있습니다.

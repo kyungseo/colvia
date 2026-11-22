@@ -4,6 +4,8 @@
 
 Colvia Preview 사용 안내입니다. Codex나 Claude Code에서 작업 범위를 승인하고, 결과를 검토해 수락하고, 새 대화에서 이어가는 방법을 안내합니다.
 
+[macOS에서 두 제출본을 함께 수락·반영하기](work.md#grouped-acceptance)
+
 ## 처음이라면
 
 1. [Colvia 한눈에 보기](overview.md) — 누가 무엇을 결정하고, 무엇이 어디에 남는지 먼저 파악합니다.

@@ -30,6 +30,8 @@ class ReadBudget:
 
 
 def _row(key, ref, heads, load, workspace):
+    if map_get(heads, 'group-member:' + key.removeprefix('work:'), load) is not None:
+        return None
     head, plan, result, decision = head_summary(ref, load)
     p = head.payload
     require(key == 'work:' + p['work'], 'wrong-work-head')
@@ -115,12 +117,17 @@ def project_status(store, workspace, *, limit=20, cursor=None):
             more = True
             break
         last = key
-        if not key.startswith('work:'):
+        if not key.startswith(('work:', 'group:')):
             continue
         budget.row = 0
         try:
-            row = _row(key, ref, root.heads, budget.load, workspace)
-            if row and dependencies:
+            if key.startswith('group:'):
+                from .group_view import snapshot
+                row = snapshot(ref, root.heads, budget.load, workspace, details=False)
+                if row['state'] == 'completed': row = None
+            else:
+                row = _row(key, ref, root.heads, budget.load, workspace)
+            if row and dependencies and key.startswith('work:'):
                 related = work_dependencies.relations(dependencies,row['work'],root.heads,budget.load,limit=4)
                 if related['items']:
                     if row['state'] == 'active':
@@ -130,7 +137,7 @@ def project_status(store, workspace, *, limit=20, cursor=None):
                                 relation['continuing_during_revision'] = True
                     row['dependencies'] = related
         except RecordError as exc:
-            row = dict(work=key[5:], group='unavailable', error=exc.code,
+            row = dict(work=key.split(':',1)[1], group='unavailable', error=exc.code,
                        next_action='기록을 확인한 뒤 다시 조회하기')
         if row is not None:
             rows.append(row)

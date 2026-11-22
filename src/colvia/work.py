@@ -101,6 +101,11 @@ class WorkService:
             if head.payload['phase']=='completed':require(decided.payload['action']=='accept','acceptance-required')
             authorization=link(decided,'authorization')
             if authorization is not None:
+                if authorization.kind=='group.authorization':
+                    from .group_records import validate_decision
+                    require(decided.ref.version==2,'group-decision-version-required')
+                    validate_decision(decided.ref,load)
+                    return
                 from .worker_records import validate_authorization
                 _,binding=validate_authorization(authorization,load)
                 require(decided.payload['action']=='accept' and link(binding,'result')==resultref and
@@ -162,6 +167,8 @@ class WorkService:
                     'connection-changed')
             for key,value in (pinned or {}).items():require(load.head(key)==value,"attribution-peer-changed")
             if pinned_root is not None:require(load.root().ref==pinned_root,'attribution-heads-changed')
+            from .group_guard import guard as group_guard
+            group_guard(load,work,'ordinary',previous=expected,candidate=ref)
             self._validate_head(ref,load)
             from .composition import validate_transition
             candidate,plan,result,_=head_summary(ref,load)
@@ -342,6 +349,13 @@ class WorkService:
         return dict(work=work,state='active')
 
     def view(self,work):
+        group_snapshot=self.store.root()
+        from .maps import map_get
+        group_membership=map_get(group_snapshot.heads,'group-member:'+work,self.store.load)
+        group_selection=None
+        if group_membership:
+            group_name=self._object(group_membership).payload['group']
+            group_selection=map_get(group_snapshot.heads,'group:'+group_name,self.store.load)
         ref,head=self._head(work,same_workspace=False);plan=self._object(link(head,'plan'))
         value=dict(work=work,title=head.payload['title'],state=head.payload['phase'],archived=head.payload['archived'],scope=plan.payload['scope'],checks=plan.payload['checks'])
         from .scope_addition import history
@@ -368,7 +382,17 @@ class WorkService:
         if 'schema:work.head:2' in self.store.requirements()['read']:
             from .work_lifecycle import detail
             value.update(detail(self,work,head))
-        if head.payload['phase']=='completed':value['reopen_receipt']=self._receipt('reopen',work,ref)
+        if group_membership:
+            member=self._object(group_membership)
+            selected=group_selection
+            value['work_group']=dict(group=member.payload['group'],selection=selected.as_dict() if selected else None,
+                application_state=self._object(selected).payload.get('state') if selected else None,
+                next_action='추가 변경은 새 Work에서 진행하세요.' if head.payload['phase']=='completed' else '큰 일 나누기의 묶음 검토에서 두 제출본과 통합 검사 결과를 확인하세요.')
+            latest=self.store.root()
+            require(map_get(latest.heads,'group-member:'+work,self.store.load)==group_membership and
+                    map_get(latest.heads,'group:'+group_name,self.store.load)==group_selection and
+                    map_get(latest.heads,work_key(work),self.store.load)==ref,'group-view-changed')
+        if head.payload['phase']=='completed' and not group_membership:value['reopen_receipt']=self._receipt('reopen',work,ref)
         return value
 
     def archive(self,*,operation,work,archived):

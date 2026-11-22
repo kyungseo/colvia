@@ -70,6 +70,8 @@ def validate_content(ref, load):
                 and target.payload['phase'] in ONGOING and not link(target,'context'), 'invalid-replacement')
 
 def available(service, head, snapshot):
+    from .group_guard import guard as group_guard
+    group_guard(service.store,head.payload['work'])
     require(not link(head,'context'), 'lifecycle-independent-work-only')
     grant = service.store.head('grant:'+head.payload['work'])
     require(not grant or service._object(grant).payload['state']!='active', 'lifecycle-grant-in-use')
@@ -156,6 +158,9 @@ def apply(service, work, action, reason, next_action, target, receipt, operation
     pair=record('work.head',data,edges,version=2)
     def validate(view):
         guard(view)
+        from .group_guard import guard as group_guard
+        group_guard(view,work)
+        if target: group_guard(view,target)
         require(view.root().ref==snapshot.ref,'lifecycle-preview-stale')
         service._validate_head(pair[0],view)
         validate_content(pair[0],view)

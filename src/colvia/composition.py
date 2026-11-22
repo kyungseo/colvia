@@ -168,6 +168,8 @@ class CompositionService:
                     check_composition_change(key.removeprefix('composition:'), view, prospective, self.store.project)
             for key,ref in changes.items():
                 if not key.startswith('work:'):continue
+                from .group_guard import guard as group_guard
+                group_guard(view,key.removeprefix('work:'))
                 self.work._validate_head(ref,prospective)
                 from .records import head_summary,link
                 head,plan,result,_=head_summary(ref,prospective)

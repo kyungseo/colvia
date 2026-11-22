@@ -95,7 +95,7 @@ class ReservedSourceTests(WorkerFixture,unittest.TestCase):
     def test_review_cli_reentry_uses_explicit_authority_and_destination_locator(self):
         from colvia.cli import main,read_locator
         self.source_result();self.interrupt('after-install');self.command('worktree','remove','--force',str(self.child))
-        effect=self.source._object(self.store.head(PENDING));wrapper=Mock();wrapper.store.return_value=self.store
+        effect=self.source._object(self.store.head(PENDING));wrapper=Mock();wrapper.root=self.authority;wrapper.store.return_value=self.store
         args=['--source-development','--authority',str(self.authority),'--project',self.store.project,
               '--workspace',self.child_id,'--root',str(self.child),'--git',str(self.git.executable),'--json',
               '--operation','cli-review-resume','worker','--destination',self.destination.workspace,'resume','apply-report']
@@ -107,6 +107,7 @@ class ReservedSourceTests(WorkerFixture,unittest.TestCase):
         self.assertEqual(0,result,output.getvalue());self.assertEqual('completed',json.loads(output.getvalue())['state'])
         decision=self.source._object(link(self.source._head('source')[1],'decision'))
         self.assertEqual(link(effect,'authorization'),link(decision,'authorization'));self.assertIsNone(self.store.head(PENDING))
+        self.assertEqual(b'worker result\n',(self.root/'report.md').read_bytes())
 
     def test_composition_child_completes_after_reserved_source_removal(self):
         from colvia.composition import CompositionService

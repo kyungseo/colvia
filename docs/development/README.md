@@ -2,6 +2,9 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
+- [Grouped acceptance of two submissions](FEAT-20261122-001-grouped-acceptance.md) — Owner accepted the two-member implementation and authorized its local commit on 2026-11-22.
+- [Eight retained regression findings](grouped-acceptance-regression-followup.md) — Owner-selected follow-up after the planned multi-submission extension; exact cases and closure conditions.
+
 - [Windows notification detail latency](PATCH-20261121-001-windows-notice-detail-latency.md) — Visible result timing and integrity checks.
 
 - [Public and installed guides for returning to a project](CHORE-20261120-001-public-work-guides.md) — Reader journeys, bilingual diagrams and package verification.
