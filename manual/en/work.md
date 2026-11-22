@@ -201,6 +201,21 @@ Once you save the first priority in this project, older versions without priorit
 
 ## Child Works and results from isolated folders
 
+### Give two agents separate tasks
+
+In a Git project, if the two tasks change different files, tell the first agent who should do each one.
+
+> **You**　“Fix the login bug here. I’d like Claude Code to update the installation guide at the same time.”
+
+The first agent takes the login bug in the current folder. Following the project’s rules, it prepares or reuses a separate folder for the installation guide. Once it verifies that the folder is registered with the same repository and can be used with the same Colvia project, it gives you both of these in one message.
+
+- **Folder to open** — the actual path to the installation guide’s working folder
+- **First request to paste** — “Update the installation guide in this folder to match the current install steps. Use Colvia and first propose which files to change and how you’ll check them.”
+
+Open that folder yourself in Claude Code and paste the request into a new chat. Approve the proposed scope in each chat and review each submission. If the first agent can’t prepare the second folder, it explains why. You can finish one task before starting the other.
+
+### Review and apply submissions
+
 If you split a larger goal into direct child Works in the same folder, review and accept each submission. For an isolated folder (a registered Git worktree of the same repository), check the exact submission and destination.
 
 - If the submission is still under review, use the preview to approve both applying and accepting it. Colvia records acceptance after applying the files and checking the destination.
@@ -220,7 +235,7 @@ If a missing worktree blocks a command, [check its Git registration](git.md#git-
 
 ## What to know in the current Preview
 
-- Keeping several Works is different from letting several agents edit the same files concurrently. Do not assume actual concurrent execution is supported in the first release. Overlapping changes or an unresolved interruption require checking the current state before proceeding.
+- Use separate working folders for independent edits. If both agents need to change the same file, or an interrupted operation has an unknown outcome, pause and check the current state before continuing.
 - Colvia’s direct agent execution for document tasks is disabled in the current Preview. Working in the ordinary Codex or Claude Code CLI or desktop app is separate from this feature. You can inspect the current configuration with the [document execution availability check](reference.md#execution-readiness).
 - Messages and materials you share with an agent follow the AI service’s data handling settings.
 

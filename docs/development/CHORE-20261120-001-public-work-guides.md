@@ -17,3 +17,11 @@ The manual review clarified that one user can both approve scope and review a su
 ## First request and scope approval
 
 The bilingual README and overview distinguish describing a desired outcome from proposing the files and checks. The to-do tutorial shows the agent proposing a plan, the user approving its scope, and a later decision on extra files or the submitted result. Both READMEs use the “Human-led AI work” logo. The docs candidate was prepared against 4ce3ec1. The localized role rows match between README and overview, and the six edited reader pages retain their previous links and anchors and render as GFM. The 35 files listed in the brand manifest matched their byte counts and hashes. At release assembly, compare the two localized overview pages and two tutorials with their installed copies. The repository README and its logo are separate from the installed guide index.
+
+## Separate tasks in two agent apps
+
+On 2026-11-22 the Owner authorized a bilingual example and an on-demand work guide update against f7d920b. For this documentation-only change, the Owner selected direct checks of the reader journey, links and bundled guides in place of independent plan and result reviews. The first chat hands over a verified folder path and a first request together. Each task retains its own scope and submission. The user opens the second app.
+
+In the synthetic Git worker fixture, the first Work started in its original folder. The Korean and English installation requests from the manual each reached a plan awaiting approval in a registered second folder. Existing worker tests also verified applying a submission and blocking application while the destination has active Work. These checks used local product services and test inputs. They did not drive two interactive agent apps.
+
+The bundle test compared both manual pages and the work guide with their source bytes and checked the packaged links. The separate staged-guide test returned the expected guide text and JSON before failing its startup-guide size assertion. The unchanged startup guide is 5,743 bytes at the baseline and on this branch; that test expects at most 5,000 bytes.
