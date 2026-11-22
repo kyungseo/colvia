@@ -158,6 +158,8 @@ Set a priority to express a preference. Link two Works when one needs a result f
 
 ## Break larger tasks into smaller pieces
 
+“Fix the login bug here. I’d like Claude Code to update the installation guide at the same time.” In a Git project, ask your first agent for the folder to open in the second app and the request to paste there. [Give two agents separate tasks](manual/en/work.md#child-works)
+
 Split a larger task into child Works in the same folder to review and accept each result. To apply a result from an isolated folder (a registered Git worktree of the same repository), check **the exact submission and its destination**. If the submission is still under review, approve both applying and accepting it. Colvia records acceptance after applying the files and checking the destination. If you already accepted the submission, approve the application alone.
 
 <p align="center">
