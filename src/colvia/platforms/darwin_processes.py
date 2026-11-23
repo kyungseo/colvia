@@ -81,9 +81,14 @@ class DarwinProcesses:
         require(type(seconds) in (int,float) and 4*SCAN_SECONDS<=seconds<=20,'execution-stop-budget')
         require(process.pid in known and bool(known[process.pid]['birth']),'execution-runtime-identity-unavailable')
         started=time.monotonic();deadline=started+seconds;term_end=started+seconds/2
-        rows=self.observe(process,known,seconds=min(5,seconds/4))
         def survivors():return [pid for pid in known if pid in rows]
         for sig in (signal.SIGTERM,signal.SIGKILL):
+            require(time.monotonic()<deadline,'execution-stop-deadline')
+            # Reap only our Popen child before the signal snapshot. An already
+            # exited root can otherwise leave a zombie-only group that Darwin
+            # refuses to signal. Root exit never proves descendant closure.
+            process.poll()
+            rows=self.observe(process,known,seconds=min(5,seconds/4,max(SCAN_SECONDS,deadline-time.monotonic())))
             require(time.monotonic()<deadline,'execution-stop-deadline')
             group=[pid for pid,row in rows.items() if row['pgid']==process.pid]
             # Refuse signaling a group with no matching admitted/observed member.

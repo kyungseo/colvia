@@ -2,7 +2,7 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
-- [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Accepted macOS extension and eight-case regression closure; Windows redesign remains planning-only.
+- [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Accepted macOS extension and eight-case closure; the Mac termination correction passed both full regression modes and is Owner-accepted for local commit. Physical x64 original-policy diagnostics are prepared for a two-hour Owner-ready trial; Windows remains unqualified.
 
 - [Grouped acceptance of two submissions](FEAT-20261122-001-grouped-acceptance.md) — Owner accepted the two-member implementation and authorized its local commit on 2026-11-22.
 - [Eight retained regression findings](grouped-acceptance-regression-followup.md) — Accepted eight-case closure after the multi-submission extension; exact cases and evidence limits.
