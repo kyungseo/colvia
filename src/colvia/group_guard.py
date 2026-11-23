@@ -1,7 +1,7 @@
 """CAS-observed membership, shared by every member mutation entry point."""
 from .codec import require
 from .records import link, head_summary
-from .group_records import get, key, member_key, plan_for
+from .group_records import get, key, member_key, plan_for, member_refs
 
 
 def guard(view,work,transition='other',*,previous=None,candidate=None):
@@ -25,12 +25,12 @@ def guard(view,work,transition='other',*,previous=None,candidate=None):
     if obj.ref.kind=='group.candidate': obj=get(link(obj,'approval'),load)
     require(obj.ref.kind=='group.approval', 'group-live-approval-required')
     plan=plan_for(obj.ref,load); i=plan.payload['works'].index(work)
-    require(link(new,'approval')==link(obj,'approval'+str(i)), 'group-live-approval-required')
+    require(link(new,'approval')==member_refs(obj,'approval',plan,load)[i], 'group-live-approval-required')
 
 
 
 def guard_workspaces(view,workspaces,*,group_plan=None):
-    """A live group reserves its three workspace roles; terminal history does not."""
+    """A live group reserves its source and destination workspace roles; terminal history does not."""
     from .maps import read_map
     for name,ref in read_map(view.root().heads,view).items():
         if not name.startswith('group:'): continue

@@ -157,3 +157,19 @@ class ControllerTests(JournalFixture,unittest.TestCase):
             self.assertEqual({'files':[]},self.read())
         self.assertEqual(['worker-owned-io-cleanup-failed'],self.controller.diagnostics)
         self.assertEqual(1,len(self.journal.read('run')[-1].completed_refs))
+
+    def test_signal_denial_retains_primary_failure_pending_and_unclosed_state(self):
+        self.setup_controller();primary=RecordError('worker_input_incomplete')
+        def fail(*args,**kwargs):raise primary
+        self.controller.exchange=fail
+        with patch.object(self.processes,'stop',side_effect=PermissionError(1,'synthetic signal denial')),self.assertRaises(PermissionError) as caught:
+            self.read()
+        self.assertIs(primary,caught.exception.__cause__);self.assertTrue(self.controller.unclosed)
+        self.assertEqual([9100],self.processes.aborts)
+        self.assertTrue(all(s.closed for s in (self.controller.active.stdin,self.controller.active.stdout,self.controller.active.stderr)))
+        history=self.journal.read('run')[-1]
+        self.assertFalse(history.workers[1]['result']['value']['success']);self.assertIsNone(history.workers[1]['close'])
+        self.assertIsNotNone(history.pending);self.assertEqual(0,len(history.completed_refs));self.assertIsNone(history.terminal)
+        self.assertIsNotNone(self.store.head(PENDING));self.assertEqual('active',self.service._head('synthetic-work')[1].payload['phase'])
+        with self.assertRaisesRegex(RecordError,'worker-unavailable'):self.controller.dispatch({})
+        self.assertEqual(1,self.processes.launches)

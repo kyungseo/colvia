@@ -28,10 +28,10 @@
     "SkinSans-700-status.woff2": "8e47b2753e0fd3d26cc05a3968e2fa9e2dd16a38019263b1923bce5c3cf36d9c",
     "SkinSans-400-overview.woff2": "4d045a8044f3f2e7bd442d485a188e5d41e68ce24e4c8f55ffe0738dba098703",
     "SkinSans-700-overview.woff2": "4aa0dcccc103df070cda8b1d26a398dbca13b4e9f772d37e7829e69b338ff58e",
-    "SkinSans-400-grouped.woff2": "5957d8224af68b6872574eb187c9b34f43545f5125598b7b5ef0977b556c5061",
-    "SkinSans-700-grouped.woff2": "67dded04de94de06a71ec990dab9f1d3254d0d65a97f66a3eea76987df53cff4"
+    "SkinSans-400-grouped.woff2": "586eeb6a00e346daddc048969250b865b0981d6ff4539f1532ab174c08e8b2fb",
+    "SkinSans-700-grouped.woff2": "cdb20b39bdf4d89ef0c82f5780d4944d94f4e929ffc5c7d76dc2196f8b95b544"
   },
-  "coverage": "Default embedded labels. Expanded adds Hangul glyphs for split and parallel. Submission covers switch. Comparison covers the revised drift labels. Credential covers the Git check labels. Grouped covers the two-submission review and application scene.",
+  "coverage": "Default embedded labels. Expanded adds Hangul glyphs for split and parallel. Submission covers switch. Comparison covers the revised drift labels. Credential covers the Git check labels. Grouped covers the 2–8-submission review and application scene.",
   "characters": " &-./12?ABCDEGIKMNOPRSTUVWYabcdefghijklmnoprstuvwxy·“”간건결계고공과그금기나느다달대더뒤라락로록리림매목문미번범보본상서설속수시신씩알어업연요월위으은음일작젝조준줘지짐쪽처청치큰통트파판폴표프하한할함합해획후",
   "variants": {
     "expanded": {
@@ -76,7 +76,7 @@
       "scenes": [
         "parallel"
       ],
-      "characters": "검께두래반사에영원제출"
+      "characters": "8;L~–…→가검께내동래사실원자정제출행회"
     }
   }
 }

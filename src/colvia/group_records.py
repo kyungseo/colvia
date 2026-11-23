@@ -1,13 +1,72 @@
-"""Exactly-two grouped decisions. New schemas never alter old record semantics."""
+"""Version-pinned grouped decisions; legacy pairs and bounded member maps."""
 import hashlib
 from .codec import require, canonical_bytes
 from .graph import Schema
-from .records import fields, one, text, link, head_summary, MAP_KINDS, TREE_KINDS
-from .storage.sqlite import _token
+from .records import fields, one, text, link, head_summary, record, MAP_KINDS, TREE_KINDS
+from .storage.sqlite import _token, MAX_TOKEN_LENGTH
 from .binding import _uuid
 from .tree import logical_path, read_tree, build_tree
-from .maps import read_map
+from .maps import read_map, build_map
 from .worker_state import path_namespace, transitions
+
+
+MAX_MEMBERS = 8
+MEMBER_FIELDS = {'head':'heads', 'approval':'approvals', 'completed':'completed'}
+
+
+def pinned_group_version(obj):
+    require(all(edge.ref.version==obj.ref.version for edge in obj.edges
+                if edge.ref.kind.startswith('group.')), 'group-record-version-mismatch')
+
+
+def pinned_decision_version(obj):
+    auth=link(obj,'authorization')
+    require(auth is not None and auth.kind=='group.authorization' and
+            (obj.ref.version,auth.version) in ((2,1),(3,2)), 'group-decision-version-required')
+
+
+def member_refs(obj,field,plan,load):
+    require(obj.ref.version==plan.ref.version, 'group-record-version-mismatch')
+    works=plan.payload['works']
+    if obj.ref.version==1:
+        return [link(obj,field+str(i)) for i in range(2)]
+    values=read_map(link(obj,MEMBER_FIELDS[field]),load,entry_limit=len(works))
+    kind='work.approval' if field=='approval' else 'work.head'
+    require(set(values)==set(works) and all(ref.kind==kind for ref in values.values()), 'group-member-map-mismatch')
+    return [values[work] for work in works]
+
+
+def member_links(version,field,works,refs=None):
+    if version==1:
+        require(len(works)==2, 'group-two-distinct-works-required')
+        return {field+str(i):('decision',refs[i] if refs is not None else None) for i in range(2)},[]
+    require(version==2 and 2<=len(works)<=MAX_MEMBERS,'group-member-count-unsupported')
+    if refs is None: return {MEMBER_FIELDS[field]:('decision',None)},[]
+    require(len(refs)==len(works),'group-member-map-mismatch')
+    mapping=build_map(zip(works,refs))
+    return {MEMBER_FIELDS[field]:('decision',mapping.root)},list(mapping.objects)
+
+
+def union_limits(before,after,scope,changes):
+    """Bound the whole union before candidate checks or native staging."""
+    from .bodies import submission_size
+    require(len(scope)<=100000 and len(changes)<=100000,'group-union-path-limit')
+    selected=set(scope)
+    submission_size([e['size'] for entries in (before,after) for e in entries
+                     if e['path'] in selected and e['kind']=='regular'])
+    # Conservative macOS stat identity widths exceed the native 64-bit values.
+    # Include full envelope/ancestor/item overhead before preparing any stage.
+    native=dict(volume='9'*32,inode='9'*32,birth_ns=10**32-1)
+    ancestors={}
+    items=[]
+    for i,item in enumerate(changes):
+        parts=item['path'].split('/')
+        for j in range(1,len(parts)): ancestors['/'.join(parts[:j])]=native
+        items.append(dict(item,post_name=f'{i:06d}.post',evacuated_name=f'{i:06d}.original',
+                          pre_native=native if item['pre'] is not None else None,
+                          post_native=native if item['post'] is not None else None))
+    record('worker.manifest',dict(application='x'*MAX_TOKEN_LENGTH,root=native,authority=native,stage=native,
+                                 ancestors=ancestors,items=items),{})
 
 
 def key(group): _token(group); return 'group:'+group
@@ -105,11 +164,43 @@ def _effect(p):
     require(all(bool(p['links'][k])==(p['state']=='completed') for k in ('completed0','completed1')),'group-completion-pair-required')
 
 
+def _plan_v2(p):
+    fields(p,{'group','works','sources','destination','checks','acknowledgement'})
+    _token(p['group']); _uuid(p['destination']); text(p['acknowledgement'])
+    require(type(p['works']) is list and 2<=len(p['works'])<=MAX_MEMBERS and
+            all(type(w) is str for w in p['works']) and p['works']==sorted(set(p['works'])), 'group-member-count-unsupported')
+    require(type(p['sources']) is list and len(p['sources'])==len(p['works']) and
+            all(type(w) is str for w in p['sources']) and
+            len(set([*p['sources'],p['destination']]))==len(p['works'])+1,'group-distinct-workspaces-required')
+    for value in p['works']: _token(value)
+    for value in p['sources']: _uuid(value)
+    definitions(p['checks'])
+    for name in ('heads','baseline','destination_registration','backup_root'): one(p,name)
+
+
+def _approval_v2(p):
+    fields(p,{'statement'}); text(p['statement'])
+    for name in ('plan','approvals'): one(p,name)
+
+
+def _candidate_v2(p):
+    fields(p,{'group'}); _token(p['group'])
+    for name in ('approval','heads','tree','after'): one(p,name)
+
+
+def _effect_v2(p):
+    fields(p,{'application','state'}); _token(p['application'])
+    require(p['application'].startswith('group-') and p['state'] in ('pending','completed','cancelled'), 'group-invalid-effect')
+    for name in ('authorization','manifest'): one(p,name)
+    for name in ('progress','previous','completed'): one(p,name,True)
+    require(bool(p['links']['completed'])==(p['state']=='completed'),'group-completion-set-required')
+
+
 def schemas():
-    def schema(kind, validator, targets, content):
-        return Schema(kind,1,{k:('provenance' if k in ('previous','backup_root') else 'integrity' if k in ('tree','after','baseline','manifest','progress','stdout','stderr') else 'decision') for k in targets},validator,
-                      {k:frozenset(v) for k,v in targets.items()},content=content)
-    return [
+    def schema(kind, validator, targets, content, version=1):
+        return Schema(kind,version,{k:('provenance' if k in ('previous','backup_root') else 'integrity' if k in ('tree','after','baseline','manifest','progress','stdout','stderr') else 'decision') for k in targets},validator,
+                      {k:frozenset(v) for k,v in targets.items()},local=pinned_group_version,content=content)
+    legacy = [
         schema('group.plan',_plan,dict(head0=['work.head'],head1=['work.head'],baseline=['observation.snapshot'],destination_registration=['workspace.registration'],backup_root=['state.root']),validate_plan),
         schema('group.member',_member,dict(plan=['group.plan']),validate_member),
         schema('group.approval',_approval,dict(plan=['group.plan'],approval0=['work.approval'],approval1=['work.approval']),validate_approval),
@@ -120,6 +211,19 @@ def schemas():
         schema('group.dissolution',_dissolution,dict(plan=['group.plan'],selection=['group.plan','group.approval','group.candidate','group.review']),validate_dissolution),
         schema('group.effect',_effect,dict(authorization=['group.authorization'],manifest=['worker.manifest'],progress=['worker.progress'],previous=['group.effect'],completed0=['work.head'],completed1=['work.head']),validate_effect),
     ]
+    modern = [
+        schema('group.plan',_plan_v2,dict(heads=MAP_KINDS,baseline=['observation.snapshot'],destination_registration=['workspace.registration'],backup_root=['state.root']),validate_plan,2),
+        schema('group.member',_member,dict(plan=['group.plan']),validate_member,2),
+        schema('group.approval',_approval_v2,dict(plan=['group.plan'],approvals=MAP_KINDS),validate_approval,2),
+        schema('group.candidate',_candidate_v2,dict(approval=['group.approval'],heads=MAP_KINDS,tree=TREE_KINDS,after=MAP_KINDS),validate_candidate,2),
+        schema('group.evidence',_evidence,dict(candidate=['group.candidate'],stdout=['body.complete'],stderr=['body.complete']),validate_evidence,2),
+        schema('group.review',_review,dict(candidate=['group.candidate'],evidence=MAP_KINDS),validate_review,2),
+        schema('group.authorization',_authorization,dict(review=['group.review']),validate_authorization,2),
+        schema('group.dissolution',_dissolution,dict(plan=['group.plan'],selection=['group.plan','group.approval','group.candidate','group.review']),validate_dissolution,2),
+        schema('group.effect',_effect_v2,dict(authorization=['group.authorization'],manifest=['worker.manifest'],progress=['worker.progress'],previous=['group.effect'],completed=MAP_KINDS),validate_effect,2),
+    ]
+    return legacy+modern
+
 
 
 def plan_for(ref,load):
@@ -137,8 +241,8 @@ def validate_plan(ref,load):
     require(baseline.payload['kind']=='git' and link(baseline,'workspace')==link(p,'destination_registration') and
             get(link(p,'destination_registration'),load).payload['workspace']==p.payload['destination'], 'group-destination-mismatch')
     scopes=[]
-    for i in range(2):
-        h,plan,_,_=head_summary(link(p,'head'+str(i)),load)
+    for i,head in enumerate(member_refs(p,'head',p,load)):
+        h,plan,_,_=head_summary(head,load)
         require(h.payload['phase']=='planned' and not h.payload['archived'] and link(h,'context') is None and
                 plan.payload['work']==p.payload['works'][i] and plan.payload['workspace']==p.payload['sources'][i], 'group-planned-member-required')
         from .work import WorkService
@@ -151,6 +255,7 @@ def validate_plan(ref,load):
         require(not set(scopes).intersection(plan.payload['scope']), 'group-overlapping-scopes')
         scopes.extend(plan.payload['scope'])
     path_namespace(scopes+[e['path'] for e in before])
+    if p.ref.version==2: require(len(scopes)<=100000,'group-union-path-limit')
 
 
 def validate_member(ref,load):
@@ -160,9 +265,10 @@ def validate_member(ref,load):
 
 def validate_approval(ref,load):
     approval=get(ref,load); plan=get(link(approval,'plan'),load)
-    for i in range(2):
-        _,wp,_,_=head_summary(link(plan,'head'+str(i)),load)
-        a=get(link(approval,'approval'+str(i)),load)
+    heads=member_refs(plan,'head',plan,load); approvals=member_refs(approval,'approval',plan,load)
+    for head,ref in zip(heads,approvals):
+        _,wp,_,_=head_summary(head,load)
+        a=get(ref,load)
         require(a.ref.version==1 and link(a,'plan')==wp.ref and all(a.payload[k]==wp.payload[k] for k in ('work','workspace')) and a.payload['statement']==approval.payload['statement'], 'group-approval-mismatch')
 
 
@@ -172,12 +278,14 @@ def candidate_parts(ref,load):
     after={e['path']:e for e in before}; bodies={}; scopes=[]; members=[]
     from .work import WorkService
     validator=WorkService(None,None)
-    for i in range(2):
-        h,wp,result,_=head_summary(link(candidate,'head'+str(i)),load)
+    heads=member_refs(candidate,'head',plan,load); original_heads=member_refs(plan,'head',plan,load)
+    approvals=member_refs(approval,'approval',plan,load)
+    for i,head in enumerate(heads):
+        h,wp,result,_=head_summary(head,load)
         validator._validate_head(h.ref,load)
-        original=head_summary(link(plan,'head'+str(i)),load)[1]
+        original=head_summary(original_heads[i],load)[1]
         require(h.payload['phase']=='review' and not h.payload['archived'] and link(h,'context') is None and
-                wp.ref==original.ref and result.ref.version==1 and link(result,'approval')==link(approval,'approval'+str(i)), 'group-exact-review-members-required')
+                wp.ref==original.ref and result is not None and result.ref.version==1 and link(result,'approval')==approvals[i], 'group-exact-review-members-required')
         scope=wp.payload['scope']; scopes.extend(scope)
         observed=get(link(result,'observation'),load); entries={e['path']:e for e in read_tree(link(observed,'tree'),load)}
         for path in scope:
@@ -187,6 +295,7 @@ def candidate_parts(ref,load):
     after=sorted(after.values(),key=lambda e:e['path'].encode())
     path_namespace(scopes+[e['path'] for e in before]+[e['path'] for e in after])
     changes=transitions(before,after,scopes)
+    if plan.ref.version==2: union_limits(before,after,scopes,changes)
     require(not any(c['path'].split('/')[-1].casefold()=='.gitignore' for c in changes), 'worker-policy-edit-unsupported')
     require(candidate.payload['group']==plan.payload['group'], 'group-candidate-mismatch')
     return candidate,approval,plan,baseline,before,after,changes,bodies,members
@@ -214,7 +323,7 @@ def validate_review(ref,load):
     entries=read_map(link(review,'evidence'),load)
     require(set(entries)=={c['name'] for c in plan.payload['checks']}, 'group-required-checks-missing')
     for name,e in entries.items():
-        require(e.kind=='group.evidence', 'group-check-evidence-required'); evidence=get(e,load)
+        require(e.kind=='group.evidence' and e.version==review.ref.version, 'group-check-evidence-required'); evidence=get(e,load)
         require(evidence.payload['name']==name and link(evidence,'candidate')==candidate, 'group-check-candidate-mismatch')
 
 
@@ -238,7 +347,7 @@ def validate_authorization(ref,load):
 
 
 def validate_decision(ref,load):
-    decision=get(ref,load); authorization=link(decision,'authorization')
+    decision=get(ref,load); pinned_decision_version(decision); authorization=link(decision,'authorization')
     require(authorization is not None and authorization.kind=='group.authorization' and decision.payload['action']=='accept', 'group-decision-authorization-required')
     auth,review=validate_authorization(authorization,load)
     members=candidate_parts(link(review,'candidate'),load)[-1]
@@ -255,8 +364,9 @@ def validate_effect(ref,load):
     if effect.payload['state']=='completed':
         from .work import WorkService
         members=candidate_parts(link(review,'candidate'),load)[-1]
+        group_plan=plan_for(ref,load); completed=member_refs(effect,'completed',group_plan,load)
         for i,(old,plan,result) in enumerate(members):
-            h,p,r,d=head_summary(link(effect,'completed'+str(i)),load)
+            h,p,r,d=head_summary(completed[i],load)
             require(h.payload['phase']=='completed' and p.ref==plan.ref and r.ref==result.ref and
                     link(h,'previous')==old.ref and link(d,'authorization')==auth.ref,'group-completion-pair-mismatch')
             WorkService(None,None)._validate_head(h.ref,load)

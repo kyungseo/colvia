@@ -29,7 +29,7 @@ class GroupFixture(GitFixture):
         marker=self.root/'.git/colvia/connection.json'; marker.parent.mkdir(); marker.write_bytes(canonical_bytes(self.locator.payload()))
         self.destination=LocalWorkspace(self.store,self.root,W,git=self.git,locator_reader=lambda:self.locator)
         self.sources=[]; self.paths=[]
-        for i in range(2):
+        for i in range(getattr(self,'member_count',2)):
             path=self.home/('source-'+str(i)); self.command('worktree','add','-q','-b','source-'+str(i),str(path))
             top=self.git.topology(path); wid=str(uuid.uuid4())
             connections.register(operation='register-'+str(i),locator=self.locator,observed=top,
@@ -264,7 +264,7 @@ class GroupTests(GroupFixture,unittest.TestCase):
             with self.assertRaisesRegex(RecordError,'store-reader-capability-unavailable'):writer.begin_import('old-write','test')
             with self.assertRaisesRegex(RecordError,'store-reader-capability-unavailable'):GenerationStore(self.store.path,readonly=True,**options)
             self.group.dissolve(operation=self.op(),group='pair',receipt=shown['dissolve_receipt'],statement='Return to ordinary work')
-            self.assertIn('schema:group.member:1',self.store.requirements()['read'])
+            self.assertIn('schema:group.member:2',self.store.requirements()['read'])
             with self.assertRaisesRegex(RecordError,'store-reader-capability-unavailable'):old.root()
             receipt=self.sources[0].plan_review('member0')['receipt']
             self.sources[0].approve(operation=self.op(),work='member0',receipt=receipt,statement='ordinary approval after dissolution')

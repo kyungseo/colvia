@@ -72,7 +72,9 @@ class WindowsPlainRecordedLookupTests(unittest.TestCase):
         self.assertEqual((self.reg,),self.service.registrations(observed))
         self.assertEqual(W,require_registered(resolve(self.loc,self.bound,observed,self.service.registrations(observed))))
         workspace=LocalWorkspace(self.store,Path(self.cmd.path),W,locator_reader=lambda:self.loc)
-        with patch('colvia.workspace.discover',return_value=observed):workspace.verify()
+        with patch('colvia.connection_boundary.workspace_topology',return_value=observed) as topology:
+            workspace.verify()
+        topology.assert_called_once_with(Path(self.cmd.path),workspace.git)
         self.assertEqual(before,self.store.root());self.assertEqual(binding,self.service.binding()[0])
         self.assertEqual(registration,self.store.head(location_key(self.root)))
         self.assertIsNone(self.store.head(location_key(self.cmd)))

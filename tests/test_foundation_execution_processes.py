@@ -76,6 +76,22 @@ class ProcessPortTests(unittest.TestCase):
         p=self.start('import time;print("ready",flush=True);time.sleep(30)');original=p.stdin;foreign=io.BytesIO()
         p.stdin=foreign
         try:
-            with self.assertRaisesRegex(RecordError,'owned-pipes-required'):self.port.close_io(p)
+            with self.assertRaisesRegex(RecordError,'owned-pipes-required'):self.port.admit_io(p)
             self.assertFalse(foreign.closed);self.assertFalse(original.closed)
+            # Cleanup owns the retained pipes, even after the public attributes change.
+            self.port.stop(p,self.known(p),seconds=4);self.children.remove(p)
+            self.port.close_io(p)
+            self.assertFalse(foreign.closed)
+            self.assertTrue(all(s.closed for s in (original,p.stdout,p.stderr)))
+            with self.assertRaisesRegex(RecordError,'owned-pipes-required'):self.port.close_io(p)
+            self.assertFalse(foreign.closed)
         finally:p.stdin=original;foreign.close()
+
+    def test_signal_permission_denial_never_claims_closure(self):
+        p=self.start('import time;print("ready",flush=True);time.sleep(30)');known=self.known(p)
+        with patch('colvia.platforms.darwin_processes.os.killpg',side_effect=PermissionError(1,'synthetic signal denial')),self.assertRaises(PermissionError):
+            self.port.stop(p,known,seconds=4)
+        self.assertIsNone(p.poll())
+        closed=self.port.stop(p,known,seconds=4)
+        self.assertTrue(closed['group_absent']);self.assertTrue(closed['final_scan_confirmed'])
+        self.port.close_io(p);self.children.remove(p)

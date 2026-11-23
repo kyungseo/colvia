@@ -10,6 +10,10 @@ Codex나 Claude Code가 제안한 작업 범위를 승인하고, 결과를 검�
 
 Approve the scope proposed by Codex or Claude Code, then review the result and decide whether to accept it. Choose a language above for step-by-step help with setup, your first task, and picking up in a new chat. The same guide covers updates, disconnecting a project and removing Colvia while keeping its records.
 
-[macOS: 두 제출본 함께 수락·반영](manual/ko/work.md#grouped-acceptance) · [macOS: accept and apply two submissions together](manual/en/work.md#grouped-acceptance)
+macOS의 Claude Code CLI에서는 조정 에이전트가 승인된 작업자를 실행하고 결과를 모읍니다. 사용자는 계획과 최종 제출본·통합 검사 결과를 검토합니다.
+
+On macOS, with Claude Code CLI, the coordinating agent launches approved workers and collects their results. You review the plans, exact submissions and integration checks.
+
+[macOS: 2~8개 제출본 함께 수락·반영](manual/ko/work.md#grouped-acceptance) · [macOS: accept and apply 2–8 submissions together](manual/en/work.md#grouped-acceptance)
 
 [License](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

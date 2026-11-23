@@ -327,7 +327,12 @@ def _outcome(name, heads, load):
             status = 'recheck'
             info['reason'] = exc.code
         auth = link(decision,'authorization')
-        if auth:
+        if auth and auth.kind=='group.authorization':
+            from .group_records import validate_decision
+            validate_decision(decision.ref,load)
+            require(decision.payload['work']==name and decision.payload['workspace']==p['workspace'] and
+                    link(decision,'result')==result.ref,'group-decision-member-mismatch')
+        elif auth:
             from .worker_records import validate_authorization
             _,binding = validate_authorization(auth,load)
             require(link(binding,'result')==result.ref and link(binding,'plan')==plan.ref and

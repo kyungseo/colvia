@@ -157,7 +157,7 @@ def application_registry():
     from .progress import schema as progress_schema
     from .planning import planning_schemas
     from .composition import schemas as composition_schemas
-    from .group_records import schemas as group_schemas, validate_decision as group_decision
+    from .group_records import schemas as group_schemas, validate_decision as group_decision, pinned_decision_version
     from .worker_records import schemas as worker_schemas
     from .execution.records import schemas as execution_schemas
     from .delivery.records import schemas as delivery_schemas
@@ -184,7 +184,8 @@ def application_registry():
         Schema('work.submission',2,{'plan':'decision','approval':'decision','observation':'integrity','after':'integrity','previous':'provenance','attribution':'decision'},_submission_v2,
                {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'observation':frozenset({'observation.snapshot'}),'after':MAP_KINDS,'previous':frozenset({'work.submission'}),'attribution':MAP_KINDS},content=_submission_content),
         Schema('work.decision',1,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'worker.authorization'})}),
-        Schema('work.decision',2,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},content=group_decision),
+        Schema('work.decision',2,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
+        Schema('work.decision',3,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
         head_schema, lifecycle_head_schema(head_schema),
     ])
 

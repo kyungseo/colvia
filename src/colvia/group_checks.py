@@ -151,6 +151,6 @@ def run_checks(service,candidate,parts,operation):
                 pair=ingest_body(io.BytesIO(raw),service.store,operation); objects.append(pair); logs.append(pair[0])
             pair=record('group.evidence',dict(name=definition['name'],definition=gr.digest(definition),**outcome,
                 tree_unchanged=same,environment_inputs='system runtime and approved environment; ignored and opaque files excluded'),
-                dict(candidate=('decision',candidate.ref),stdout=('integrity',logs[0]),stderr=('integrity',logs[1])))
+                dict(candidate=('decision',candidate.ref),stdout=('integrity',logs[0]),stderr=('integrity',logs[1])),version=candidate.ref.version)
             objects.append(pair); evidence.append((definition['name'],pair[0]))
     return evidence,objects

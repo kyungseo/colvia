@@ -1,4 +1,4 @@
-"""One native manifest, two terminal decisions, request-keyed forward recovery."""
+"""One native manifest, all terminal decisions, request-keyed forward recovery."""
 from uuid import uuid4
 from .codec import require, RecordError
 from .records import record, link, text
@@ -43,11 +43,12 @@ def _live(service,view,effect,auth,parts):
     service._live_candidate(parts[0],view)
 
 
-def _next(effect,state,progress=None,completed=(None,None)):
-    return record('group.effect',dict(application=effect.payload['application'],state=state),
-        dict(authorization=('decision',link(effect,'authorization')),manifest=('integrity',link(effect,'manifest')),
-             progress=('integrity',progress if progress is not None else link(effect,'progress')),previous=('provenance',effect.ref),
-             completed0=('decision',completed[0]),completed1=('decision',completed[1])))
+def _next(effect,state,works,progress=None,completed=None):
+    links,objects=gr.member_links(effect.ref.version,'completed',works,completed)
+    pair=record('group.effect',dict(application=effect.payload['application'],state=state),
+        dict(links,authorization=('decision',link(effect,'authorization')),manifest=('integrity',link(effect,'manifest')),
+             progress=('integrity',progress if progress is not None else link(effect,'progress')),previous=('provenance',effect.ref)),version=effect.ref.version)
+    return pair,objects
 
 
 def _publish(service,operation,port,effect,auth,review,parts,pair,*,objects=(),heads=None,cancelling=False):
@@ -75,7 +76,7 @@ def _publish(service,operation,port,effect,auth,review,parts,pair,*,objects=(),h
 
 def _outcome(effect,parts):
     return dict(group=parts[2].payload['group'],application=effect.payload['application'],state=effect.payload['state'],
-                works=parts[2].payload['works'],accepted=2 if effect.payload['state']=='completed' else 0)
+                works=parts[2].payload['works'],accepted=len(parts[2].payload['works']) if effect.payload['state']=='completed' else 0)
 
 
 def _run(service,port,ref,event):
@@ -93,8 +94,8 @@ def _run(service,port,ref,event):
         try: port.apply_one(_manifest(service,effect),i,before_effect=check,event=event)
         except OSError: raise RecordError('effect-outcome-unknown') from None
         progress=record('worker.progress',dict(application=effect.payload['application'],index=i,stage='verified'),{'previous':('provenance',link(effect,'progress'))})
-        pair=_next(effect,'pending',progress[0])
-        _publish(service,attempt+'-p'+str(i),port,effect,auth,review,parts,pair,objects=[progress])
+        pair,mapping=_next(effect,'pending',parts[2].payload['works'],progress[0])
+        _publish(service,attempt+'-p'+str(i),port,effect,auth,review,parts,pair,objects=[progress,*mapping])
         effect=service._object(pair[0]); event('progress-published')
     try:
         for i in range(len(parts[6])): port.sync(_manifest(service,effect),i)
@@ -104,10 +105,10 @@ def _run(service,port,ref,event):
     objects=[]; heads={}
     for h,plan,result in parts[-1]:
         decision=record('work.decision',dict(work=plan.payload['work'],workspace=plan.payload['workspace'],action='accept',statement=auth.payload['statement']),
-            dict(result=('decision',result.ref),authorization=('decision',auth.ref)),version=2)
+            dict(result=('decision',result.ref),authorization=('decision',auth.ref)),version=auth.ref.version+1)
         head=service.work._head_record(plan.ref,plan.payload,'completed',approval=link(h,'approval'),result=result.ref,decision=decision[0],previous=h.ref)
         objects.extend([decision,head]); heads[plan.payload['work']]=head[0]
-    pair=_next(effect,'completed',completed=tuple(heads[w] for w in parts[2].payload['works']))
+    pair,mapping=_next(effect,'completed',parts[2].payload['works'],completed=tuple(heads[w] for w in parts[2].payload['works'])); objects.extend(mapping)
     _publish(service,attempt+'-complete',port,effect,auth,review,parts,pair,objects=objects,heads=heads)
     event('completed')
     return _outcome(service._object(pair[0]),parts)
@@ -133,7 +134,7 @@ def execute(service,*,operation,group,application,request,receipt,statement,acto
         candidate=service._object(link(selected,'candidate'))
         view=ValidationView(service.store.root(),service.store.load); guard(view)
         parts=service._live_candidate(candidate,view,source_files=True); service._initial(parts[2],view); service._prepared(parts[2],view)
-        auth=record('group.authorization',dict(application=application,request=request,request_digest=gr.request_digest(selected.ref,receipt,request,actor,statement,application),receipt=receipt,actor=actor,statement=statement),{'review':('decision',selected.ref)})
+        auth=record('group.authorization',dict(application=application,request=request,request_digest=gr.request_digest(selected.ref,receipt,request,actor,statement,application),receipt=receipt,actor=actor,statement=statement),{'review':('decision',selected.ref)},version=selected.ref.version)
         bodies=parts[7]
         def body(path):
             require(path in bodies,'group-post-body-required'); return body_bytes(bodies[path],service.store.load)
@@ -144,7 +145,8 @@ def execute(service,*,operation,group,application,request,receipt,statement,acto
             raise
         event('staging-prepared')
         manifest=record('worker.manifest',prepared,{})
-        pair=record('group.effect',dict(application=application,state='pending'),dict(authorization=('decision',auth[0]),manifest=('integrity',manifest[0]),progress=('integrity',None),previous=('provenance',None),completed0=('decision',None),completed1=('decision',None)))
+        member_links,mapping=gr.member_links(selected.ref.version,'completed',parts[2].payload['works'])
+        pair=record('group.effect',dict(application=application,state='pending'),dict(member_links,authorization=('decision',auth[0]),manifest=('integrity',manifest[0]),progress=('integrity',None),previous=('provenance',None)),version=selected.ref.version)
         expected={gr.key(group):selected.ref,gr.application_key(application):None,request_key(request):None,PENDING:None}
         changes={k:pair[0] for k in expected}
         def validate(view):
@@ -152,7 +154,7 @@ def execute(service,*,operation,group,application,request,receipt,statement,acto
             require(view.head('application:'+application) is None,'group-application-already-exists')
             effect,_,_,_= _parts(service,pair[0],view)
             require(all(s=='pre' for s in _states(service,port,effect,parts,load=view)),'group-initial-state-changed')
-        service.store.commit_heads(operation='group-'+uuid4().hex+'-reserve',expected=expected,changes=changes,objects=[auth,manifest,pair],validate=validate)
+        service.store.commit_heads(operation='group-'+uuid4().hex+'-reserve',expected=expected,changes=changes,objects=[auth,manifest,*mapping,pair],validate=validate)
         event('reserved')
         return _run(service,port,pair[0],event)
 
@@ -164,6 +166,6 @@ def cancel(service,*,operation,group):
         effect,auth,review,parts=_parts(service,selected.ref,service.store.load)
         require(effect.payload['state']=='pending','group-pending-effect-required')
         require(all(s=='pre' for s in _states(service,port,effect,parts,cancelling=True)),'worker-cancel-requires-all-pre')
-        pair=_next(effect,'cancelled')
-        _publish(service,operation,port,effect,auth,review,parts,pair,cancelling=True)
+        pair,mapping=_next(effect,'cancelled',parts[2].payload['works'])
+        _publish(service,operation,port,effect,auth,review,parts,pair,objects=mapping,cancelling=True)
         return _outcome(service._object(pair[0]),parts)

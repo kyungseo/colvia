@@ -4,11 +4,11 @@
 
 On 2026-11-22 the Owner accepted the two-submission implementation in [FEAT-20261122-001](FEAT-20261122-001-grouped-acceptance.md) and authorized its local commit. The eight existing findings below remain separate follow-up work; their deferral is explicit, not a passing result. The Owner requested a plan before implementing support for three or more submissions, then completion of these eight findings after that extension. This note records the selected sequence; it does not approve an unwritten extension plan, release, push or new runtime support.
 
-The extension implementation will have its own approved task record. Revisit any finding immediately if the extension changes or relies on that exact behavior, or if evidence exposes an integrity defect. Do not postpone a required extension safety check merely because it is in this list. The later follow-up should continue from these exact IDs and original failure evidence, not rediscover a new list.
+The subsequently approved extension is owned by [FEAT-20261122-002](FEAT-20261122-002-multi-submission-acceptance.md). Revisit any finding immediately if the extension changes or relies on that exact behavior, or if evidence exposes an integrity defect. Do not postpone a required extension safety check merely because it is in this list. The later follow-up should continue from these exact IDs and original failure evidence, not rediscover a new list.
 
 ## Eight Findings And Closure Conditions
 
-All eight original failures reproduced on unchanged base main `be19fb1362ca057eaad2d4af218ea9f89cc06adb`. Causes below are source assessments unless explicitly described as executed. None has passed a corrected focused execution yet. Original private execution logs remain retained by the owning task.
+All eight original failures reproduced on unchanged base main `be19fb1362ca057eaad2d4af218ea9f89cc06adb`. Causes below are source assessments unless explicitly described as executed. At the original deferral, none had passed a corrected focused execution. The closure below records the later corrected runs; this original failure assessment remains historical evidence. Original private execution logs remain retained by the owning task.
 
 | Prior ID | Exact test | Assessment and required follow-up | Closure evidence |
 | --- | --- | --- | --- |
@@ -26,3 +26,27 @@ All eight original failures reproduced on unchanged base main `be19fb1362ca057ea
 Correct related fixtures together, then run the affected cases and shared consumers in normal and parent-optimized modes. Reuse unchanged evidence from the accepted two-submission implementation and the eventual extension anchor, identifying their exact revisions and limits. If runtime, writer, acceptance or recovery behavior changes, apply Maintaining's corresponding full-regression requirements. Preserve old failures separately from corrected results.
 
 For each row record the actual cause, change, exact execution result and any remaining limit. Completion means the required behavior is exercised successfully, or the Owner explicitly accepts a concrete alternative disposition; a static explanation, unavailable test, or renamed skip alone is not closure. Final result acceptance and any additional commit/publication remain separate Owner decisions.
+
+
+<a id="closure-after-the-2-8-extension"></a>
+## Closure After The 2–8 Extension
+
+After the Owner approved the 2–8 extension and its review closed the implementation findings, all eight test-only corrections were executed. Production worker/process/sandbox behavior was unchanged. Each original exact test above passed in normal and parent-optimized focused runs and in the complete consolidated regression. No case was skipped to obtain closure; existing whole-suite skip identities and reasons remain unchanged. Final Owner acceptance and Git publication are still separate decisions.
+
+| Prior ID | Corrected contract and observed result |
+| --- | --- |
+| 1 | Live admission refuses replaced public streams. Cleanup closes the retained owned pipes while leaving the foreign replacement untouched; the real child is stopped and reaped. Additional signal-denial coverage preserves unclosed/pending state and refuses another launch. |
+| 4 | Match the current native_entries keyword, prove both true/false propagation, and retain unknown-host refusal. Portable selection checks do not qualify native Windows. |
+| 5 | Supply an exact contained child runtime to the synthetic fixture. Actual read/write and three verifiers complete with Work still active. Outside read/write, write through the read-only profile and network remain denied. Parent CPython 3.14.7 is unchanged; the contained child is 3.14.10, not an installed-runtime qualification. |
+| 7 | Supply matching numeric/name SQLite metadata. Missing, inconsistent, boolean and unknown metadata still get the generic error; rollback/moved-file distinctions remain. |
+| 8 | Assert current meaningful refusal, preservation and explicit original-folder/move confirmation without the obsolete prose. No automatic reconnection is claimed. |
+| 9 | Patch the current connection-boundary topology helper, assert the exact call and unchanged heads/registration/index. This remains a portable fixture. |
+| 10 | Forward the display keyword; the same injected mid-page head change still produces list-changed. |
+| 11 | Supply the explicit prepared source so the intended profile mismatch reaches exit 65; the target stays empty. |
+
+Focused coverage was 28 ordinary cases plus the native five-operation case in each mode. Complete-run counts, exact runtime boundaries, review disposition and acceptance state belong to [the extension record](FEAT-20261122-002-multi-submission-acceptance.md#final-whole-regression-results). The private original failing logs and exact corrected execution ledgers remain available to the Owner for result review; corrected results do not erase the historical failures.
+
+
+## Owner Acceptance — 2026-11-23
+
+The Owner accepted the macOS result, including all eight corrections and their stated runtime/portable limits, and authorized a local commit. These eight findings are closed. Push, installation and Windows group qualification remain separate; the extension record owns the remaining Windows planning.

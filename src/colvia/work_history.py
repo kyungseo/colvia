@@ -72,7 +72,17 @@ def _head_event(reader, work, current, previous):
     if decision and changed('decision'):
         auth = link(decision, 'authorization')
         extra = {}
-        if auth:
+        if auth and auth.kind == 'group.authorization':
+            from .group_records import validate_decision, plan_for
+            validate_decision(decision.ref, reader.load)
+            group_plan = plan_for(auth, reader.load)
+            require(decision.payload['work'] == work and
+                    decision.payload['workspace'] == head.payload['workspace'] and
+                    link(decision, 'result') == result.ref,
+                    'group-decision-mismatch')
+            extra.update(authority='human', authorization=auth.sha256,
+                         work_group=group_plan.payload['group'])
+        elif auth:
             from .worker_records import validate_authorization
             authorization, binding = validate_authorization(auth, reader.load)
             require(decision.payload['action'] == 'accept' and link(binding,'result') == result.ref
@@ -206,7 +216,9 @@ def render(page, printable):
     lines = [printable(page['work']) + ' · 기록된 순서 (최신순)']
     for item in page['items']:
         label = LABELS.get(item['kind'], '작업 기록')
-        if item.get('authority') == 'delegated':
+        if item.get('work_group'):
+            label = '묶음 수락'
+        elif item.get('authority') == 'delegated':
             label = '위임 수락'
         if 'revision' in item:
             label += f" · 제출본 {item['revision']}판"

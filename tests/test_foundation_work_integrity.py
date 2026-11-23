@@ -36,8 +36,8 @@ class IntegrityTests(WorkFixture,unittest.TestCase):
         planning=Planning(self.store)
         planning.save_candidate(operation='one',candidate='one',title='하나',reason='후보')
         original=planning.candidate;changed=[False]
-        def read(candidate):
-            value=original(candidate)
+        def read(candidate,*,display=False):
+            value=original(candidate,display=display)
             if not changed[0]:
                 changed[0]=True
                 Planning(self.store).save_candidate(operation='two',candidate='two',title='둘',reason='추가')

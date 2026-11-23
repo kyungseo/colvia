@@ -39,7 +39,10 @@ print('portable-import-boundary-ok')
         from colvia.codec import RecordError
         with patch('colvia.platforms.effects_port.sys.platform','win32'),patch('colvia.platforms.windows_effects.WindowsEffects',return_value='windows') as factory:
             self.assertEqual('windows',effects('root','authority'))
-        factory.assert_called_once_with('root','authority')
+        factory.assert_called_once_with('root','authority',native_entries=False)
+        with patch('colvia.platforms.effects_port.sys.platform','win32'),patch('colvia.platforms.windows_effects.WindowsEffects') as factory:
+            effects('root','authority',native_entries=True)
+        factory.assert_called_once_with('root','authority',native_entries=True)
         with patch('colvia.platforms.effects_port.sys.platform','linux'),self.assertRaisesRegex(RecordError,'platform-unavailable'):
             effects('root','authority')
 

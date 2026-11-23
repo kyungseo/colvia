@@ -1,4 +1,4 @@
-"""Two independent plans and one human acceptance/application decision."""
+"""Independent member plans and one human acceptance/application decision."""
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
@@ -17,6 +17,10 @@ from .storage.sqlite import _token
 from . import group_records as gr
 
 ACTIVATION='group-activation'
+ACTIVATION_V2='group-activation-v2'
+CURRENT_VERSION=2
+
+def activation_key(version): return ACTIVATION if version==1 else ACTIVATION_V2
 
 
 class GroupService:
@@ -52,17 +56,18 @@ class GroupService:
         baseline=self._object(link(plan,'baseline'),view)
         require(view.head(workspace_key(self.destination.workspace))==link(plan,'destination_registration'),'group-connection-changed')
         self.destination.verify()
+        original_heads=gr.member_refs(plan,'head',plan,view)
         for i,work in enumerate(plan.payload['works']):
             membership=view.head(gr.member_key(work)); require(membership is not None,'group-membership-changed')
             require(link(self._object(membership,view),'plan')==plan.ref,'group-membership-changed')
-            _,wp,_,_=head_summary(link(plan,'head'+str(i)),view)
+            _,wp,_,_=head_summary(original_heads[i],view)
             original=self._object(link(wp,'baseline'),view)
             require(view.head(workspace_key(plan.payload['sources'][i]))==link(original,'workspace'),'group-connection-changed')
         return baseline
 
     def _observe(self,plan,baseline):
         scope=[]
-        for i in range(2): scope.extend(head_summary(link(plan,'head'+str(i)),self.store.load)[1].payload['scope'])
+        for ref in gr.member_refs(plan,'head',plan,self.store.load): scope.extend(head_summary(ref,self.store.load)[1].payload['scope'])
         return self.native._observe(SimpleNamespace(payload={'scope':scope}),baseline)
 
     def _initial(self,plan,load):
@@ -92,8 +97,8 @@ class GroupService:
                 obj=self._object(ref,view)
                 require(obj.payload['work'] not in works,'group-prepared-authority-in-use')
 
-    def _backup(self,view):
-        enabled=view.head(ACTIVATION)
+    def _backup(self,view,version):
+        enabled=view.head(activation_key(version))
         if enabled: return link(self._object(enabled,view),'backup_root')
         authority=self.lifecycle_authority
         require(authority is not None,'group-pre-feature-backup-required')
@@ -103,12 +108,18 @@ class GroupService:
         receipt=decode_canonical(authority.files.read(authority.root/'last-export.json'))
         require(receipt['project']==self.store.project and receipt['instance']==self.store.instance and
                 ObjectRef.parse(receipt['root'])==view.root().ref,'group-pre-feature-backup-required')
-        require(not any(c.startswith('schema:group.') for c in self.store.requirements()['read']), 'group-activation-record-required')
+        required={f'schema:{schema.kind}:{version}' for schema in gr.schemas() if schema.version==version}
+        required.add('schema:work.decision:'+str(version+1))
+        require(not required.intersection(self.store.requirements()['read']), 'group-activation-record-required')
         return ObjectRef.parse(receipt['root'])
 
     def create(self,*,operation,group,works,checks,acknowledgement):
         _token(operation); _token(group); text(acknowledgement); gr.definitions(checks)
-        works=sorted(works); require(len(works)==2 and len(set(works))==2,'group-two-distinct-works-required')
+        version=CURRENT_VERSION
+        require(type(works) in (list,tuple) and all(type(w) is str for w in works),'group-member-count-unsupported')
+        works=sorted(works)
+        require((len(works)==2 if version==1 else 2<=len(works)<=gr.MAX_MEMBERS) and len(set(works))==len(works),
+                'group-two-distinct-works-required' if version==1 else 'group-member-count-unsupported')
         self._port()
         heads=[self.work._head(w,same_workspace=False)[1] for w in works]
         for h in heads:
@@ -116,25 +127,26 @@ class GroupService:
             self._source(h.payload['workspace']).workspace.verify()
         registration,observed=self.destination.observe()
         from .storage.sqlite import ValidationView
-        before=self.store.root(); backup=self._backup(ValidationView(before,self.store.load))
+        before=self.store.root(); backup=self._backup(ValidationView(before,self.store.load),version)
         with self.store.import_attempt(operation,'group-plan'):
             baseline,objects=encode_observation(observed,registration,self.store,operation)
+            member_links,mapping=gr.member_links(version,'head',works,[h.ref for h in heads]); objects.extend(mapping)
             pair=record('group.plan',dict(group=group,works=works,sources=[h.payload['workspace'] for h in heads],
                 destination=self.destination.workspace,checks=checks,acknowledgement=acknowledgement),
-                dict(head0=('decision',heads[0].ref),head1=('decision',heads[1].ref),baseline=('integrity',baseline),destination_registration=('decision',registration),backup_root=('provenance',backup)))
+                dict(member_links,baseline=('integrity',baseline),destination_registration=('decision',registration),backup_root=('provenance',backup)),version=version)
             expected={gr.key(group):None}; changes={gr.key(group):pair[0]}
             for work,h in zip(works,heads):
-                member=record('group.member',dict(group=group,work=work),{'plan':('decision',pair[0])})
+                member=record('group.member',dict(group=group,work=work),{'plan':('decision',pair[0])},version=version)
                 objects.append(member); expected[gr.member_key(work)]=None; changes[gr.member_key(work)]=member[0]
                 expected[work_key(work)]=h.ref
-            enabled=self.store.head(ACTIVATION)
-            expected[ACTIVATION]=enabled
-            if enabled is None: changes[ACTIVATION]=pair[0]
+            activation=activation_key(version); enabled=self.store.head(activation)
+            expected[activation]=enabled
+            if enabled is None: changes[activation]=pair[0]
             project=self.store.head(PROJECT_KEY)
             def validate(view):
                 guard(view); self._port()
                 require(view.head(PROJECT_KEY)==project,'group-connection-changed')
-                require(self._backup(view)==backup,'group-backup-changed')
+                require(self._backup(view,version)==backup,'group-backup-changed')
                 validate_closure([pair[0],*(r for k,r in changes.items() if k.startswith('group-member:'))],view,self.work.registry,self.work.closure)
                 plan=self._object(pair[0],view); self._prepared(plan,view)
                 for h in heads:
@@ -151,12 +163,14 @@ class GroupService:
         plan=self._selected(group); require(plan.ref.kind=='group.plan','group-plan-approval-required')
         require(receipt==self._receipt('approve',group,plan.ref),'group-stale-receipt'); text(statement)
         objects=[]; expected={gr.key(group):plan.ref}; changes={}; approvals=[]
+        original_heads=gr.member_refs(plan,'head',plan,self.store.load)
         for i,work in enumerate(plan.payload['works']):
-            h,wp,_,_=head_summary(link(plan,'head'+str(i)),self.store.load)
+            h,wp,_,_=head_summary(original_heads[i],self.store.load)
             a=record('work.approval',dict(work=work,workspace=wp.payload['workspace'],statement=statement),{'plan':('decision',wp.ref)})
             new=self.work._head_record(wp.ref,wp.payload,'approved',approval=a[0],previous=h.ref)
             objects.extend([a,new]); approvals.append(a[0]); expected[work_key(work)]=h.ref; changes[work_key(work)]=new[0]
-        pair=record('group.approval',dict(statement=statement),dict(plan=('decision',plan.ref),approval0=('decision',approvals[0]),approval1=('decision',approvals[1])))
+        member_links,mapping=gr.member_links(plan.ref.version,'approval',plan.payload['works'],approvals); objects.extend(mapping)
+        pair=record('group.approval',dict(statement=statement),dict(member_links,plan=('decision',plan.ref)),version=plan.ref.version)
         changes[gr.key(group)]=pair[0]
         def validate(view):
             guard(view); self._live_plan(plan,view); self._initial(plan,view); self._prepared(plan,view)
@@ -174,20 +188,21 @@ class GroupService:
         after={e['path']:e for e in read_tree(link(baseline,'tree'),self.store.load)}; bodies={}; heads=[]
         for i,work in enumerate(plan.payload['works']):
             h,wp,result,_=head_summary(self.store.head(work_key(work)),self.store.load)
-            require(h.payload['phase']=='review' and result is not None,'group-two-submissions-required')
+            require(h.payload['phase']=='review' and result is not None,'group-two-submissions-required' if plan.ref.version==1 else 'group-all-submissions-required')
             heads.append(h.ref); entries={e['path']:e for e in read_tree(link(self._object(link(result,'observation')),'tree'),self.store.load)}
             for path in wp.payload['scope']:
                 after.pop(path,None)
                 if path in entries: after[path]=entries[path]
             bodies.update(read_map(link(result,'after'),self.store.load))
         tree=build_tree(after.values()); mapping=build_map(bodies.items())
-        pair=record('group.candidate',dict(group=group),dict(approval=('decision',approval.ref),head0=('decision',heads[0]),head1=('decision',heads[1]),tree=('integrity',tree.root),after=('integrity',mapping.root)))
+        member_links,member_objects=gr.member_links(plan.ref.version,'head',plan.payload['works'],heads)
+        pair=record('group.candidate',dict(group=group),dict(member_links,approval=('decision',approval.ref),tree=('integrity',tree.root),after=('integrity',mapping.root)),version=plan.ref.version)
         previous=self.store.head(gr.key(group))
         def validate(view):
             guard(view); self._live_plan(plan,view); self._initial(plan,view)
             validate_closure([pair[0]],view,self.work.registry,self.work.closure)
             for work,head in zip(plan.payload['works'],heads): require(view.head(work_key(work))==head,'group-submission-changed')
-        self.store.commit_heads(operation=operation,expected={gr.key(group):previous},changes={gr.key(group):pair[0]},objects=[*tree.objects,*mapping.objects,pair],validate=validate)
+        self.store.commit_heads(operation=operation,expected={gr.key(group):previous},changes={gr.key(group):pair[0]},objects=[*tree.objects,*mapping.objects,*member_objects,pair],validate=validate)
         return self.view(group)
 
     def _live_candidate(self,candidate,view,*,source_files=False):
@@ -210,7 +225,7 @@ class GroupService:
         parts=self._live_candidate(candidate,view); self._initial(parts[2],view)
         with self.store.import_attempt(operation,'group-check-evidence'):
             evidence,objects=run_checks(self,candidate,parts,operation)
-            mapping=build_map(evidence); pair=record('group.review',{},dict(candidate=('decision',candidate.ref),evidence=('decision',mapping.root)))
+            mapping=build_map(evidence); pair=record('group.review',{},dict(candidate=('decision',candidate.ref),evidence=('decision',mapping.root)),version=candidate.ref.version)
             def validate(view):
                 guard(view); self._live_candidate(candidate,view); self._initial(parts[2],view)
                 validate_closure([pair[0]],view,self.work.registry,self.work.closure)
@@ -221,7 +236,7 @@ class GroupService:
         text(statement); selected=self._selected(group); plan=gr.plan_for(selected.ref,self.store.load)
         require(selected.ref.kind!='group.effect','group-application-already-started')
         require(receipt==self._receipt('dissolve',group,selected.ref),'group-stale-receipt')
-        dissolution=record('group.dissolution',dict(group=group,statement=statement),dict(plan=('decision',plan.ref),selection=('decision',selected.ref)))
+        dissolution=record('group.dissolution',dict(group=group,statement=statement),dict(plan=('decision',plan.ref),selection=('decision',selected.ref)),version=plan.ref.version)
         history='group-dissolved:'+group
         expected={gr.key(group):selected.ref,history:self.store.head(history)}; changes={gr.key(group):None,history:dissolution[0]}
         for w in plan.payload['works']: expected[gr.member_key(w)]=self.store.head(gr.member_key(w)); changes[gr.member_key(w)]=None

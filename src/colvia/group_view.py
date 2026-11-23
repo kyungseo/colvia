@@ -16,18 +16,20 @@ def snapshot(ref,heads,load,workspace,*,details=True):
     if review: candidate=gr.get(link(review,'candidate'),load)
     elif ref.kind=='group.candidate': candidate=selected
     stale=False
+    candidate_heads=gr.member_refs(candidate,'head',plan,load) if candidate else None
     for i,work in enumerate(plan.payload['works']):
         current=map_get(heads,'work:'+work,load); require(current is not None,'group-member-head-missing')
         if ref.kind=='group.effect' and selected.payload['state']=='completed':
             current_head,_,_,decision=head_summary(current,load)
             require(current_head.payload['phase']=='completed' and decision is not None and link(decision,'authorization')==link(selected,'authorization'),'group-terminal-selection-mismatch')
-        h,p,r,_=head_summary(link(candidate,'head'+str(i)) if candidate else current,load)
+        h,p,r,_=head_summary(candidate_heads[i] if candidate else current,load)
         if candidate and ref.kind!='group.effect': stale=stale or h.ref!=current
         before={}; after={}
         if details:
             baseline=gr.get(link(p,'baseline'),load); before={e['path']:e for e in read_tree(link(baseline,'tree'),load)}
             after={e['path']:e for e in read_tree(link(gr.get(link(r,'observation'),load),'tree'),load)} if r else before
-        item=dict(work=work,title=p.payload['title'],workspace=p.payload['workspace'],head=h.ref.as_dict(),plan=p.ref.as_dict(),
+        source=gr.get(link(gr.get(link(p,'baseline'),load),'workspace'),load)
+        item=dict(source_path=source.payload['root']['path'],source_path_retained=True,work=work,title=p.payload['title'],workspace=p.payload['workspace'],head=h.ref.as_dict(),plan=p.ref.as_dict(),
                   state=h.payload['phase'],goal=p.payload['goal'],scope=p.payload['scope'],checks=p.payload['checks'],excludes=p.payload['excludes'])
         if r:
             item.update(reported_checks=r.payload['checks'],revision=r.payload['revision'],submission=r.ref.as_dict(),summary=r.payload['summary'],
@@ -39,29 +41,32 @@ def snapshot(ref,heads,load,workspace,*,details=True):
         for name,e in read_map(link(review,'evidence'),load).items():
             value=gr.get(e,load)
             from .bodies import body_bytes
-            logs={}
+            logs={}; log_metadata={}
             if details:
                 for channel in ('stdout','stderr'):
+                    descriptor=gr.get(link(value,channel),load)
+                    log_metadata[channel]=dict(size=descriptor.payload['size'],sha256=descriptor.payload['sha256'],truncated=descriptor.payload['size']>4096)
                     prefix=bytearray()
                     for chunk in body_bytes(link(value,channel),load):
                         prefix.extend(chunk[:4096-len(prefix)])
                         if len(prefix)==4096: break
                     logs[channel]=prefix.decode('utf-8',errors='replace')
-            checks.append(dict(name=name,status='passed' if gr.passed(value) else 'blocked',**{k:v for k,v in value.payload.items() if k not in ('links','name')},evidence=e.as_dict(),logs=logs))
-    if ref.kind=='group.plan': state='planned'; bucket='plan'; action='두 계획과 통합 검사 범위 승인하기'
+            checks.append(dict(name=name,status='passed' if gr.passed(value) else 'blocked',**{k:v for k,v in value.payload.items() if k not in ('links','name')},evidence=e.as_dict(),logs=logs,log_metadata=log_metadata))
+    count=len(members)
+    if ref.kind=='group.plan': state='planned'; bucket='plan'; action=f'{count}개 계획과 통합 검사 범위 승인하기'
     elif ref.kind=='group.effect':
         state=selected.payload['state']; bucket='unavailable' if state=='pending' else 'continue'
-        action='반영 현황 확인 후 같은 요청으로 재개하기 — 수락 전' if state=='pending' else '두 결과 수락과 원래 폴더 반영 완료'
+        action='반영 현황 확인 후 같은 요청으로 재개하기 — 수락 전' if state=='pending' else f'{count}개 결과 수락과 원래 폴더 반영 완료'
         require(state!='pending' or map_get(heads,PENDING,load)==ref,'group-pending-selection-mismatch')
     elif candidate:
         state='review' if review and all(c['status']=='passed' for c in checks) and all(c['status']=='passed' for m in members for c in m.get('reported_checks',[])) and not stale else 'checks-required'
         bucket='review' if state=='review' else 'unavailable'
-        action='두 제출본과 통합 검사 결과를 보고 함께 수락·반영하기' if state=='review' else '최신 제출본으로 통합 후보와 필수 검사 준비하기'
+        action=f'{count}개 제출본과 통합 검사 결과를 보고 함께 수락·반영하기' if state=='review' else '최신 제출본으로 통합 후보와 필수 검사 준비하기'
     else: state='approved'; bucket='continue'; action='각 작업 폴더에서 승인된 계획 진행하기'
     return dict(kind='work-group',work=group,work_group=group,title=' + '.join(m['title'] for m in members),group=bucket,
                 workspace=plan.payload['destination'],here=workspace==plan.payload['destination'],state=state,next_action=action,
-                members=members,required_checks=plan.payload['checks'],checks=checks,stale=stale,
-                destination=plan.payload['destination'],head=ref.sha256,accepted=2 if state=='completed' else 0)
+                members=members,member_count=count,required_checks=plan.payload['checks'],checks=checks,stale=stale,
+                destination=plan.payload['destination'],head=ref.sha256,accepted=count if state=='completed' else 0)
 
 
 def view(service,group):

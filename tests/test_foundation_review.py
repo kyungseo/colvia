@@ -119,7 +119,14 @@ class ReviewTests(unittest.TestCase):
                                ('SQLITE_READONLY_DBMOVED','store-file-replaced'),
                                ('SQLITE_READONLY_ROLLBACK','recovery-required')]:
                 exc = sqlite3.OperationalError('synthetic'); exc.sqlite_errorname = name
+                exc.sqlite_errorcode = getattr(sqlite3,name)
                 self.assertEqual(code, _sql_error(exc,self.store.path).code)
+            for name,number in (('SQLITE_READONLY_DBMOVED',None),('SQLITE_READONLY_DBMOVED',sqlite3.SQLITE_READONLY),
+                                ('SQLITE_READONLY_ROLLBACK',True),('SQLITE_UNKNOWN',sqlite3.SQLITE_READONLY)):
+                with self.subTest(name=name,number=number):
+                    exc=sqlite3.OperationalError('synthetic');exc.sqlite_errorname=name
+                    if number is not None:exc.sqlite_errorcode=number
+                    self.assertEqual('store-io-unavailable',_sql_error(exc,self.store.path).code)
         finally: journal.unlink()
 
     def test_commit_busy_with_confirmed_rollback_is_not_unknown(self):

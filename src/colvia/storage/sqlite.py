@@ -95,8 +95,11 @@ _SCHEMA = (
 )
 
 
+MAX_TOKEN_LENGTH = 160
+
+
 def _token(value):
-    require(type(value) is str and 0 < len(value) <= 160 and value[0].isascii() and value[0].isalnum() and
+    require(type(value) is str and 0 < len(value) <= MAX_TOKEN_LENGTH and value[0].isascii() and value[0].isalnum() and
             all(c.isascii() and (c.isalnum() or c in '-_.') for c in value), 'invalid-store-id')
 
 

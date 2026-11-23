@@ -158,15 +158,15 @@ Set a priority to express a preference. Link two Works when one needs a result f
 
 ## Break larger tasks into smaller pieces
 
-“Split the CSV server and download button between two agents. Show me both submissions and their integration checks so I can accept and apply them together.” On macOS, Colvia can keep these two Works together within the existing split-work flow. Use two separate working folders and a third, original folder in the same Git repository. The two tasks must change different regular files.
+“Split the CSV server and download button between two agents. Show me both submissions and their integration checks so I can accept and apply them together.” On macOS, Colvia can group 2–8 Works within the existing split-work flow. Use one separate working folder per Work and an additional destination folder in the same Git repository, all starting from the same files. The tasks must change different regular files.
 
-Approve the two plans and integration checks together. Open the two restricted Claude Code worker sessions yourself. When both results are ready, inspect the exact submitted versions, their changes, the destination and the checks on their combined files. One decision accepts both and applies them to the original folder. A required check that fails or cannot run keeps acceptance on hold. Git commit and push remain separate decisions.
+Approve all plans and integration checks together. The coordinating agent in Claude Code CLI launches restricted workers and collects their results. You do not need to open a terminal for each worker or relay their output. Prepare the account login and required tool permissions first. When all results are ready, inspect every exact submitted version, its changes, the destination and the checks on the combined files. One decision accepts all results and applies them to the original folder. A required check that fails or cannot run keeps acceptance on hold. Git commit and push remain separate decisions.
 
 <p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-en-dark.png"><img src="manual/assets/gallery/parallel-en-light.png" width="480" alt="Review two submissions and their integration checks, then accept and apply both to the original folder in one decision."></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-en-dark.png"><img src="manual/assets/gallery/parallel-en-light.png" width="480" alt="Review 2–8 submissions and their integration checks, then accept and apply all to the original folder in one decision."></picture>
 </p>
 
-Before the first group, keep a verified record backup and preserve working files separately. Versions without group support cannot open the project’s upgraded records or later backups. [Accept and apply two submissions together](manual/en/work.md#grouped-acceptance)
+Before first using the 2–8-member format, keep a new verified record backup and preserve working files separately, even if you used two-member groups before. Older versions, including those supporting only two-member groups, cannot open the upgraded project or later backups. [Accept and apply 2–8 submissions together](manual/en/work.md#grouped-acceptance)
 
 You can also approve and apply isolated results individually, or split a large goal into child Works and review the parent result separately. [Existing individual workflow](manual/en/work.md#child-works)
 
@@ -238,6 +238,6 @@ You decide what to delegate and which results to accept. We want those decisions
 - **See the decisions behind one task on a single page.** We’d like to bring a Work’s decisions together in order, so you can see which version you reviewed, what was said at the time and which explanations were added later.
 - **Working as a team.** We plan to start with a guide to using Colvia in a shared repository: keep your approvals and acceptance decisions on your device and commit the work you want to share. Then we’ll explore how teammates can see what each person delegated to an agent and which results they accepted.
 
-We’re also exploring review across more than two Works, support for Linux and additional agents, and connect projects and external tools. See the [release notes](https://github.com/colvia/downloads/releases) for features that have shipped.
+We’re also exploring support for Linux and additional agents, and ways to connect projects and external tools. See the [release notes](https://github.com/colvia/downloads/releases) for features that have shipped.
 
 [When something goes wrong](manual/en/reference.md#problems) · [Questions and bug reports](CONTRIBUTING.md#questions-and-bug-reports) · [Report a security issue privately](SECURITY.md#english) · [Contributing](CONTRIBUTING.md) · [Apache License 2.0](LICENSE)
