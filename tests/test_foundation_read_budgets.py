@@ -32,7 +32,7 @@ class OrdinaryReadBudgets(WorkFixture, unittest.TestCase):
             accepted = self.service.accept(operation='accept', work='report', receipt=review['receipt'], statement='complete')
         self.assertEqual('completed', accepted['state'])
         self.assertGreater(self._read_transactions(tx), 0)
-        self.assertLessEqual(self._read_transactions(tx), 1100)
+        self.assertLessEqual(self._read_transactions(tx), 300)
 
     def test_read_only_view_keeps_its_guards_and_its_read_budget(self):
         self.start()
@@ -46,7 +46,7 @@ class OrdinaryReadBudgets(WorkFixture, unittest.TestCase):
             self.assertEqual('review', self.service.view('report')['state'])
         self.assertEqual(nested, self._read_transactions(tx))
         self.assertGreater(nested, 0)
-        self.assertLessEqual(nested, 140)
+        self.assertLessEqual(nested, 105)
 
     def test_32_mib_body_verification_has_a_read_budget(self):
         def write_body(changed=False):

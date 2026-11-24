@@ -1,5 +1,6 @@
 """Fixed application record schemas and observation serialization for v1."""
 from dataclasses import asdict
+from functools import cache
 import base64,io
 
 from .binding import _uuid
@@ -152,6 +153,7 @@ def _head(payload):
     require(not payload['archived'] or payload['phase']=='completed','archive-completed-work-only')
 
 
+@cache
 def application_registry():
     from .scope_addition import schema as scope_schema, rework_schema, validate_active_link
     from .progress import schema as progress_schema
@@ -233,13 +235,26 @@ def encode_observation(observed,workspace_ref,store,import_id):
     objects.append((ref,raw));return ref,objects
 
 
-def decode_policy(ref,load):
-    from .bodies import body_bytes
-    obj=decode_envelope(ref,load(ref));application_registry().inspect(ref,load(ref),required=True)
+def decode_policy(ref,load,*,observed=None):
+    from .bodies import body_bytes, descriptor
+    obj=application_registry().inspect(ref,load(ref),required=True)
+    current = {source.origin: source.raw for source in observed.sources} if observed is not None else {}
     sources=[]
     for meta,edge in zip(obj.payload['sources'],obj.edges):
-        raw=b''.join(body_bytes(edge.ref,load));source=PolicySource(meta['origin'],raw)
-        require(len(raw)==meta['size'] and source.digest==meta['sha256'],'policy-body-mismatch');sources.append(source)
+        source = None
+        if meta['origin'] in current:
+            # Start already read and verified the live policy. Matching its
+            # complete historical prefix needs no retained chunk bytes.
+            candidate = PolicySource(meta['origin'],current[meta['origin']][:meta['size']])
+            if len(candidate.raw)==meta['size'] and candidate.digest==meta['sha256']:
+                described = descriptor(edge.ref,load(edge.ref))
+                require(described.payload['size']==meta['size'] and
+                        described.payload['sha256']==meta['sha256'],'policy-body-mismatch')
+                source = candidate
+        if source is None:
+            raw=b''.join(body_bytes(edge.ref,load));source=PolicySource(meta['origin'],raw)
+            require(len(raw)==meta['size'] and source.digest==meta['sha256'],'policy-body-mismatch')
+        sources.append(source)
     return Policy(tuple(sources),tuple(tuple(p) for p in obj.payload['config']),obj.payload['tool'])
 
 

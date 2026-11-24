@@ -6,11 +6,12 @@ an immutable root; the loader remains responsible for generation checks per page
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 import os
 import sys
 import sqlite3
+from types import MappingProxyType
 from typing import Callable, Iterable, Mapping
 
 from .codec import (Envelope, ObjectRef, decode_envelope, require,
@@ -44,11 +45,13 @@ class Schema:
 
 class Registry:
     def __init__(self, schemas: Iterable[Schema]):
-        self._schemas = {}
+        fixed = {}
         for schema in schemas:
             key = (schema.kind, schema.version)
-            require(key not in self._schemas, 'duplicate-schema')
-            self._schemas[key] = schema
+            require(key not in fixed, 'duplicate-schema')
+            fixed[key] = replace(schema, fields=MappingProxyType(dict(schema.fields)),
+                                 targets=MappingProxyType(dict(schema.targets)))
+        self._schemas = MappingProxyType(fixed)
 
     def inspect(self, ref: ObjectRef, raw: bytes, *, required: bool) -> Envelope | None:
         verify_object(ref, raw)

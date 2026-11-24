@@ -79,9 +79,11 @@ class WorkerService:
         return binding,plan,result,baseline,before,after,changed
 
     def _observe(self,binding,baseline):
-        before=read_tree(link(baseline,'tree'),self.store.load)
+        with self.store.immutable_reads():
+            before=read_tree(link(baseline,'tree'),self.store.load)
+            policy=decode_policy(link(baseline,'policy'),self.store.load)
         _,current=self.destination.observe(protected=frozenset(e['path'] for e in before)|frozenset(binding.payload['scope']),
-            previous_containers=frozenset(baseline.payload['containers']),previous_policy=decode_policy(link(baseline,'policy'),self.store.load))
+            previous_containers=frozenset(baseline.payload['containers']),previous_policy=policy)
         for field in ('root','common','gitdir'):
             actual=getattr(current.topology,field)
             require(baseline.payload[field]==(asdict(actual) if actual else None),'worker-destination-location-changed')

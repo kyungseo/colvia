@@ -5,7 +5,7 @@ adapter. SQL projections are never accepted in place of a verified root/map.
 """
 from __future__ import annotations
 
-from contextlib import contextmanager,nullcontext
+from contextlib import ExitStack,contextmanager,nullcontext
 from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import wraps
@@ -32,9 +32,52 @@ _PROCESS_LOCKS = weakref.WeakValueDictionary()
 _PROCESS_LOCKS_GUARD = threading.Lock()
 _VALIDATIONS = ContextVar("colvia_validation_views", default={})
 _OPERATION_READS = ContextVar("colvia_operation_reads", default=None)
+_IMMUTABLE_PAGES = ContextVar("colvia_immutable_pages", default=None)
+_PAGE_BYTES = 4 * 1024 * 1024
+_PAGE_READS = 64
+_PAGE_SECONDS = .15
 _METADATA_REUSE_BYTES = 2 * 1024 * 1024
 _METADATA_REUSE_ENTRIES = 2048
 _PROOF_REUSE_ENTRIES = 8192
+
+
+class _ImmutablePages:
+    """Short read-only transactions during an explicitly pure record walk."""
+    def __init__(self, store, stack):
+        self.store = store
+        self.stack = stack
+        self.thread = threading.get_ident()
+        self.closed = False
+        self.reads = 0
+        self.size = 0
+        self.started = 0.0
+
+    def flush(self):
+        if self.reads:
+            self.reads = self.size = 0
+            self.stack.close()
+
+    def read(self, query, size):
+        if size > _PAGE_BYTES:
+            self.flush()
+            with self.store._transaction():
+                return query()
+        if self.reads == _PAGE_READS or self.size + size > _PAGE_BYTES or (
+                self.reads and time.monotonic() - self.started >= _PAGE_SECONDS):
+            self.flush()
+        if not self.reads:
+            self.stack.enter_context(self.store._transaction(_page=True))
+            self.started = time.monotonic()
+        self.reads += 1
+        self.size += size
+        return query()
+
+
+def _active_page():
+    page = _IMMUTABLE_PAGES.get()
+    if page is not None and page.thread == threading.get_ident() and not page.closed:
+        return page
+    return None
 
 
 class _VerifiedObjects:
@@ -256,8 +299,9 @@ class ValidationView:
     inode in this synchronous context are routed here too. A validator must not
     spawn concurrent work or query SQL directly.
     """
-    def __init__(self, root, load):
+    def __init__(self, root, load, *, check_chunk=None):
         self.snapshot = root
+        self._check_chunk = check_chunk
         self.load = load
         self.reads = {}
         self.full_root_read = False
@@ -286,7 +330,10 @@ class ValidationView:
         if self._body_proofs is None or (ref.kind, ref.version) != ('body.chunk', 1):
             return False
         if ref not in self._body_proofs:
-            verify_object(ref, self.load(ref))
+            if self._check_chunk is None:
+                verify_object(ref, self.load(ref))
+            else:
+                self._check_chunk(ref)
             self._remember_body_proof(ref)
         return True
 
@@ -294,9 +341,13 @@ class ValidationView:
         if self._body_proofs is None:
             return False
         if ref not in self._body_proofs:
-            from ..bodies import body_bytes
-            for _ in body_bytes(ref, self):
-                pass
+            from ..bodies import body_bytes, descriptor
+            if self._check_chunk is None:
+                for _ in body_bytes(ref, self):
+                    pass
+            else:
+                for edge in descriptor(ref, self.load(ref)).edges:
+                    self.verify_chunk(edge.ref)
             self._remember_body_proof(ref)
         return True
 
@@ -314,21 +365,53 @@ class ValidationView:
         return self.snapshot
 
 
+class SnapshotBudget(Exception):
+    """The ordinary screen can fall back to separately guarded reads."""
+
+
 class _RecordSnapshot:
     """Read published objects and heads from one guarded transaction."""
 
-    def __init__(self, store):
+    def __init__(self, store, *, bounded=False):
         self.project = store.project
         self.instance = store.instance
         self._load = store._load
-        self._heads = store._root().heads
+        self._requirements = store._requirements
+        self._root = store._root()
+        self._memo = _VerifiedObjects() if bounded else None
+        self._started = time.monotonic()
+        self._read_count = self._read_bytes = 0
 
     def load(self, ref):
         require(self._load is not None, 'record-snapshot-closed')
+        if self._memo is None:
+            return self._load(ref)
+        return self._memo.read(ref, self._bounded_load)
+
+    def _bounded_load(self, ref):
+        self._read_count += 1
+        self._read_bytes += ref.byte_length
+        if (self._read_count > 1024 or self._read_bytes > 8 * 1024 * 1024
+                or time.monotonic() - self._started >= .2):
+            raise SnapshotBudget
         return self._load(ref)
 
     def head(self, key):
-        return map_get(self._heads, key, self.load)
+        return map_get(self.root().heads, key, self.load)
+
+    def root(self):
+        require(self._load is not None, 'record-snapshot-closed')
+        return self._root
+
+    def requirements(self):
+        require(self._load is not None, 'record-snapshot-closed')
+        return self._requirements()
+
+    def close(self):
+        self._load = None
+        self._requirements = None
+        if self._memo is not None:
+            self._memo.close()
 
 
 class GenerationStore:
@@ -343,6 +426,7 @@ class GenerationStore:
         self.readonly, self.active_check = readonly, active_check
         self.write_check = write_check
         self.transaction_scope=transaction_scope
+        self._write_epoch=0
         self.read_active_check = active_check if read_active_check is None else read_active_check
         self.reader_capabilities=frozenset(runtime_capabilities() if reader_capabilities is None else reader_capabilities)
         self.writer_capabilities=frozenset(runtime_capabilities() if writer_capabilities is None else writer_capabilities)
@@ -411,6 +495,9 @@ class GenerationStore:
                    reader_capabilities=reader_capabilities,writer_capabilities=writer_capabilities)
 
     def close(self):
+        page = self._current_page()
+        if page is not None:
+            page.flush()
         memo = self._operation_read_cache()
         if memo is not None:
             memo.close()
@@ -444,9 +531,14 @@ class GenerationStore:
             require(map_get(self._root().heads, key, self._load) == ref, 'workspace-location-changed')
 
     @contextmanager
-    def _transaction(self, *, write=False, lifecycle=False, retiring=None):
+    def _transaction(self, *, write=False, lifecycle=False, retiring=None, _page=False):
+        page = _active_page()
+        if page is not None and not _page:
+            page.flush()
         with self.transaction_scope():
             with self._transaction_inner(write=write,lifecycle=lifecycle,retiring=retiring):
+                if write:
+                    self._write_epoch += 1
                 yield
         memo = self._operation_read_cache()
         if memo is not None:
@@ -489,13 +581,16 @@ class GenerationStore:
         finally:
             self.process_lock.release()
 
-    def _load(self, ref, import_id=None):
-        row = self.db.execute('SELECT * FROM objects WHERE digest=?',(ref.sha256,)).fetchone()
+    def _require_visible(self, row, ref, import_id):
         require(row is not None and _row_ref(row)==ref, 'object-unavailable')
         if not row['published']:
             require(import_id is not None and self.db.execute(
                 'SELECT 1 FROM claims WHERE import_id=? AND digest=?',(import_id,ref.sha256)).fetchone() is not None,
                 'object-unpublished')
+
+    def _load(self, ref, import_id=None):
+        row = self.db.execute('SELECT * FROM objects WHERE digest=?',(ref.sha256,)).fetchone()
+        self._require_visible(row, ref, import_id)
         raw = bytes(row['data']); verify_object(ref,raw)
         if ref.kind != 'body.chunk': decode_envelope(ref,raw)
         return raw
@@ -525,9 +620,51 @@ class GenerationStore:
             memo.close()
             _OPERATION_READS.reset(token)
 
-    def _load_guarded(self, ref, import_id=None):
+    def _current_page(self):
+        page = _active_page()
+        return page if page is not None and page.store is self else None
+
+    @contextmanager
+    def immutable_reads(self):
+        previous = _active_page()
+        if previous is not None:
+            if previous.store is self:
+                yield
+                return
+            previous.flush()
+        with ExitStack() as stack:
+            page = _ImmutablePages(self, stack)
+            token = _IMMUTABLE_PAGES.set(page)
+            try:
+                yield
+            finally:
+                page.closed = True
+                _IMMUTABLE_PAGES.reset(token)
+
+    def _immutable_read(self, read, size):
+        page = self._current_page()
+        if page is not None:
+            return page.read(read, size)
         with self._transaction():
-            return self._load(ref, import_id)
+            return read()
+
+    def _load_guarded(self, ref, import_id=None):
+        return self._immutable_read(lambda: self._load(ref, import_id), ref.byte_length)
+
+    def _chunk_identity(self, ref):
+        def check():
+            row = self.db.execute('SELECT kind,version,size,digest,published,length(data) AS actual_size '
+                                  'FROM objects WHERE digest=?',(ref.sha256,)).fetchone()
+            self._require_visible(row, ref, None)
+            require(row['actual_size']==ref.byte_length,'object-identity-mismatch')
+        return self._immutable_read(check, 0)
+
+    def _dependency_published(self, ref):
+        def read():
+            row=self.db.execute('SELECT published FROM objects WHERE digest=?',(ref.sha256,)).fetchone()
+            require(row is not None,'object-unavailable')
+            return bool(row['published'])
+        return self._immutable_read(read, 0)
 
     def load(self, ref: ObjectRef, *, import_id=None) -> bytes:
         memo = self._operation_read_cache()
@@ -572,6 +709,11 @@ class GenerationStore:
         if view is not None: return view.root()
         with self._transaction(): return self._root()
 
+    def workspace_verification_stamp(self):
+        """Confirm authority state for the middle of a read-only observation."""
+        with self._transaction():
+            return self._root().ref, self._write_epoch, self.db.execute('PRAGMA data_version').fetchone()[0]
+
     def head(self, key):
         view = _VALIDATIONS.get().get(self.identity)
         if view is not None: return view.head(key)
@@ -580,13 +722,21 @@ class GenerationStore:
     @contextmanager
     def read_snapshot(self):
         require(self.readonly, 'record-snapshot-readonly-required')
+        with self._read_snapshot() as snapshot:
+            yield snapshot
+
+    @contextmanager
+    def _read_snapshot(self, *, bounded=False):
+        page = _active_page()
+        if page is not None:
+            page.flush()
         require(not self.db.in_transaction, 'record-snapshot-already-open')
         with self._transaction():
-            snapshot = _RecordSnapshot(self)
+            snapshot = _RecordSnapshot(self, bounded=bounded)
             try:
                 yield snapshot
             finally:
-                snapshot._load = None
+                snapshot.close()
 
     def has_active_imports(self):
         with self._transaction():
@@ -659,7 +809,8 @@ class GenerationStore:
 
     def commit_heads(self, *, operation: str, expected: dict[str,ObjectRef|None],
                      changes: dict[str,ObjectRef|None], objects: Iterable[tuple[ObjectRef,bytes]]=(),
-                     import_id: str|None=None, validate: Callable[[Callable[[ObjectRef],bytes]],None], _rebind=False, _no_active_imports=False):
+                     import_id: str|None=None, validate: Callable[[Callable[[ObjectRef],bytes]],None],
+                     descriptor_only=False, _rebind=False, _no_active_imports=False):
         """Rebase unrelated heads, but refuse any changed expected/shared dependency.
 
         The application supplies one fixed operation validator; it must validate
@@ -670,9 +821,11 @@ class GenerationStore:
         """
         _token(operation)
         require(set(changes)<=set(expected),'missing-expected-head')
+        require(not descriptor_only or import_id is None,'descriptor-only-cannot-import')
         incoming={}; size=0
         for ref,raw in objects:
             require(ref.kind!='body.chunk','chunks-require-staging')
+            require(not descriptor_only or ref.kind!='body.complete','descriptor-only-cannot-import')
             verify_object(ref,raw); decode_envelope(ref,raw)
             require(ref not in incoming or incoming[ref]==raw,'object-collision')
             incoming[ref]=raw; size+=len(raw)
@@ -686,16 +839,17 @@ class GenerationStore:
         # The final transaction rechecks the exact heads, generation, immutable
         # object identities and import claims. No body bytes are rewritten there.
         with self._transaction(): observed = self._root()
-        view = ValidationView(observed, load)
+        view = ValidationView(observed, load, check_chunk=self._chunk_identity if descriptor_only else None)
         context = _VALIDATIONS.set({**_VALIDATIONS.get(), self.identity:view})
         try:
             memo = self._operation_read_cache()
             # Staged chunks and incoming descriptors have publication-local
             # visibility. A refused publication must not lend their proofs.
             reuse = nullcontext()
-            if memo is not None:
+            if memo is not None or descriptor_only:
                 published_proofs = None
-                if import_id is None and not any(ref.kind == 'body.complete' for ref in incoming):
+                if memo is not None and not descriptor_only and import_id is None and not any(
+                        ref.kind == 'body.complete' for ref in incoming):
                     published_proofs = memo.body_proofs
                 reuse = view.reuse_immutable_objects(published_proofs=published_proofs)
             with reuse:
@@ -708,25 +862,24 @@ class GenerationStore:
         finally: _VALIDATIONS.reset(context)
         pending=[(ref,True) for ref in changes.values() if ref is not None]
         seen=set(); required=set(); metadata=0
-        while pending:
-            ref,mandatory=pending.pop()
-            if mandatory:required.add(f'schema:{ref.kind}:{ref.version}')
-            if ref in seen: continue
-            seen.add(ref)
-            require(len(seen)<=1_000_000,'publication-reference-limit')
-            # Publication performs its own fresh reads and claim checks, outside
-            # both the operation cache and the validator's mutable head view.
-            raw=incoming[ref] if ref in incoming else self._load_guarded(ref, import_id)
-            published=False
-            if ref not in incoming:
-                with self._transaction():
-                    row=self.db.execute('SELECT published FROM objects WHERE digest=?',(ref.sha256,)).fetchone()
-                    require(row is not None,'object-unavailable')
-                    published=bool(row['published'])
-            if ref.kind!='body.chunk':
-                metadata+=len(raw); require(metadata<=512*1024*1024,'publication-closure-limit')
-                if not published:
-                    pending.extend((edge.ref,edge.role in ('decision','integrity')) for edge in decode_envelope(ref,raw).edges)
+        with self.immutable_reads():
+            while pending:
+                ref,mandatory=pending.pop()
+                if mandatory:required.add(f'schema:{ref.kind}:{ref.version}')
+                if ref in seen: continue
+                seen.add(ref)
+                require(len(seen)<=1_000_000,'publication-reference-limit')
+                # Publication performs its own fresh reads and claim checks, outside
+                # both the operation cache and the validator's mutable head view.
+                if ref.kind=='body.chunk' and descriptor_only:
+                    self._chunk_identity(ref)
+                    continue
+                raw=incoming[ref] if ref in incoming else self._load_guarded(ref, import_id)
+                if ref.kind!='body.chunk':
+                    published=ref not in incoming and self._dependency_published(ref)
+                    metadata+=len(raw); require(metadata<=512*1024*1024,'publication-closure-limit')
+                    if not published:
+                        pending.extend((edge.ref,edge.role in ('decision','integrity')) for edge in decode_envelope(ref,raw).edges)
         require(required<=self.reader_capabilities and required<=self.writer_capabilities,'publication-capability-unavailable')
         with self._transaction(write=True,lifecycle=_rebind):
             if _rebind:
@@ -756,7 +909,8 @@ class GenerationStore:
                     require(row['published'] or (import_id is not None and self.db.execute(
                         'SELECT 1 FROM claims WHERE import_id=? AND digest=?',(import_id,ref.sha256)).fetchone()),
                         'object-unpublished')
-                    self.db.execute('UPDATE objects SET published=1 WHERE digest=?',(ref.sha256,))
+                    if not row['published']:
+                        self.db.execute('UPDATE objects SET published=1 WHERE digest=?',(ref.sha256,))
             self.db.executemany('INSERT OR IGNORE INTO requirements VALUES(?,?)',[(role,cap) for role in ('read','write') for cap in required])
             updated=map_update(old.heads,changes,self._load)
             for ref,raw in updated.objects:
@@ -784,10 +938,13 @@ class GenerationStore:
         require(cap in self.reader_capabilities and cap in self.writer_capabilities,'publication-capability-unavailable')
         self.db.executemany('INSERT OR IGNORE INTO requirements VALUES(?,?)',[(role,cap) for role in ('read','write')])
 
+    def _requirements(self):
+        rows=self.db.execute('SELECT role,capability FROM requirements ORDER BY capability').fetchall()
+        return {role:[row['capability'] for row in rows if row['role']==role] for role in ('read','write')}
+
     def requirements(self):
         with self._transaction():
-            rows=self.db.execute('SELECT role,capability FROM requirements ORDER BY capability').fetchall()
-            return {role:[row['capability'] for row in rows if row['role']==role] for role in ('read','write')}
+            return self._requirements()
 
     def operation_result(self, operation: str) -> tuple[ObjectRef,ObjectRef] | None:
         """Confirm the projected completion against the captured root's lineage.

@@ -170,7 +170,7 @@ def apply(service, work, action, reason, next_action, target, receipt, operation
         changes={work_key(work):pair[0],PREFIX+work:pair[0]},objects=[pair],validate=validate)
     return dict(work=work,state=data['phase'],lifecycle_action=action,target=target)
 
-def detail(service, work, head):
+def detail(service, work, head, *, defer=None):
     store=service.store
     snapshot = store.root()
     last=store.head(PREFIX+work)
@@ -181,7 +181,14 @@ def detail(service, work, head):
         value['lifecycle']={k:event.payload[k] for k in ('action','reason','origin','next_action','target')}
         if head.payload['phase']=='paused' and head.payload['workspace']==service.workspace.workspace:
             saved=head.payload['files']
-            value['since_pause']=progress.compare_files(service.workspace,sorted(saved),saved)
+            def observe_files():
+                value['since_pause'] = progress.compare_files(service.workspace, sorted(saved), saved)
+            # The owning view merges the dictionary before a deferred observer
+            # runs, so its result must be merged after that observer.
+            if defer is None:
+                observe_files()
+            else:
+                defer.append(observe_files)
     sources=[]
     for key,ref in scan_map(snapshot.heads,store.load):
         if key.startswith(PREFIX):

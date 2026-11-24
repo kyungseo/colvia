@@ -90,14 +90,29 @@ class MultiTests(MultiFixture,unittest.TestCase):
                 self.assertIsNone(self.store.head(PENDING))
     def test_eight_member_finalization_has_a_guarded_read_budget(self):
         self.tearDown();self.member_count=8;self.setUp()
+        from colvia.workspace import observe
+        from colvia.adapters.git import run
         shown=self.results(); marks={}
-        with patch.object(self.store,'_transaction_inner',wraps=self.store._transaction_inner) as tx:
+
+        def observe_outside_records(*args,**kwargs):
+            self.assertFalse(self.store.db.in_transaction)
+            return observe(*args,**kwargs)
+
+        def git_outside_records(*args,**kwargs):
+            self.assertFalse(self.store.db.in_transaction)
+            return run(*args,**kwargs)
+
+        with patch.object(self.store,'_transaction_inner',wraps=self.store._transaction_inner) as tx, patch(
+                'colvia.workspace.observe',side_effect=observe_outside_records), patch(
+                'colvia.adapters.git.run',side_effect=git_outside_records):
             def event(stage):
+                self.assertFalse(self.store.db.in_transaction)
                 if stage in ('before-completion','completed'):
                     marks[stage]=sum(not call.kwargs.get('write',False) for call in tx.call_args_list)
             self.assertEqual(8,self.execute(shown,event=event)['accepted'])
         self.assertLess(marks['before-completion'],marks['completed'])
-        self.assertLessEqual(marks['completed']-marks['before-completion'],1100)
+        self.assertLessEqual(marks['before-completion'],9200)
+        self.assertLessEqual(marks['completed']-marks['before-completion'],55)
         self.assertEqual(8,self.accepted())
 
     def test_managed_cli_create_three_and_refuse_nine(self):

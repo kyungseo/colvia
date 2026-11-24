@@ -7,7 +7,7 @@ shown record and local authority instance; they are not human authentication.
 from __future__ import annotations
 import hashlib
 from uuid import uuid4
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 
 from .bodies import descriptor,submission_size
 from .codec import RecordError,decode_envelope,canonical_bytes,require
@@ -19,7 +19,7 @@ from .connection_identity import contexts_match, ROLES
 from .connection import Connections
 from .records import (check_previous_submission, observation_identity, application_registry,operation_closure,record,link,encode_observation,
                       decode_policy,text,head_summary,submission_input)
-from .storage.sqlite import _token, fresh_view_reads, reuse_operation_reads
+from .storage.sqlite import SnapshotBudget, _token, fresh_view_reads, reuse_operation_reads
 from .tree import read_tree
 
 
@@ -74,6 +74,10 @@ class WorkService:
         return sizes
 
     def _validate_head(self,ref,load):
+        with getattr(self.store, 'immutable_reads', nullcontext)():
+            return self._validate_head_records(ref, load)
+
+    def _validate_head_records(self,ref,load):
         validate_closure([ref],load,self.registry,self.closure)
         head,plan,_,_=head_summary(ref,load);planref=plan.ref
         common=lambda obj:require(all(obj.payload[k]==plan.payload[k] for k in ('work','workspace')),'work-reference-mismatch')
@@ -155,7 +159,8 @@ class WorkService:
         def captured_load(target):return raw if target==ref else load(target)
         self._validate_head(ref,captured_load)
 
-    def _publish(self,operation,work,expected,head_pair,objects=(),*,import_id=None,recheck=lambda:None,pinned=None,pinned_root=None):
+    def _publish(self,operation,work,expected,head_pair,objects=(),*,import_id=None,recheck=lambda:None,
+                 pinned=None,pinned_root=None,descriptor_only=False):
         ref,raw=head_pair
         workspace_ref,_,_=self.workspace.verify()
         project_ref=self.store.head(PROJECT_KEY)
@@ -174,7 +179,7 @@ class WorkService:
             validate_transition(expected,candidate,plan,result,load)
             recheck()
         self.store.commit_heads(operation=operation,expected={work_key(work):expected},changes={work_key(work):ref},
-            objects=[*objects,(ref,raw)],import_id=import_id,validate=validate)
+            objects=[*objects,(ref,raw)],import_id=import_id,validate=validate,descriptor_only=descriptor_only)
         return ref
 
     @reuse_operation_reads
@@ -221,22 +226,24 @@ class WorkService:
         planref=link(head,'plan');plan=self._object(planref)
         approved,raw=record('work.approval',dict(work=work,workspace=self.workspace.workspace,statement=statement),{'plan':('decision',planref)})
         newhead=self._head_record(planref,plan.payload,'approved',approval=approved,previous=ref)
-        approved_ref = self._publish(operation,work,ref,newhead,[(approved,raw)])
+        approved_ref = self._publish(operation,work,ref,newhead,[(approved,raw)],descriptor_only=True)
         if start:
             return self.start(operation='op-' + uuid4().hex, work=work, expected_approval_head=approved_ref)
         return dict(work=work,state='approved')
 
-    def _observe_from_plan(self,plan,extra=()):
+    def _observe_from_plan(self,plan,extra=(),*,reuse_middle=False,descriptor_only=False):
         baseline,entries=self._baseline(plan)
         registration,current=self.workspace.observe(protected=frozenset(e['path'] for e in entries)|frozenset(plan.payload['scope'])|frozenset(extra),
-            previous_containers=frozenset(baseline.payload['containers']))
+            previous_containers=frozenset(baseline.payload['containers']),reuse_middle=reuse_middle)
         from dataclasses import asdict
         now={k:asdict(v) if (v:=getattr(current.topology,k)) is not None else None for k in ROLES}
         require(contexts_match(baseline.payload,now,ROLES,load=self.store.load,
                                workspace=link(baseline,'workspace'),
                                anchors=(Connections(self.store).identity(registration),)),
                 'workspace-location-changed')
-        previous=relocated_policy(decode_policy(link(baseline,'policy'),self.store.load),baseline.payload['common'],now['common'])
+        previous=decode_policy(link(baseline,'policy'),self.store.load,
+                               observed=current.policy if descriptor_only else None)
+        previous=relocated_policy(previous,baseline.payload['common'],now['common'])
         policy_transition(previous,current.policy,verified_structural=current.structural.containers|current.structural.nested,
             protected=frozenset(e['path'] for e in entries)|frozenset(plan.payload['scope'])|frozenset(extra),
             approved_policy_paths=frozenset(plan.payload['scope']))
@@ -255,10 +262,11 @@ class WorkService:
         if expected_approval_head is not None:
             require(ref == expected_approval_head, 'stale-plan-receipt')
         planref=link(head,'plan');plan=self._object(planref)
-        _,entries,current=self._observe_from_plan(plan)
+        _,entries,current=self._observe_from_plan(plan,reuse_middle=True,descriptor_only=True)
         require(tuple(entries)==current.snapshot.entries,'plan-baseline-changed')
         newhead=self._head_record(planref,plan.payload,'active',approval=link(head,'approval'),previous=ref)
-        self._publish(operation,work,ref,newhead,recheck=lambda:self._recheck_observation(current,frozenset(plan.payload['scope'])))
+        self._publish(operation,work,ref,newhead,descriptor_only=True,
+                      recheck=lambda:self._recheck_observation(current,frozenset(plan.payload['scope'])))
         return dict(work=work,state='active')
 
     @contextmanager
@@ -268,7 +276,7 @@ class WorkService:
         from .rework import attribution,select
         prior=self._object(link(head,'result')) if link(head,'result') else None
         carried=attribution(prior,self.store.load)
-        _,entries,current=self._observe_from_plan(plan,carried)
+        _,entries,current=self._observe_from_plan(plan,carried,reuse_middle=True)
         entries,adopted,pinned,pinned_root=select(self,head,plan,current)
         changed=verify_scope(entries,current.snapshot.entries,scope)
         submission_input(summary,checks)
@@ -297,13 +305,17 @@ class WorkService:
                 recheck=lambda:self._recheck_observation(prepared['current'],prepared['scope']),pinned=prepared['pinned'],pinned_root=prepared['pinned_root'])
         return self.review(work)
 
-    def _result_agrees(self,plan,result):
+    def _result_expected(self,plan,result):
         require(plan.payload['workspace']==self.workspace.workspace,'wrong-workspace')
         observed=self._object(link(result,'observation'))
         from .tree import entry_at
         scope=frozenset(plan.payload['scope']);tree=link(observed,'tree')
         entries=[entry_at(tree,path,self.store.load) for path in sorted(scope)]
-        return self.workspace.selected(scope)==tuple(e for e in entries if e is not None)
+        return scope,tuple(e for e in entries if e is not None)
+
+    def _result_agrees(self,plan,result):
+        scope,expected=self._result_expected(plan,result)
+        return self.workspace.selected(scope)==expected
 
     @fresh_view_reads
     def review(self,work):
@@ -357,6 +369,35 @@ class WorkService:
 
     @fresh_view_reads
     def view(self,work):
+        try:
+            with self.store._read_snapshot(bounded=True) as records:
+                value, deferred, watched, lifecycle = WorkService(records,self.workspace)._view_records(work,self)
+        except SnapshotBudget:
+            value, deferred, watched, lifecycle = self._view_records(work,self)
+        for observe in deferred:
+            observe()
+        try:
+            with self.store._read_snapshot(bounded=True) as current:
+                self._confirm_view(work, current, watched, lifecycle)
+        except SnapshotBudget:
+            self._confirm_view(work, self.store, watched, lifecycle)
+        return value
+
+    def _confirm_view(self, work, records, watched, lifecycle):
+        for key,ref,error in watched:
+            require(records.head(key)==ref,error)
+        root, head, shown = lifecycle
+        if records.root().ref!=root:
+            from .work_lifecycle import detail
+            current = {}
+            if 'schema:work.head:2' in records.requirements()['read']:
+                current = detail(WorkService(records,self.workspace),work,head,defer=[])
+            require(current==shown,'lifecycle-preview-stale')
+            for key,ref,error in watched:
+                require(records.head(key)==ref,error)
+
+    def _view_records(self,work,live):
+        deferred = []
         group_snapshot=self.store.root()
         from .maps import map_get
         group_membership=map_get(group_snapshot.heads,'group-member:'+work,self.store.load)
@@ -365,6 +406,7 @@ class WorkService:
             group_name=self._object(group_membership).payload['group']
             group_selection=map_get(group_snapshot.heads,'group:'+group_name,self.store.load)
         ref,head=self._head(work,same_workspace=False);plan=self._object(link(head,'plan'))
+        watched = [(work_key(work),ref,'group-view-changed' if group_membership else 'work-view-changed')]
         value=dict(work=work,title=head.payload['title'],state=head.payload['phase'],archived=head.payload['archived'],scope=plan.payload['scope'],checks=plan.payload['checks'])
         from .scope_addition import history
         amendments = history(head, self.store.load)
@@ -374,34 +416,55 @@ class WorkService:
         result=link(head,'result')
         if result is not None:
             obj=self._object(result);value.update(summary=obj.payload['summary'],files=obj.payload['changed'],revision=obj.payload['revision'])
-            try:value['current_matches']=self._result_agrees(self._object(link(obj,'plan')),obj)
-            except (OSError,RecordError) as exc:
+            def unavailable(exc):
                 value['current_matches']=None
                 value['current_unavailable']=exc.code if isinstance(exc,RecordError) else 'workspace-access-unavailable'
+
+            def compare_result(scope,expected):
+                try:
+                    value['current_matches']=live.workspace.selected(scope)==expected
+                except (OSError,RecordError) as exc:
+                    unavailable(exc)
+
+            try:
+                scope,expected=self._result_expected(self._object(link(obj,'plan')),obj)
+            except (OSError,RecordError) as exc:
+                unavailable(exc)
+            else:
+                deferred.append(lambda paths=scope, entries=expected: compare_result(paths,entries))
         if head.payload['phase']=='active' and link(head,'decision') is not None:
             from .rework import resume_context
-            value['rework']=resume_context(self,head,plan)
+            deferred.append(lambda h=head,p=plan: value.update(rework=resume_context(live,h,p)))
         if result is not None and obj.ref.version==2:
             from .rework import attribution_summary
             value['attribution']=attribution_summary(self,obj)
         from . import progress
         if progress.eligible(head) and head.payload['workspace'] == self.workspace.workspace:
-            value.update(progress.view(self, work, head, plan.payload['scope'], amendments))
+            progress_key = 'progress:'+work
+            watched.append((progress_key,self.store.head(progress_key),'progress-view-stale'))
+            value.update(progress.view(self, work, head, plan.payload['scope'], amendments, defer=deferred))
+        lifecycle_root = self.store.root().ref
+        lifecycle_records = {}
         if 'schema:work.head:2' in self.store.requirements()['read']:
             from .work_lifecycle import detail
-            value.update(detail(self,work,head))
+            lifecycle = detail(self,work,head,defer=deferred)
+            lifecycle_records = dict(lifecycle)
+            value.update(lifecycle)
+
+            def include_pause_comparison():
+                if 'since_pause' in lifecycle:
+                    value['since_pause'] = lifecycle['since_pause']
+            deferred.append(include_pause_comparison)
         if group_membership:
             member=self._object(group_membership)
             selected=group_selection
             value['work_group']=dict(group=member.payload['group'],selection=selected.as_dict() if selected else None,
                 application_state=self._object(selected).payload.get('state') if selected else None,
                 next_action='추가 변경은 새 Work에서 진행하세요.' if head.payload['phase']=='completed' else '큰 일 나누기의 묶음 검토에서 모든 제출본과 통합 검사 결과를 확인하세요.')
-            latest=self.store.root()
-            require(map_get(latest.heads,'group-member:'+work,self.store.load)==group_membership and
-                    map_get(latest.heads,'group:'+group_name,self.store.load)==group_selection and
-                    map_get(latest.heads,work_key(work),self.store.load)==ref,'group-view-changed')
+            watched.append(('group:'+group_name,group_selection,'group-view-changed'))
+        watched.append(('group-member:'+work,group_membership,'group-view-changed'))
         if head.payload['phase']=='completed' and not group_membership:value['reopen_receipt']=self._receipt('reopen',work,ref)
-        return value
+        return value,deferred,watched,(lifecycle_root,head,lifecycle_records)
 
     @reuse_operation_reads
     def archive(self,*,operation,work,archived):

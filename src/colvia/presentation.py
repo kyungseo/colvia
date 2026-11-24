@@ -427,6 +427,7 @@ MESSAGES={
  'scope-history-mismatch':'이전 승인과 추가 승인 기록이 일치하지 않습니다.',
  'scope-original-conflict':'생성 경로가 최초 파일 기록과 겹칩니다.',
  'progress-view-stale':'작업이나 메모가 바뀌었습니다. 현재 작업을 다시 열어 내용을 확인하세요.',
+ 'work-view-changed':'작업을 보는 사이 상태가 바뀌었습니다. 현재 작업을 다시 열어 내용을 확인하세요.',
  'progress-first-submission-only':'첫 제출 전인 진행 중 일반 작업에서만 중간 메모를 남길 수 있습니다.',
  'progress-work-mismatch':'이 메모가 현재 작업의 기록과 일치하지 않습니다. 작업과 기록 위치를 확인하세요.',
  'invalid-progress-files':'메모의 파일 목록이 승인 범위와 일치하지 않습니다. 기록을 확인하세요.',

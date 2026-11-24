@@ -24,6 +24,10 @@ class LocalWorkspace:
         return workspace_topology(self.root, self.git)
 
     def verify(self):
+        verified,_ = self._verify()
+        return verified
+
+    def _verify(self):
         from .connection_identity import PROJECT_IDENTITY
         self.store.pin_workspace_location(PROJECT_IDENTITY, self.store.head(PROJECT_IDENTITY))
         # Only immutable identity resolution is shared. Head/index reads and
@@ -46,13 +50,29 @@ class LocalWorkspace:
         require(require_registered(resolved)==self.workspace,'wrong-workspace')
         require(same_plain_location(topology.root,registration.root) if topology.kind=='plain' else
                 topology.root==registration.root,'workspace-location-changed')
-        return reference,topology,registrations
+        return (reference,topology,registrations),locator
 
-    def observe(self,**options):
-        reference,topology,registrations=self.verify()
+    def observe(self,*,reuse_middle=False,**options):
+        stamp = None
+        if reuse_middle and type(self) is LocalWorkspace:
+            inputs = self.store,self.root,self.workspace,self.git,self.locator_reader
+            stamp = self.store.workspace_verification_stamp()
+            (reference,topology,registrations),locator = self._verify()
+        else:
+            reference,topology,registrations = self.verify()
         result=observe(self.root,self.budget,git=self.git,registrations=registrations,**options)
         require(result.topology==topology,'workspace-observation-changed')
-        self.verify()
+        if stamp is None:
+            self.verify()
+        else:
+            from .connection_boundary import workspace_topology
+            # Observation has already checked the live native topology again.
+            # Recheck outer workspace-marker rules and the actual locator, then
+            # compare authority, connection and concurrent/local write stamps.
+            workspace_topology(self.root,self.git,observed=result.topology)
+            if ((self.store,self.root,self.workspace,self.git,self.locator_reader)!=inputs
+                    or self.locator_reader()!=locator or self.store.workspace_verification_stamp()!=stamp):
+                self.verify()
         return reference,result
 
     def capture(self,paths,observed,import_id):

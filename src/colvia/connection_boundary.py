@@ -67,14 +67,14 @@ def _check_ancestor_markers(target, git, *, code='connect-ancestor-marker', unav
             raise ConnectionBoundaryError(unavailable, str(parent), target.root.path) from exc
 
 
-def workspace_topology(root, git):
+def workspace_topology(root, git, *, observed=None):
     """Guard the supplied folder before Git can select an enclosing root."""
     root=Path(root)
     own_marker=_present(root / '.colvia-link.json')
     if own_marker:
         _check_ancestor_markers(Topology('plain',location(root)),git,code='workspace-ancestor-project',
                                 unavailable='workspace-boundary-unavailable')
-    top=discover(root,git)
+    top=discover(root,git) if observed is None else observed
     if own_marker and top.kind!='plain':
         raise ConnectionBoundaryError('workspace-connection-kind-changed',top.root.path,str(root))
     code='workspace-parent-project' if top.kind=='plain' and not own_marker else 'workspace-ancestor-project'

@@ -65,18 +65,20 @@ class GroupService:
         baseline=self._object(link(plan,'baseline'),view)
         require(view.head(workspace_key(self.destination.workspace))==link(plan,'destination_registration'),'group-connection-changed')
         self.destination.verify()
-        original_heads=gr.member_refs(plan,'head',plan,view)
-        for i,work in enumerate(plan.payload['works']):
-            membership=view.head(gr.member_key(work)); require(membership is not None,'group-membership-changed')
-            require(link(self._object(membership,view),'plan')==plan.ref,'group-membership-changed')
-            _,wp,_,_=head_summary(original_heads[i],view)
-            original=self._object(link(wp,'baseline'),view)
-            require(view.head(workspace_key(plan.payload['sources'][i]))==link(original,'workspace'),'group-connection-changed')
+        with self.store.immutable_reads():
+            original_heads=gr.member_refs(plan,'head',plan,view)
+            for i,work in enumerate(plan.payload['works']):
+                membership=view.head(gr.member_key(work)); require(membership is not None,'group-membership-changed')
+                require(link(self._object(membership,view),'plan')==plan.ref,'group-membership-changed')
+                _,wp,_,_=head_summary(original_heads[i],view)
+                original=self._object(link(wp,'baseline'),view)
+                require(view.head(workspace_key(plan.payload['sources'][i]))==link(original,'workspace'),'group-connection-changed')
         return baseline
 
     def _observe(self,plan,baseline):
-        scope=[]
-        for ref in gr.member_refs(plan,'head',plan,self.store.load): scope.extend(head_summary(ref,self.store.load)[1].payload['scope'])
+        with self.store.immutable_reads():
+            scope=[]
+            for ref in gr.member_refs(plan,'head',plan,self.store.load): scope.extend(head_summary(ref,self.store.load)[1].payload['scope'])
         return self.native._observe(SimpleNamespace(payload={'scope':scope}),baseline)
 
     def _initial(self,plan,load):
@@ -84,27 +86,28 @@ class GroupService:
         require(tuple(before)==self._observe(plan,baseline).snapshot.entries,'group-destination-baseline-changed')
 
     def _prepared(self,plan,view):
-        works=set(plan.payload['works']); spaces=set(plan.payload['sources'])|{plan.payload['destination']}
-        from .group_guard import guard_workspaces
-        guard_workspaces(view,spaces,group_plan=plan.ref)
-        for k,ref in read_map(view.root().heads,view).items():
-            if k.startswith('work:'):
-                h,_,_,_=head_summary(ref,view)
-                if h.payload['workspace']==plan.payload['destination'] and h.payload['work'] not in works:
-                    require(h.payload['phase'] not in ('approved','active','review','paused'),'worker-destination-has-active-work')
-            elif k.startswith('grant:') and ref.kind=='worker.grant':
-                grant=self._object(ref,view)
-                require(grant.payload['work'] not in works or grant.payload['state']!='active','group-prepared-authority-in-use')
-            elif k.startswith('application:'):
-                obj=self._object(ref,view)
-                if ref.kind=='worker.effect':
-                    if obj.payload['state'] in ('completed','cancelled'): continue
-                    binding=self._object(link(obj,'binding'),view)
-                else: binding=obj
-                require(binding.payload['work'] not in works and binding.payload['destination'] not in spaces,'group-prepared-authority-in-use')
-            elif k.startswith(('execution-prepared:','delivery-prepared:')):
-                obj=self._object(ref,view)
-                require(obj.payload['work'] not in works,'group-prepared-authority-in-use')
+        with self.store.immutable_reads():
+            works=set(plan.payload['works']); spaces=set(plan.payload['sources'])|{plan.payload['destination']}
+            from .group_guard import guard_workspaces
+            guard_workspaces(view,spaces,group_plan=plan.ref)
+            for k,ref in read_map(view.root().heads,view).items():
+                if k.startswith('work:'):
+                    h,_,_,_=head_summary(ref,view)
+                    if h.payload['workspace']==plan.payload['destination'] and h.payload['work'] not in works:
+                        require(h.payload['phase'] not in ('approved','active','review','paused'),'worker-destination-has-active-work')
+                elif k.startswith('grant:') and ref.kind=='worker.grant':
+                    grant=self._object(ref,view)
+                    require(grant.payload['work'] not in works or grant.payload['state']!='active','group-prepared-authority-in-use')
+                elif k.startswith('application:'):
+                    obj=self._object(ref,view)
+                    if ref.kind=='worker.effect':
+                        if obj.payload['state'] in ('completed','cancelled'): continue
+                        binding=self._object(link(obj,'binding'),view)
+                    else: binding=obj
+                    require(binding.payload['work'] not in works and binding.payload['destination'] not in spaces,'group-prepared-authority-in-use')
+                elif k.startswith(('execution-prepared:','delivery-prepared:')):
+                    obj=self._object(ref,view)
+                    require(obj.payload['work'] not in works,'group-prepared-authority-in-use')
 
     def _backup(self,view,version):
         enabled=view.head(activation_key(version))
@@ -193,9 +196,12 @@ class GroupService:
         changes[gr.key(group)]=pair[0]
         def validate(view):
             guard(view); self._live_plan(plan,view); self._initial(plan,view); self._prepared(plan,view)
-            validate_closure([pair[0]],view,self.work.registry,self.work.closure)
-            for work in plan.payload['works']: self.work._validate_head(changes[work_key(work)],view)
-        self.store.commit_heads(operation=operation,expected=expected,changes=changes,objects=[*objects,pair],validate=validate)
+            with self.store.immutable_reads():
+                validate_closure([pair[0]],view,self.work.registry,self.work.closure)
+                for work in plan.payload['works']:
+                    self.work._validate_head(changes[work_key(work)],view)
+        self.store.commit_heads(operation=operation,expected=expected,changes=changes,objects=[*objects,pair],
+                                validate=validate,descriptor_only=True)
         return self.view(group)
 
     @reuse_operation_reads
@@ -226,7 +232,9 @@ class GroupService:
         return self.view(group)
 
     def _live_candidate(self,candidate,view,*,source_files=False):
-        parts=gr.candidate_parts(candidate.ref,view); plan=parts[2]; self._live_plan(plan,view)
+        with self.store.immutable_reads():
+            parts=gr.candidate_parts(candidate.ref,view)
+        plan=parts[2]; self._live_plan(plan,view)
         for h,wp,result in parts[-1]:
             require(view.head(work_key(wp.payload['work']))==h.ref,'group-submission-changed')
             if source_files:

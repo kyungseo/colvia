@@ -51,6 +51,25 @@ class LifecycleTests(ScopeCommands, WorkFixture, unittest.TestCase):
         self.assertEqual(self.service.view('report')['progress']['done'],'초안')
         with self.assertRaisesRegex(RecordError,'outside-scope-change'):self.submit()
 
+    def test_ordinary_view_tolerates_unrelated_root_change_during_live_check(self):
+        self.start()
+        self.start('peer',['peer.md'])
+        self.decide('pause','peer')
+        (self.root/'report.md').write_text('submitted')
+        self.submit()
+        selected = self.workspace.selected
+
+        def change_unrelated_head(paths):
+            self.assertFalse(self.store.db.in_transaction)
+            peer = self.store.head('work:peer')
+            self.store.commit_heads(operation='unrelated',expected={'test:other':None},
+                                    changes={'test:other':peer},validate=lambda _:None)
+            return selected(paths)
+
+        from unittest.mock import patch
+        with patch.object(self.workspace,'selected',side_effect=change_unrelated_head):
+            self.assertTrue(self.service.view('report')['current_matches'])
+
     def test_review_resume_changed_and_unchanged_and_rework(self):
         self.start(); self.note(); path=self.root/'report.md';path.write_text('submitted')
         first=self.submit()['receipt']

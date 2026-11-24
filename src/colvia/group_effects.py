@@ -15,10 +15,11 @@ def request_key(request): _token(request); return 'group-request:'+request
 
 
 def _parts(service,ref,load):
-    validate_closure([ref],load,service.work.registry,service.work.closure)
-    effect=service._object(ref,load); require(ref.kind=='group.effect','group-effect-required')
-    auth,review=gr.validate_authorization(link(effect,'authorization'),load)
-    return effect,auth,review,gr.candidate_parts(link(review,'candidate'),load)
+    with service.store.immutable_reads():
+        validate_closure([ref],load,service.work.registry,service.work.closure)
+        effect=service._object(ref,load); require(ref.kind=='group.effect','group-effect-required')
+        auth,review=gr.validate_authorization(link(effect,'authorization'),load)
+        return effect,auth,review,gr.candidate_parts(link(review,'candidate'),load)
 
 
 def _manifest(service,effect,load=None):
