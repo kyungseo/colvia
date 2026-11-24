@@ -2,7 +2,7 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
-- [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Accepted macOS extension and eight-case closure; the Mac termination correction passed both full regression modes and is Owner-accepted for local commit. Physical x64 original-policy diagnostics are prepared for a two-hour Owner-ready trial; Windows remains unqualified.
+- [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Accepted and locally committed macOS extension and follow-up corrections. Windows host reuse remains unqualified. The Owner authorized a bounded optional Sandbox trial including exclusive virtual-disk setup. A bounded empty-instance trial observed exact-ID creation and scoped stop, but guest command execution remains unqualified because connection exit/pipe observation was incomplete. Basic device qualification continues under the Owner’s extended schedule; no mapped protection, browser or Windows product admission is established.
 
 - [Grouped acceptance of two submissions](FEAT-20261122-001-grouped-acceptance.md) — Owner accepted the two-member implementation and authorized its local commit on 2026-11-22.
 - [Eight retained regression findings](grouped-acceptance-regression-followup.md) — Accepted eight-case closure after the multi-submission extension; exact cases and evidence limits.
@@ -305,6 +305,8 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [Read-path efficiency follow-up](read-path-efficiency-followup.md#owner-planning-authorization--2026-11-24) — P1. Reduce guarded read cost and repeated validation across ordinary Windows commands and grouped acceptance. Start Phase A after native x64 joint acceptance verification.
 
 - [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0. The [implementation and verification record](FEAT-20261118-001-git-credential-gate.md) covers the selected local check before Git objects are written.
 

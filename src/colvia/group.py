@@ -20,13 +20,15 @@ ACTIVATION='group-activation'
 ACTIVATION_V2='group-activation-v2'
 CURRENT_VERSION=2
 
-def activation_key(version): return ACTIVATION if version==1 else ACTIVATION_V2
+def activation_key(version):
+    return {1: ACTIVATION, 2: ACTIVATION_V2, gr.WINDOWS_GROUP_VERSION: 'group-activation-v3'}[version]
 
 
 class GroupService:
-    def __init__(self,store,destination,*,authority,lifecycle_authority=None,port_factory=None):
+    def __init__(self,store,destination,*,authority,lifecycle_authority=None,port_factory=None,windows_runner=None):
         self.store=store; self.destination=destination; self.authority=Path(authority)
         self.lifecycle_authority=lifecycle_authority
+        self.windows_runner=windows_runner
         self.work=WorkService(store,destination)
         self.native=WorkerService(self.work,destination,authority=self.authority,port_factory=port_factory)
 
@@ -40,8 +42,15 @@ class GroupService:
         return WorkService(self.store,LocalWorkspace(self.store,root,workspace,git=self.destination.git,
                            locator_reader=lambda:read_locator(root,self.destination.git)))
 
-    def _port(self):
-        require(sys.platform=='darwin','group-platform-unqualified')
+    def _port(self, *, version=CURRENT_VERSION):
+        if version == gr.WINDOWS_GROUP_VERSION:
+            from .platforms.effects_port import effects
+            from .platforms.windows_architecture import native_x64
+            require(native_x64(), 'group-platform-unqualified')
+            if self.native.port_factory is effects:
+                return effects(self.destination.root,self.authority,grouped=True)
+        else:
+            require(sys.platform == 'darwin', 'group-platform-unqualified')
         return self.native.port_factory(self.destination.root,self.authority)
 
     def _receipt(self,action,group,ref): return self.work._receipt('group-'+action,group,ref)
@@ -114,13 +123,21 @@ class GroupService:
         return ObjectRef.parse(receipt['root'])
 
     def create(self,*,operation,group,works,checks,acknowledgement):
-        _token(operation); _token(group); text(acknowledgement); gr.definitions(checks)
+        _token(operation); _token(group); text(acknowledgement)
         version=CURRENT_VERSION
+        platform={}
+        if sys.platform == 'win32' and self.windows_runner is not None:
+            version=gr.WINDOWS_GROUP_VERSION
+            platform={'platform': gr.WINDOWS_GROUP_PLATFORM}
+            gr.windows_definitions(checks)
+        else:
+            require(sys.platform != 'win32', 'group-platform-unqualified')
+            gr.definitions(checks)
         require(type(works) in (list,tuple) and all(type(w) is str for w in works),'group-member-count-unsupported')
         works=sorted(works)
         require((len(works)==2 if version==1 else 2<=len(works)<=gr.MAX_MEMBERS) and len(set(works))==len(works),
                 'group-two-distinct-works-required' if version==1 else 'group-member-count-unsupported')
-        self._port()
+        self._port(version=version)
         heads=[self.work._head(w,same_workspace=False)[1] for w in works]
         for h in heads:
             require(h.payload['phase']=='planned' and link(h,'context') is None,'group-planned-member-required')
@@ -132,7 +149,7 @@ class GroupService:
             baseline,objects=encode_observation(observed,registration,self.store,operation)
             member_links,mapping=gr.member_links(version,'head',works,[h.ref for h in heads]); objects.extend(mapping)
             pair=record('group.plan',dict(group=group,works=works,sources=[h.payload['workspace'] for h in heads],
-                destination=self.destination.workspace,checks=checks,acknowledgement=acknowledgement),
+                destination=self.destination.workspace,checks=checks,acknowledgement=acknowledgement,**platform),
                 dict(member_links,baseline=('integrity',baseline),destination_registration=('decision',registration),backup_root=('provenance',backup)),version=version)
             expected={gr.key(group):None}; changes={gr.key(group):pair[0]}
             for work,h in zip(works,heads):
@@ -144,7 +161,7 @@ class GroupService:
             if enabled is None: changes[activation]=pair[0]
             project=self.store.head(PROJECT_KEY)
             def validate(view):
-                guard(view); self._port()
+                guard(view); self._port(version=version)
                 require(view.head(PROJECT_KEY)==project,'group-connection-changed')
                 require(self._backup(view,version)==backup,'group-backup-changed')
                 validate_closure([pair[0],*(r for k,r in changes.items() if k.startswith('group-member:'))],view,self.work.registry,self.work.closure)
@@ -219,7 +236,6 @@ class GroupService:
         selected=self._selected(group)
         candidate=self._object(link(selected,'candidate')) if selected.ref.kind=='group.review' else selected
         require(candidate.ref.kind=='group.candidate','group-candidate-required')
-        self._port()
         from .storage.sqlite import ValidationView
         view=ValidationView(self.store.root(),self.store.load); guard(view)
         parts=self._live_candidate(candidate,view); self._initial(parts[2],view)

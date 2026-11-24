@@ -84,7 +84,7 @@ def view(service,group):
         value.update(application=effect.payload['application'],request=auth.payload['request'],receipt=auth.payload['receipt'],actor=auth.payload['actor'],statement=auth.payload['statement'])
         value['blocked']=None
         try:
-            port=service._port()
+            port=service._port(version=effect.ref.version)
             with port.exclusion(create=False):
                 if effect.payload['state']=='pending': _live(service,ValidationView(root,service.store.load),effect,auth,parts)
                 states=_states(service,port,effect,parts)

@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="360" height="210" viewBox="0 0 360 210" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif"><title id="title">2~8개 제출본과 통합 검사를 보고 함께 수락·반영</title><desc id="desc">macOS의 Claude Code CLI에서 에이전트가 작업자를 실행하고 결과를 모읍니다. 사용자는 2~8개 제출본과 통합 검사 결과를 보고 함께 수락·반영합니다.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="912" height="254" viewBox="0 0 912 254" role="img" aria-labelledby="title desc" xml:lang="ko" font-family="Pretendard, system-ui, -apple-system, Segoe UI, sans-serif">
+<title id="title">큰 작업을 나눠 실행하고 결과를 함께 반영하기</title>
+<desc id="desc">목표를 말하고 에이전트가 제안한 분담안을 승인합니다. 작업자가 별도 폴더에서 병렬로 일합니다. 2~8개 제출본과 통합 검사 결과를 보고 한 번에 수락해 원래 폴더에 반영합니다.</desc>
 <style>
 .bg{fill:#FAF9F6}.frame{fill:none;stroke:#E4E0D8}
 .ink{fill:#2B2A27}.mut{fill:#6B675F}
@@ -24,24 +26,51 @@
 .icon{stroke:#ECE6DA}.iconf{fill:#ECE6DA}
 }
 </style>
-<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="ah"/></marker></defs>
-<rect x="1" y="1" width="358" height="208" rx="16" class="bg"/><rect x="1" y="1" width="358" height="208" rx="16" class="frame"/>
-<rect x="12" y="88" width="62" height="34" rx="9" class="agent"/>
-<text x="43" y="106" class="ink" font-size="13" font-weight="600" text-anchor="middle">조정</text>
-<path d="M74 105 H85 M94 59 H85 V151 H94" class="lnd"/>
-<rect x="96" y="40" width="105" height="38" rx="9" class="agent"/>
-<text x="148.5" y="59" class="ink" font-size="12.5" font-weight="500" text-anchor="middle">제출본 1</text>
-<rect x="96" y="132" width="105" height="38" rx="9" class="agent"/>
-<text x="148.5" y="151" class="ink" font-size="12.5" font-weight="500" text-anchor="middle">제출본 N</text>
-<path d="M201 59 C217 59 203 98 218 98" class="ln" marker-end="url(#ah)"/>
-<path d="M201 151 C217 151 203 112 218 112" class="ln" marker-end="url(#ah)"/>
-<rect x="220" y="89" width="62" height="32" rx="9" class="col"/>
-<g transform="translate(218,96) scale(0.25)"><path d="M27.9 45.7 A14 14 0 1 1 22 19 C29 19 31 30 36.5 30 C42 30 44 21 49.5 21 L56 21" class="sym"/></g>
-<text x="259" y="110" class="colt" font-size="12" font-weight="600" text-anchor="middle">Colvia</text>
-<path d="M282 105 H292" class="ln" marker-end="url(#ah)"/>
-<rect x="294" y="86" width="62" height="38" rx="9" class="work"/>
-<text x="325" y="105" class="workt" font-size="10" font-weight="600" text-anchor="middle">원래 폴더</text>
-<text x="180" y="191" class="mut" font-size="12" font-weight="400" text-anchor="middle">자동 실행·회수 → 검사 → 내가 함께 수락</text>
-<text x="180" y="24" class="mut" font-size="10" font-weight="400" text-anchor="middle">macOS · Claude Code CLI · 2~8</text>
-<text x="148" y="111" text-anchor="middle" fill="#64748b" font-size="16">…</text>
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" class="ah"/></marker>
+</defs>
+<rect x="1" y="1" width="910" height="252" rx="16" class="bg"/>
+<rect x="1" y="1" width="910" height="252" rx="16" class="frame"/>
+<rect x="24" y="15" width="80" height="28" rx="9" class="col"/>
+<g transform="translate(24,22) scale(0.25)"><path d="M27.9 45.7 A14 14 0 1 1 22 19 C29 19 31 30 36.5 30 C42 30 44 21 49.5 21 L56 21" class="sym"/></g>
+<text x="73" y="32" class="colt" font-size="12" font-weight="600" text-anchor="middle">Colvia</text>
+
+<text x="118" y="29" class="ink" font-size="14" dominant-baseline="central">승인·제출·수락 기록 · 통합 검사 · 원래 폴더 반영</text>
+<text x="888" y="29" class="mut" font-size="14" text-anchor="end" dominant-baseline="central">macOS · Claude Code CLI</text>
+
+<path d="M146 137 H166" class="ln" marker-end="url(#ah)"/>
+<path d="M326 137 H340" class="ln"/>
+<path d="M340 137 V99 H356" class="ln" marker-end="url(#ah)"/>
+<path d="M340 137 V175 H356" class="ln" marker-end="url(#ah)"/>
+<path d="M530 99 H545 V175 H530" class="ln"/>
+<path d="M545 137 H560" class="ln" marker-end="url(#ah)"/>
+<path d="M720 137 H746" class="ln" marker-end="url(#ah)"/>
+
+<rect x="24" y="98" width="122" height="78" rx="9" class="note"/>
+<text x="85" y="126" class="ink" font-size="18" font-weight="700" text-anchor="middle" dominant-baseline="central">목표 요청</text>
+<text x="85" y="150" class="mut" font-size="14" text-anchor="middle" dominant-baseline="central">한 채팅에서</text>
+
+<rect x="170" y="86" width="156" height="102" rx="9" class="note"/>
+<text x="248" y="113" class="ink" font-size="17" font-weight="700" text-anchor="middle" dominant-baseline="central">분담안 제안</text>
+<text x="248" y="139" class="mut" font-size="14" text-anchor="middle" dominant-baseline="central">에이전트가 계획</text>
+<text x="248" y="162" class="workt" font-size="15" font-weight="700" text-anchor="middle" dominant-baseline="central">사용자가 승인</text>
+
+<text x="445" y="56" class="ink" font-size="17" font-weight="700" text-anchor="middle">별도 폴더에서 병렬 작업</text>
+<rect x="360" y="77" width="170" height="44" rx="9" class="agent"/>
+<text x="445" y="99" class="ink" font-size="17" text-anchor="middle" dominant-baseline="central">CSV 서버</text>
+<rect x="360" y="153" width="170" height="44" rx="9" class="agent"/>
+<text x="445" y="175" class="ink" font-size="17" text-anchor="middle" dominant-baseline="central">다운로드 버튼</text>
+<text x="445" y="220" class="mut" font-size="15" text-anchor="middle">조정 에이전트 1개가 실행·회수</text>
+<text x="445" y="240" class="mut" font-size="14" text-anchor="middle">작업자 세션 최대 2개 동시 실행</text>
+
+<rect x="564" y="86" width="156" height="102" rx="9" class="rec"/>
+<text x="642" y="114" class="ink" font-size="17" font-weight="700" text-anchor="middle" dominant-baseline="central">통합 검사</text>
+<text x="642" y="139" class="workt" font-size="17" font-weight="700" text-anchor="middle" dominant-baseline="central">제출본 2~8건</text>
+<text x="642" y="163" class="ink" font-size="15" text-anchor="middle" dominant-baseline="central">함께 검토</text>
+<text x="642" y="224" class="mut" font-size="14" text-anchor="middle">필수 검사 통과 후 수락</text>
+
+<rect x="750" y="98" width="138" height="78" rx="9" class="work"/>
+<text x="819" y="126" class="workt" font-size="17" font-weight="700" text-anchor="middle" dominant-baseline="central">한 번에 수락</text>
+<text x="819" y="150" class="ink" font-size="15" text-anchor="middle" dominant-baseline="central">원래 폴더에 반영</text>
+<text x="819" y="224" class="mut" font-size="14" text-anchor="middle">Git 커밋·push 별도</text>
 </svg>

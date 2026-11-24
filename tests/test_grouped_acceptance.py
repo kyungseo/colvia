@@ -18,6 +18,85 @@ from test_foundation_git import GitFixture
 from test_foundation_binding import P,I,W
 
 
+class GroupCandidateReuseTests(unittest.TestCase):
+    def test_candidate_reuse_is_exact_success_only_and_local_to_one_view(self):
+        from unittest.mock import patch
+        from colvia import group_records as gr
+        from colvia.codec import ObjectRef
+
+        first = ObjectRef('group.candidate',2,1,'a'*64)
+        second = ObjectRef('group.candidate',3,1,'a'*64)
+        view, other = object(), object()
+        parts = ('candidate','approval','plan','baseline',['before'],['after'],(),{'file':'body'},['member'])
+        with patch.object(gr,'_candidate_parts',side_effect=[parts,RecordError('missing'),parts,parts,parts]) as derive:
+            with gr.reuse_candidate_parts(view):
+                received = gr.candidate_parts(first,view)
+                received[4].clear()
+                received[5].clear()
+                received[7].clear()
+                received[8].clear()
+                self.assertEqual(parts,gr.candidate_parts(first,view))
+                with self.assertRaisesRegex(RecordError,'missing'):
+                    gr.candidate_parts(second,view)
+                self.assertEqual(parts,gr.candidate_parts(second,view))
+                self.assertEqual(parts,gr.candidate_parts(second,other))
+                self.assertEqual(parts,gr.candidate_parts(second,view))
+            self.assertEqual(parts,gr.candidate_parts(second,view))
+            self.assertEqual([(first,view),(second,view),(second,view),(second,other),(second,view)],
+                             [call.args for call in derive.call_args_list])
+
+
+class WindowsGroupRecordTests(unittest.TestCase):
+    def test_native_x64_group_uses_the_grouped_windows_effect_port(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from colvia.group_records import WINDOWS_GROUP_VERSION
+
+        store=SimpleNamespace(project=P, instance=I, generation='test')
+        destination=SimpleNamespace(store=store, root=Path('destination'))
+        group=GroupService(store,destination,authority=Path('authority'))
+        with patch('colvia.platforms.windows_architecture.native_x64', return_value=True), \
+             patch('colvia.platforms.effects_port.sys', SimpleNamespace(platform='win32')), \
+             patch('colvia.platforms.windows_effects.WindowsEffects') as port:
+            self.assertIs(group._port(version=WINDOWS_GROUP_VERSION),port.return_value)
+        port.assert_called_once_with(destination.root,group.authority,native_entries=False,grouped=True)
+
+    def test_native_paths_refuse_escape_and_windows_aliases(self):
+        from colvia.group_records import windows_path
+        samples=(r'a\..\b','control'+chr(1),'C:drive','/absolute','x/../y','x/a:stream',
+                 'x/trailing.','x/trailing ','NUL.txt','COM¹.txt','x/FILE~1.txt')
+        for path in samples:
+            with self.subTest(path=path), self.assertRaises(RecordError):
+                windows_path(path)
+        self.assertEqual('tables/견적.csv',windows_path('tables/견적.csv'))
+
+    def test_only_matching_decision_families_and_runtime_bound_evidence(self):
+        from colvia.codec import ObjectRef
+        from colvia.records import record
+        registry=application_registry()
+        def ref(kind, version): return ObjectRef(kind,version,0,'a'*64)
+        for decision,authorization,allowed in ((2,1,True),(3,2,True),(4,3,True),(4,2,False),(3,3,False)):
+            with self.subTest(decision=decision,authorization=authorization):
+                pair=record('work.decision',dict(work='member',workspace=W,action='accept',statement='Accept'),
+                    dict(result=('decision',ref('work.submission',1)),
+                         authorization=('decision',ref('group.authorization',authorization))),version=decision)
+                if allowed:
+                    registry.inspect(*pair,required=True)
+                else:
+                    with self.assertRaisesRegex(RecordError,'group-decision-version-required'):
+                        registry.inspect(*pair,required=True)
+        links=dict(candidate=('decision',ref('group.candidate',3)),
+                   stdout=('integrity',ref('body.complete',1)),stderr=('integrity',ref('body.complete',1)))
+        evidence=dict(name='file check',definition='f'*64,outcome='exited',exit_code=0,elapsed_ns=1,
+                      tree_unchanged=True,environment_inputs='system runtime and approved environment; ignored and opaque files excluded')
+        pair=record('group.evidence',evidence,links,version=2)
+        with self.assertRaisesRegex(RecordError,'group-record-version-mismatch'):
+            registry.inspect(*pair,required=True)
+        pair=record('group.evidence',dict(evidence,runtime=None),links,version=3)
+        with self.assertRaisesRegex(RecordError,'group-check-runtime-evidence-required'):
+            registry.inspect(*pair,required=True)
+
+
 class GroupFixture(GitFixture):
     def setUp(self):
         super().setUp()
@@ -521,6 +600,55 @@ class GroupTests(GroupFixture,unittest.TestCase):
         with patch('colvia.group_view.snapshot',side_effect=RecordError('synthetic-unreadable')):
             value=project_status(self.store,W)
         self.assertEqual('pair',value['items'][0]['work']);self.assertEqual('unavailable',value['items'][0]['group'])
+
+    def test_windows_records_reuse_exact_group_publication_with_separate_capability(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from colvia import group_records as gr
+        from colvia.graph import Registry
+
+        self.checks = [dict(name="file check", script="print('verify candidate files')",
+                            cwd=".", timeout_seconds=3, output_bytes=1024)]
+        pre = self.store.requirements()["read"]
+        self.assertNotIn("schema:group.plan:3", pre)
+        self.group.windows_runner = object()
+        native_port = self.group._port()
+        with patch.object(self.group, "_port", return_value=native_port):
+            self.plans()
+            self.backup()
+            with patch("colvia.group.sys", SimpleNamespace(platform="win32")):
+                shown = self.create(backup=False)
+            plan = self.store.head(gr.key("pair"))
+            self.assertEqual(3, plan.version)
+            self.assertIn("schema:group.plan:3", self.store.requirements()["read"])
+            schemas = application_registry()._schemas
+            old = Registry(v for (name, version), v in schemas.items()
+                           if not (name.startswith("group.") and version == 3) and (name, version) != ("work.decision",4))
+            with self.assertRaisesRegex(RecordError, "unknown-required-kind"):
+                old.inspect(plan, self.store.load(plan), required=True)
+            self.group.approve(operation=self.op(), group="pair", receipt=shown["receipt"], statement="Approve exact plans")
+            for i, path in enumerate(("report.md", "web/index.html")):
+                source = self.sources[i]
+                source.start(operation=self.op(), work="member"+str(i))
+                file = self.paths[i] / path
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_bytes(("member "+str(i)+"\n").encode())
+                source.submit(operation=self.op(), work="member"+str(i), summary="Exact result",
+                              checks=[dict(name="local check", status="passed", detail="read")])
+            self.group.candidate(operation=self.op(), group="pair")
+            self.group.windows_runner = None
+            blocked = self.group.check(operation=self.op(), group="pair")
+            self.assertEqual("checks-required", blocked["state"])
+            self.assertNotIn("receipt", blocked)
+            self.assertEqual(0, self.accepted())
+            runtime = dict(manifest="a"*64, runner="b"*64, harness="c"*64)
+            passed = dict(outcome="exited", exit_code=0, elapsed_ns=1, runtime=runtime), b"verified files", b"", True
+            with patch("colvia.group_checks._windows_check", return_value=passed):
+                tested = self.group.check(operation=self.op(), group="pair")
+            self.assertEqual(2, self.execute(tested)["accepted"])
+            self.assertEqual(2, self.execute(tested)["accepted"])
+            self.assertIn("schema:work.decision:4", self.store.requirements()["read"])
+            self.backup()
 
     def test_unqualified_group_refuses_before_publication(self):
         from unittest.mock import patch

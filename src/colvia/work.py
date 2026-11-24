@@ -103,7 +103,6 @@ class WorkService:
             if authorization is not None:
                 if authorization.kind=='group.authorization':
                     from .group_records import validate_decision
-                    require((decided.ref.version,authorization.version) in ((2,1),(3,2)),'group-decision-version-required')
                     validate_decision(decided.ref,load)
                     return
                 from .worker_records import validate_authorization

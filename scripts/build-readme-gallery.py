@@ -15,10 +15,32 @@ TITLES={'scope':('범위를 정하고 결과를 검토합니다','Agree on scope
 DESC={'scope':('사람이 범위를 승인하고 에이전트가 Work를 준비합니다. 결과를 검토해 수정하거나 수락합니다.','You approve the scope; the agent prepares the Work. Review the result, request revisions or accept it.'),'switch':('월요일의 범위·수락한 제출본·다음 할 일을 프로젝트에 기록합니다. 수요일의 에이전트가 같은 기록에서 이어갑니다.','Keep Monday’s scope, accepted submission and next steps in the project. Wednesday’s agent resumes from those records.'),'drift':('수락한 제출본과 현재 파일을 비교해 바뀐 내용을 확인합니다.','Compare the accepted submission with current files to see what changed.'),'notify':('확인한 단계와 기한 안에 준비된 결과를 제출합니다. 알림이나 수신함에서 결과를 찾고 사람이 수락합니다.','Submit the prepared result within the confirmed step and deadline. Find it through a notification or the inbox; acceptance stays with you.'),'split':('하위 Work의 결과를 각각 수락한 뒤 전체 결과는 사람이 따로 검토하고 수락합니다.','Accept each child Work result, then review and accept the combined result separately.'),'parallel':('에이전트가 격리 폴더에서 준비한 결과를 검토하고, 승인한 제출본은 Colvia로 대상 폴더에 한 건씩 반영합니다.','Review the agent’s submissions from isolated folders. Use Colvia to apply approved submissions to the destination one at a time.'),'overview':('사용할 계정에 설치한 뒤 폴더마다 연결 내용을 확인하고 승인합니다. 새 일은 작업안을 보고 범위를 승인합니다. 제출본을 검토해 수락하거나 수정을 요청합니다. 하던 일은 프로젝트 현황에서 이어갑니다.', 'Install in your account, then preview and approve each folder connection. For a new task, approve the scope, review the submission and accept it or request changes. Use project status to pick up existing work.')}
 
 TRANSLATE.update({'추가·수정': 'Added or edited', 'AI API 키': 'AI API key', '인증 토큰': 'Auth token', '로컬 검사': 'Local check', '커밋 준비 중단': 'Commit blocked', '예: .npmrc 2행': 'e.g. .npmrc, line 2'})
-TRANSLATE.update({'제출본 1':'Submission 1','제출본 N':'Submission N','원래 폴더':'Original','통합 검사 · 함께 수락 · 한 번에 반영':'Integration checks · Accept and apply all','macOS · 2~8개 결과 함께':'macOS · 2–8 results together'})
-TRANSLATE.update({'macOS · Claude Code CLI · 2~8':'macOS · Claude Code CLI · 2–8','조정':'Coordinator','자동 실행·회수 → 검사 → 내가 함께 수락':'Agents run and collect; you review and accept'})
-TITLES['parallel'] = ('2~8개 제출본을 보고 함께 수락·반영', 'Review, accept and apply 2–8 submissions together')
-DESC['parallel'] = ('macOS에서 정확한 모든 제출본과 통합 검사 결과를 보고 한 번의 결정으로 수락해 원래 폴더에 반영합니다.', 'On macOS, review every exact submission and integration checks, then accept and apply all to the original folder in one decision.')
+TRANSLATE.update({
+    '승인·제출·수락 기록 · 통합 검사 · 원래 폴더 반영': 'Records approvals, submissions and acceptances · Tests and applies results',
+    'macOS · Claude Code CLI': 'macOS · Claude Code CLI',
+    '목표 요청': 'Set the goal',
+    '한 채팅에서': 'One chat',
+    '분담안 제안': 'Plan the split',
+    '에이전트가 계획': 'Agent proposes',
+    '사용자가 승인': 'You approve',
+    '별도 폴더에서 병렬 작업': 'Parallel work in separate folders',
+    'CSV 서버': 'CSV server',
+    '다운로드 버튼': 'Download button',
+    '조정 에이전트 1개가 실행·회수': '1 coordinator runs & collects',
+    '작업자 세션 최대 2개 동시 실행': 'Max 2 worker sessions at once',
+    '통합 검사': 'Test together',
+    '제출본 2~8건': '2–8 submissions',
+    '함께 검토': 'Review together',
+    '필수 검사 통과 후 수락': 'Required checks must pass',
+    '한 번에 수락': 'Accept as one',
+    '원래 폴더에 반영': 'To original folder',
+    'Git 커밋·push 별도': 'Git is separate',
+})
+TITLES['parallel'] = ('큰 작업을 나눠 실행하고 결과를 함께 반영하기', 'Split the work and apply the results together')
+DESC['parallel'] = (
+    '목표를 말하고 에이전트가 제안한 분담안을 승인합니다. 작업자가 별도 폴더에서 병렬로 일합니다. 2~8개 제출본과 통합 검사 결과를 보고 한 번에 수락해 원래 폴더에 반영합니다.',
+    'Describe the goal and approve the proposed split. Workers run in parallel in separate folders. Review 2–8 submissions and the integration checks, then accept and apply them to the original folder in one decision.',
+)
 
 TITLES['credential'] = ('Git 반영 전 자격증명 검사', 'Credential check before a Git commit')
 DESC['credential'] = ('.env 추가·수정, 소스에 적은 AI API 키, .npmrc 인증 토큰을 Colvia가 로컬에서 검사하고 차단 위치를 알려 줍니다.', 'Colvia checks proposed changes locally, including edits to .env, an AI API key in source code, and a token in .npmrc. A blocked candidate reports a location without revealing the value.')
@@ -135,13 +157,12 @@ def build(scene,lang,theme,fonts):
         root.insert(idx+1,a);root.insert(idx+2,b);alignments.append({'box':[x,y,w,h],'group_width':total,'center':[cx,cy]})
     # Center single/two-line labels inside existing boxes, preserving all positions.
     boxes=[n for n in root if n.tag==tag('rect') and n.get('class') in ('agent','note','work')]
-    for box in boxes if scene not in ('workflow','system','overview') else []:
+    for box in boxes if scene not in ('workflow','system','overview','parallel') else []:
         x,y,w,h=(float(box.get(k)) for k in ('x','y','width','height'))
         texts=[n for n in root if n.tag==tag('text') and x<=float(n.get('x',0))<=x+w and y<float(n.get('y',0))<y+h]
         for i,t in enumerate(texts):t.set('y',str(y+h/2+(i-(len(texts)-1)/2)*17));t.set('dominant-baseline','central')
     for n in root.iter(tag('text')):
         n.set('font-weight','700' if int(n.get('font-weight','400'))>=600 else '400')
-        if scene=='parallel' and n.text=='조정':n.set('font-size','8.5' if lang=='en' else '13')
         if scene=='notify' and n.text=='알림':n.text='알림 · 수신함'
         if lang=='en' and scene=='overview' and n.text in OVERVIEW_LABELS:n.text=OVERVIEW_LABELS[n.text]
         elif lang=='en' and scene in ('workflow','status','system'):n.text=PROJECT_LABELS[n.text]
@@ -154,9 +175,6 @@ def build(scene,lang,theme,fonts):
             n.set('y','84');n.text=None
             a=ET.SubElement(n,tag('tspan'),{'x':'46','dy':'0'});a.text='Accepted'
             b=ET.SubElement(n,tag('tspan'),{'x':'46','dy':'12'});b.text='submission'
-        # Sequence labels in circles share their circle center, not a baseline offset.
-        if scene=='parallel' and n.text in ('1','2'):
-            n.set('y','72' if n.text=='1' else '138');n.set('dominant-baseline','central')
     # Keep the revise icon above the return route; use a left-pointing undo arrow.
     if scene=='scope':
         for n in list(root):

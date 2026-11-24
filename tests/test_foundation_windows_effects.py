@@ -68,6 +68,20 @@ class WindowsEffectsTests(unittest.TestCase):
             self.assertFalse(port.published_identity(item,[5,'b'*32,70]))
             self.assertFalse(port.published_identity(dict(item,path='nested/'+name),inherited))
             self.assertFalse(port.published_identity(dict(item,pre_native=None),inherited))
+    def test_group_replacement_only_admits_exact_post_id_and_original_creation_time(self):
+        port=WindowsEffects(self.root,self.authority,files=self.files,observer=Observer(files=self.files),
+                            mover=self.mover,grouped=True)
+        staged=[4,'b'*32,80]
+        item=dict(path='report.md',pre_native=[4,'a'*32,70],post_native=staged)
+        self.assertEqual(70,port.inherited_creation(item))
+        self.assertTrue(port.published_identity(item,staged))
+        self.assertTrue(port.published_identity(item,[4,'b'*32,70]))
+        self.assertFalse(port.published_identity(item,[5,'b'*32,70]))
+        self.assertFalse(port.published_identity(item,[4,'a'*32,70]))
+        self.assertFalse(port.published_identity(item,[4,'b'*32,60]))
+        self.assertFalse(port.published_identity(dict(item,pre_native=None),[4,'b'*32,70]))
+        self.assertFalse(self.port.published_identity(item,[4,'b'*32,70]))
+
     def test_replace_preserves_original_and_repeated_inspection_does_not_move(self):
         m=self.prepare()
         with self.port.exclusion():
@@ -75,6 +89,38 @@ class WindowsEffectsTests(unittest.TestCase):
             self.port.apply_one(m,0);self.assertEqual(2,self.mover.count)
         self.assertEqual(b'new',(self.root/'report.md').read_bytes())
         self.assertEqual(b'old',(self.authority/'effects/apply/000000.original').read_bytes())
+    def test_guard_can_reobserve_files_before_opening_rename_handle(self):
+        from unittest.mock import patch
+        manifest=self.prepare()
+        captured=[]
+        native_move=self.mover.move
+        moving=False
+
+        def move(*args, **options):
+            nonlocal moving
+            moving=True
+            try:
+                return native_move(*args,**options)
+            finally:
+                moving=False
+
+        def observe():
+            self.assertFalse(moving,"observer cannot reopen a Windows DELETE handle")
+            captured.append(self.port.state(manifest,0))
+
+        with self.port.exclusion(),patch.object(self.mover,'move',side_effect=move):
+            self.port.apply_one(manifest,0,before_effect=observe)
+            self.assertEqual('post',self.port.state(manifest,0))
+        self.assertEqual(['pre','evacuated'],captured)
+
+    def test_cancel_is_affirmative_only_while_all_pre(self):
+        manifest=self.prepare()
+        with self.port.exclusion():
+            self.assertIs(True,self.port.cancellable(manifest,0))
+            self.port.apply_one(manifest,0)
+            with self.assertRaisesRegex(RecordError,'worker-cancel-requires-all-pre'):
+                self.port.cancellable(manifest,0)
+
     def test_retained_original_can_be_checked_after_current_entry_changes(self):
         m=self.prepare()
         with self.port.exclusion():

@@ -186,6 +186,7 @@ def application_registry():
         Schema('work.decision',1,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'worker.authorization'})}),
         Schema('work.decision',2,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
         Schema('work.decision',3,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
+        Schema('work.decision',4,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
         head_schema, lifecycle_head_schema(head_schema),
     ])
 

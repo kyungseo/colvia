@@ -201,7 +201,7 @@ def effect_authority(args,authority):
     return Path(args.authority)
 
 
-def dispatch(args,store,workspace,authority=None,*,available_features=None,display=False):
+def dispatch(args,store,workspace,authority=None,*,available_features=None,display=False,entry=None):
     if args.group == 'project' and args.action == 'status':
         from .project_status import project_status
         return project_status(store, workspace.workspace, limit=args.limit, cursor=args.cursor)
@@ -371,7 +371,13 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
             target_root=Path(registration.root.path)
         target=LocalWorkspace(store,target_root,args.destination,git=workspace.git,
             locator_reader=lambda:read_locator(target_root,workspace.git))
-        grouped=GroupService(store,target,authority=effect_authority(args,authority),lifecycle_authority=authority)
+        runner=None
+        if sys.platform=='win32' and entry is not None and args.action in ('create','check'):
+            from .group_windows_runner import ManagedFileCheck
+            candidate_runner=ManagedFileCheck(entry)
+            if candidate_runner.available():
+                runner=candidate_runner
+        grouped=GroupService(store,target,authority=effect_authority(args,authority),lifecycle_authority=authority,windows_runner=runner)
         if args.action=='view':
             value=grouped.view(args.group_name);value['destination_path_retained']=retained_path
             return value
@@ -501,7 +507,7 @@ def main(argv=None,*,entry=None):
             request=DeliveryService(WorkService(store,workspace)).read(args.delivery)[1]
             if request.payload['action']=='execute':value=entry.run_document_delivery(args,store,workspace,authority)
             else:value=dispatch(args,store,workspace,authority,available_features=available_features)
-        else:value=dispatch(args,store,workspace,authority,available_features=available_features,display=not args.json)
+        else:value=dispatch(args,store,workspace,authority,available_features=available_features,display=not args.json,entry=entry)
         print(json.dumps(value,ensure_ascii=False,sort_keys=True) if args.json else human(value))
         return 0
     except (RecordError,OSError,ValueError,TypeError) as exc:

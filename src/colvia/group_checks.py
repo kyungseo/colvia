@@ -136,20 +136,42 @@ def execute_check(definition,root):
     return dict(outcome=outcome,exit_code=code,elapsed_ns=time.monotonic_ns()-started),bytes(outputs[0]),bytes(outputs[1])
 
 
+def _windows_check(service, port, parts, definition):
+    from .group_windows_candidate import disposable_copy
+
+    if service.windows_runner is None:
+        outcome = dict(outcome='unavailable', exit_code=None, elapsed_ns=0, runtime=None)
+        return outcome, b'', b'Windows file check runtime unavailable.', False
+
+    with disposable_copy(service, port, parts) as (root, scratch, unchanged, clean):
+        outcome, stdout, stderr = service.windows_runner(port, definition, root, scratch)
+        same = unchanged()
+        if not same:
+            outcome.update(outcome='unavailable', exit_code=None)
+        elif outcome['outcome']=='exited':
+            clean()
+        return outcome, stdout, stderr, same
+
+
 def run_checks(service,candidate,parts,operation):
     objects=[]; evidence=[]
+    plan = parts[2]
+    port = service._port(version=plan.ref.version)
     # The native lock excludes other original-folder effects while copying the baseline.
-    with service._port().exclusion():
-        for definition in parts[2].payload['checks']:
-            root=_directory(service.authority)
-            materialize(service,parts,root)
-            require(unchanged(parts,root),'group-candidate-content-changed')
-            outcome,stdout,stderr=execute_check(definition,root)
-            same=unchanged(parts,root)
+    with port.exclusion():
+        for definition in plan.payload['checks']:
+            if plan.ref.version == gr.WINDOWS_GROUP_VERSION:
+                outcome,stdout,stderr,same=_windows_check(service,port,parts,definition)
+            else:
+                root=_directory(service.authority)
+                materialize(service,parts,root)
+                require(unchanged(parts,root),'group-candidate-content-changed')
+                outcome,stdout,stderr=execute_check(definition,root)
+                same=unchanged(parts,root)
             logs=[]
             for raw in (stdout,stderr):
                 pair=ingest_body(io.BytesIO(raw),service.store,operation); objects.append(pair); logs.append(pair[0])
-            pair=record('group.evidence',dict(name=definition['name'],definition=gr.digest(definition),**outcome,
+            pair=record('group.evidence',dict(name=definition['name'],definition=gr.definition_digest(plan,definition),**outcome,
                 tree_unchanged=same,environment_inputs='system runtime and approved environment; ignored and opaque files excluded'),
                 dict(candidate=('decision',candidate.ref),stdout=('integrity',logs[0]),stderr=('integrity',logs[1])),version=candidate.ref.version)
             objects.append(pair); evidence.append((definition['name'],pair[0]))

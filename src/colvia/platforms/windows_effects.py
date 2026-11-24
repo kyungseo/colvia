@@ -19,9 +19,10 @@ NATIVE_ALIASES=frozenset(('colvia.exe','colvia-manage.exe'))
 
 
 class WindowsEffects:
-    def __init__(self,root,authority,*,files=None,observer=None,mover=None,native_entries=False):
+    def __init__(self,root,authority,*,files=None,observer=None,mover=None,native_entries=False,grouped=False):
         self.root=Path(root);self.authority=Path(authority);self.locked=False
         self.native_entries=native_entries
+        self.grouped=grouped
         self.files=files or WindowsFiles(api=RenameAPI());self.api=self.files.api
         self.observer=observer or Observer(files=self.files);self.mover=mover or ExactMove(api=self.api,files=self.files)
         self.files.private_directory(self.authority)
@@ -130,9 +131,10 @@ class WindowsEffects:
         self.files.sync_directory(stage)
         return dict(application=application,root=self.root_identity,authority=self.authority_identity,stage=native,ancestors=ancestors,items=items)
     def inherited_creation(self,item):
-        # Only an authenticated lifecycle caller may opt in, and only for
-        # publishing a managed alias at its original name (never evacuation).
-        if self.native_entries and item['path'] in NATIVE_ALIASES and item['pre_native'] is not None:
+        # NTFS can carry the original name's creation time across a rename.
+        # Only grouped replacements or the designated managed aliases may
+        # use the exact retained original's timestamp. Evacuation stays exact.
+        if (self.grouped or self.native_entries and item['path'] in NATIVE_ALIASES) and item['pre_native'] is not None:
             return item['pre_native'][2]
         return None
     def published_identity(self,item,native):
@@ -167,9 +169,14 @@ class WindowsEffects:
 
     def state(self,manifest,index):return self.inspect_state(manifest,index)['state']
     def _move(self,source,target,entry,identity,before_effect,event,*,inherited_creation=None):
+        # The guard reopens target and stage files for read-only observation.
+        # Run it under the effect lock before ExactMove takes its non-shareable
+        # DELETE access. ExactMove still verifies the source on the rename handle
+        # and refuses replacement at the target name.
+        before_effect()
         options={} if inherited_creation is None else dict(inherited_creation=inherited_creation)
         return self.mover.move(source,target,expected=dict(identity=identity,size=entry['size'],sha256=entry['sha256']),
-                               before_effect=before_effect,event=event,**options)
+                               before_effect=lambda:None,event=event,**options)
     def apply_one(self,manifest,index,*,before_effect=lambda:None,event=lambda _:None):
         state=self.inspect_state(manifest,index);item=manifest['items'][index]
         require(not state['retained_original_modified'],'effect-evacuated-file-changed')
@@ -200,3 +207,4 @@ class WindowsEffects:
     def cancellable(self,manifest,index):
         state=self.inspect_state(manifest,index)
         require(state['state']=='pre' and not state['retained_original_modified'],'worker-cancel-requires-all-pre')
+        return True

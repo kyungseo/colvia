@@ -7,7 +7,7 @@
     "manual/assets/readme-drift.ko.svg": "e5fe936249542455f5d1ce151bec91a7adf130891e4432e701e8d47726276f21",
     "manual/assets/readme-notify.ko.svg": "7dd9a6acd43ea36db8f29ab3a8ca3b852c3253648cd800453216b2c4b0d6f055",
     "manual/assets/readme-split.ko.svg": "f7cf34d65528fa7c90ed3ccf40840f89e3f967fab9d9e4a889fd2317b98ceddb",
-    "manual/assets/readme-parallel.ko.svg": "f3417ab89c0e47e3c81178e51837a3e727f000bc1f3f273a4baba227b603b34d",
+    "manual/assets/readme-parallel.ko.svg": "3702348c0a6276dce506a1a09a465b18c3d61c34495374817b678bcd64cbd5f3",
     "manual/assets/readme-overview.ko.svg": "9cb8a5cbf37ed874ff87a8fe8041636e338fe012339704a0e7a40553b6827ead",
     "manual/assets/readme-credential.ko.svg": "2343693748acef7e66d52eef8c678099afd2bb69a7a5b1b5c7b669d948a7dde0",
     "manual/assets/readme-status.ko.svg": "628938b64e77c0da04d34d9372b61097db1ce9714f4a72eb60131b52e4468025",
@@ -35,10 +35,10 @@
     "split-dark.svg": "9e07cf225306421b920559c448878afbe2474c2a98d7500b87150c39ab6203e0",
     "split-en-light.svg": "28e0d4f72a06f8540d5932f65527c65a85e9fe466a2dc7748193e863d93a8e40",
     "split-en-dark.svg": "faba4923d14fbb688601aeb128acfc859e62807225320afac6310813c056f2a9",
-    "parallel-light.svg": "3cbe51fd7f5c5137fb5f85b3683227dcc058a1a1bffedbb6aa60b6e1386ccbff",
-    "parallel-dark.svg": "d6b36eb1c0b1fc7794823d86803df81902c36d587e7497fe9f7c56b209b1f12c",
-    "parallel-en-light.svg": "36d98ca357c6a4c9531dc2965a1de17adb9b08844d30710eb7e883084d509b35",
-    "parallel-en-dark.svg": "4bc08745e7d5f9dd9aab469d6d5269c9f33b30af1965ca6a928f9246d9229c35",
+    "parallel-light.svg": "4096383a66eaebcb049fc76a451807c13e2bbeff403bf2a4fe95e46c4e383b22",
+    "parallel-dark.svg": "47ad515d460b75d28ab0647fdba32a97a85826eef0b2ce21d1a36415ec26f4ca",
+    "parallel-en-light.svg": "fdf8cff4cff7fc60ea7ba7353b1ff4931c616ac1b8ccfe6af7713dfdae257581",
+    "parallel-en-dark.svg": "aabbf6e8bd2f0366ae4b731392586352c3b6beb0d677b1df73e8f7d337e02ac4",
     "overview-light.svg": "df74736e2e945948b64337111f55e6dcbda178b169824926ee984ad33316ecd7",
     "overview-dark.svg": "23fd48f5c5d1511c419062f21c28fd4c10c618ab6b2c89da095614433d52226c",
     "overview-en-light.svg": "41142dd0f292773781dd015a5c803175792f25a97cb7804b901f6c36633e61de",
@@ -512,57 +512,57 @@
     {
       "file": "parallel-light.svg",
       "box": [
-        220,
-        89,
-        62,
-        32
+        24,
+        15,
+        80,
+        28
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251,
-        105
+        64,
+        29
       ]
     },
     {
       "file": "parallel-dark.svg",
       "box": [
-        220,
-        89,
-        62,
-        32
+        24,
+        15,
+        80,
+        28
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251,
-        105
+        64,
+        29
       ]
     },
     {
       "file": "parallel-en-light.svg",
       "box": [
-        220,
-        89,
-        62,
-        32
+        24,
+        15,
+        80,
+        28
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251,
-        105
+        64,
+        29
       ]
     },
     {
       "file": "parallel-en-dark.svg",
       "box": [
-        220,
-        89,
-        62,
-        32
+        24,
+        15,
+        80,
+        28
       ],
       "group_width": 52.6196747728983,
       "center": [
-        251,
-        105
+        64,
+        29
       ]
     }
   ],
@@ -612,47 +612,47 @@
       }
     },
     "parallel-light.png": {
-      "svg_sha256": "3cbe51fd7f5c5137fb5f85b3683227dcc058a1a1bffedbb6aa60b6e1386ccbff",
-      "png_sha256": "5b255005f32cdaaf725adb50c883e2990a64a6f248734fa231890f56827dc1b4",
-      "width": 720,
-      "height": 420,
+      "svg_sha256": "4096383a66eaebcb049fc76a451807c13e2bbeff403bf2a4fe95e46c4e383b22",
+      "png_sha256": "157d0f1a5761ce62eb076ae27aec57d0cb8fa74accecbfc6a2dbd87063f68792",
+      "width": 1824,
+      "height": 508,
       "chromium": "149.0.7827.55",
       "fonts": {
-        "SkinSans-400-grouped.woff2": "586eeb6a00e346daddc048969250b865b0981d6ff4539f1532ab174c08e8b2fb",
-        "SkinSans-700-grouped.woff2": "cdb20b39bdf4d89ef0c82f5780d4944d94f4e929ffc5c7d76dc2196f8b95b544"
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "parallel-dark.png": {
-      "svg_sha256": "d6b36eb1c0b1fc7794823d86803df81902c36d587e7497fe9f7c56b209b1f12c",
-      "png_sha256": "452e5979403c32ce0ff546b54dc5ceb7d1a3415cf1ad561a5da3caad4e4954f1",
-      "width": 720,
-      "height": 420,
+      "svg_sha256": "47ad515d460b75d28ab0647fdba32a97a85826eef0b2ce21d1a36415ec26f4ca",
+      "png_sha256": "e804fa88b34943e0c688fda359ab28789d098c2e0afdf2cf057d582dd54be60b",
+      "width": 1824,
+      "height": 508,
       "chromium": "149.0.7827.55",
       "fonts": {
-        "SkinSans-400-grouped.woff2": "586eeb6a00e346daddc048969250b865b0981d6ff4539f1532ab174c08e8b2fb",
-        "SkinSans-700-grouped.woff2": "cdb20b39bdf4d89ef0c82f5780d4944d94f4e929ffc5c7d76dc2196f8b95b544"
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "parallel-en-light.png": {
-      "svg_sha256": "36d98ca357c6a4c9531dc2965a1de17adb9b08844d30710eb7e883084d509b35",
-      "png_sha256": "87bb09ab596c8142c702d7e8936a0dfc8f1e00363990fa44ecb3652e25c79b57",
-      "width": 720,
-      "height": 420,
+      "svg_sha256": "fdf8cff4cff7fc60ea7ba7353b1ff4931c616ac1b8ccfe6af7713dfdae257581",
+      "png_sha256": "a956a0bf326e3da3329aeda1df31442cb97368adc6e1b5f8a6298d4dc0e1502c",
+      "width": 1824,
+      "height": 508,
       "chromium": "149.0.7827.55",
       "fonts": {
-        "SkinSans-400-grouped.woff2": "586eeb6a00e346daddc048969250b865b0981d6ff4539f1532ab174c08e8b2fb",
-        "SkinSans-700-grouped.woff2": "cdb20b39bdf4d89ef0c82f5780d4944d94f4e929ffc5c7d76dc2196f8b95b544"
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "parallel-en-dark.png": {
-      "svg_sha256": "4bc08745e7d5f9dd9aab469d6d5269c9f33b30af1965ca6a928f9246d9229c35",
-      "png_sha256": "9b0427dd0f888d2678444140e2feb2ab9a6274f1b0ba78a9e90131829c49bca9",
-      "width": 720,
-      "height": 420,
+      "svg_sha256": "aabbf6e8bd2f0366ae4b731392586352c3b6beb0d677b1df73e8f7d337e02ac4",
+      "png_sha256": "192424331f49f22c934fbc3a0c17a8ea3676dc6c875ad2d725b5a0aa012dae81",
+      "width": 1824,
+      "height": 508,
       "chromium": "149.0.7827.55",
       "fonts": {
-        "SkinSans-400-grouped.woff2": "586eeb6a00e346daddc048969250b865b0981d6ff4539f1532ab174c08e8b2fb",
-        "SkinSans-700-grouped.woff2": "cdb20b39bdf4d89ef0c82f5780d4944d94f4e929ffc5c7d76dc2196f8b95b544"
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "drift-dark.png": {

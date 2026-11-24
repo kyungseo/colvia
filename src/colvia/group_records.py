@@ -1,5 +1,8 @@
 """Version-pinned grouped decisions; legacy pairs and bounded member maps."""
-import hashlib
+from contextlib import contextmanager
+from contextvars import ContextVar
+from dataclasses import replace
+import hashlib, re
 from .codec import require, canonical_bytes
 from .graph import Schema
 from .records import fields, one, text, link, head_summary, record, MAP_KINDS, TREE_KINDS
@@ -11,6 +14,10 @@ from .worker_state import path_namespace, transitions
 
 
 MAX_MEMBERS = 8
+WINDOWS_GROUP_VERSION = 3
+WINDOWS_GROUP_PLATFORM = 'windows-x64'
+WINDOWS_PATH_RESERVED = re.compile(
+    r'(?:con|prn|aux|nul|conin\$|conout\$|(?:com|lpt)[0-9¹²³])(?:\..*)?\Z', re.IGNORECASE)
 MEMBER_FIELDS = {'head':'heads', 'approval':'approvals', 'completed':'completed'}
 
 
@@ -22,7 +29,7 @@ def pinned_group_version(obj):
 def pinned_decision_version(obj):
     auth=link(obj,'authorization')
     require(auth is not None and auth.kind=='group.authorization' and
-            (obj.ref.version,auth.version) in ((2,1),(3,2)), 'group-decision-version-required')
+            (obj.ref.version,auth.version) in ((2,1),(3,2),(4,WINDOWS_GROUP_VERSION)), 'group-decision-version-required')
 
 
 def member_refs(obj,field,plan,load):
@@ -40,7 +47,7 @@ def member_links(version,field,works,refs=None):
     if version==1:
         require(len(works)==2, 'group-two-distinct-works-required')
         return {field+str(i):('decision',refs[i] if refs is not None else None) for i in range(2)},[]
-    require(version==2 and 2<=len(works)<=MAX_MEMBERS,'group-member-count-unsupported')
+    require(version in (2, WINDOWS_GROUP_VERSION) and 2<=len(works)<=MAX_MEMBERS,'group-member-count-unsupported')
     if refs is None: return {MEMBER_FIELDS[field]:('decision',None)},[]
     require(len(refs)==len(works),'group-member-map-mismatch')
     mapping=build_map(zip(works,refs))
@@ -103,6 +110,41 @@ def definitions(checks):
     require(len(names)==len(set(names)), 'group-duplicate-check')
 
 
+def windows_path(path):
+    require(logical_path(path) == path, 'group-invalid-windows-path')
+    for part in path.split('/'):
+        require(not part.endswith(('.', ' ')) and not any(c in '<>:"|?*~' for c in part)
+                and WINDOWS_PATH_RESERVED.fullmatch(part) is None,
+                'group-invalid-windows-path')
+    return path
+
+
+def windows_definitions(checks):
+    require(type(checks) is list and 1 <= len(checks) <= 20, 'group-check-definitions-required')
+    names = set()
+    for check in checks:
+        require(type(check) is dict and set(check) == {'name', 'script', 'cwd', 'timeout_seconds', 'output_bytes'},
+                'group-invalid-windows-file-check')
+        text(check['name'], 128)
+        require(check['name'] not in names, 'group-duplicate-check')
+        names.add(check['name'])
+        require(type(check['script']) is str and 1 <= len(check['script']) <= 16384
+                and '\x00' not in check['script'] and bool(check['script'].strip()),
+                'group-invalid-windows-check-script')
+        if check['cwd'] != '.':
+            windows_path(check['cwd'])
+        require(type(check['timeout_seconds']) is int and 1 <= check['timeout_seconds'] <= 45,
+                'group-invalid-check-timeout')
+        require(type(check['output_bytes']) is int and 1024 <= check['output_bytes'] <= 1048576,
+                'group-invalid-check-output-limit')
+
+
+def definition_digest(plan, definition):
+    if plan.ref.version == WINDOWS_GROUP_VERSION:
+        return digest(dict(platform=plan.payload['platform'], definition=definition))
+    return digest(definition)
+
+
 def _plan(p):
     fields(p,{'group','works','sources','destination','checks','acknowledgement'})
     _token(p['group']); _uuid(p['destination']); text(p['acknowledgement'])
@@ -139,6 +181,19 @@ def _evidence(p):
     for name in ('candidate','stdout','stderr'): one(p,name)
 
 
+def _windows_evidence(p):
+    require('runtime' in p,'group-check-runtime-evidence-required')
+    runtime = p['runtime']
+    _evidence({key: value for key, value in p.items() if key != 'runtime'})
+    if runtime is not None:
+        require(type(runtime) is dict and set(runtime) == {'manifest', 'runner', 'harness'},
+                'group-check-runtime-evidence-invalid')
+        require(all(type(digest) is str and re.fullmatch(r'[0-9a-f]{64}', digest) for digest in runtime.values()),
+                'group-check-runtime-evidence-invalid')
+    if p['outcome']=='exited' and p['exit_code']==0:
+        require(runtime is not None,'group-check-runtime-evidence-required')
+
+
 def _review(p):
     fields(p,set())
     for name in ('candidate','evidence'): one(p,name)
@@ -164,8 +219,7 @@ def _effect(p):
     require(all(bool(p['links'][k])==(p['state']=='completed') for k in ('completed0','completed1')),'group-completion-pair-required')
 
 
-def _plan_v2(p):
-    fields(p,{'group','works','sources','destination','checks','acknowledgement'})
+def _mapped_plan(p):
     _token(p['group']); _uuid(p['destination']); text(p['acknowledgement'])
     require(type(p['works']) is list and 2<=len(p['works'])<=MAX_MEMBERS and
             all(type(w) is str for w in p['works']) and p['works']==sorted(set(p['works'])), 'group-member-count-unsupported')
@@ -174,8 +228,20 @@ def _plan_v2(p):
             len(set([*p['sources'],p['destination']]))==len(p['works'])+1,'group-distinct-workspaces-required')
     for value in p['works']: _token(value)
     for value in p['sources']: _uuid(value)
-    definitions(p['checks'])
     for name in ('heads','baseline','destination_registration','backup_root'): one(p,name)
+
+
+def _plan_v2(p):
+    fields(p,{'group','works','sources','destination','checks','acknowledgement'})
+    _mapped_plan(p)
+    definitions(p['checks'])
+
+
+def _windows_plan(p):
+    fields(p,{'group','works','sources','destination','checks','acknowledgement','platform'})
+    require(p['platform'] == WINDOWS_GROUP_PLATFORM, 'group-platform-unqualified')
+    _mapped_plan(p)
+    windows_definitions(p['checks'])
 
 
 def _approval_v2(p):
@@ -222,7 +288,12 @@ def schemas():
         schema('group.dissolution',_dissolution,dict(plan=['group.plan'],selection=['group.plan','group.approval','group.candidate','group.review']),validate_dissolution,2),
         schema('group.effect',_effect_v2,dict(authorization=['group.authorization'],manifest=['worker.manifest'],progress=['worker.progress'],previous=['group.effect'],completed=MAP_KINDS),validate_effect,2),
     ]
-    return legacy+modern
+    windows = [
+        replace(s, version=WINDOWS_GROUP_VERSION,
+                payload={'group.plan': _windows_plan, 'group.evidence': _windows_evidence}.get(s.kind, s.payload))
+        for s in modern
+    ]
+    return legacy + modern + windows
 
 
 
@@ -230,6 +301,7 @@ def plan_for(ref,load):
     """Fixed-depth chain; history never substitutes for a current selection."""
     obj=get(ref,load)
     for _ in range(6):
+        require(obj.ref.version==ref.version,'group-record-version-mismatch')
         if obj.ref.kind=='group.plan': return obj
         field={'group.member':'plan','group.approval':'plan','group.candidate':'approval','group.review':'candidate','group.authorization':'review','group.effect':'authorization'}.get(obj.ref.kind)
         require(field is not None, 'group-record-required'); obj=get(link(obj,field),load)
@@ -240,6 +312,10 @@ def validate_plan(ref,load):
     p=get(ref,load); baseline=get(link(p,'baseline'),load); before=read_tree(link(baseline,'tree'),load)
     require(baseline.payload['kind']=='git' and link(baseline,'workspace')==link(p,'destination_registration') and
             get(link(p,'destination_registration'),load).payload['workspace']==p.payload['destination'], 'group-destination-mismatch')
+    if p.ref.version==WINDOWS_GROUP_VERSION:
+        for entry in before:
+            require(entry['kind']=='regular', 'group-windows-entry-kind-unsupported')
+            windows_path(entry['path'])
     scopes=[]
     for i,head in enumerate(member_refs(p,'head',p,load)):
         h,plan,_,_=head_summary(head,load)
@@ -255,7 +331,7 @@ def validate_plan(ref,load):
         require(not set(scopes).intersection(plan.payload['scope']), 'group-overlapping-scopes')
         scopes.extend(plan.payload['scope'])
     path_namespace(scopes+[e['path'] for e in before])
-    if p.ref.version==2: require(len(scopes)<=100000,'group-union-path-limit')
+    if p.ref.version!=1: require(len(scopes)<=100000,'group-union-path-limit')
 
 
 def validate_member(ref,load):
@@ -272,7 +348,38 @@ def validate_approval(ref,load):
         require(a.ref.version==1 and link(a,'plan')==wp.ref and all(a.payload[k]==wp.payload[k] for k in ('work','workspace')) and a.payload['statement']==approval.payload['statement'], 'group-approval-mismatch')
 
 
+_candidate_parts_scope = ContextVar('group_candidate_parts_scope', default=None)
+
+
+@contextmanager
+def reuse_candidate_parts(view):
+    # Keep the exact publication view, including its head and root read set.
+    memo = {}
+    token = _candidate_parts_scope.set((view, memo))
+    try:
+        yield
+    finally:
+        memo.clear()
+        _candidate_parts_scope.reset(token)
+
+
 def candidate_parts(ref,load):
+    """Return a candidate proof. Validators read shared envelopes, entries and changes without mutating them."""
+    scope = _candidate_parts_scope.get()
+    if scope is None or scope[0] is not load:
+        return _candidate_parts(ref,load)
+    memo = scope[1]
+    if ref not in memo:
+        parts = _candidate_parts(ref,load)
+        memo.clear()
+        memo[ref] = parts
+    candidate,approval,plan,baseline,before,after,changes,bodies,members = memo[ref]
+    # Validators treat entries and envelopes as read-only. Give each its own
+    # mutable outer collections without rebuilding the subtree.
+    return candidate,approval,plan,baseline,before.copy(),after.copy(),changes,bodies.copy(),members.copy()
+
+
+def _candidate_parts(ref,load):
     candidate=get(ref,load); approval=get(link(candidate,'approval'),load); plan=get(link(approval,'plan'),load)
     baseline=get(link(plan,'baseline'),load); before=read_tree(link(baseline,'tree'),load)
     after={e['path']:e for e in before}; bodies={}; scopes=[]; members=[]
@@ -295,7 +402,11 @@ def candidate_parts(ref,load):
     after=sorted(after.values(),key=lambda e:e['path'].encode())
     path_namespace(scopes+[e['path'] for e in before]+[e['path'] for e in after])
     changes=transitions(before,after,scopes)
-    if plan.ref.version==2: union_limits(before,after,scopes,changes)
+    if plan.ref.version!=1: union_limits(before,after,scopes,changes)
+    if plan.ref.version==WINDOWS_GROUP_VERSION:
+        for entry in after:
+            require(entry['kind']=='regular', 'group-windows-entry-kind-unsupported')
+            windows_path(entry['path'])
     require(not any(c['path'].split('/')[-1].casefold()=='.gitignore' for c in changes), 'worker-policy-edit-unsupported')
     require(candidate.payload['group']==plan.payload['group'], 'group-candidate-mismatch')
     return candidate,approval,plan,baseline,before,after,changes,bodies,members
@@ -314,7 +425,7 @@ def passed(evidence):
 def validate_evidence(ref,load):
     e=get(ref,load); plan=plan_for(link(e,'candidate'),load)
     definitions_={c['name']:c for c in plan.payload['checks']}; definition=definitions_.get(e.payload['name'])
-    require(definition is not None and e.payload['definition']==digest(definition), 'group-check-definition-mismatch')
+    require(definition is not None and e.payload['definition']==definition_digest(plan,definition), 'group-check-definition-mismatch')
     require(sum(get(link(e,k),load).payload['size'] for k in ('stdout','stderr'))<=definition['output_bytes'], 'group-check-log-limit')
 
 

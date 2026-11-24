@@ -61,16 +61,17 @@ def _publish(service,operation,port,effect,auth,review,parts,pair,*,objects=(),h
         expected[work_key(plan.payload['work'])]=h.ref
         if heads: changes[work_key(plan.payload['work'])]=heads[plan.payload['work']]
     def validate(view):
-        _live(service,view,effect,auth,parts)
-        _parts(service,pair[0],view)
-        states=_states(service,port,effect,parts,load=view,cancelling=cancelling)
-        require(all(s in ({'pre'} if cancelling else {'post'} if terminal else {'pre','post','evacuated'}) for s in states),'group-terminal-state-mismatch')
-        if heads:
-            from .composition import validate_transition
-            from .records import head_summary
-            for work,ref in heads.items():
-                service.work._validate_head(ref,view)
-                h,p,r,_=head_summary(ref,view); validate_transition(expected[work_key(work)],h,p,r,view)
+        with view.reuse_immutable_objects(), gr.reuse_candidate_parts(view):
+            _live(service,view,effect,auth,parts)
+            _parts(service,pair[0],view)
+            states=_states(service,port,effect,parts,load=view,cancelling=cancelling)
+            require(all(s in ({'pre'} if cancelling else {'post'} if terminal else {'pre','post','evacuated'}) for s in states),'group-terminal-state-mismatch')
+            if heads:
+                from .composition import validate_transition
+                from .records import head_summary
+                for work,ref in heads.items():
+                    service.work._validate_head(ref,view)
+                    h,p,r,_=head_summary(ref,view); validate_transition(expected[work_key(work)],h,p,r,view)
     service.store.commit_heads(operation=operation,expected=expected,changes=changes,objects=[*objects,pair],validate=validate)
 
 
@@ -117,16 +118,20 @@ def _run(service,port,ref,event):
 def execute(service,*,operation,group,application,request,receipt,statement,actor='owner',event=lambda stage:None):
     _token(operation); _token(application); _token(request); text(statement); text(actor,256)
     require(application.startswith('group-'),'group-application-prefix-required')
-    port=service._port()
+    selection=service.store.head(request_key(request)) or service._selected(group).ref
+    plan=gr.plan_for(selection,service.store.load)
+    port=service._port(version=plan.ref.version)
     with port.exclusion():
         saved=service.store.head(request_key(request))
         if saved:
             effect,auth,review,parts=_parts(service,saved,service.store.load)
+            require(parts[2].ref.version==plan.ref.version,'group-record-version-mismatch')
             require(parts[2].payload['group']==group and auth.payload['request_digest']==gr.request_digest(review.ref,receipt,request,actor,statement,application), 'group-request-mismatch')
             if effect.payload['state']=='completed': return _outcome(effect,parts)
             require(effect.payload['state']=='pending','group-request-cancelled')
             return _run(service,port,effect.ref,event)
         selected=service._selected(group)
+        require(selected.ref.version==plan.ref.version,'group-record-version-mismatch')
         require(selected.ref.kind=='group.review','group-tested-review-required')
         gr.require_checks(selected,service.store.load)
         require(receipt==service._receipt('accept',group,selected.ref),'group-stale-receipt')
@@ -161,7 +166,7 @@ def execute(service,*,operation,group,application,request,receipt,statement,acto
 
 def cancel(service,*,operation,group):
     selected=service._selected(group); require(selected.ref.kind=='group.effect','group-pending-effect-required')
-    port=service._port()
+    port=service._port(version=selected.ref.version)
     with port.exclusion():
         effect,auth,review,parts=_parts(service,selected.ref,service.store.load)
         require(effect.payload['state']=='pending','group-pending-effect-required')

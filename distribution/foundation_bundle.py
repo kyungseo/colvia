@@ -68,7 +68,7 @@ def _identity(path):
 
 
 def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,licenses,output,
-             release,sequence,os_name,architecture,python_entry,python_version,sqlite_version,notice_app=None,document_assets=False,windows_notice_entry=None):
+             release,sequence,os_name,architecture,python_entry,python_version,sqlite_version,notice_app=None,document_assets=False,windows_notice_entry=None,windows_group_runner=None,windows_group_runner_license=None):
     source,runtime,verifier,native_entry,anchor,output=map(Path,(source,runtime,verifier,native_entry,anchor,output))
     _token(release);require(type(sequence) is int and sequence>0,'bundle-sequence-invalid')
     require((os_name,architecture) in (('macos','arm64'),('windows','arm64'),('windows','x64')),'bundle-platform-unavailable')
@@ -122,6 +122,13 @@ def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,
     require(not set(guides)&set(licenses),'bundle-path-collision')
     generated.update({'manager.py':wrapper('manager_entry'),'product.py':wrapper('managed_entry'),
         'installation.json':canonical_bytes(dict(version=1,**configuration,anchor='trust/root.json',native_entry=executable))})
+    require((windows_group_runner is None)==(windows_group_runner_license is None),'bundle-group-runner-license-required')
+    if windows_group_runner is not None:
+        from colvia.group_windows_runner import MXC_RUNNER, MXC_SHA256
+        require((os_name,architecture)==('windows','x64'),'bundle-group-runner-platform')
+        runner_license='licenses/microsoft-mxc-sdk-LICENSE.md'
+        add(MXC_RUNNER,windows_group_runner)
+        add(runner_license,windows_group_runner_license)
     worker_members={}
     if document_assets:
         from distribution.document_worker import MEMBERS,archive_bytes
@@ -172,6 +179,10 @@ def assemble(*,source,runtime,verifier,native_entry,anchor,configuration,guides,
         total+=size;require(total<=4*1024**3,'bundle-size-limit')
         inventory.append(dict(path=name,kind='regular',size=size,sha256=h.hexdigest(),mode=mode))
     indexed_inputs={row['path']:row for row in inventory}
+    if windows_group_runner is not None:
+        require(indexed_inputs[MXC_RUNNER]['sha256']==MXC_SHA256,'bundle-group-runner-identity')
+        require(indexed_inputs[runner_license]['sha256']=='d9a1b1e30d633d5732ea18e3cba9538d293ebc53e1a9e4e96ab739e0c5c4f1cb',
+                'bundle-group-runner-license-identity')
     for name,raw in worker_members.items():require(indexed_inputs['lib/'+name]['sha256']==hashlib.sha256(raw).hexdigest(),'bundle-worker-source-drift')
     for name,(path,digest) in captured.items():require(_identity(path)==identities[name] and hashlib.sha256(path.read_bytes()).hexdigest()==digest,'bundle-input-changed')
     caps=sorted(runtime_capabilities());manifest=canonical_bytes(dict(version=1,release=release,sequence=sequence,os=os_name,architecture=architecture,

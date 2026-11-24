@@ -208,6 +208,34 @@ class ValidationView:
 
     def __call__(self, ref): return self.load(ref)
 
+    @contextmanager
+    def reuse_immutable_objects(self):
+        """Reuse verified bytes inside one synchronous publication validator."""
+        source = self.load
+        cached = {}
+        remaining = 2 * 1024 * 1024
+        closed = False
+
+        def load(ref):
+            nonlocal remaining
+            if closed:
+                return source(ref)
+            if ref in cached:
+                return cached[ref]
+            raw = source(ref)
+            if type(raw) is bytes and len(cached) < 512 and len(raw) <= remaining:
+                cached[ref] = raw
+                remaining -= len(raw)
+            return raw
+
+        self.load = load
+        try:
+            yield
+        finally:
+            closed = True
+            self.load = source
+            cached.clear()
+
     def head(self, key):
         if key not in self.reads:
             self.reads[key] = map_get(self.snapshot.heads, key, self.load)
