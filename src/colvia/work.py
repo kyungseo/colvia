@@ -19,7 +19,7 @@ from .connection_identity import contexts_match, ROLES
 from .connection import Connections
 from .records import (check_previous_submission, observation_identity, application_registry,operation_closure,record,link,encode_observation,
                       decode_policy,text,head_summary,submission_input)
-from .storage.sqlite import _token
+from .storage.sqlite import _token, fresh_view_reads, reuse_operation_reads
 from .tree import read_tree
 
 
@@ -177,6 +177,7 @@ class WorkService:
             objects=[*objects,(ref,raw)],import_id=import_id,validate=validate)
         return ref
 
+    @reuse_operation_reads
     def plan(self,*,operation,work,title,goal,scope,checks,excludes=(),replace_receipt=None):
         _token(operation);_token(work)
         from .tree import logical_path
@@ -202,6 +203,7 @@ class WorkService:
         self._publish(operation,work,prior,head,objects,import_id=operation,recheck=lambda:self._recheck_observation(observed,frozenset(scope)))
         return self.plan_review(work)
 
+    @fresh_view_reads
     def plan_review(self,work):
         ref,head=self._head(work);require(head.payload['phase']=='planned','plan-not-awaiting-approval')
         plan=self._object(link(head,'plan'))
@@ -212,6 +214,7 @@ class WorkService:
                               '이 계획대로 진행하는 것까지 승인했다면 다시 묻지 않고 시작합니다. '
                               '계획이 달라졌다면 변경 내용을 보고 진행 여부를 정해 주세요.'))
 
+    @reuse_operation_reads
     def approve(self,*,operation,work,receipt,statement,start=False):
         ref,head=self._head(work);require(head.payload['phase']=='planned','plan-not-awaiting-approval')
         require(receipt==self._receipt('approve',work,ref),'stale-plan-receipt');text(statement)
@@ -246,6 +249,7 @@ class WorkService:
         require(now.snapshot.entries==observed.snapshot.entries and now.topology==observed.topology and
                 now.opaque==observed.opaque,'workspace-observation-changed')
 
+    @reuse_operation_reads
     def start(self,*,operation,work,expected_approval_head=None):
         ref,head=self._head(work);require(head.payload['phase']=='approved','plan-approval-required')
         if expected_approval_head is not None:
@@ -286,6 +290,7 @@ class WorkService:
             objects.append((result,raw));newhead=self._head_record(planref,plan.payload,'review',approval=link(head,'approval'),result=result,previous=ref)
             yield dict(expected=ref,head=newhead,objects=objects,current=current,scope=scope,pinned=pinned,pinned_root=pinned_root)
 
+    @reuse_operation_reads
     def submit(self,*,operation,work,summary,checks):
         with self._prepare_submission(operation=operation,work=work,summary=summary,checks=checks) as prepared:
             self._publish(operation,work,prepared['expected'],prepared['head'],prepared['objects'],import_id=operation,
@@ -300,6 +305,7 @@ class WorkService:
         entries=[entry_at(tree,path,self.store.load) for path in sorted(scope)]
         return self.workspace.selected(scope)==tuple(e for e in entries if e is not None)
 
+    @fresh_view_reads
     def review(self,work):
         ref,head=self._head(work,same_workspace=False);require(head.payload['phase']=='review','result-not-awaiting-review')
         plan=self._object(link(head,'plan'));result=self._object(link(head,'result'))
@@ -315,6 +321,7 @@ class WorkService:
             value['attribution']=attribution_summary(self,result)
         return value
 
+    @reuse_operation_reads
     def accept(self,*,operation,work,receipt,statement):
         ref,head=self._head(work);text(statement)
         if head.payload['phase']=='completed':
@@ -336,6 +343,7 @@ class WorkService:
         self._publish(operation,work,ref,newhead,[(decision,raw)],recheck=lambda:require(self._result_agrees(plan,result),'reviewed-files-changed'))
         return self.view(work)
 
+    @reuse_operation_reads
     def revise(self,*,operation,work,receipt,statement):
         ref,head=self._head(work);require(head.payload['phase'] in ('review','completed'),'work-not-reviewable');text(statement)
         require(receipt==self._receipt('accept' if head.payload['phase']=='review' else 'reopen',work,ref),'stale-result-receipt')
@@ -347,6 +355,7 @@ class WorkService:
         self._publish(operation,work,ref,newhead,[(decision,raw)])
         return dict(work=work,state='active')
 
+    @fresh_view_reads
     def view(self,work):
         group_snapshot=self.store.root()
         from .maps import map_get
@@ -394,6 +403,7 @@ class WorkService:
         if head.payload['phase']=='completed' and not group_membership:value['reopen_receipt']=self._receipt('reopen',work,ref)
         return value
 
+    @reuse_operation_reads
     def archive(self,*,operation,work,archived):
         ref,head=self._head(work);require(head.payload['phase']=='completed' and type(archived) is bool,'archive-completed-work-only')
         if head.payload['archived']==archived:return self.view(work)

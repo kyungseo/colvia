@@ -8,6 +8,7 @@ from __future__ import annotations
 from contextlib import contextmanager,nullcontext
 from contextvars import ContextVar
 from dataclasses import dataclass
+from functools import wraps
 import os
 from pathlib import Path
 import sqlite3
@@ -30,6 +31,61 @@ BUSY_SECONDS = 5
 _PROCESS_LOCKS = weakref.WeakValueDictionary()
 _PROCESS_LOCKS_GUARD = threading.Lock()
 _VALIDATIONS = ContextVar("colvia_validation_views", default={})
+_OPERATION_READS = ContextVar("colvia_operation_reads", default=None)
+_METADATA_REUSE_BYTES = 2 * 1024 * 1024
+_METADATA_REUSE_ENTRIES = 2048
+_PROOF_REUSE_ENTRIES = 8192
+
+
+class _VerifiedObjects:
+    """Bounded reuse of successful immutable reads. Body chunks stay transient."""
+    def __init__(self, *, entries=_METADATA_REUSE_ENTRIES):
+        self.entries = entries
+        self.metadata = {}
+        self.body_proofs = set()
+        self.remaining = _METADATA_REUSE_BYTES
+        self.closed = False
+        self.needs_guard = False
+
+    def read(self, ref, read):
+        if self.closed or getattr(ref, 'kind', None) == 'body.chunk':
+            return read(ref)
+        if ref in self.metadata:
+            self.needs_guard = True
+            return self.metadata[ref]
+        raw = read(ref)
+        if type(raw) is bytes and len(self.metadata) < self.entries and len(raw) <= self.remaining:
+            self.metadata[ref] = raw
+            self.remaining -= len(raw)
+        return raw
+
+    def close(self):
+        self.closed = True
+        self.metadata.clear()
+        self.body_proofs.clear()
+
+
+def reuse_operation_reads(method):
+    @wraps(method)
+    def run(service, *args, **kwargs):
+        if not isinstance(service.store, GenerationStore):
+            return method(service, *args, **kwargs)
+        with service.store.reuse_operation_reads():
+            return method(service, *args, **kwargs)
+    return run
+
+
+def fresh_view_reads(method):
+    @wraps(method)
+    def read(service, *args, **kwargs):
+        if _OPERATION_READS.get() is None:
+            return method(service, *args, **kwargs)
+        token = _OPERATION_READS.set(None)
+        try:
+            return method(service, *args, **kwargs)
+        finally:
+            _OPERATION_READS.reset(token)
+    return read
 
 
 def _process_lock(identity):
@@ -205,36 +261,48 @@ class ValidationView:
         self.load = load
         self.reads = {}
         self.full_root_read = False
+        self._body_proofs = None
 
     def __call__(self, ref): return self.load(ref)
 
     @contextmanager
-    def reuse_immutable_objects(self):
-        """Reuse verified bytes inside one synchronous publication validator."""
+    def reuse_immutable_objects(self, *, published_proofs=None):
+        """Reuse a publication's exact bytes and body proofs within its validator."""
+        if self._body_proofs is not None:
+            yield
+            return
         source = self.load
-        cached = {}
-        remaining = 2 * 1024 * 1024
-        closed = False
-
-        def load(ref):
-            nonlocal remaining
-            if closed:
-                return source(ref)
-            if ref in cached:
-                return cached[ref]
-            raw = source(ref)
-            if type(raw) is bytes and len(cached) < 512 and len(raw) <= remaining:
-                cached[ref] = raw
-                remaining -= len(raw)
-            return raw
-
-        self.load = load
+        memo = _VerifiedObjects()
+        self._body_proofs = set() if published_proofs is None else published_proofs
+        self.load = lambda ref: memo.read(ref, source)
         try:
             yield
         finally:
-            closed = True
             self.load = source
-            cached.clear()
+            self._body_proofs = None
+            memo.close()
+
+    def verify_chunk(self, ref):
+        if self._body_proofs is None or (ref.kind, ref.version) != ('body.chunk', 1):
+            return False
+        if ref not in self._body_proofs:
+            verify_object(ref, self.load(ref))
+            self._remember_body_proof(ref)
+        return True
+
+    def verify_body(self, ref):
+        if self._body_proofs is None:
+            return False
+        if ref not in self._body_proofs:
+            from ..bodies import body_bytes
+            for _ in body_bytes(ref, self):
+                pass
+            self._remember_body_proof(ref)
+        return True
+
+    def _remember_body_proof(self, ref):
+        if len(self._body_proofs) < _PROOF_REUSE_ENTRIES:
+            self._body_proofs.add(ref)
 
     def head(self, key):
         if key not in self.reads:
@@ -267,13 +335,15 @@ class GenerationStore:
     def __init__(self, path: Path, *, project: str, instance: str, generation: str,
                  readonly: bool = False, active_check: Callable[[], None],
                  _retirement_operation: str|None = None,
-                 write_check: Callable[[], None] = lambda: None, reader_capabilities=None, writer_capabilities=None, transaction_scope=nullcontext):
+                 write_check: Callable[[], None] = lambda: None, reader_capabilities=None, writer_capabilities=None,
+                 transaction_scope=nullcontext, read_active_check=None):
         for value in (project, instance, generation): _token(value)
         self.path = Path(path)
         self.project, self.instance, self.generation = project, instance, generation
         self.readonly, self.active_check = readonly, active_check
         self.write_check = write_check
         self.transaction_scope=transaction_scope
+        self.read_active_check = active_check if read_active_check is None else read_active_check
         self.reader_capabilities=frozenset(runtime_capabilities() if reader_capabilities is None else reader_capabilities)
         self.writer_capabilities=frozenset(runtime_capabilities() if writer_capabilities is None else writer_capabilities)
         require(_retirement_operation is None or readonly, "retired-read-only")
@@ -341,6 +411,9 @@ class GenerationStore:
                    reader_capabilities=reader_capabilities,writer_capabilities=writer_capabilities)
 
     def close(self):
+        memo = self._operation_read_cache()
+        if memo is not None:
+            memo.close()
         require(self.process_lock.acquire(timeout=BUSY_SECONDS),'store-busy')
         try: self.db.close()
         finally: self.process_lock.release()
@@ -353,7 +426,7 @@ class GenerationStore:
 
     def _guard(self, *, write=False, lifecycle=False, permitted_fence=None):
         require(_identity(self.path) == self.identity, 'store-file-replaced')
-        self.active_check()
+        (self.active_check if write else self.read_active_check)()
         row = self.db.execute('SELECT * FROM generation WHERE singleton=1').fetchone()
         require(row is not None and (row['project'],row['instance'],row['generation']) ==
                 (self.project,self.instance,self.generation), 'store-generation-mismatch')
@@ -375,6 +448,9 @@ class GenerationStore:
         with self.transaction_scope():
             with self._transaction_inner(write=write,lifecycle=lifecycle,retiring=retiring):
                 yield
+        memo = self._operation_read_cache()
+        if memo is not None:
+            memo.needs_guard = False
 
     @contextmanager
     def _transaction_inner(self, *, write=False, lifecycle=False, retiring=None):
@@ -424,8 +500,40 @@ class GenerationStore:
         if ref.kind != 'body.chunk': decode_envelope(ref,raw)
         return raw
 
+    def _operation_read_cache(self):
+        scope = _OPERATION_READS.get()
+        if scope is not None and scope[0] is self and scope[1] == threading.get_ident() and not scope[2].closed:
+            return scope[2]
+        return None
+
+    @contextmanager
+    def reuse_operation_reads(self):
+        """Share published metadata only within one explicit synchronous operation."""
+        if self.readonly or self._operation_read_cache() is not None:
+            yield
+            return
+        memo = _VerifiedObjects()
+        token = _OPERATION_READS.set((self, threading.get_ident(), memo))
+        try:
+            yield
+            if memo.needs_guard and not memo.closed:
+                # Verify the selected store if no live transaction followed the
+                # final cached read, as can happen when returning a receipt.
+                with self._transaction():
+                    pass
+        finally:
+            memo.close()
+            _OPERATION_READS.reset(token)
+
+    def _load_guarded(self, ref, import_id=None):
+        with self._transaction():
+            return self._load(ref, import_id)
+
     def load(self, ref: ObjectRef, *, import_id=None) -> bytes:
-        with self._transaction(): return self._load(ref,import_id)
+        memo = self._operation_read_cache()
+        if memo is not None and import_id is None:
+            return memo.read(ref, self._load_guarded)
+        return self._load_guarded(ref, import_id)
 
     def _put(self, ref, raw, *, published):
         verify_object(ref,raw)
@@ -569,14 +677,29 @@ class GenerationStore:
             require(ref not in incoming or incoming[ref]==raw,'object-collision')
             incoming[ref]=raw; size+=len(raw)
             require(size<=16*1024*1024,'publication-metadata-limit')
-        def load(ref): return incoming[ref] if ref in incoming else self.load(ref,import_id=import_id)
+        def load(ref):
+            if ref in incoming:
+                return incoming[ref]
+            # Only body chunks can carry staged import claims.
+            return self.load(ref, import_id=import_id if ref.kind == 'body.chunk' else None)
         # Hash/semantic verification is paged before the short publication lock.
         # The final transaction rechecks the exact heads, generation, immutable
         # object identities and import claims. No body bytes are rewritten there.
         with self._transaction(): observed = self._root()
         view = ValidationView(observed, load)
         context = _VALIDATIONS.set({**_VALIDATIONS.get(), self.identity:view})
-        try: validate(view)
+        try:
+            memo = self._operation_read_cache()
+            # Staged chunks and incoming descriptors have publication-local
+            # visibility. A refused publication must not lend their proofs.
+            reuse = nullcontext()
+            if memo is not None:
+                published_proofs = None
+                if import_id is None and not any(ref.kind == 'body.complete' for ref in incoming):
+                    published_proofs = memo.body_proofs
+                reuse = view.reuse_immutable_objects(published_proofs=published_proofs)
+            with reuse:
+                validate(view)
         except RecordError as exc:
             # Validation precedes the publication transaction. Unknown storage
             # outcomes must never be reclassified, even through a read callback.
@@ -591,7 +714,9 @@ class GenerationStore:
             if ref in seen: continue
             seen.add(ref)
             require(len(seen)<=1_000_000,'publication-reference-limit')
-            raw=load(ref)
+            # Publication performs its own fresh reads and claim checks, outside
+            # both the operation cache and the validator's mutable head view.
+            raw=incoming[ref] if ref in incoming else self._load_guarded(ref, import_id)
             published=False
             if ref not in incoming:
                 with self._transaction():

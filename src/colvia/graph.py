@@ -107,6 +107,10 @@ def validate_closure(roots: Iterable[ObjectRef], load: Callable[[ObjectRef], byt
         if previous is not None and previous >= depth:
             continue
         seen[ref] = depth
+        if ref.kind == 'body.chunk':
+            verify_chunk = getattr(load, 'verify_chunk', None)
+            if verify_chunk is not None and verify_chunk(ref) is True:
+                continue
         raw = load(ref)
         obj = registry.inspect(ref, raw, required=True)
         if previous is None and ref.kind != 'body.chunk':

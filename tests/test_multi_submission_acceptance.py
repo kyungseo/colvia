@@ -88,6 +88,18 @@ class MultiTests(MultiFixture,unittest.TestCase):
                     decision=head_summary(self.store.head(work_key(work)),self.store.load)[3]
                     self.assertEqual(3,decision.ref.version);self.assertEqual(link(effect,'authorization'),link(decision,'authorization'))
                 self.assertIsNone(self.store.head(PENDING))
+    def test_eight_member_finalization_has_a_guarded_read_budget(self):
+        self.tearDown();self.member_count=8;self.setUp()
+        shown=self.results(); marks={}
+        with patch.object(self.store,'_transaction_inner',wraps=self.store._transaction_inner) as tx:
+            def event(stage):
+                if stage in ('before-completion','completed'):
+                    marks[stage]=sum(not call.kwargs.get('write',False) for call in tx.call_args_list)
+            self.assertEqual(8,self.execute(shown,event=event)['accepted'])
+        self.assertLess(marks['before-completion'],marks['completed'])
+        self.assertLessEqual(marks['completed']-marks['before-completion'],1100)
+        self.assertEqual(8,self.accepted())
+
     def test_managed_cli_create_three_and_refuse_nine(self):
         import json
         from colvia.cli import parser,dispatch

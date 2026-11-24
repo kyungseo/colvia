@@ -26,7 +26,10 @@ class LocalWorkspace:
     def verify(self):
         from .connection_identity import PROJECT_IDENTITY
         self.store.pin_workspace_location(PROJECT_IDENTITY, self.store.head(PROJECT_IDENTITY))
-        reference,registration,bound=self.connections.workspace(self.workspace)
+        # Only immutable identity resolution is shared. Head/index reads and
+        # filesystem/Git observation still occur at their original boundaries.
+        resolved_identities = {}
+        reference,registration,bound=self.connections.workspace(self.workspace,_resolved=resolved_identities)
         topology=self.topology()
         current=topology.common if topology.kind=='git' else topology.root
         locator=self.locator_reader()
@@ -38,7 +41,7 @@ class LocalWorkspace:
                     (bound.location,current),(registration.root,topology.root),(registration.gitdir,topology.gitdir))):
             from .connection_boundary import ConnectionBoundaryError
             raise ConnectionBoundaryError('connection-creation-identity-changed',topology.root.path)
-        registrations=self.connections.registrations(topology)
+        registrations=self.connections.registrations(topology,_resolved=resolved_identities)
         resolved=resolve(locator,bound,topology,registrations)
         require(require_registered(resolved)==self.workspace,'wrong-workspace')
         require(same_plain_location(topology.root,registration.root) if topology.kind=='plain' else

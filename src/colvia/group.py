@@ -13,7 +13,7 @@ from .effects import guard, PENDING
 from .work import WorkService, work_key
 from .worker import WorkerService
 from .worker_state import require_initial
-from .storage.sqlite import _token
+from .storage.sqlite import _token, fresh_view_reads, reuse_operation_reads
 from . import group_records as gr
 
 ACTIVATION='group-activation'
@@ -122,6 +122,7 @@ class GroupService:
         require(not required.intersection(self.store.requirements()['read']), 'group-activation-record-required')
         return ObjectRef.parse(receipt['root'])
 
+    @reuse_operation_reads
     def create(self,*,operation,group,works,checks,acknowledgement):
         _token(operation); _token(group); text(acknowledgement)
         version=CURRENT_VERSION
@@ -176,6 +177,7 @@ class GroupService:
             self.store.commit_heads(operation=operation,expected=expected,changes=changes,objects=[*objects,pair],import_id=operation,validate=validate)
         return self.view(group)
 
+    @reuse_operation_reads
     def approve(self,*,operation,group,receipt,statement):
         plan=self._selected(group); require(plan.ref.kind=='group.plan','group-plan-approval-required')
         require(receipt==self._receipt('approve',group,plan.ref),'group-stale-receipt'); text(statement)
@@ -196,6 +198,7 @@ class GroupService:
         self.store.commit_heads(operation=operation,expected=expected,changes=changes,objects=[*objects,pair],validate=validate)
         return self.view(group)
 
+    @reuse_operation_reads
     def candidate(self,*,operation,group):
         selected=self._selected(group)
         if selected.ref.kind=='group.review': selected=self._object(link(selected,'candidate'))
@@ -231,6 +234,7 @@ class GroupService:
                 require(source._result_agrees(wp,result),'worker-source-files-changed')
         return parts
 
+    @reuse_operation_reads
     def check(self,*,operation,group):
         from .group_checks import run_checks
         selected=self._selected(group)
@@ -248,6 +252,7 @@ class GroupService:
             self.store.commit_heads(operation=operation,expected={gr.key(group):selected.ref},changes={gr.key(group):pair[0]},objects=[*objects,*mapping.objects,pair],import_id=operation,validate=validate)
         return self.view(group)
 
+    @reuse_operation_reads
     def dissolve(self,*,operation,group,receipt,statement):
         text(statement); selected=self._selected(group); plan=gr.plan_for(selected.ref,self.store.load)
         require(selected.ref.kind!='group.effect','group-application-already-started')
@@ -269,14 +274,17 @@ class GroupService:
         self.store.commit_heads(operation=operation,expected=expected,changes=changes,objects=[dissolution],validate=validate)
         return dict(group=group,state='dissolved',accepted=0)
 
+    @fresh_view_reads
     def view(self,group):
         from .group_view import view
         return view(self,group)
 
+    @reuse_operation_reads
     def execute(self,**options):
         from .group_effects import execute
         return execute(self,**options)
 
+    @reuse_operation_reads
     def cancel(self,**options):
         from .group_effects import cancel
         return cancel(self,**options)

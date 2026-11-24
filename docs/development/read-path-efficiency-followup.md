@@ -1,6 +1,6 @@
 # Read-path efficiency follow-up
 
-Status: P1 candidate. Phase A scope and time limit approved with a native x64 prerequisite. Assign a development record ID when the execution plan is approved. Recorded on 2026-11-24 from a static source review and macOS ARM64 synthetic measurements against source revision `9fbe2a5`.
+Status: P1 follow-up. The selected [Phase A implementation and verification](PATCH-20261124-001-read-path-efficiency.md) follows the Owner’s native x64 correctness closeout. Further performance work and Phase B remain open. Recorded on 2026-11-24 from a static source review and macOS ARM64 synthetic measurements against source revision `9fbe2a5`.
 
 Ownership: the [joint acceptance task](FEAT-20261122-002-multi-submission-acceptance.md) owns the eight-member finalization correction and its Windows timing. [Windows notification detail latency](PATCH-20261121-001-windows-notice-detail-latency.md) owns reuse of a verified runtime between calls. This note owns the remaining read-path candidates below.
 
@@ -115,7 +115,7 @@ Phase B follows the Phase A measurements and the remaining Owner decisions:
 - Verified-runtime reuse, owned by PATCH-20261121-001
 - R6
 
-Expected effect of Phase A, by inference and not yet measured on Windows:
+Original estimates made before Phase A. See the selected implementation record for measured Mac and native x64 outcomes:
 
 - Eight-member acceptance: from tens of minutes to seconds or tens of seconds.
 - Ordinary acceptance on a 3,000-file workspace: a few seconds.
