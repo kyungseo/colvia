@@ -1,6 +1,6 @@
 # Read-path efficiency Phase B
 
-State: selected and authorized by the Owner on 2026-11-25. The Driver owns the implementation and evidence. The starting source is `0df39779dda5a29a008531254529e6d846967367`. Its first parent `cf8a15c449cc68d120da094f7bf30eef4336ef19` exactly matches the 41-file inherited x64 manifest. Phase A's final production patch is `4774ebed1cec4b8ad31a331d21a11cfb908149ca59c545a12c4f13af3d9fc9c8`. Its complete Mac inventory and eight final Windows input files were checked before the two local commits. The Phase A record carries the [dated Owner acceptance](PATCH-20261124-001-read-path-efficiency.md#owner-acceptance-and-phase-b-authorization--2026-11-25).
+State: Phase B implementation, review and verification complete on 2026-11-25. Owner result acceptance and publication decisions are pending. The Driver owns the implementation and evidence. The starting source is `0df39779dda5a29a008531254529e6d846967367`. Its first parent `cf8a15c449cc68d120da094f7bf30eef4336ef19` exactly matches the 41-file inherited x64 manifest. Phase A's final production patch is `4774ebed1cec4b8ad31a331d21a11cfb908149ca59c545a12c4f13af3d9fc9c8`. Its complete Mac inventory and eight final Windows input files were checked before the two local commits. The Phase A record carries the [dated Owner acceptance](PATCH-20261124-001-read-path-efficiency.md#owner-acceptance-and-phase-b-authorization--2026-11-25).
 
 The Owner supplied and approved the detailed Phase B plan, then explicitly waived the separate R0 for this exact scope. One tool-disabled Claude result review remains mandatory. Phase B precedes Codex coordination qualification. Work began about 00:38 KST. The earliest stop is 09:00 KST on 2026-11-25 or 12 elapsed hours. The estimate is five to nine elapsed hours. Windows has a separate two-hour allocation inside that deadline. No push, PR, main merge, release, runtime reuse, Codex trial, settings, permissions, journal, record format, R6 or preserved-request replay is in scope.
 
@@ -107,3 +107,26 @@ Post-review focused regression passed all 24 cases. The fresh full two-mode regr
 Final normal and parent-optimized macOS regressions passed on the same qualified source with 2,749 complete passes and zero failures or errors per mode. Each selected 3,277 occurrences, with 526 existing skips and two existing partial cases. The native partitions contributed 92 clear passes each. The focused regression and revised candidate were verified after the one result review. No new skips, drift or unresolved review blockers remained.
 
 At 03:37:45 KST, the same designated native Windows host received the exact tested candidate for a fresh two-hour standard-user trial ending at 05:37:45 KST. The Phase B source commit is authorized now based on the full Mac modes and the result review. Native evidence arriving afterward is recorded separately. No delivery, public claim, release or Codex worker trial was started.
+
+
+## Physical Windows x64 result and closure
+
+Windows 11 native x64 standard-user testing used the existing managed CLI and protective lane with Python 3.14.7 and SQLite 3.50.4. Reported device hash checks passed for the patch, packet manifest and all 12 production files before and after application. The committed local source matches all 12 after hashes. Source commit 9c33c8198ee958b9fcde3fd6d99097a8e272f507. The initial handoff check found a mistyped manifest hash before child execution. Correcting that test input did not alter product or machine protections. No preserved request was replayed.
+
+The ordinary path accepted one exact result with matching selected root, file ID and bytes. Its independent view used zero guarded writes. The verified pre-feature backup of the fresh planned root was present before the first group create. The existing protected file checker passed for eight files. Native readback confirmed 16 move observations, eight progress records, the exact eight submitted v1 IDs, NTFS identities and hashes, one 0-to-8 decision and no pending barrier. Previously qualified interruption and recovery inputs were retained and checked by hash.
+
+| Same observation interval | Phase A | Phase B |
+| --- | ---: | ---: |
+| Ordinary managed acceptance | 21.065 s, 178 guarded reads | 19.597 s, 148 guarded reads |
+| Eight-member accept CLI | 479.273 s, 7,026 guarded reads | 443.265 s, 5,673 guarded reads |
+| NTFS application and verification | 339.040 s, 5,057 guarded reads | 301.492 s, 3,868 guarded reads |
+| Terminal publication | 11.744 s, 79 guarded reads | 8.779 s, nine guarded reads |
+| Eight individual plans | 408.951 s | 388.684 s |
+| Eight individual starts and submissions | 823.987 s | 792.840 s |
+| Managed independent read mean and Win32 open attempts | 37.039 ms, 109 opens | 38.869 ms, 109 opens |
+
+The Phase B group took 1,941.554 seconds from setup through readback. The previous 2,273.807-second trial included a failed group attempt and backup correction. Treat those full-trial figures separately from the like-for-like command intervals. The independent read samples each used 128 reads per lane, with separate new stores and references between phases. A standalone managed lookup averaged about 39 ms in Phase B and the open count remains 109. The largest observed accept cost remains NTFS application and verification at about five minutes. Body bytes needed for output and final acceptance were still fully verified.
+
+Final device readback finished 04:24:37 KST, before the 05:37:45 KST two-hour device bound. All 40 owned Jobs were inactive with both output streams at EOF and no timeout. Result index SHA-256 d289fd69e84b88e6bb0ddf04db4639e64b32155c6c27583d8a224d1676e76fa4. The reported native outcomes, exact group result IDs, guarded counters and digests were preserved in the private task evidence. A temporary host snapshot transport interruption recovered on the same actual trial. No second trial was sent.
+
+The approved queue completed by 04:26 KST after about 228 elapsed minutes. Keep the Phase B worktree and exact tests/review/native evidence for Owner acceptance, integration and the next provider qualification. Keep the Phase A worktree as the matched comparison and both closeout commits. The original x64 worktree still holds one exact development-index version outside those commits plus generated bytecode. It remains available for reconciliation and is an archive candidate after that disposition. Preserve the separately recorded prior x64 interruption/recovery evidence regardless of worktree cleanup. Phase B result acceptance, push, PR, main merge, release and Codex coordination are pending Owner decisions.
