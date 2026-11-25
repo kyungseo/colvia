@@ -67,7 +67,8 @@ class ObservationTests(unittest.TestCase):
         marker.unlink()
         marker.symlink_to(self.root / 'missing')
         with self.assertRaisesRegex(RecordError, 'structural-boundary-changed'):
-            snapshot(self.root, self.budget, **options)
+            snapshot(self.root, self.budget, reject_nested_git=True,
+                     boundaries={'.git': identity(marker.lstat())})
 
     def test_root_git_marker_collision_refuses_before_boundary_pruning(self):
         from contextlib import nullcontext

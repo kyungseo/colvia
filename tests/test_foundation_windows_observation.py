@@ -169,6 +169,23 @@ class WindowsObservationTests(unittest.TestCase):
         with self.assertRaisesRegex(RecordError, 'structural-boundary-changed'):
             self.snapshot(reject_nested_git=True, boundaries={'.git': ('other', 'other')})
 
+    def test_strict_root_git_marker_refuses_link_even_with_matching_identity(self):
+        marker = self.root / '.GIT'
+        marker.symlink_to(self.base / 'missing')
+        info = self.port.api.state(marker, marker, opaque_symlink=True)
+        proof = self.port.identity(info)
+        with self.assertRaisesRegex(RecordError, 'structural-boundary-changed'):
+            self.snapshot(reject_nested_git=True, boundaries={'.git': proof})
+
+    def test_root_git_marker_collision_refuses_before_boundary_pruning(self):
+        from contextlib import nullcontext
+
+        listing = [SimpleNamespace(name='.GIT'), SimpleNamespace(name='.git')]
+        with patch('colvia.platforms.windows_observation.os.scandir',
+                   side_effect=lambda _: nullcontext(iter(listing))):
+            with self.assertRaisesRegex(RecordError, 'path-collision'):
+                self.snapshot(reject_nested_git=True, boundaries={'.git': ('other', 'other')})
+
     def test_symlink_leaf_is_opaque_and_ancestor_never_followed(self):
         outside=self.base/'outside';outside.mkdir();(outside/'secret').write_text('never read')
         (self.root/'link').symlink_to(outside)
