@@ -2,6 +2,8 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
+- [Native Windows directory pinning safety trial](CHORE-20261125-005-windows-directory-pinning-safety.md) — Phase F synthetic safety and compatibility evidence.
+
 - [Windows workspace observation design review](CHORE-20261125-004-windows-workspace-observation-design.md) — Phase E evidence and design review based on the accepted Phase D candidate.
 
 - [Windows command latency and observation efficiency](PATCH-20261125-003-read-path-efficiency-phase-d.md) — Phase D validation of startup and Git observation costs using the native x64 entry.
@@ -309,6 +311,10 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [Windows relative-open observation](CHORE-20261125-005-windows-directory-pinning-safety.md#relative-open-after-publication) — Deferred until after publication and until continuous path-identity and everyday-operation evidence is available.
+
+- [Windows nested Git marker consistency](CHORE-20261125-005-windows-directory-pinning-safety.md#pre-publication-candidate--nested-git-marker-case-on-windows) — Review a focused observer correction before publication after native x64 case-variant evidence. Implementation requires separate approval.
 
 - [Reviewing parallel submissions](CHORE-20261125-004-windows-workspace-observation-design.md#after-publication-candidate--reviewing-parallel-submissions) — After publication, compare one developer and one independent reviewer using explicitly admitted evidence. Worker-count expansion and product changes require separate evidence and approval.
 
