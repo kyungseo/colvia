@@ -306,7 +306,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
-- [Read-path efficiency follow-up](read-path-efficiency-followup.md#owner-planning-authorization--2026-11-24) — P1 candidate for guarded read and validation cost across ordinary commands and grouped acceptance. See the [Phase A implementation and measurements](PATCH-20261124-001-read-path-efficiency.md) for the selected work and remaining Windows costs. [Phase B](PATCH-20261125-001-read-path-efficiency-phase-b.md).
+- [Read-path efficiency follow-up](read-path-efficiency-followup.md#owner-planning-authorization--2026-11-24) — P1 candidate for guarded read and validation cost across ordinary commands and grouped acceptance. See the [Phase A implementation and measurements](PATCH-20261124-001-read-path-efficiency.md) for the selected work and remaining Windows costs. [Phase B](PATCH-20261125-001-read-path-efficiency-phase-b.md). [Phase C](PATCH-20261125-002-read-path-efficiency-phase-c.md).
 
 - [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0. The [implementation and verification record](FEAT-20261118-001-git-credential-gate.md) covers the selected local check before Git objects are written.
 
