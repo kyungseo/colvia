@@ -2,6 +2,8 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
+- [Consistent Git marker classification](PATCH-20261125-006-git-marker-case-observation.md) — The selected F7 correction for the Windows and macOS workspace observers.
+
 - [Native Windows directory pinning safety trial](CHORE-20261125-005-windows-directory-pinning-safety.md) — Phase F synthetic safety and compatibility evidence.
 
 - [Windows workspace observation design review](CHORE-20261125-004-windows-workspace-observation-design.md) — Phase E evidence and design review based on the accepted Phase D candidate.
@@ -314,7 +316,7 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 - [Windows relative-open observation](CHORE-20261125-005-windows-directory-pinning-safety.md#relative-open-after-publication) — Deferred until after publication and until continuous path-identity and everyday-operation evidence is available.
 
-- [Windows nested Git marker consistency](CHORE-20261125-005-windows-directory-pinning-safety.md#pre-publication-candidate--nested-git-marker-case-on-windows) — Review a focused observer correction before publication after native x64 case-variant evidence. Implementation requires separate approval.
+- [Windows nested Git marker consistency](CHORE-20261125-005-windows-directory-pinning-safety.md#pre-publication-candidate--nested-git-marker-case-on-windows) — Selected by the Owner for the [F7 correction](PATCH-20261125-006-git-marker-case-observation.md) before publication.
 
 - [Reviewing parallel submissions](CHORE-20261125-004-windows-workspace-observation-design.md#after-publication-candidate--reviewing-parallel-submissions) — After publication, compare one developer and one independent reviewer using explicitly admitted evidence. Worker-count expansion and product changes require separate evidence and approval.
 

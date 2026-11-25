@@ -137,6 +137,38 @@ class WindowsObservationTests(unittest.TestCase):
         with self.assertRaisesRegex(RecordError,'structural-boundary-changed'):self.snapshot(boundaries={'nested':('wrong','wrong')})
         with self.assertRaisesRegex(RecordError,'unregistered-nested-git'):self.snapshot(reject_nested_git=True)
 
+    def test_strict_nested_git_marker_comparison_is_case_insensitive(self):
+        for index, name in enumerate(('.git', '.GIT', '.GiT')):
+            with self.subTest(name=name):
+                root = self.root / str(index)
+                marker = root / 'nested' / name
+                marker.mkdir(parents=True)
+                (marker / 'item').write_bytes(b'synthetic')
+                (root / '.gitignore').write_bytes(b'ordinary')
+                self.assertEqual(['.gitignore', f'nested/{name}/item'],
+                                 [e['path'] for e in self.port.snapshot(root, self.budget).entries])
+                with self.assertRaisesRegex(RecordError, 'unregistered-nested-git'):
+                    self.port.snapshot(root, self.budget, reject_nested_git=True)
+                with self.assertRaisesRegex(RecordError, 'progress-nested-project'):
+                    self.port.selected(root, [f'nested/{name}/item'], byte_limit=100, verify_path=True)
+
+    def test_strict_root_git_marker_keeps_only_proved_boundary(self):
+        marker = self.root / '.GIT'
+        marker.mkdir()
+        (marker / 'internal').write_bytes(b'synthetic')
+        native = self.port.location(marker)
+        proof = (native.volume, native.file_id)
+        options = dict(reject_nested_git=True, boundaries={'.git': proof})
+        self.assertEqual(['report.md'], [e['path'] for e in self.snapshot(**options).entries])
+        self.assertEqual(['report.md'], [e['path'] for e in self.snapshot(
+            reject_nested_git=True, boundaries={'.GIT': proof, '.git': ('other', 'other')}).entries])
+        with self.assertRaisesRegex(RecordError, 'boundary-swallows-protected'):
+            self.snapshot(protected={'.Git/config'}, **options)
+        with self.assertRaisesRegex(RecordError, 'unregistered-nested-git'):
+            self.snapshot(reject_nested_git=True)
+        with self.assertRaisesRegex(RecordError, 'structural-boundary-changed'):
+            self.snapshot(reject_nested_git=True, boundaries={'.git': ('other', 'other')})
+
     def test_symlink_leaf_is_opaque_and_ancestor_never_followed(self):
         outside=self.base/'outside';outside.mkdir();(outside/'secret').write_text('never read')
         (self.root/'link').symlink_to(outside)

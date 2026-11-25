@@ -122,15 +122,25 @@ def snapshot(root: Path, budget: ObservationBudget, *, admit=lambda _:True,
         for name in names:
             require(not cancelled(),'observation-cancelled')
             native='/'.join((*parts,name));logical=logical_path(native)
-            require(logical.casefold() not in aliases,'path-collision')
-            aliases.add(logical.casefold())
+            folded=logical.casefold()
+            require(folded not in aliases,'path-collision')
+            aliases.add(folded)
             info=os.stat(name,dir_fd=fd,follow_symlinks=False)
             visited+=1;require(visited<=budget.entries,'observation-entry-limit')
-            if native in boundaries:
-                require(not any(p==logical or p.startswith(logical+'/') for p in protected),'boundary-swallows-protected')
-                require(identity(info)==boundaries[native] and not stat.S_ISLNK(info.st_mode),'structural-boundary-changed')
+            git_marker=reject_nested_git and (folded=='.git' or folded.endswith('/.git'))
+            root_git_marker=git_marker and not parts
+            if root_git_marker:
+                require(not any(peer!=name and peer.casefold()=='.git' for peer in names),'path-collision')
+            # The topology proof uses the canonical root marker key. A listing on
+            # a case-insensitive volume can return a different spelling.
+            boundary='.git' if root_git_marker and native not in boundaries else native
+            if boundary in boundaries:
+                require(not any(p==logical or p.startswith(logical+'/') or
+                                (root_git_marker and p.partition('/')[0].casefold()=='.git')
+                                for p in protected),'boundary-swallows-protected')
+                require(identity(info)==boundaries[boundary] and not stat.S_ISLNK(info.st_mode),'structural-boundary-changed')
                 continue
-            if reject_nested_git and name=='.git':
+            if git_marker:
                 from ..connection_boundary import ConnectionBoundaryError
                 raise ConnectionBoundaryError('unregistered-nested-git',str(root.joinpath(*parts)),str(root))
             if reject_nested_colvia and name.casefold()=='.colvia-link.json' and (parts or name!='.colvia-link.json'):
