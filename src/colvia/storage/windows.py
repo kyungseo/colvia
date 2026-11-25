@@ -7,10 +7,11 @@ qualification on ARM64 and x64 is separate from import/static and fake-API tests
 from contextlib import contextmanager,ExitStack
 from pathlib import Path,PureWindowsPath
 import ctypes as C
-import ntpath,os,sys,time,uuid
+import ntpath,os,re,sys,time,uuid
 from ..codec import RecordError,require
 
 
+_INVALID_COMPONENT_CHARACTERS = re.compile(r'[\x00-\x1f:<>"|?*]')
 _DOS_DEVICE_STEMS = frozenset({
     'CON', 'PRN', 'AUX', 'NUL',
     *(f'COM{i}' for i in range(1, 10)),
@@ -24,8 +25,8 @@ def local_path(value):
             not s.startswith(('\\\\','//')) and len(s.encode('utf-16-le'))//2<248,'windows-local-path-required')
     for part in p.parts[1:]:
         require(part not in ('.','..') and
-                not part.endswith((' ','.')) and not any(c in part for c in ':<>"|?*') and
-                not any(ord(c)<32 for c in part) and part.split('.')[0].upper() not in
+                not part.endswith((' ','.')) and not _INVALID_COMPONENT_CHARACTERS.search(part) and
+                part.split('.')[0].upper() not in
                 _DOS_DEVICE_STEMS,'windows-path-alias')
     # PureWindowsPath normalizes dot/duplicate separators, so reject those in input.
     require(str(p)==s.replace('/','\\'),'windows-path-noncanonical')
