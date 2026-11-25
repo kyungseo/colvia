@@ -118,11 +118,20 @@ class API:
         require(not s.deleted and tag.attributes==b.attributes and
                 ((not reparse and not tag.tag) or (opaque_symlink and reparse and tag.tag==0xa000000c)),
                 'windows-reparse-or-changing-file')
-        name=C.create_unicode_buffer(32768);n=self.GetFinalPathNameByHandleW(h,name,len(name),0)
-        require(0<n<len(name) and name.value.startswith('\\\\?\\') and
-                name.value[4:].casefold()==local_path(path).casefold(),'windows-final-path-mismatch')
+        self.check_final_path(h,path)
         return dict(identity=(int(id_.volume),bytes(id_.identifier).hex(),int(b.creation)),directory=bool(s.directory),
                     links=int(s.links),size=int(s.size),write=int(b.write),change=int(b.change),symlink=reparse)
+    def check_final_path(self,h,path):
+        # Admitted DOS paths are under 248 UTF-16 units. Allow the final-path
+        # prefix and terminator without clearing the maximum buffer every time.
+        name=C.create_unicode_buffer(260)
+        n=self.GetFinalPathNameByHandleW(h,name,len(name),0)
+        if n>=len(name):
+            name=C.create_unicode_buffer(32768)
+            n=self.GetFinalPathNameByHandleW(h,name,len(name),0)
+        require(0<n<len(name) and name.value.startswith('\\\\?\\') and
+                name.value[4:].casefold()==local_path(path).casefold(),'windows-final-path-mismatch')
+
     @contextmanager
     def ancestors(self,path):
         path=PureWindowsPath(local_path(path))

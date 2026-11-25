@@ -2,6 +2,8 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
+- [Windows command latency and observation efficiency](PATCH-20261125-003-read-path-efficiency-phase-d.md) — Phase D validation of startup and Git observation costs using the native x64 entry.
+
 - [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Owner-accepted macOS extension. Native Windows x64 file-based verification passed two, three and eight submissions, with exact application and interruption recovery. The Owner closed that correctness scope and moved Windows performance to the read-path follow-up.
 
 - [Grouped acceptance of two submissions](FEAT-20261122-001-grouped-acceptance.md) — Owner accepted the two-member implementation and authorized its local commit on 2026-11-22.
@@ -306,7 +308,11 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
-- [Read-path efficiency follow-up](read-path-efficiency-followup.md#owner-planning-authorization--2026-11-24) — P1 candidate for guarded read and validation cost across ordinary commands and grouped acceptance. See the [Phase A implementation and measurements](PATCH-20261124-001-read-path-efficiency.md) for the selected work and remaining Windows costs. [Phase B](PATCH-20261125-001-read-path-efficiency-phase-b.md). [Phase C](PATCH-20261125-002-read-path-efficiency-phase-c.md).
+- [Read-path efficiency follow-up](read-path-efficiency-followup.md#owner-planning-authorization--2026-11-24) — P1 candidate for guarded read and validation cost across ordinary commands and grouped acceptance. See the [Phase A implementation and measurements](PATCH-20261124-001-read-path-efficiency.md) for the selected work and remaining Windows costs. [Phase B](PATCH-20261125-001-read-path-efficiency-phase-b.md). [Phase C](PATCH-20261125-002-read-path-efficiency-phase-c.md). [Phase D](PATCH-20261125-003-read-path-efficiency-phase-d.md).
+
+- [Windows fixed startup cost](windows-command-startup-followup.md) — Candidate for design review if measured recurring fixed cost still exceeds five seconds per command.
+
+- [Legacy handoff inbox observation race](legacy-handoff-inbox-race-followup.md) — Reproduced in the older receive path. Confirm support scope before selecting a fix.
 
 - [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0. The [implementation and verification record](FEAT-20261118-001-git-credential-gate.md) covers the selected local check before Git objects are written.
 

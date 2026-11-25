@@ -25,6 +25,19 @@ class OpaqueTests(GitFixture,unittest.TestCase):
         self.assertEqual(('report.md',),verify_scope(first.snapshot.entries,second.snapshot.entries,frozenset({'report.md'})))
         self.assertEqual(first.opaque,second.opaque)
 
+    def test_batched_topology_still_refuses_a_submodule_root(self):
+        from colvia.adapters.git import discover
+
+        child, _ = self.child()
+        (self.root / '.gitmodules').write_text('[submodule "module"]\npath = module\nurl = ./fixture\n')
+        self.command('submodule', 'absorbgitdirs', 'module')
+        superproject = self.command('rev-parse', '--show-superproject-working-tree', root=child)
+        self.assertEqual(str(self.root), os.fsdecode(superproject.rstrip(b'\n')))
+        for with_exclude in (False, True):
+            with self.subTest(with_exclude=with_exclude), self.assertRaisesRegex(
+                    RecordError, 'nested-submodule-project-not-supported'):
+                discover(child, self.git, with_exclude=with_exclude)
+
     def test_parent_ignore_setting_cannot_hide_dirty_submodule(self):
         child,_=self.child();self.command('config','submodule.module.ignore','all')
         self.observe();(child/'file').write_bytes(b'changed')

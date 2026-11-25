@@ -70,6 +70,29 @@ class WindowsProcessTests(unittest.TestCase):
                 self.assertEqual(b"",api.input)
                 self.assertTrue(api.job.closed)
 
+    def test_empty_job_still_drains_stdout_and_stderr_to_eof(self):
+        class StaggeredPipes(Pipes):
+            def start(self, *args, **kwargs):
+                job = super().start(*args, **kwargs)
+                self.stderr_worker_closed = False
+                return job
+
+            def eof(self):
+                self.queues[self.outputs[0]].put(b'')
+                self.queues[self.outputs[1]].put(b'late stderr')
+                self.queues[self.outputs[1]].put(b'')
+
+            def close(self, handle):
+                if handle==self.outputs[1]:
+                    self.stderr_worker_closed = True
+                super().close(handle)
+
+        api = StaggeredPipes(out=b'out', err=b'first ')
+        result = self.run_with(api, output_limit=len(b'outfirst late stderr'))
+        self.assertEqual((b'out', b'first late stderr'), (result.stdout, result.stderr))
+        self.assertTrue(api.stderr_worker_closed)
+        self.assertFalse(api.job.stopped)
+
     def test_combined_output_budget_failure_never_becomes_success(self):
         api=Pipes(out=b'x'*8,err=b'y'*8)
         with self.assertRaisesRegex(RecordError,'process-output-limit'):self.run_with(api,output_limit=10)

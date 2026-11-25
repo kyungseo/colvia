@@ -32,6 +32,47 @@ class WindowsStorageContractTests(unittest.TestCase):
             from colvia.storage.files import platform_files
             with self.assertRaisesRegex(RecordError,'unavailable'):platform_files()
 
+    def test_final_path_uses_small_buffer_and_preserves_refusal_on_retry(self):
+        path = r'C:\project\report'
+        expected = '\\\\?\\' + path
+        api = object.__new__(API)
+
+        def reply(value):
+            def query(handle, buffer, size, flags):
+                self.assertEqual((1, 0), (handle, flags))
+                buffer.value = value
+                return len(value)
+
+            return query
+
+        api.GetFinalPathNameByHandleW = Mock(side_effect=reply(expected))
+        api.check_final_path(1, path)
+        self.assertEqual([260], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        boundary = expected.ljust(259, 'x')
+        api.GetFinalPathNameByHandleW = Mock(side_effect=reply(boundary))
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        self.assertEqual([260], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        api.GetFinalPathNameByHandleW = Mock(
+            side_effect=lambda h, b, n, f: 260 if n == 260 else reply(boundary)(h, b, n, f))
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        self.assertEqual([260, 32768], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        wrong_path = expected + 'x' * 300
+        api.GetFinalPathNameByHandleW = Mock(
+            side_effect=lambda h, b, n, f: len(wrong_path) + 1 if n == 260 else reply(wrong_path)(h, b, n, f))
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        self.assertEqual([260, 32768], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        api.GetFinalPathNameByHandleW = Mock(return_value=0)
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        api.GetFinalPathNameByHandleW.assert_called_once()
+
     def test_reopening_empty_lock_uses_the_same_final_file(self):
         path = Path('authority') / 'detach.lock'
         contents = {}

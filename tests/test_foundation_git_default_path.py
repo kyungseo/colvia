@@ -32,6 +32,15 @@ class GitDefaultPathTests(unittest.TestCase):
             self.assertEqual(Path('/git-home/.config/git/ignore'),self.resolve(g))
             g._run.assert_called_with(Path('/project'),('config','-z','--path','--default','~/.config/git/ignore','--get','core.excludesfile'),limit=32768)
             self.assertEqual(original,g.env)
+    def test_windows_config_snapshot_without_home_keeps_git_default_query(self):
+        g=self.adapter({'USERPROFILE':'/do-not-infer'})
+        g._run.side_effect=[SimpleNamespace(code=0,stdout=b'C:/git-home/.config/git/ignore\0')]
+        root=PureWindowsPath('C:/project')
+        with patch('colvia.adapters.git.sys.platform','win32'),patch('colvia.adapters.git.Path',PureWindowsPath):
+            self.assertEqual(PureWindowsPath('C:/git-home/.config/git/ignore'),
+                             g._global_ignore_path(root,has_configured_excludes=False))
+        g._run.assert_called_once_with(root,('config','-z','--path','--default','~/.config/git/ignore','--get','core.excludesfile'),limit=32768)
+
     def test_relative_xdg_or_home_remains_rejected(self):
         for env in ({'XDG_CONFIG_HOME':'relative'},{'HOME':'relative'}):
             g=self.adapter(env)
