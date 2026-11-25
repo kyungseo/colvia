@@ -59,3 +59,7 @@ Claude R1 flagged a risk that Colvia's initial interpretation of a configured ex
 The revised macOS passes reconciled both parent modes with 3,304 discovered occurrences per mode. Each had 2,776 executed passes, 526 wholly skipped occurrences and two partially skipped occurrences. There were no new skips. Both full runs initially reported one error in the same new Git test because the intentionally scrubbed runner provided no HOME. A synthetic HOME corrected only that fixture. The one affected test passed in each original sandbox and mode. The other test and product bytes matched their inputs, and the native patch bytes remained identical.
 
 The operating system and account types remain limited to the observed evidence. Full publication checks and supported-package qualification are separate.
+
+## Owner result acceptance — 2026-11-25
+
+The Owner accepted the exact local candidate `48e5d86` with candidate 2, S1 buffer-only and S9 retained. The 180-second eight-member goal remains unmet. The 9.059-second difference in one paired run does not establish a stable change. S12, S10, verification cadence, resident execution, the 200-Work fixture and the Windows bytecode comparison remain deferred. The Owner held the PR branch update because the draft PR and this commit diverged. [Phase E](CHORE-20261125-004-windows-workspace-observation-design.md#frozen-input-and-integration-comparison) records the read-only integration comparison and owns the separate large-workspace study.

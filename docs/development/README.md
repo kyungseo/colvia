@@ -2,6 +2,8 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
+- [Windows workspace observation design review](CHORE-20261125-004-windows-workspace-observation-design.md) — Phase E evidence and design review based on the accepted Phase D candidate.
+
 - [Windows command latency and observation efficiency](PATCH-20261125-003-read-path-efficiency-phase-d.md) — Phase D validation of startup and Git observation costs using the native x64 entry.
 
 - [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Owner-accepted macOS extension. Native Windows x64 file-based verification passed two, three and eight submissions, with exact application and interruption recovery. The Owner closed that correctness scope and moved Windows performance to the read-path follow-up.
@@ -307,6 +309,8 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [Reviewing parallel submissions](CHORE-20261125-004-windows-workspace-observation-design.md#after-publication-candidate--reviewing-parallel-submissions) — After publication, compare one developer and one independent reviewer using explicitly admitted evidence. Worker-count expansion and product changes require separate evidence and approval.
 
 - [Read-path efficiency follow-up](read-path-efficiency-followup.md#owner-planning-authorization--2026-11-24) — P1 candidate for guarded read and validation cost across ordinary commands and grouped acceptance. See the [Phase A implementation and measurements](PATCH-20261124-001-read-path-efficiency.md) for the selected work and remaining Windows costs. [Phase B](PATCH-20261125-001-read-path-efficiency-phase-b.md). [Phase C](PATCH-20261125-002-read-path-efficiency-phase-c.md). [Phase D](PATCH-20261125-003-read-path-efficiency-phase-d.md).
 
