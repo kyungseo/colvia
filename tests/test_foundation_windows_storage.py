@@ -13,6 +13,23 @@ class WindowsStorageContractTests(unittest.TestCase):
                      'C:\\trailing.\\record',r'C:\a\..\b',r'C:\a\.\b',r'C:\a\\b','C:\\'+'x'*248):
             with self.subTest(path=path),self.assertRaises(RecordError):local_path(path)
         self.assertEqual(r'C:\Users\Example\Colvia\state.sqlite3',local_path(r'C:\Users\Example\Colvia\state.sqlite3'))
+    def test_reserved_device_stems_preserve_path_admission(self):
+        reserved = ['CON', 'PRN', 'AUX', 'NUL',
+                    *(f'COM{i}' for i in range(1, 10)),
+                    *(f'LPT{i}' for i in range(1, 10))]
+        for stem in reserved:
+            for suffix in ('', '.txt', '.tar.gz'):
+                with self.subTest(stem=stem, suffix=suffix):
+                    with self.assertRaisesRegex(RecordError, 'windows-path-alias'):
+                        local_path('C:\\report\\' + stem.lower() + suffix)
+        for ordinary in ('com0.txt', 'com10.txt', 'report.nul.txt', 'lpt0'):
+            path = 'C:\\report\\' + ordinary
+            self.assertEqual(path, local_path(path))
+
+        # The component error still wins over the later separator check.
+        with self.assertRaisesRegex(RecordError, 'windows-path-alias'):
+            local_path(r'C:\report\\NuL.txt')
+
     def test_native_unicode_spelling_is_preserved_not_renamed(self):
         native='C:\\e\u0301\\record'
         self.assertEqual(native,local_path(native))
