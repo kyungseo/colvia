@@ -10,12 +10,15 @@ from ..storage.sqlite import GenerationStore
 
 
 class RuntimeLease:
-    def __init__(self,slots,*,expected_pointer=None):
+    def __init__(self,slots,*,expected_pointer=None,_retain_inventory=None):
         self.slots=slots
         require(not slots.files.exists(slots.root.parent/'uninstall.json'),'uninstall-transition-pending')
         self.expected,self.selection=slots.selection()
         require(expected_pointer is None or self.selection['selected']==expected_pointer,'runtime-entry-selection-changed')
-        self.verified=slots.verify(self.selection['selected'])
+        if _retain_inventory is None:
+            self.verified=slots.verify(self.selection['selected'])
+        else:
+            self.verified=slots.verify(self.selection['selected'],_retain_inventory=_retain_inventory)
         self.check()
     def check(self):
         require(not self.slots.files.exists(self.slots.root.parent/'uninstall.json'),'uninstall-transition-pending')
@@ -28,8 +31,11 @@ class RuntimeLease:
             finally:self.check()
 
 
-def open_managed_store(authority,slots,*,readonly=False,expected_pointer=None):
-    lease=RuntimeLease(slots,expected_pointer=expected_pointer);pointer=authority.pointer_value()
+def open_managed_store(authority,slots,*,readonly=False,expected_pointer=None,_entry=None):
+    lease = None if _entry is None else _entry._take_verified_lease(slots,expected_pointer)
+    if lease is None:
+        lease=RuntimeLease(slots,expected_pointer=expected_pointer)
+    pointer=authority.pointer_value()
     def check_pointer():
         require(authority.pointer_value()==pointer,'active-generation-changed')
     def active():

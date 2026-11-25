@@ -1,5 +1,6 @@
 """Deterministic read counters for ordinary writes and independently guarded views."""
 from collections import Counter
+from contextlib import contextmanager
 from hashlib import sha256
 import unittest
 from unittest.mock import patch
@@ -9,7 +10,7 @@ from colvia.adapters import git
 from colvia.bodies import validate_body
 from colvia.codec import CHUNK_LIMIT, RecordError, encode_envelope, object_ref
 from colvia.graph import ClosurePolicy, Registry, validate_closure
-from colvia.storage.sqlite import ValidationView
+from colvia.storage.sqlite import SnapshotBudget, ValidationView
 import test_foundation_store as store_fixture
 from test_foundation_work import WorkFixture
 from test_foundation_work_git import GitWorkFixture
@@ -32,7 +33,51 @@ class OrdinaryReadBudgets(WorkFixture, unittest.TestCase):
             accepted = self.service.accept(operation='accept', work='report', receipt=review['receipt'], statement='complete')
         self.assertEqual('completed', accepted['state'])
         self.assertGreater(self._read_transactions(tx), 0)
-        self.assertLessEqual(self._read_transactions(tx), 300)
+        self.assertLessEqual(self._read_transactions(tx), 65)
+
+    def test_verify_retries_when_root_advances_after_the_snapshot(self):
+        expected = self.workspace.verify()
+        snapshots = self.store._read_snapshot
+        calls = 0
+
+        @contextmanager
+        def changed_snapshot(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            with snapshots(*args, **kwargs) as records:
+                yield records
+            if calls == 2:
+                self.store.commit_heads(operation='other-operation', expected={}, changes={}, validate=lambda _: None)
+
+        topology = self.workspace.topology
+
+        def observed_without_read_transaction():
+            self.assertFalse(self.store.db.in_transaction)
+            return topology()
+
+        with patch.object(self.store, '_read_snapshot', changed_snapshot), patch.object(
+                self.workspace, 'topology', side_effect=observed_without_read_transaction) as observed:
+            self.assertEqual(expected, self.workspace.verify())
+        self.assertEqual(2, observed.call_count)
+
+    def test_verify_in_publication_keeps_connection_heads_in_its_cas_view(self):
+        from colvia.connection import PROJECT_KEY, workspace_key
+        from colvia.connection_identity import PROJECT_IDENTITY
+
+        def validate(view):
+            self.workspace.verify()
+            self.assertLessEqual({PROJECT_KEY, PROJECT_IDENTITY, workspace_key(self.workspace.workspace)},
+                                 set(view.reads))
+
+        with patch.object(self.store, '_read_snapshot', side_effect=AssertionError('separate view during publication')):
+            result = self.store.commit_heads(operation='verify-in-publication', expected={}, changes={}, validate=validate)
+        self.assertEqual(result.ref, self.store.root().ref)
+
+    def test_verify_retries_with_a_live_view_if_the_snapshot_budget_is_exhausted(self):
+        expected = self.workspace.verify()
+        with patch.object(self.store, '_read_snapshot', side_effect=SnapshotBudget) as bounded:
+            self.assertEqual(expected, self.workspace.verify())
+        bounded.assert_called_once_with(bounded=True)
 
     def test_read_only_view_keeps_its_guards_and_its_read_budget(self):
         self.start()
@@ -69,8 +114,10 @@ class OrdinaryReadBudgets(WorkFixture, unittest.TestCase):
 class GitReadBudgets(GitWorkFixture, unittest.TestCase):
     def test_one_verify_keeps_git_checks_and_resolves_each_anchor_once(self):
         with patch.object(connection_identity, 'effective', wraps=connection_identity.effective) as resolve, patch.object(
-                git, 'run', wraps=git.run) as processes:
+                git, 'run', wraps=git.run) as processes, patch.object(
+                self.store, '_transaction_inner', wraps=self.store._transaction_inner) as tx:
             self.service.workspace.verify()
+        self.assertEqual(3, tx.call_count)
         identities = Counter(call.args[0] for call in resolve.call_args_list)
         self.assertTrue(identities)
         self.assertTrue(all(count == 1 for count in identities.values()), identities)

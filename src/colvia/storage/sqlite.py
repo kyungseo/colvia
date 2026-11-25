@@ -386,13 +386,14 @@ class _RecordSnapshot:
         require(self._load is not None, 'record-snapshot-closed')
         if self._memo is None:
             return self._load(ref)
+        if time.monotonic() - self._started >= .2:
+            raise SnapshotBudget
         return self._memo.read(ref, self._bounded_load)
 
     def _bounded_load(self, ref):
         self._read_count += 1
         self._read_bytes += ref.byte_length
-        if (self._read_count > 1024 or self._read_bytes > 8 * 1024 * 1024
-                or time.monotonic() - self._started >= .2):
+        if self._read_count > 1024 or self._read_bytes > 8 * 1024 * 1024:
             raise SnapshotBudget
         return self._load(ref)
 
@@ -724,6 +725,9 @@ class GenerationStore:
         require(self.readonly, 'record-snapshot-readonly-required')
         with self._read_snapshot() as snapshot:
             yield snapshot
+
+    def _can_read_snapshot(self):
+        return not self.db.in_transaction and not _VALIDATIONS.get()
 
     @contextmanager
     def _read_snapshot(self, *, bounded=False):

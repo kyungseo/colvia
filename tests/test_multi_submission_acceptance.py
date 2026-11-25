@@ -111,7 +111,7 @@ class MultiTests(MultiFixture,unittest.TestCase):
                     marks[stage]=sum(not call.kwargs.get('write',False) for call in tx.call_args_list)
             self.assertEqual(8,self.execute(shown,event=event)['accepted'])
         self.assertLess(marks['before-completion'],marks['completed'])
-        self.assertLessEqual(marks['before-completion'],9200)
+        self.assertLessEqual(marks['before-completion'],2400)
         self.assertLessEqual(marks['completed']-marks['before-completion'],55)
         self.assertEqual(8,self.accepted())
 

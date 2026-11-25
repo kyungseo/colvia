@@ -55,8 +55,8 @@ def verify_inventory(root,expected,manifest_raw,manifest_sha256,files,*,cancelle
         with a.ancestors(path),a.opened(path,share=1) as h:require(a.state(h,path)==before,'slot-file-changed')
 
 
-def verify_pinned_inventory(root, expected, manifest_raw, manifest_sha256, files, *, cancelled=lambda: False):
-    """Keep files and their directory chain open until their final checks."""
+def verify_pinned_inventory(root, expected, manifest_raw, manifest_sha256, files, *, cancelled=lambda: False, retain=None):
+    """Keep the verified ordinary files pinned until their last requested check."""
     from contextlib import ExitStack
     class HandleBudget(Exception):
         pass
@@ -95,7 +95,7 @@ def verify_pinned_inventory(root, expected, manifest_raw, manifest_sha256, files
                         raise HandleBudget()
                     names.append(entry.name)
                 names.sort()
-            directories.append((directory, names))
+            directories.append((directory, frozenset(names)))
             for name in names:
                 path = directory / name
                 relative = _portable(path.relative_to(root).as_posix())
@@ -118,16 +118,32 @@ def verify_pinned_inventory(root, expected, manifest_raw, manifest_sha256, files
                 require(count == size and digest.hexdigest() == wanted, 'slot-inventory-mismatch')
                 found.add(relative)
         require(found == set(checks), 'slot-inventory-mismatch')
-        for directory, names in directories:
-            with os.scandir(directory) as it:
-                require(sorted(entry.name for entry in it) == names, 'slot-directory-changed')
-        for path, handle, before in opened:
-            require(not cancelled(), 'observation-cancelled')
-            require(api.state(handle, path) == before, 'slot-file-changed')
-            api.private(handle)
+        def verify_state():
+            for directory, names in directories:
+                remaining = set(names)
+                with os.scandir(directory) as it:
+                    for entry in it:
+                        require(not cancelled(), 'observation-cancelled')
+                        require(entry.name in remaining, 'slot-directory-changed')
+                        remaining.remove(entry.name)
+                require(not remaining, 'slot-directory-changed')
+            for path, handle, before in opened:
+                require(not cancelled(), 'observation-cancelled')
+                require(api.state(handle, path) == before, 'slot-file-changed')
+                api.private(handle)
+
+        verify_state()
+        return verify_state
 
     try:
         with ExitStack() as stack:
-            inspect(stack)
+            verify_state = inspect(stack)
+            if retain is not None:
+                handles = stack.pop_all()
+                try:
+                    retain(handles, verify_state)
+                except BaseException:
+                    handles.close()
+                    raise
     except HandleBudget:
         return verify_inventory(root, expected, manifest_raw, manifest_sha256, files, cancelled=cancelled)

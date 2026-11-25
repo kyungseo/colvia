@@ -40,15 +40,17 @@ def _caps(value):
             all(type(v) is str and 0<len(v)<=160 and v.isascii() for v in value),'slot-capabilities')
     return frozenset(value)
 
-def verify_slot(root,slot,manifest_sha256,*,os_name,architecture,files=None,observe=snapshot,cancelled=lambda:False):
+def verify_slot(root,slot,manifest_sha256,*,os_name,architecture,files=None,observe=snapshot,cancelled=lambda:False,
+                _retain_inventory=None):
     _token(slot);root=Path(root);files=files or platform_files()
     require(type(manifest_sha256) is str and re.fullmatch('[0-9a-f]{64}',manifest_sha256),'slot-manifest-identity')
     files.private_directory(root)
     return verify_payload(root/'slots'/slot,slot,manifest_sha256,os_name=os_name,architecture=architecture,
-                          files=files,observe=observe,cancelled=cancelled)
+                          files=files,observe=observe,cancelled=cancelled,_retain_inventory=_retain_inventory)
 
 
-def verify_payload(location,slot,manifest_sha256,*,os_name,architecture,files=None,observe=snapshot,cancelled=lambda:False):
+def verify_payload(location,slot,manifest_sha256,*,os_name,architecture,files=None,observe=snapshot,cancelled=lambda:False,
+                   _retain_inventory=None):
     """Verify the extracted pinned bootstrap with the identical inventory rules."""
     _token(slot);location=Path(location);files=files or platform_files()
     for parent in (location,*location.parents):require(not parent.is_symlink(),'slot-path-symlink')
@@ -81,7 +83,11 @@ def verify_payload(location,slot,manifest_sha256,*,os_name,architecture,files=No
     require(indexed[m['python']]['mode']=='100755','slot-python-not-executable')
     size=sum(e['size'] for e in expected)
     require(size<=4*1024**3,'slot-size-limit')
-    if native_inventory is not None:
+    if _retain_inventory is not None:
+        from .windows_payload import verify_pinned_inventory
+        verify_pinned_inventory(location,expected,raw,manifest_sha256,files,
+                                cancelled=cancelled,retain=_retain_inventory)
+    elif native_inventory is not None:
         native_inventory(location,expected,raw,manifest_sha256,cancelled=cancelled)
     else:
         observed=observe(location,ObservationBudget(120000,size+len(raw)),cancelled=cancelled)
@@ -132,9 +138,10 @@ class RuntimeSlots:
                 'runtime-recovery-capability-unavailable')
         return [slot.python,'-I','-B',slot.manager,'--repair']
 
-    def verify(self,value):
+    def verify(self,value,*,_retain_inventory=None):
         require(type(value) is dict and set(value)=={'slot','manifest_sha256'},'runtime-pointer-invalid')
-        return verify_slot(self.root,**value,os_name=self.os_name,architecture=self.architecture,files=self.files)
+        return verify_slot(self.root,**value,os_name=self.os_name,architecture=self.architecture,files=self.files,
+                           _retain_inventory=_retain_inventory)
     def selection(self):
         try:raw=self.files.read(self.root/'runtime.json')
         except FileNotFoundError:raise RecordError('runtime-repair-required') from None

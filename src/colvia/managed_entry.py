@@ -4,8 +4,9 @@ The native launcher chooses an immutable slot. The selected Python revalidates
 that exact choice before opening authority, and every transaction retains the
 runtime lease. A source fixture is not installed-entry qualification.
 """
+from contextlib import ExitStack
 from pathlib import Path
-import argparse,platform,sqlite3,sys,uuid,hashlib,os
+import argparse,platform,sqlite3,sys,uuid,hashlib,os,threading
 from .codec import decode_canonical,require,RecordError
 from .management import ManagerHome
 from .guide_topics import GUIDE_FILES
@@ -28,14 +29,16 @@ def current_platform():
     raise RecordError('runtime-platform-unavailable')
 
 class ManagedAuthority(Authority):
-    def __init__(self,root,*,project,slots,pointer,files):
+    def __init__(self,root,*,project,slots,pointer,files,_entry=None):
         super().__init__(root,project=project,files=files);self.slots=slots;self.runtime_pointer=pointer
+        self._entry=_entry
     def store(self,*,readonly=False):
-        return open_managed_store(self,self.slots,readonly=readonly,expected_pointer=self.runtime_pointer)
+        return open_managed_store(self,self.slots,readonly=readonly,expected_pointer=self.runtime_pointer,_entry=self._entry)
 
 def authority_for_locator(entry, locator):
     authority = ManagedAuthority(entry.home.root / 'authorities' / locator.project, project=locator.project,
-                                 slots=entry.home.slots, pointer=entry.pointer, files=entry.home.files)
+                                 slots=entry.home.slots,pointer=entry.pointer,files=entry.home.files,
+                                 _entry=entry if isinstance(entry,ManagedEntry) else None)
     require(authority.pointer_value()['instance'] == locator.instance, 'stale-or-foreign-binding')
     return authority
 
@@ -67,13 +70,65 @@ def configured_git(home):
 
 
 class ManagedEntry:
-    def __init__(self,root,*,pointer,files=None):
+    def __init__(self,root,*,pointer,files=None,_resources=None):
         os_name,architecture=current_platform()
         self.home=ManagerHome(root,os_name=os_name,architecture=architecture,files=files);self.pointer=pointer
-        self.lease=RuntimeLease(self.home.slots,expected_pointer=pointer);slot=self.lease.verified
+        self._inventory = None
+        retain = None
+        if _resources is not None and os_name == 'windows':
+            from .storage.windows import WindowsFiles
+            if type(self.home.files) is WindowsFiles:
+                def retain(handles, verify):
+                    self._inventory = handles, verify
+                    _resources.callback(self._close_inventory)
+
+        self.lease=RuntimeLease(self.home.slots,expected_pointer=pointer,_retain_inventory=retain);slot=self.lease.verified
         manifest=decode_canonical(self.home.files.read(self.home.slots.root/'slots'/slot.slot/'manifest.json',4*1024*1024))
-        require(process_runtime()==(slot.python,manifest['python_version'],manifest['sqlite_version']),'dedicated-runtime-mismatch')
+        runtime = process_runtime()
+        require(runtime==(slot.python,manifest['python_version'],manifest['sqlite_version']),'dedicated-runtime-mismatch')
         self.lease.check()
+        if self._inventory is not None:
+            files = self.home.files
+            runtime_root = self.home.slots.root
+            roots = (self.home.root, runtime_root, runtime_root/'slots'/slot.slot)
+            identities = tuple(files.directory_identity(path) for path in roots)
+            self._inventory_binding = ((os.getpid(), threading.get_ident()), files, roots, identities,
+                                       runtime, files.identity(Path(runtime[0])), slot)
+
+    def _close_inventory(self):
+        inventory = getattr(self, '_inventory', None)
+        if inventory is not None:
+            self._inventory = None
+            inventory[0].close()
+
+    def _take_verified_lease(self, slots, pointer):
+        # Only the immediate authority open in this entry can consume the
+        # proof. The Windows file handles deny writes and deletes meanwhile.
+        inventory = getattr(self, '_inventory', None)
+        if inventory is None:
+            return None
+        _, verify = inventory
+        lease = self.lease
+        process, files, roots, identities, runtime, executable_identity, slot = self._inventory_binding
+        if (os.getpid(), threading.get_ident()) != process:
+            return None
+        try:
+            if (slots is not lease.slots or slots.files is not files or self.home.root != roots[0]
+                    or slots.root != roots[1] or lease.verified != slot):
+                return None
+            if files.exists(slots.root.parent/'uninstall.json'):
+                return None
+            raw, selection = slots.selection()
+            if raw != lease.expected or selection['selected'] != pointer:
+                return None
+            require(process_runtime() == runtime, 'dedicated-runtime-mismatch')
+            require(tuple(files.directory_identity(path) for path in roots) == identities and
+                    files.identity(Path(runtime[0])) == executable_identity, 'slot-file-changed')
+            verify()
+            lease.check()
+            return lease
+        finally:
+            self._close_inventory()
     def optional_features(self):
         from .execution.managed_factory import qualified_release
         with self.lease.hold():
@@ -215,8 +270,11 @@ def main(argv=None):
     p.add_argument('--runtime-manifest-sha256',required=True,action=RuntimeOptionOnce)
     prefix,rest=p.parse_known_args(argv)
     try:
-        entry=ManagedEntry(Path(prefix.management_root),pointer=dict(slot=prefix.runtime_slot,manifest_sha256=prefix.runtime_manifest_sha256))
-        return product(rest,entry=entry)
+        with ExitStack() as resources:
+            entry=ManagedEntry(Path(prefix.management_root),
+                               pointer=dict(slot=prefix.runtime_slot,manifest_sha256=prefix.runtime_manifest_sha256),
+                               _resources=resources)
+            return product(rest,entry=entry)
     except (RecordError,OSError,ValueError,TypeError) as exc:
         code=exc.code if isinstance(exc,RecordError) else 'runtime-access-unavailable'
         print(failure(code));return 2

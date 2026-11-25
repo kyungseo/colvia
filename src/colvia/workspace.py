@@ -1,5 +1,5 @@
 """Concrete workspace port; domain Work services receive this as an interface."""
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 import sys
 from .binding import resolve,require_registered,same_plain_location,revalidates,creation_identity_changed
@@ -10,6 +10,7 @@ from .maps import build_map
 from .observe import observe
 from .platforms.posix import ObservationBudget
 from .platforms.observation_port import location,selected,capture
+from .storage.sqlite import SnapshotBudget
 
 
 class LocalWorkspace:
@@ -28,12 +29,33 @@ class LocalWorkspace:
         return verified
 
     def _verify(self):
+        # A publication validator must record every consulted head in its CAS view.
+        can_snapshot = getattr(self.store, '_can_read_snapshot', None)
+        if type(self.connections) is Connections and can_snapshot is not None and can_snapshot():
+            try:
+                verified = self._verify_connection(snapshot=True)
+            except SnapshotBudget:
+                pass
+            else:
+                if verified is not None:
+                    return verified
+        return self._verify_connection(snapshot=False)
+
+    def _verify_connection(self, *, snapshot):
         from .connection_identity import PROJECT_IDENTITY
-        self.store.pin_workspace_location(PROJECT_IDENTITY, self.store.head(PROJECT_IDENTITY))
-        # Only immutable identity resolution is shared. Head/index reads and
-        # filesystem/Git observation still occur at their original boundaries.
+        store = self.store
+
+        def read_records():
+            return store._read_snapshot(bounded=True) if snapshot else nullcontext(store)
+
         resolved_identities = {}
-        reference,registration,bound=self.connections.workspace(self.workspace,_resolved=resolved_identities)
+        with read_records() as records:
+            store.pin_workspace_location(PROJECT_IDENTITY, records.head(PROJECT_IDENTITY))
+            position = records.root().ref if snapshot else None
+            connections = Connections(records) if snapshot else self.connections
+            reference, registration, bound = connections.workspace(self.workspace, _resolved=resolved_identities)
+
+        # Live topology and locator observation must not hold the record view.
         topology=self.topology()
         current=topology.common if topology.kind=='git' else topology.root
         locator=self.locator_reader()
@@ -45,7 +67,13 @@ class LocalWorkspace:
                     (bound.location,current),(registration.root,topology.root),(registration.gitdir,topology.gitdir))):
             from .connection_boundary import ConnectionBoundaryError
             raise ConnectionBoundaryError('connection-creation-identity-changed',topology.root.path)
-        registrations=self.connections.registrations(topology,_resolved=resolved_identities)
+        with read_records() as records:
+            if snapshot and records.root().ref != position:
+                return None
+            connections = Connections(records) if snapshot else self.connections
+            registrations=connections.registrations(topology,_resolved=resolved_identities)
+        if snapshot and store.root().ref != position:
+            return None
         resolved=resolve(locator,bound,topology,registrations)
         require(require_registered(resolved)==self.workspace,'wrong-workspace')
         require(same_plain_location(topology.root,registration.root) if topology.kind=='plain' else

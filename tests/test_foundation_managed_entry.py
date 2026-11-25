@@ -41,6 +41,99 @@ class ManagedEntryTests(unittest.TestCase):
             stack.enter_context(patch.object(entry,'workspace',side_effect=AssertionError('no project open')))
             yield
 
+    @contextlib.contextmanager
+    def windows_proof_fixture(self):
+        from copy import copy
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from colvia.storage.windows import WindowsFiles
+
+        # Force the entry and lease composition without claiming native NTFS.
+        files = WindowsFiles(api=object())
+        (self.manager.root/'slots/one').chmod(0o700)
+        for method in ('read', 'exists', 'directory_identity', 'private_directory', 'exclusion'):
+            setattr(files, method, getattr(self.home.files, method))
+
+        def identity(path):
+            stat = path.lstat()
+            return stat.st_dev, stat.st_ino
+
+        files.identity = identity
+        slots = copy(self.manager)
+        slots.files = files
+        home = SimpleNamespace(root=self.home.root, files=files, slots=slots)
+        recheck, closed = Mock(), Mock()
+        verified = self.entry.lease.verified
+
+        def inventory(_, *, _retain_inventory=None):
+            if _retain_inventory is not None:
+                handles = contextlib.ExitStack()
+                handles.callback(closed)
+                _retain_inventory(handles, recheck)
+            return verified
+
+        with contextlib.ExitStack() as resources, patch(
+                'colvia.managed_entry.current_platform', return_value=('windows', 'x64')), patch(
+                'colvia.managed_entry.ManagerHome', return_value=home), patch(
+                'colvia.managed_entry.process_runtime', return_value=self.runtime), patch.object(
+                slots, 'verify', side_effect=inventory) as verify:
+            entry = ManagedEntry(home.root, pointer=self.one, _resources=resources)
+            yield entry, verify, recheck, closed
+
+    def test_connected_open_consumes_only_one_inventory_proof(self):
+        from colvia.updates.lease import open_managed_store
+
+        with self.windows_proof_fixture() as (entry, full, confirm, closed):
+            slots = entry.home.slots
+            with patch.object(slots.files, 'directory_identity', wraps=slots.files.directory_identity) as identity:
+                for expected in (1, 2):
+                    with contextlib.closing(open_managed_store(self.authority, slots,
+                            expected_pointer=self.one, _entry=entry, readonly=True)) as store:
+                        self.assertIsNotNone(store.root().ref)
+                    self.assertEqual(expected, full.call_count)
+                    confirm.assert_called_once_with()
+                    closed.assert_called_once_with()
+            self.assertEqual([entry.home.root, slots.root, slots.root/'slots/one'],
+                             [call.args[0] for call in identity.call_args_list])
+
+    def test_manager_forwarding_releases_inventory_before_lifecycle_dispatch(self):
+        with self.windows_proof_fixture() as (entry, full, confirm, closed):
+            def manager(_, *, entry):
+                closed.assert_called_once_with()
+                self.assertIsNone(entry._inventory)
+                return 0
+
+            with patch('colvia.manager_entry.main', side_effect=manager) as delegated:
+                self.assertEqual(0, main(['manage', 'status'], entry=entry))
+            delegated.assert_called_once()
+            full.assert_called_once()
+            confirm.assert_not_called()
+
+    def test_inventory_proof_refuses_same_selection_executable_change(self):
+        from colvia.updates.lease import open_managed_store
+
+        with self.windows_proof_fixture() as (entry, full, confirm, closed):
+            slots = entry.home.slots
+            with patch.object(slots.files, 'identity', return_value=('different-file',)), self.assertRaisesRegex(
+                    RecordError, 'slot-file-changed'):
+                open_managed_store(self.authority, slots, expected_pointer=self.one, _entry=entry)
+            full.assert_called_once()
+            confirm.assert_not_called()
+            closed.assert_called_once_with()
+
+    def test_inventory_proof_different_selection_rereads_and_refuses(self):
+        from colvia.updates.lease import open_managed_store
+
+        with self.windows_proof_fixture() as (entry, full, confirm, closed):
+            slots = entry.home.slots
+            with patch.object(slots, 'selection', return_value=(b'changed', {'selected': self.two})) as select:
+                with self.assertRaisesRegex(RecordError, 'runtime-entry-selection-changed'):
+                    open_managed_store(self.authority, slots, expected_pointer=self.one, _entry=entry)
+                self.assertEqual(2, select.call_count)
+            full.assert_called_once()
+            confirm.assert_not_called()
+            closed.assert_called_once_with()
+
     def test_unqualified_execution_refuses_before_workspace_or_input_access(self):
         for arguments in (['prepare','run','--request','/unavailable/request'],['start','run','--receipt','unused','--statement','Run']):
             with self.readiness_boundary(self.entry):

@@ -451,6 +451,12 @@ def main(argv=None,*,entry=None):
     store = None
     args.operation=args.operation or 'op-'+uuid.uuid4().hex
     try:
+        # Only the ordinary and grouped Work routes carry the Windows proof to
+        # workspace open. Release it before forwarding to lifecycle commands.
+        if args.group not in ('ordinary', 'group') or getattr(args, 'finish_plain_work', False):
+            close_inventory = getattr(entry, '_close_inventory', None)
+            if close_inventory is not None:
+                close_inventory()
         if getattr(args, 'finish_plain_work', False):
             from .external_init import finish
             value = finish(entry, args)
