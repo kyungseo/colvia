@@ -6,14 +6,16 @@ This guide covers Colvia Preview. It explains how to approve a work scope in Cod
 
 ## If you are new
 
-1. [Colvia at a glance](overview.md) — who decides what, and what is kept where.
-2. [Install Colvia and connect a project](install.md) — install for your operating-system account, then connect a project folder.
-3. [Follow along](tutorial.md) — write a customer inquiry report or build a team to-do web app, and try approving, reviewing and accepting for yourself.
+- To start using Colvia, [install it for your operating-system account and connect a project folder](install.md).
+- To understand who decides what and where records are kept, read [Colvia at a glance](overview.md).
+- To learn with an example, [follow the tutorial](tutorial.md) to write a customer inquiry report or build a team to-do web app and try approving, reviewing and accepting.
 
 <p align="center">
 <picture><source media="(prefers-color-scheme: dark)" srcset="../assets/gallery/overview-en-dark.png"><img src="../assets/gallery/overview-en-light.png" width="900" alt="Install in your account, then preview and approve each folder connection. For a new task, approve the scope, review the submission and accept it or request changes. Use project status to pick up existing work."></picture><br>
 <em>Install Colvia once in the account you use, then approve the connection for each folder. In a connected folder, start a new task or pick up where you left off.</em>
 </p>
+
+[Accept and apply 2–8 submissions together on macOS or Windows x64](work.md#grouped-acceptance)
 
 ## Returning to a project
 

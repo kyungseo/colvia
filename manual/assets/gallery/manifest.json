@@ -7,7 +7,7 @@
     "manual/assets/readme-drift.ko.svg": "e5fe936249542455f5d1ce151bec91a7adf130891e4432e701e8d47726276f21",
     "manual/assets/readme-notify.ko.svg": "7dd9a6acd43ea36db8f29ab3a8ca3b852c3253648cd800453216b2c4b0d6f055",
     "manual/assets/readme-split.ko.svg": "f7cf34d65528fa7c90ed3ccf40840f89e3f967fab9d9e4a889fd2317b98ceddb",
-    "manual/assets/readme-parallel.ko.svg": "a09cbcf0bed67714850bdee71dd262f4fac94077809a216251b47ea6ee840f4d",
+    "manual/assets/readme-parallel.ko.svg": "3702348c0a6276dce506a1a09a465b18c3d61c34495374817b678bcd64cbd5f3",
     "manual/assets/readme-overview.ko.svg": "9cb8a5cbf37ed874ff87a8fe8041636e338fe012339704a0e7a40553b6827ead",
     "manual/assets/readme-credential.ko.svg": "2343693748acef7e66d52eef8c678099afd2bb69a7a5b1b5c7b669d948a7dde0",
     "manual/assets/readme-status.ko.svg": "628938b64e77c0da04d34d9372b61097db1ce9714f4a72eb60131b52e4468025",
@@ -35,10 +35,10 @@
     "split-dark.svg": "9e07cf225306421b920559c448878afbe2474c2a98d7500b87150c39ab6203e0",
     "split-en-light.svg": "28e0d4f72a06f8540d5932f65527c65a85e9fe466a2dc7748193e863d93a8e40",
     "split-en-dark.svg": "faba4923d14fbb688601aeb128acfc859e62807225320afac6310813c056f2a9",
-    "parallel-light.svg": "53473a5c219a18ed1687632a48fe4987df0c7eb3a9829218bdac650202c5cb1f",
-    "parallel-dark.svg": "8d7a7fdea23013a818c4e298ccf414b51902ae4f3836989f43302cc6eb8e818c",
-    "parallel-en-light.svg": "e684a1d236dc2ce30a7b2e4ec97ec320848c7ae56a47ded0aff393cefa3dcdbf",
-    "parallel-en-dark.svg": "cae304dc90bc4ec5bf4f179d4044437e8e4f57fdd1744c5fe68199b31634f7d6",
+    "parallel-light.svg": "4096383a66eaebcb049fc76a451807c13e2bbeff403bf2a4fe95e46c4e383b22",
+    "parallel-dark.svg": "47ad515d460b75d28ab0647fdba32a97a85826eef0b2ce21d1a36415ec26f4ca",
+    "parallel-en-light.svg": "fdf8cff4cff7fc60ea7ba7353b1ff4931c616ac1b8ccfe6af7713dfdae257581",
+    "parallel-en-dark.svg": "aabbf6e8bd2f0366ae4b731392586352c3b6beb0d677b1df73e8f7d337e02ac4",
     "overview-light.svg": "df74736e2e945948b64337111f55e6dcbda178b169824926ee984ad33316ecd7",
     "overview-dark.svg": "23fd48f5c5d1511c419062f21c28fd4c10c618ab6b2c89da095614433d52226c",
     "overview-en-light.svg": "41142dd0f292773781dd015a5c803175792f25a97cb7804b901f6c36633e61de",
@@ -342,62 +342,6 @@
       ]
     },
     {
-      "file": "parallel-light.svg",
-      "box": [
-        220,
-        89,
-        62,
-        32
-      ],
-      "group_width": 52.6196747728983,
-      "center": [
-        251,
-        105
-      ]
-    },
-    {
-      "file": "parallel-dark.svg",
-      "box": [
-        220,
-        89,
-        62,
-        32
-      ],
-      "group_width": 52.6196747728983,
-      "center": [
-        251,
-        105
-      ]
-    },
-    {
-      "file": "parallel-en-light.svg",
-      "box": [
-        220,
-        89,
-        62,
-        32
-      ],
-      "group_width": 52.6196747728983,
-      "center": [
-        251,
-        105
-      ]
-    },
-    {
-      "file": "parallel-en-dark.svg",
-      "box": [
-        220,
-        89,
-        62,
-        32
-      ],
-      "group_width": 52.6196747728983,
-      "center": [
-        251,
-        105
-      ]
-    },
-    {
       "file": "overview-light.svg",
       "box": [
         698,
@@ -564,6 +508,62 @@
         58.5,
         104
       ]
+    },
+    {
+      "file": "parallel-light.svg",
+      "box": [
+        24,
+        15,
+        80,
+        28
+      ],
+      "group_width": 52.6196747728983,
+      "center": [
+        64,
+        29
+      ]
+    },
+    {
+      "file": "parallel-dark.svg",
+      "box": [
+        24,
+        15,
+        80,
+        28
+      ],
+      "group_width": 52.6196747728983,
+      "center": [
+        64,
+        29
+      ]
+    },
+    {
+      "file": "parallel-en-light.svg",
+      "box": [
+        24,
+        15,
+        80,
+        28
+      ],
+      "group_width": 52.6196747728983,
+      "center": [
+        64,
+        29
+      ]
+    },
+    {
+      "file": "parallel-en-dark.svg",
+      "box": [
+        24,
+        15,
+        80,
+        28
+      ],
+      "group_width": 52.6196747728983,
+      "center": [
+        64,
+        29
+      ]
     }
   ],
   "renders": {
@@ -612,47 +612,47 @@
       }
     },
     "parallel-light.png": {
-      "sha256": "4f00bc0669debdd7b76335e5c15ae3cd3a899672820fbdc34a9f9db0a6d9fc6e",
-      "svg_sha256": "53473a5c219a18ed1687632a48fe4987df0c7eb3a9829218bdac650202c5cb1f",
-      "width": 720,
-      "height": 420,
-      "renderer": "Chrome/157.0.8103.52",
-      "font_sha256": {
-        "regular": "61e3a10066c27046cd561d633958048b011051491f7e56788ceeed8c4b6102f4",
-        "bold": "6a31ea813cb430f00dc890165f5d3988b5bb0e47c45600236f67da8099f5122a"
+      "svg_sha256": "4096383a66eaebcb049fc76a451807c13e2bbeff403bf2a4fe95e46c4e383b22",
+      "png_sha256": "157d0f1a5761ce62eb076ae27aec57d0cb8fa74accecbfc6a2dbd87063f68792",
+      "width": 1824,
+      "height": 508,
+      "chromium": "149.0.7827.55",
+      "fonts": {
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "parallel-dark.png": {
-      "sha256": "89d304edfaec571afad8807e3305316b1f867ee3898633135e81e4e9229e4ec9",
-      "svg_sha256": "8d7a7fdea23013a818c4e298ccf414b51902ae4f3836989f43302cc6eb8e818c",
-      "width": 720,
-      "height": 420,
-      "renderer": "Chrome/157.0.8103.52",
-      "font_sha256": {
-        "regular": "61e3a10066c27046cd561d633958048b011051491f7e56788ceeed8c4b6102f4",
-        "bold": "6a31ea813cb430f00dc890165f5d3988b5bb0e47c45600236f67da8099f5122a"
+      "svg_sha256": "47ad515d460b75d28ab0647fdba32a97a85826eef0b2ce21d1a36415ec26f4ca",
+      "png_sha256": "e804fa88b34943e0c688fda359ab28789d098c2e0afdf2cf057d582dd54be60b",
+      "width": 1824,
+      "height": 508,
+      "chromium": "149.0.7827.55",
+      "fonts": {
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "parallel-en-light.png": {
-      "sha256": "b8904d1571578b81772a010c0a2809bd0c2a3caee5a2b1294af5295ab71a0a77",
-      "svg_sha256": "e684a1d236dc2ce30a7b2e4ec97ec320848c7ae56a47ded0aff393cefa3dcdbf",
-      "width": 720,
-      "height": 420,
-      "renderer": "Chrome/157.0.8103.52",
-      "font_sha256": {
-        "regular": "61e3a10066c27046cd561d633958048b011051491f7e56788ceeed8c4b6102f4",
-        "bold": "6a31ea813cb430f00dc890165f5d3988b5bb0e47c45600236f67da8099f5122a"
+      "svg_sha256": "fdf8cff4cff7fc60ea7ba7353b1ff4931c616ac1b8ccfe6af7713dfdae257581",
+      "png_sha256": "a956a0bf326e3da3329aeda1df31442cb97368adc6e1b5f8a6298d4dc0e1502c",
+      "width": 1824,
+      "height": 508,
+      "chromium": "149.0.7827.55",
+      "fonts": {
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "parallel-en-dark.png": {
-      "sha256": "b0e863b0983822621984537840b072732436d009518eeb60dbd0c9e937fa5fd3",
-      "svg_sha256": "cae304dc90bc4ec5bf4f179d4044437e8e4f57fdd1744c5fe68199b31634f7d6",
-      "width": 720,
-      "height": 420,
-      "renderer": "Chrome/157.0.8103.52",
-      "font_sha256": {
-        "regular": "61e3a10066c27046cd561d633958048b011051491f7e56788ceeed8c4b6102f4",
-        "bold": "6a31ea813cb430f00dc890165f5d3988b5bb0e47c45600236f67da8099f5122a"
+      "svg_sha256": "aabbf6e8bd2f0366ae4b731392586352c3b6beb0d677b1df73e8f7d337e02ac4",
+      "png_sha256": "192424331f49f22c934fbc3a0c17a8ea3676dc6c875ad2d725b5a0aa012dae81",
+      "width": 1824,
+      "height": 508,
+      "chromium": "149.0.7827.55",
+      "fonts": {
+        "SkinSans-400-grouped.woff2": "107a9c2e242f9fc29e11938c7816ab736b56ebfe5976c0d5e962e547251bb293",
+        "SkinSans-700-grouped.woff2": "969e90af0d30ab6eb4c3c57d61fdf3e9f09dd0fafc6c829dcaa756bfe4e35303"
       }
     },
     "drift-dark.png": {

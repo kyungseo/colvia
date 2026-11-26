@@ -42,6 +42,85 @@ class GitTests(GitFixture,unittest.TestCase):
         self.assertEqual(primary.common,other.common);self.assertNotEqual(primary.gitdir,other.gitdir)
         self.assertEqual(2,len(other.members))
 
+    def test_batched_topology_uses_git_exclude_path_in_primary_and_linked_roots(self):
+        sibling = self.home / 'sibling'
+        self.command('worktree', 'add', '-q', '-b', 'sibling', str(sibling))
+        nested = sibling / 'nested'
+        nested.mkdir()
+        for root in (self.root, nested):
+            with self.subTest(root=root):
+                top, exclude = discover(root, self.git, with_exclude=True)
+                standalone = self.command('rev-parse', '--path-format=absolute', '--git-path', 'info/exclude', root=root)
+                self.assertEqual(self.git.topology(root), top)
+                self.assertEqual(Path(os.fsdecode(standalone.rstrip(b'\n'))), exclude)
+                self.assertEqual(self.git.policy(top, ()), self.git.policy(top, (), info_path=exclude))
+
+    def test_batched_policy_preserves_config_origins_order_and_git_path_expansion(self):
+        from unittest.mock import patch
+
+        global_config = self.home / 'config'
+        user_config = self.home / '.gitconfig'
+        self.git.env.update(HOME=str(self.home), XDG_CONFIG_HOME=str(global_config))
+        self.git.env.pop('GIT_CONFIG_GLOBAL', None)
+        user_config.write_text('[core]\nexcludesFile = global-ignore\n')
+        self.command('config', 'core.excludesfile', 'repository-ignore')
+        (self.root / 'repository-ignore').write_text('repository-only\n')
+        top = self.git.topology(self.root)
+        before = self.git._global_ignore_path(self.root)
+        with patch.object(self.git, '_run', wraps=self.git._run) as run:
+            policy = self.git.policy(top, ())
+        self.assertEqual(self.root / 'repository-ignore', before)
+        self.assertEqual([('file:' + str(user_config) + ' core.excludesfile', 'global-ignore'),
+                          ('file:' + str(self.root / '.git/config') + ' core.excludesfile', 'repository-ignore')],
+                         [entry for entry in policy.config if entry[0].endswith(' core.excludesfile')])
+        self.assertEqual('global:' + str(before), policy.sources[0].origin)
+        typed = [call for call in run.call_args_list if '--path' in call.args[1]]
+        self.assertEqual(1, len(typed))
+
+        self.command('config', 'core.excludesfile', '~/expanded-ignore')
+        self.assertEqual('global:' + str(self.home / 'expanded-ignore'),
+                         self.git.policy(top, ()).sources[0].origin)
+
+    def test_batched_topology_with_ambiguous_budget_uses_original_queries(self):
+        from unittest.mock import patch
+        from colvia.platforms.process import ProcessResult
+
+        run = self.git._run
+
+        def with_large_warning(root, argv, **kwargs):
+            result = run(root, argv, **kwargs)
+            if '--show-toplevel' in argv and '--git-path' in argv:
+                return ProcessResult(0, result.stdout, b'warning ' * 4096)
+            return result
+
+        top = self.git.topology(self.root)
+        info = self.git._info_exclude_path(self.root)
+        with patch.object(self.git, '_run', side_effect=with_large_warning) as process:
+            self.assertEqual((top, info), discover(self.root, self.git, with_exclude=True))
+        self.assertEqual(5, process.call_count)
+
+    def test_any_explicit_ignore_path_is_interpreted_by_pinned_git(self):
+        from unittest.mock import patch
+        from colvia.platforms.process import ProcessResult
+
+        # The full runner intentionally does not inherit the account's HOME.
+        # Git still parses repository configuration during the real rev-parse.
+        self.git.env['HOME'] = str(self.home)
+        top = self.git.topology(self.root)
+        run = self.git._run
+
+        def pinned_path(root, argv, **kwargs):
+            if '--path' in argv:
+                return ProcessResult(0, b'expected-ignore\0', b'')
+            return run(root, argv, **kwargs)
+
+        for raw in ('ordinary', '~/ignore', '%(prefix)/ignore', ':(optional)ignore', '/etc/ignore', ''):
+            self.command('config', '--replace-all', 'core.excludesfile', raw)
+            with self.subTest(raw=raw), patch.object(self.git, '_run', side_effect=pinned_path) as process:
+                policy = self.git.policy(top, ())
+                self.assertEqual('global:' + str(self.root / 'expected-ignore'), policy.sources[0].origin)
+                self.assertEqual(1, sum('--path' in call.args[1] for call in process.call_args_list))
+
     def test_empty_plain_needs_no_git_and_git_transition_never_falls_back(self):
         plain=self.home/'plain';plain.mkdir()
         self.assertEqual('plain',discover(plain,None).kind)

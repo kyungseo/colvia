@@ -61,6 +61,8 @@ class ExecutionJournal:
             require(body.payload['size']==expected['size'] and body.payload['sha256']==expected['sha256'],'execution-input-body-mismatch')
         return grant
     def live(self,grant,view):
+        from ..group_guard import guard as group_guard
+        group_guard(view,grant.payload['work'])
         require(view.head(work_key(grant.payload['work']))==link(grant,'head') and
                 view.head(workspace_key(grant.payload['workspace']))==link(grant,'registration'),'execution-dependency-changed')
     def prepare(self,*,operation,run,contract,request,bodies,objects=(),import_id=None):

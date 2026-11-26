@@ -70,6 +70,36 @@ def _followup_text(value):
 
 
 def human(value):
+    if value.get('kind') == 'work-group':
+        lines=[_printable(value['title'])+' · '+_printable(value['next_action']),
+               '수락 기록 · '+str(value['accepted'])+'건',
+               '반영할 폴더 · '+display_path(value.get('destination_path',value['destination']))]
+        if value.get('destination_path_retained'):lines.append('이전 등록 경로입니다. 현재 연결을 확인하세요.')
+        for member in value['members']:
+            lines.append(_printable(member['title'])+' ('+member['work']+') · '+('제출본 '+str(member['revision'])+'판' if 'revision' in member else '계획'))
+            lines.append('제출 기준 작업 폴더 · '+display_path(member['source_path']))
+            if 'submitted_file_count' in member:lines.append('변경 파일 · '+str(member['submitted_file_count'])+'개')
+            lines.append('목표 · '+_printable(member['goal']))
+            lines.append('범위 · '+', '.join(display_path(path) for path in member['scope']))
+            lines.append('확인할 것 · '+', '.join(_printable(check) for check in member['checks']))
+            if member['excludes']:lines.append('제외 · '+', '.join(_printable(item) for item in member['excludes']))
+            for check in member.get('reported_checks',[]):lines.append('작업 검사 · '+_printable(check['name'])+' · '+_printable(check['status']))
+            for file in member.get('files',[]):
+                before=file['before']; after=file['after']
+                lines.append('변경 · '+display_path(file['path'])+' · '+('삭제' if after is None else '생성' if before is None else '수정'))
+        import shlex
+        for definition in value['required_checks']:
+            lines.append('통합 검사 계획 · '+_printable(definition['name'])+' · '+_printable(shlex.join(definition['argv'])))
+            lines.append('검사 폴더 · '+display_path(definition['cwd'])+' · 제한 '+str(definition['timeout_seconds'])+'초 · 출력 '+str(definition['output_bytes'])+'바이트')
+            if definition['env']:lines.append('검사 환경 · '+_printable(json.dumps(definition['env'],ensure_ascii=False)))
+        for check in value.get('checks',[]):
+            lines.append('통합 검사 · '+_printable(check['name'])+' · '+('통과' if check['status']=='passed' else '확인 필요: '+check['outcome']))
+            for channel,info in check.get('log_metadata',{}).items():
+                if info['truncated']:lines.append('검사 로그 · '+channel+' · 전체 '+str(info['size'])+'바이트 중 앞 4096바이트 표시')
+        if value.get('stale'):lines.append('제출본이 변경되었습니다. 최신 후보와 검사를 다시 준비하세요.')
+        if value.get('blocked'):lines.append('복구에 필요한 확인 · '+_printable(value['blocked']))
+        if value['state']=='review':lines.append('각 파일의 내용을 확인한 뒤, '+str(len(value['members']))+'개 제출본 수락과 원래 폴더 반영을 함께 결정합니다. Git 커밋·push는 별도입니다.')
+        return '\n'.join(lines)
     if value.get('kind') == 'work-history':
         from .work_history import render
         return render(value, _printable)
@@ -397,6 +427,7 @@ MESSAGES={
  'scope-history-mismatch':'이전 승인과 추가 승인 기록이 일치하지 않습니다.',
  'scope-original-conflict':'생성 경로가 최초 파일 기록과 겹칩니다.',
  'progress-view-stale':'작업이나 메모가 바뀌었습니다. 현재 작업을 다시 열어 내용을 확인하세요.',
+ 'work-view-changed':'작업을 보는 사이 상태가 바뀌었습니다. 현재 작업을 다시 열어 내용을 확인하세요.',
  'progress-first-submission-only':'첫 제출 전인 진행 중 일반 작업에서만 중간 메모를 남길 수 있습니다.',
  'progress-work-mismatch':'이 메모가 현재 작업의 기록과 일치하지 않습니다. 작업과 기록 위치를 확인하세요.',
  'invalid-progress-files':'메모의 파일 목록이 승인 범위와 일치하지 않습니다. 기록을 확인하세요.',

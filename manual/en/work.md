@@ -36,7 +36,7 @@ For a document, ask for an outline and a way to check it. For a new app, ask for
 
 If you already know what to do, ask for it directly. The agent can answer a short question or inspect files within the access already allowed.
 
-You can discuss project goals and rules later, or include them when you review the proposed scope. Check the file names and changes before approving that scope. Before recording the plan, review [what Colvia keeps](records.md#retained-contents).
+You can discuss project goals and rules later, or include them when you review the proposed scope. Check the file names and changes before approving that scope. Before recording the plan, review [what Colvia keeps](records.md#retained-contents). In a workspace with many files, recording a plan or submitting a result may take longer. If the command is still running, wait for it to return a result.
 
 ### Record decisions and reasons where your team can find them
 
@@ -214,7 +214,30 @@ The first agent takes the login bug in the current folder. Following the project
 
 Open that folder yourself in Claude Code and paste the request into a new chat. Approve the proposed scope in each chat and review each submission. If the first agent can’t prepare the second folder, it explains why. You can finish one task before starting the other.
 
-### Review and apply submissions
+<a id="grouped-acceptance" name="grouped-acceptance"></a>
+
+### Accept and apply 2–8 submissions together
+
+When you have two or three independent tasks, ask the agent to keep their plans and final review together. For example: “Split the CSV server and download button between two agents. Let me review the results and their integration checks, then accept and apply them together.” Grouped acceptance of 2–8 submissions is available on macOS and native Windows 11 x64. On Windows 11 ARM64, use [individual Work](#start).
+
+Use a separate registered working folder per Work and a separate destination in the same Git repository. At the start, the observed file paths and contents, file modes where supported, and Git observation settings must match across the folders. The tasks must change different regular files. Nested groups and overlapping changes need a different plan.
+
+1. Before first using the 2–8-member format, keep a new, verified [record backup](records.md#backup) and preserve working files separately. Even a project that already used two-member groups needs a backup made immediately before activation. Earlier versions, including two-member-only versions, cannot open the activated project or later backups. Existing two-member records can continue in their original format until activation. After activation, the older runtime cannot resume them. A record backup alone does not restore your working files. Then review all file scopes and exclusions, the destination, and the commands that will check the combined result, and approve the plans together.
+2. On macOS, the coordinator in Claude Code CLI or Codex CLI starts restricted workers in the approved Work folders and collects their results. Prepare account sign-in, required tool permissions and first-use folder trust first. The coordinator runs up to two workers at a time and starts further work after collecting an earlier result. Workers edit only their assigned files, and the coordinator confirms successful completion before recording submissions and checks. On Windows x64, [open each worker’s folder and start the session yourself](#child-works). Use the individual workflow if your host cannot enforce the approved scopes or confirm completion.
+3. Review every exact submitted version and its changes alongside the required integration check results. Colvia runs checks on a separate copy of the combined files and protects the original folder. On Windows x64, use a file-based check, such as comparing the generated CSV with the expected contents. Windows x64 grouped checks do not support browser execution. On macOS, approved checks can read files your account can read and use local loopback connections. Ordinary writes outside the test copy are blocked. Use trusted check commands, since these checks are scoped to ordinary file effects and do not contain untrusted code or operating-system services. Ignored, non-regular and opaque entries are not copied. Agree on the runtime and environment before approval, and keep secrets out of check output because it is retained in records and backups.
+4. Decide once whether to accept all results and apply them to the original folder. Colvia verifies the applied files before recording every acceptance together. Failed or unavailable required checks block this step. Commit and push remain separate decisions.
+
+The project overview shows one group; open it to inspect every member. If a result needs changes, request a revision of that member and have the agent rebuild and recheck the combined candidate. Changed submissions or check evidence require a fresh review. Before any file is applied, or after an all-pre cancellation, you can explicitly dissolve the group and return to individual decisions. Dissolution releases the group from records even if a workspace connection changed; it does not repair the project connection. Changing the agreed file scopes requires a new plan; the group does not silently expand them. After grouped acceptance, further changes use a new ordinary Work or a new group name. Completed group members cannot be reopened.
+
+If application stops, some files may already have changed while no submission is accepted. Keep the prepared files and ask the agent to inspect the group and resume the same request. After completion, repeating that request returns the recorded result. If preparation stopped before any application was reserved, the agent checks that state and prepares a fresh attempt while preserving the old preparation. Changed destination or staging files block recovery until the specific discrepancy is resolved; Colvia does not overwrite them with a new guess. Cancellation is available only while every file is still in its original state. Once application has started, preserve the evidence and recover forward. All acceptances stay with the human reviewer; this group flow cannot be delegated.
+
+The review lists every member’s title, retained source folder, revision and changed files. Log previews identify any truncation. For large or binary contents, use a suitable viewer only after the file matches the retained submission’s bytes and mode; if you cannot inspect that exact result, resolve the gap before acceptance.
+
+The number of Works accepted together is separate from the number of concurrent workers. Eight is the current joint-acceptance limit, not an optimal task size or concurrency recommendation. If you need nine or more members, or exceed the record metadata limit, the agent proposes a meaningful plan with at most eight members. Approve the changed scope before it runs. Accepting several groups separately gives up whole-set atomic acceptance, so agree on that decision boundary first.
+
+Keep the coordinating session open until its workers have been collected. If the coordinator process exits during execution and a successful result cannot be established, submission stays blocked. A new session can recover confirmed completed results; it must not automatically relaunch an unknown run. If submission finished but its response was lost, it checks and reuses that same submission and revision. For unknown or blocked work, the agent first shows the last confirmed state and current file changes. You decide whether to prepare a fresh attempt under the same approved scope after confirming no writer remains, or dissolve before application and approve a new plan.
+
+### Review and apply individual submissions
 
 If you split a larger goal into direct child Works in the same folder, review and accept each submission. For an isolated folder (a registered Git worktree of the same repository), check the exact submission and destination.
 

@@ -13,6 +13,23 @@ class WindowsStorageContractTests(unittest.TestCase):
                      'C:\\trailing.\\record',r'C:\a\..\b',r'C:\a\.\b',r'C:\a\\b','C:\\'+'x'*248):
             with self.subTest(path=path),self.assertRaises(RecordError):local_path(path)
         self.assertEqual(r'C:\Users\Example\Colvia\state.sqlite3',local_path(r'C:\Users\Example\Colvia\state.sqlite3'))
+    def test_reserved_device_stems_preserve_path_admission(self):
+        reserved = ['CON', 'PRN', 'AUX', 'NUL',
+                    *(f'COM{i}' for i in range(1, 10)),
+                    *(f'LPT{i}' for i in range(1, 10))]
+        for stem in reserved:
+            for suffix in ('', '.txt', '.tar.gz'):
+                with self.subTest(stem=stem, suffix=suffix):
+                    with self.assertRaisesRegex(RecordError, 'windows-path-alias'):
+                        local_path('C:\\report\\' + stem.lower() + suffix)
+        for ordinary in ('com0.txt', 'com10.txt', 'report.nul.txt', 'lpt0'):
+            path = 'C:\\report\\' + ordinary
+            self.assertEqual(path, local_path(path))
+
+        # The component error still wins over the later separator check.
+        with self.assertRaisesRegex(RecordError, 'windows-path-alias'):
+            local_path(r'C:\report\\NuL.txt')
+
     def test_native_unicode_spelling_is_preserved_not_renamed(self):
         native='C:\\e\u0301\\record'
         self.assertEqual(native,local_path(native))
@@ -31,6 +48,47 @@ class WindowsStorageContractTests(unittest.TestCase):
         with patch('colvia.storage.files.sys.platform','win32'),patch('colvia.storage.windows.WindowsFiles',side_effect=RecordError('unavailable')):
             from colvia.storage.files import platform_files
             with self.assertRaisesRegex(RecordError,'unavailable'):platform_files()
+
+    def test_final_path_uses_small_buffer_and_preserves_refusal_on_retry(self):
+        path = r'C:\project\report'
+        expected = '\\\\?\\' + path
+        api = object.__new__(API)
+
+        def reply(value):
+            def query(handle, buffer, size, flags):
+                self.assertEqual((1, 0), (handle, flags))
+                buffer.value = value
+                return len(value)
+
+            return query
+
+        api.GetFinalPathNameByHandleW = Mock(side_effect=reply(expected))
+        api.check_final_path(1, path)
+        self.assertEqual([260], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        boundary = expected.ljust(259, 'x')
+        api.GetFinalPathNameByHandleW = Mock(side_effect=reply(boundary))
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        self.assertEqual([260], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        api.GetFinalPathNameByHandleW = Mock(
+            side_effect=lambda h, b, n, f: 260 if n == 260 else reply(boundary)(h, b, n, f))
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        self.assertEqual([260, 32768], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        wrong_path = expected + 'x' * 300
+        api.GetFinalPathNameByHandleW = Mock(
+            side_effect=lambda h, b, n, f: len(wrong_path) + 1 if n == 260 else reply(wrong_path)(h, b, n, f))
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        self.assertEqual([260, 32768], [call.args[2] for call in api.GetFinalPathNameByHandleW.call_args_list])
+
+        api.GetFinalPathNameByHandleW = Mock(return_value=0)
+        with self.assertRaisesRegex(RecordError, 'windows-final-path-mismatch'):
+            api.check_final_path(1, path)
+        api.GetFinalPathNameByHandleW.assert_called_once()
 
     def test_reopening_empty_lock_uses_the_same_final_file(self):
         path = Path('authority') / 'detach.lock'

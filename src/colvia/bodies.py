@@ -85,6 +85,9 @@ def body_bytes(ref: ObjectRef, load: Callable[[ObjectRef],bytes]) -> Iterator[by
 
 
 def validate_body(ref: ObjectRef, load: Callable[[ObjectRef],bytes]) -> None:
+    verify_body = getattr(load, 'verify_body', None)
+    if verify_body is not None and verify_body(ref) is True:
+        return
     for _ in body_bytes(ref,load): pass
 
 

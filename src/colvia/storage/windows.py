@@ -7,8 +7,16 @@ qualification on ARM64 and x64 is separate from import/static and fake-API tests
 from contextlib import contextmanager,ExitStack
 from pathlib import Path,PureWindowsPath
 import ctypes as C
-import ntpath,os,sys,time,uuid
+import ntpath,os,re,sys,time,uuid
 from ..codec import RecordError,require
+
+
+_INVALID_COMPONENT_CHARACTERS = re.compile(r'[\x00-\x1f:<>"|?*]')
+_DOS_DEVICE_STEMS = frozenset({
+    'CON', 'PRN', 'AUX', 'NUL',
+    *(f'COM{i}' for i in range(1, 10)),
+    *(f'LPT{i}' for i in range(1, 10)),
+})
 
 
 def local_path(value):
@@ -17,9 +25,9 @@ def local_path(value):
             not s.startswith(('\\\\','//')) and len(s.encode('utf-16-le'))//2<248,'windows-local-path-required')
     for part in p.parts[1:]:
         require(part not in ('.','..') and
-                not part.endswith((' ','.')) and not any(c in part for c in ':<>"|?*') and
-                not any(ord(c)<32 for c in part) and part.split('.')[0].upper() not in
-                {'CON','PRN','AUX','NUL',*[f'COM{i}' for i in range(1,10)],*[f'LPT{i}' for i in range(1,10)]},'windows-path-alias')
+                not part.endswith((' ','.')) and not _INVALID_COMPONENT_CHARACTERS.search(part) and
+                part.split('.')[0].upper() not in
+                _DOS_DEVICE_STEMS,'windows-path-alias')
     # PureWindowsPath normalizes dot/duplicate separators, so reject those in input.
     require(str(p)==s.replace('/','\\'),'windows-path-noncanonical')
     return str(p)
@@ -118,11 +126,20 @@ class API:
         require(not s.deleted and tag.attributes==b.attributes and
                 ((not reparse and not tag.tag) or (opaque_symlink and reparse and tag.tag==0xa000000c)),
                 'windows-reparse-or-changing-file')
-        name=C.create_unicode_buffer(32768);n=self.GetFinalPathNameByHandleW(h,name,len(name),0)
-        require(0<n<len(name) and name.value.startswith('\\\\?\\') and
-                name.value[4:].casefold()==local_path(path).casefold(),'windows-final-path-mismatch')
+        self.check_final_path(h,path)
         return dict(identity=(int(id_.volume),bytes(id_.identifier).hex(),int(b.creation)),directory=bool(s.directory),
                     links=int(s.links),size=int(s.size),write=int(b.write),change=int(b.change),symlink=reparse)
+    def check_final_path(self,h,path):
+        # Admitted DOS paths are under 248 UTF-16 units. Allow the final-path
+        # prefix and terminator without clearing the maximum buffer every time.
+        name=C.create_unicode_buffer(260)
+        n=self.GetFinalPathNameByHandleW(h,name,len(name),0)
+        if n>=len(name):
+            name=C.create_unicode_buffer(32768)
+            n=self.GetFinalPathNameByHandleW(h,name,len(name),0)
+        require(0<n<len(name) and name.value.startswith('\\\\?\\') and
+                name.value[4:].casefold()==local_path(path).casefold(),'windows-final-path-mismatch')
+
     @contextmanager
     def ancestors(self,path):
         path=PureWindowsPath(local_path(path))

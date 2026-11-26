@@ -38,6 +38,61 @@ class WindowsProcessTests(unittest.TestCase):
         self.assertEqual(b'raw\0output',result.stdout);self.assertEqual(b'diagnostic',result.stderr)
         self.assertEqual(b'input\0',api.input);self.assertTrue(api.job.closed);self.assertFalse(api.job.stopped)
         self.assertEqual(6,len(set(api.closed)));self.assertEqual(1,api.created)
+    def test_verified_child_must_wait_before_approved_stdin(self):
+        from colvia.group_windows_runner import _input_ready
+        nonce=b"a"*32
+        executable=r"C:\verified\python.exe"
+        api=Pipes(out=b"diagnostic\r\nCOLVIA-FILE-CHECK-READY "+nonce+b" 987\r\n")
+        verifications=[]
+        def admit(job, output):
+            self.assertEqual(b"",api.input)
+            def contains(pid,path):
+                verifications.append((pid,path));return True
+            job.contains_process=contains
+            return _input_ready(job,output,nonce,executable)
+        self.run_with(api,input_bytes=b"approved",admit_input=admit)
+        self.assertEqual([(987,executable)],verifications)
+        self.assertEqual(b"approved",api.input)
+
+    def test_no_approved_stdin_on_missing_or_unowned_handshake(self):
+        from colvia.group_windows_runner import _input_ready
+        nonce=b"b"*32
+        cases=((b"launcher status only", "windows-child-input-not-admitted"),
+               (b"COLVIA-FILE-CHECK-READY "+nonce+b" 987\n","group-check-runtime-process-unowned"))
+        for output,code in cases:
+            with self.subTest(code=code):
+                api=Pipes(out=output)
+                def admit(job, received):
+                    job.contains_process=lambda pid,executable: False
+                    return _input_ready(job,received,nonce,r"C:\verified\python.exe")
+                with self.assertRaisesRegex(RecordError,code):
+                    self.run_with(api,input_bytes=b"approved",admit_input=admit)
+                self.assertEqual(b"",api.input)
+                self.assertTrue(api.job.closed)
+
+    def test_empty_job_still_drains_stdout_and_stderr_to_eof(self):
+        class StaggeredPipes(Pipes):
+            def start(self, *args, **kwargs):
+                job = super().start(*args, **kwargs)
+                self.stderr_worker_closed = False
+                return job
+
+            def eof(self):
+                self.queues[self.outputs[0]].put(b'')
+                self.queues[self.outputs[1]].put(b'late stderr')
+                self.queues[self.outputs[1]].put(b'')
+
+            def close(self, handle):
+                if handle==self.outputs[1]:
+                    self.stderr_worker_closed = True
+                super().close(handle)
+
+        api = StaggeredPipes(out=b'out', err=b'first ')
+        result = self.run_with(api, output_limit=len(b'outfirst late stderr'))
+        self.assertEqual((b'out', b'first late stderr'), (result.stdout, result.stderr))
+        self.assertTrue(api.stderr_worker_closed)
+        self.assertFalse(api.job.stopped)
+
     def test_combined_output_budget_failure_never_becomes_success(self):
         api=Pipes(out=b'x'*8,err=b'y'*8)
         with self.assertRaisesRegex(RecordError,'process-output-limit'):self.run_with(api,output_limit=10)

@@ -158,6 +158,18 @@ def parser(*,managed=False):
     execute.add_argument('--statement',required=True);execute.add_argument('--actor',default='owner');execute.add_argument('--authority-kind',choices=('human','delegated'),default='human')
     grant=workers.add_parser('grant');grant.add_argument('work');grant.add_argument('--owner',required=True);grant.add_argument('--delegate',required=True)
     grant.add_argument('--statement',required=True);grant.add_argument('--revoke',action='store_true')
+    grouped=sub.add_parser('group');grouped.add_argument('--destination',required=True)
+    actions=grouped.add_subparsers(dest='action',required=True)
+    for name in ('view','candidate','check','cancel'):
+        actions.add_parser(name).add_argument('group_name')
+    create=actions.add_parser('create');create.add_argument('group_name');create.add_argument('--work',action='append',required=True)
+    create.add_argument('--checks',required=True,help='JSON file containing approved integration check definitions')
+    create.add_argument('--acknowledgement',required=True)
+    for name in ('approve','dissolve'):
+        decision=actions.add_parser(name);decision.add_argument('group_name');decision.add_argument('--receipt',required=True);decision.add_argument('--statement',required=True)
+    accept=actions.add_parser('accept');accept.add_argument('group_name');accept.add_argument('--application',required=True)
+    accept.add_argument('--request',required=True);accept.add_argument('--receipt',required=True);accept.add_argument('--statement',required=True);accept.add_argument('--actor',default='owner')
+    content=actions.add_parser('content');content.add_argument('group_name');content.add_argument('--work',required=True);content.add_argument('--path',required=True)
     candidate=sub.add_parser('candidate').add_subparsers(dest='action',required=True)
     save=candidate.add_parser('save');save.add_argument('candidate');save.add_argument('--title',required=True);save.add_argument('--reason',required=True);save.add_argument('--work');save.add_argument('--dismiss',action='store_true')
     listed=candidate.add_parser('list');listed.add_argument('--limit',type=int,default=20);listed.add_argument('--cursor')
@@ -189,7 +201,7 @@ def effect_authority(args,authority):
     return Path(args.authority)
 
 
-def dispatch(args,store,workspace,authority=None,*,available_features=None,display=False):
+def dispatch(args,store,workspace,authority=None,*,available_features=None,display=False,entry=None):
     if args.group == 'project' and args.action == 'status':
         from .project_status import project_status
         return project_status(store, workspace.workspace, limit=args.limit, cursor=args.cursor)
@@ -340,6 +352,45 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
         if args.action=='declare':return composition.declare(operation=operation,parent=args.work,children=args.child,document=args.document,checks=args.check,statement=args.statement)
         if args.action=='rebind-preview':return composition.rebind_preview(args.work,args.child)
         return composition.rebind(operation=operation,parent=args.work,receipt=args.receipt,statement=args.statement,children=args.child)
+    if args.group=='group':
+        from .group import GroupService
+        retained_path=False
+        if args.action in ('view','content','dissolve'):
+            from .group_records import get,plan_for,key
+            from .records import link
+            selected=store.head(key(args.group_name));require(selected is not None,'group-not-found')
+            plan=plan_for(selected,store.load);require(plan.payload['destination']==args.destination,'group-wrong-destination')
+            try:
+                _,registration,_=workspace.connections.workspace(args.destination)
+                target_root=Path(registration.root.path)
+            except RecordError:
+                target_root=Path(get(link(plan,'destination_registration'),store.load).payload['root']['path'])
+                retained_path=True
+        else:
+            _,registration,_=workspace.connections.workspace(args.destination)
+            target_root=Path(registration.root.path)
+        target=LocalWorkspace(store,target_root,args.destination,git=workspace.git,
+            locator_reader=lambda:read_locator(target_root,workspace.git))
+        runner=None
+        if sys.platform=='win32' and entry is not None and args.action in ('create','check'):
+            from .group_windows_runner import ManagedFileCheck
+            candidate_runner=ManagedFileCheck(entry)
+            if candidate_runner.available():
+                runner=candidate_runner
+        grouped=GroupService(store,target,authority=effect_authority(args,authority),lifecycle_authority=authority,windows_runner=runner)
+        if args.action=='view':
+            value=grouped.view(args.group_name);value['destination_path_retained']=retained_path
+            return value
+        if args.action=='content':
+            from .group_view import content
+            return content(grouped,args.group_name,args.work,args.path)
+        if args.action=='create':
+            try: definitions=json.loads(read_file(Path(args.checks),262144))
+            except (ValueError,UnicodeError): raise RecordError('group-invalid-check-definitions') from None
+            return grouped.create(operation=operation,group=args.group_name,works=args.work,checks=definitions,acknowledgement=args.acknowledgement)
+        if args.action=='accept':return grouped.execute(operation=operation,group=args.group_name,application=args.application,request=args.request,receipt=args.receipt,statement=args.statement,actor=args.actor)
+        if args.action in ('approve','dissolve'):return getattr(grouped,args.action)(operation=operation,group=args.group_name,receipt=args.receipt,statement=args.statement)
+        return getattr(grouped,args.action)(operation=operation,group=args.group_name)
     if args.group=='worker':
         from .worker import WorkerService
         _,registration,_=workspace.connections.workspace(args.destination)
@@ -389,7 +440,7 @@ def command_readonly(args):
         return args.action in ('show','history','preview')
     if args.group == 'project' and args.action == 'status':
         return True
-    return (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','history','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)
+    return (args.group=='group' and args.action in ('view','content')) or (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','history','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)
 
 
 def main(argv=None,*,entry=None):
@@ -400,6 +451,12 @@ def main(argv=None,*,entry=None):
     store = None
     args.operation=args.operation or 'op-'+uuid.uuid4().hex
     try:
+        # Only the ordinary and grouped Work routes carry the Windows proof to
+        # workspace open. Release it before forwarding to lifecycle commands.
+        if args.group not in ('ordinary', 'group') or getattr(args, 'finish_plain_work', False):
+            close_inventory = getattr(entry, '_close_inventory', None)
+            if close_inventory is not None:
+                close_inventory()
         if getattr(args, 'finish_plain_work', False):
             from .external_init import finish
             value = finish(entry, args)
@@ -456,7 +513,7 @@ def main(argv=None,*,entry=None):
             request=DeliveryService(WorkService(store,workspace)).read(args.delivery)[1]
             if request.payload['action']=='execute':value=entry.run_document_delivery(args,store,workspace,authority)
             else:value=dispatch(args,store,workspace,authority,available_features=available_features)
-        else:value=dispatch(args,store,workspace,authority,available_features=available_features,display=not args.json)
+        else:value=dispatch(args,store,workspace,authority,available_features=available_features,display=not args.json,entry=entry)
         print(json.dumps(value,ensure_ascii=False,sort_keys=True) if args.json else human(value))
         return 0
     except (RecordError,OSError,ValueError,TypeError) as exc:
@@ -487,6 +544,12 @@ def main(argv=None,*,entry=None):
         if isinstance(exc,StorageError):value['storage_diagnostic']=dict(exc.diagnostic)
         from .rework import SubmissionBlocked
         if isinstance(exc,SubmissionBlocked):value["details"]=exc.details
+        if args.group=='group':
+            value['work_group']=args.group_name
+            value['recovery_command']='group --destination '+args.destination+' view '+args.group_name
+            value['message']='묶음 현황을 확인하세요. 반영이 예약돼 있다면 원래 요청·제출본·수락 내용 그대로 재개합니다. 파일을 덮어써서 맞추지 마세요.'
+            if code=='group-unreserved-staging-exists':
+                value['message']='이 요청은 반영이 예약되지 않았고 준비 폴더만 남았습니다. 기존 준비 폴더를 보존하고 새 반영·요청 ID로 다시 준비하세요. 예약된 요청이 있으면 원래 요청으로 재개합니다.'
         if args.group=='worker' and getattr(args,'application',None):
             value['application']=args.application
             if store is not None:

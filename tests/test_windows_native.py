@@ -899,7 +899,7 @@ class PortableNativeTests(unittest.TestCase):
             target = Path(name)
             result = subprocess.run([sys.executable, "-I", "-B", str(SOURCE / "colvia"),
                                      "--source-checkout", "init", "--profile", "windows-2",
-                                     "--target", str(target)], capture_output=True, timeout=15)
+                                     "--source", str(SOURCE), "--target", str(target)], capture_output=True, timeout=15)
             self.assertEqual(65, result.returncode, result.stdout + result.stderr)
             self.assertIn("matching the prepared source", json.loads(result.stdout)["message"])
             self.assertEqual([], list(target.iterdir()))

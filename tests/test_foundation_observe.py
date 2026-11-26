@@ -15,6 +15,30 @@ class GitObservationTests(GitFixture,unittest.TestCase):
         result=observe(self.root,ObservationBudget(100,1024*1024),git=self.git)
         self.assertEqual({'.gitignore','report.md','new'},{e['path'] for e in result.snapshot.entries})
 
+    def test_opening_batch_keeps_independent_closing_policy_topology_and_index(self):
+        from unittest.mock import patch
+
+        budget = ObservationBudget(100, 1024 * 1024)
+        with patch.object(self.git, '_run', wraps=self.git._run) as run:
+            observe(self.root, budget, git=self.git)
+        children = [call.args[1] for call in run.call_args_list]
+        topology = [argv for argv in children if '--show-toplevel' in argv]
+        self.assertEqual([True, False], ['--git-path' in argv for argv in topology])
+        self.assertEqual(2, sum('--show-origin' in argv for argv in children))
+        self.assertEqual(2, sum(argv[0] == 'ls-files' for argv in children))
+        self.assertEqual(1, sum('--git-path' in argv and '--show-toplevel' not in argv for argv in children))
+
+        original = self.git.ignored
+
+        def mutate_after_opening_policy(root, paths):
+            with (root / '.git/info/exclude').open('ab') as file:
+                file.write(b'synthetic-outside-file\n')
+            return original(root, paths)
+
+        with patch.object(self.git, 'ignored', side_effect=mutate_after_opening_policy):
+            with self.assertRaisesRegex(RecordError, 'observation-policy-changed'):
+                observe(self.root, budget, git=self.git)
+
     def test_same_policy_new_orphan_inside_previous_container_refuses(self):
         parent=self.root/'.claude/worktrees';parent.mkdir(parents=True)
         self.command('worktree','add','-q','-b','child',str(parent/'child'))

@@ -23,6 +23,20 @@ Use these pairs when writing new material or editing an existing passage. Choose
 
 In Korean, “금액 옆에 통화 단위를 표시해 달라고 요청했습니다” leaves the requester and recipient implicit. When the record supports the roles, use “검토자가 에이전트에게 금액 옆에 통화 단위를 표시해 달라고 요청했습니다.” Use “내가” or “you” for a past decision only when the context establishes who made it. Apply the same distinction in captions, diagram arrows and alt text.
 
+#### Current capability and a planned presentation improvement
+
+This Korean example distinguishes an available query from a proposed improvement to how its results are presented.
+
+Before:
+
+> 지금도 한 Work의 결정과 그때 검토한 판을 찾아볼 수 있습니다. 앞으로는 결정 순서에 따라 당시 남긴 말과 나중에 덧붙인 설명을 한 장에서 구분해 읽기 쉽게 보여 주려 합니다.
+
+After:
+
+> 현재도 Work별 결정 이력과 당시 검토한 버전을 조회할 수 있습니다. 앞으로는 결정 순서에 맞춰 당시 기록한 결정 내용과 사후 추가 설명을 한 화면에서 구분해 볼 수 있도록 개선하려 합니다.
+
+The revision names the available action and its objects directly: “Work별 결정 이력” and “당시 검토한 버전”. “당시 남긴 말” does not say whether it means a recorded decision or something said in chat, so the revision names “당시 기록한 결정 내용”. Avoid “메모” here: it is also the name of the separate progress-note feature. “당시” identifies the version reviewed at the time, rather than a version currently awaiting review. “개선하려 합니다” retains the exploratory status of the direction; “개선합니다” would sound like a firmer commitment. “한 화면” describes the proposed presentation, not an already available screen or a new way to store later explanations. “버전” follows the README wording here; elsewhere keep the established “판” for a submitted revision, as in “2판”.
+
 ## Conditions and evidence
 
 State the available behavior and what the reader needs to do. Keep conditions that change a decision or action: prerequisites, authority, scope, recovery, destructive effects and known limits. Missing validation does not by itself mean a feature is unsupported; removing a caveat must not broaden a support or behavior claim.

@@ -132,11 +132,33 @@ class Git:
         return result
 
     def topology(self,target:Path):
+        return self._topology(target, with_exclude=False)[0]
+
+    def _topology(self,target:Path,*,with_exclude):
         target=Path(target);location(target)
-        result=self._run(target,('rev-parse','--path-format=absolute','--show-toplevel','--absolute-git-dir','--git-common-dir','--show-superproject-working-tree'),limit=131072)
-        lines=result.stdout.splitlines()
+        args=('rev-parse','--path-format=absolute','--show-toplevel','--absolute-git-dir',
+              '--git-common-dir','--show-superproject-working-tree')
+        limit=131072
+        if with_exclude:
+            args+=('--git-path','info/exclude')
+            limit+=32768
+        result=self._run(target,args,limit=limit)
+        raw=result.stdout
+        exclude_raw=None
+        if with_exclude:
+            # The superproject line is optional. Remove the final --git-path
+            # line first so a submodule still fails the original topology check.
+            raw,separator,exclude_raw=raw.removesuffix(b'\n').rpartition(b'\n')
+            diagnostics=len(result.stderr)
+            if not separator or not exclude_raw or len(raw)+1+diagnostics>131072 or len(exclude_raw)+1+diagnostics>32768:
+                # Preserve the old independent output/error budgets if the
+                # combined result cannot be partitioned unambiguously.
+                topology=self.topology(target)
+                return topology,self._info_exclude_path(Path(topology.root.path))
+        lines=raw.splitlines()
         require(len(lines)==3,'nested-submodule-project-not-supported')
         root,gitdir,common=(_absolute(target,p) for p in lines)
+        exclude=_absolute(root,exclude_raw) if exclude_raw is not None else None
         rootloc,gitloc,commonloc=location(root),location(gitdir),location(common)
         raw=self._run(root,('worktree','list','--porcelain','-z'),limit=8*1024*1024).stdout
         groups=raw.split(b'\0\0');members=[]
@@ -166,7 +188,7 @@ class Git:
             members.append(Membership(memberloc,member_gitloc))
             require(len(members)<=10000,'worktree-count-limit')
         require(raw==self._run(root,('worktree','list','--porcelain','-z'),limit=8*1024*1024).stdout,'git-topology-changed')
-        return Topology('git',rootloc,commonloc,gitloc,tuple(members))
+        return Topology('git',rootloc,commonloc,gitloc,tuple(members)),exclude
 
     def index(self,root:Path):
         raw=self._run(root,('ls-files','--stage','--full-name','-z')).stdout
@@ -185,7 +207,7 @@ class Git:
             require(len(values)<=1_000_000,'index-entry-limit')
         return values
 
-    def _global_ignore_path(self,root):
+    def _global_ignore_path(self,root,*,has_configured_excludes=True):
         def line(raw):
             require(raw.endswith(b'\0'),'git-path-encoding-unavailable')
             return raw[:-1]
@@ -194,9 +216,12 @@ class Git:
                     if (k.upper() if sys.platform=='win32' else k)==name}
             require(len(values)<=1,'git-global-ignore-location-unavailable')
             return next(iter(values),'')
-        configured=self._run(root,('config','-z','--path','--get','core.excludesfile'),allowed=(0,1),limit=32768)
-        if configured.code==0:
-            return _absolute(root,line(configured.stdout))
+        if has_configured_excludes:
+            # Git owns interpretation of every configured path, including ones
+            # using expanding syntax that depends on the pinned Git build.
+            configured=self._run(root,('config','-z','--path','--get','core.excludesfile'),allowed=(0,1),limit=32768)
+            if configured.code==0:
+                return _absolute(root,line(configured.stdout))
         home,xdg=variable('HOME'),variable('XDG_CONFIG_HOME')
         if sys.platform=='win32' and not home and not xdg:
             # Git for Windows resolves its own home when the parent has no HOME.
@@ -210,7 +235,11 @@ class Git:
         require(Path(base).is_absolute(),'git-global-ignore-location-unavailable')
         return Path(base)/'git/ignore'
 
-    def policy(self,topology,inventory):
+    def _info_exclude_path(self,root):
+        info=self._run(root,('rev-parse','--path-format=absolute','--git-path','info/exclude'),limit=32768)
+        return _absolute(root,info.stdout.rstrip(b'\n'))
+
+    def policy(self,topology,inventory,*,info_path=None):
         from ..observation import Policy,PolicySource
         root=Path(topology.root.path)
         pattern=r'^(core\.(ignorecase|precomposeunicode|filemode|symlinks|excludesfile|sparsecheckout|sparsecheckoutcone)|extensions\.(worktreeconfig|partialclone))$'
@@ -218,6 +247,7 @@ class Git:
         fields=result.stdout.split(b'\0');require(fields[-1]==b'','invalid-git-config')
         fields=fields[:-1];require(len(fields)%2==0,'invalid-git-config')
         config=[]
+        has_configured_excludes=False
         for n in range(0,len(fields),2):
             keyvalue=fields[n+1].split(b'\n',1);require(len(keyvalue)==2,'invalid-git-config')
             origin,key,value=_text(fields[n]),_text(keyvalue[0]),_text(keyvalue[1])
@@ -226,13 +256,15 @@ class Git:
             # origin and value; never drop origin or merge different overrides.
             if origin.startswith('file:'):origin='file:'+str(_absolute(root,origin[5:].encode('utf-8')))
             config.append((origin+' '+key,value))
+            if key=='core.excludesfile':
+                has_configured_excludes=True
             if key in ('core.sparsecheckout','core.sparsecheckoutcone'):
                 require(value.lower() in ('false','no','off','0'),'sparse-worktree-not-supported')
             if key=='extensions.partialclone':raise RecordError('partial-clone-not-supported')
         config.extend((('forced:core.fsmonitor','false'),('forced:core.untrackedcache','false')))
-        global_path=self._global_ignore_path(root)
-        info=self._run(root,('rev-parse','--path-format=absolute','--git-path','info/exclude'),limit=32768)
-        info_path=_absolute(root,info.stdout.rstrip(b'\n'))
+        global_path=self._global_ignore_path(root,has_configured_excludes=has_configured_excludes)
+        if info_path is None:
+            info_path=self._info_exclude_path(root)
         sources=[PolicySource('global:'+str(global_path),read_file(global_path,4*1024*1024,missing=b'')),
                  PolicySource('git:info/exclude',read_file(info_path,4*1024*1024,missing=b''))]
         paths=sorted((s.native_path for s in inventory if Path(s.native_path).name=='.gitignore'),
@@ -267,14 +299,16 @@ class Git:
         flush();return frozenset(result)
 
 
-def discover(target:Path,git:Git|None):
+def discover(target:Path,git:Git|None,*,with_exclude=False):
     """Plain folders need no Git executable. Ambiguous markers never become plain."""
     target=Path(target);location(target)
     for parent in (target,*target.parents):
         marker=parent/'.git'
         if os.path.lexists(marker):
             require(git is not None,'git-prerequisite-required')
+            if with_exclude:return git._topology(target,with_exclude=True)
             return git.topology(target)
         if (parent/'HEAD').is_file() and (parent/'objects').is_dir() and (parent/'refs').is_dir():
             raise RecordError('bare-or-ambiguous-git-root')
-    return Topology('plain',location(target))
+    topology=Topology('plain',location(target))
+    return (topology,None) if with_exclude else topology

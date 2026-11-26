@@ -42,6 +42,18 @@ class RuntimeLeaseTests(unittest.TestCase):
             self.assertTrue(finished.wait(3));thread.join();self.assertEqual([],errors)
             with self.assertRaisesRegex(RecordError,'runtime-selection-changed'):store.root()
         finally:store.close()
+    def test_managed_reads_deduplicate_only_inner_lease_checks(self):
+        from unittest.mock import patch
+        store=self.managed()
+        try:
+            with patch.object(self.manager,'selection',wraps=self.manager.selection) as select:
+                store.root()
+                self.assertEqual(2,select.call_count)
+                select.reset_mock()
+                store.begin_import('write','synthetic')
+                self.assertEqual(4,select.call_count)
+        finally:store.close()
+
     def test_readonly_managed_store_uses_shared_lease_without_writing_authority(self):
         store=self.managed();store.close();raw,_=self.manager.selection()
         readonly=open_managed_store(self.authority,self.manager,readonly=True)

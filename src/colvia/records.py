@@ -1,5 +1,6 @@
 """Fixed application record schemas and observation serialization for v1."""
 from dataclasses import asdict
+from functools import cache
 import base64,io
 
 from .binding import _uuid
@@ -152,11 +153,13 @@ def _head(payload):
     require(not payload['archived'] or payload['phase']=='completed','archive-completed-work-only')
 
 
+@cache
 def application_registry():
     from .scope_addition import schema as scope_schema, rework_schema, validate_active_link
     from .progress import schema as progress_schema
     from .planning import planning_schemas
     from .composition import schemas as composition_schemas
+    from .group_records import schemas as group_schemas, validate_decision as group_decision, pinned_decision_version
     from .worker_records import schemas as worker_schemas
     from .execution.records import schemas as execution_schemas
     from .delivery.records import schemas as delivery_schemas
@@ -166,7 +169,7 @@ def application_registry():
     from .work_lifecycle import schema as lifecycle_head_schema
     head_schema = Schema('work.head',1,{'plan':'decision','approval':'decision','result':'decision','decision':'decision','previous':'provenance','context':'decision'},_head,
                {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'result':frozenset({'work.submission'}),'decision':frozenset({'work.decision'}),'previous':frozenset({'work.head'}),'context':frozenset({'composition.binding','composition.membership'})}, content=validate_active_link)
-    return foundation_registry([rework_schema(),scope_schema(),progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*execution_schemas(),
+    return foundation_registry([rework_schema(),scope_schema(),progress_schema(),*git_schemas(),*lifecycle_schemas(),*configuration_schemas(),*delivery_schemas(),*connection_schemas(),*planning_schemas(),*composition_schemas(),*worker_schemas(),*group_schemas(),*execution_schemas(),
         Schema('observation.policy',1,{'sources':'integrity'},_policy,{'sources':frozenset({'body.complete'})}),
         Schema('observation.snapshot',1,{'tree':'integrity','policy':'integrity','workspace':'decision'},_observation_v1,
                {'tree':TREE_KINDS,'policy':frozenset({'observation.policy'}),'workspace':frozenset({'workspace.registration'})}),
@@ -183,6 +186,9 @@ def application_registry():
         Schema('work.submission',2,{'plan':'decision','approval':'decision','observation':'integrity','after':'integrity','previous':'provenance','attribution':'decision'},_submission_v2,
                {'plan':frozenset({'work.plan'}),'approval':frozenset({'work.approval'}),'observation':frozenset({'observation.snapshot'}),'after':MAP_KINDS,'previous':frozenset({'work.submission'}),'attribution':MAP_KINDS},content=_submission_content),
         Schema('work.decision',1,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'worker.authorization'})}),
+        Schema('work.decision',2,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
+        Schema('work.decision',3,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
+        Schema('work.decision',4,{'result':'decision','authorization':'decision'},_decision,{'result':frozenset({'work.submission'}),'authorization':frozenset({'group.authorization'})},local=pinned_decision_version,content=group_decision),
         head_schema, lifecycle_head_schema(head_schema),
     ])
 
@@ -229,13 +235,26 @@ def encode_observation(observed,workspace_ref,store,import_id):
     objects.append((ref,raw));return ref,objects
 
 
-def decode_policy(ref,load):
-    from .bodies import body_bytes
-    obj=decode_envelope(ref,load(ref));application_registry().inspect(ref,load(ref),required=True)
+def decode_policy(ref,load,*,observed=None):
+    from .bodies import body_bytes, descriptor
+    obj=application_registry().inspect(ref,load(ref),required=True)
+    current = {source.origin: source.raw for source in observed.sources} if observed is not None else {}
     sources=[]
     for meta,edge in zip(obj.payload['sources'],obj.edges):
-        raw=b''.join(body_bytes(edge.ref,load));source=PolicySource(meta['origin'],raw)
-        require(len(raw)==meta['size'] and source.digest==meta['sha256'],'policy-body-mismatch');sources.append(source)
+        source = None
+        if meta['origin'] in current:
+            # Start already read and verified the live policy. Matching its
+            # complete historical prefix needs no retained chunk bytes.
+            candidate = PolicySource(meta['origin'],current[meta['origin']][:meta['size']])
+            if len(candidate.raw)==meta['size'] and candidate.digest==meta['sha256']:
+                described = descriptor(edge.ref,load(edge.ref))
+                require(described.payload['size']==meta['size'] and
+                        described.payload['sha256']==meta['sha256'],'policy-body-mismatch')
+                source = candidate
+        if source is None:
+            raw=b''.join(body_bytes(edge.ref,load));source=PolicySource(meta['origin'],raw)
+            require(len(raw)==meta['size'] and source.digest==meta['sha256'],'policy-body-mismatch')
+        sources.append(source)
     return Policy(tuple(sources),tuple(tuple(p) for p in obj.payload['config']),obj.payload['tool'])
 
 

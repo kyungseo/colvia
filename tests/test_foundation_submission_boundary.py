@@ -253,7 +253,9 @@ class BoundaryCLITests(unittest.TestCase):
     def test_current_location_mismatch_does_not_claim_automatic_reconnection(self):
         from colvia.presentation import failure
         text=failure('project-location-changed')
-        self.assertIn('이동인지 복사인지',text);self.assertIn('지원하지',text)
+        for meaning in ('연결을 열지 않았습니다','DB를 지우지 말고','파일과 기록을 보존','원래 폴더','이동 확인을 요청'):
+            self.assertIn(meaning,text)
+        self.assertNotIn('자동으로 다시 연결',text)
 
 
 if __name__=='__main__':unittest.main()

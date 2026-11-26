@@ -66,7 +66,7 @@ class CorrectionTests(WorkerFixture,unittest.TestCase):
         from colvia.cli import main
         review=self.source_result();self.source.accept(operation='accept-before-cli',work='source',receipt=review['receipt'],statement='accept')
         self.interrupt('after-install');self.command('worktree','remove','--force',str(self.child))
-        wrapper=Mock();wrapper.store.return_value=self.store
+        wrapper=Mock();wrapper.root=self.authority;wrapper.store.return_value=self.store
         args=['--source-development','--authority',str(self.authority),'--project',self.store.project,
               '--workspace',self.child_id,'--root',str(self.child),'--git',str(self.git.executable),'--json',
               '--operation','cli-resume','worker','--destination',self.destination.workspace,'resume','apply-report']

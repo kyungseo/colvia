@@ -73,11 +73,21 @@ class Connections:
         require(bound.locator.project==self.store.project and bound.locator.instance==self.store.instance,'authority-binding-mismatch')
         return ref,bound
 
-    def binding(self):
+    def _effective(self, ref, resolved):
+        if resolved is None:
+            return identities.effective(ref, self.store.load)
+        if ref in resolved:
+            return resolved[ref]
+        value = identities.effective(ref, self.store.load)
+        if len(resolved) < 256:
+            resolved[ref] = value
+        return value
+
+    def binding(self, *, _resolved=None):
         ref,bound=self.binding_record()
         anchor=self.store.head(identities.PROJECT_IDENTITY)
         if anchor is not None:
-            project,wref,current,workspace=identities.effective(anchor,self.store.load)
+            project,wref,current,workspace=self._effective(anchor,_resolved)
             if project==ref:
                 require(self.store.head(workspace_key(workspace.workspace))==wref and
                         self.store.head(identities.identity_key(workspace.workspace))==anchor and
@@ -96,12 +106,12 @@ class Connections:
                 'workspace-location-index-mismatch')
         return ref,value
 
-    def identity(self,workspace_ref):
+    def identity(self,workspace_ref,*,_resolved=None):
         obj=decode_envelope(workspace_ref,self.store.load(workspace_ref));connection_schemas()[1].check(obj)
         registration=workspace_payload(obj.payload)
         ref=self.store.head(identities.identity_key(registration.workspace))
         if ref is not None:
-            project,actual,_,current=identities.effective(ref,self.store.load)
+            project,actual,_,current=self._effective(ref,_resolved)
             require(actual==workspace_ref and project==self.store.head(PROJECT_KEY) and
                     self.store.head(workspace_key(current.workspace))==actual and
                     self.store.head(location_key(registration.root))==actual and
@@ -109,12 +119,12 @@ class Connections:
         else:require(not persistent(registration.root),'connection-identity-required')
         return ref
 
-    def workspace(self,workspace):
-        project,bound=self.binding()
+    def workspace(self,workspace,*,_resolved=None):
+        project,bound=self.binding(_resolved=_resolved)
         ref,value=self.workspace_record(workspace,project)
-        anchor=self.identity(ref)
+        anchor=self.identity(ref,_resolved=_resolved)
         if anchor is not None:
-            _,_,current,value=identities.effective(anchor,self.store.load)
+            _,_,current,value=self._effective(anchor,_resolved)
             require(current==bound,'connection-identity-binding-mismatch')
         return ref,value,bound
 
@@ -235,14 +245,14 @@ class Connections:
             changes={key:wref,identity_key:wref,**additions},objects=[(wref,wraw),*anchors],validate=validate)
         return wref
 
-    def registrations(self,topology,*,current_only=False,complete=False):
+    def registrations(self,topology,*,current_only=False,complete=False,_resolved=None):
         """Resolve only current Git members, without scanning all Work heads."""
-        project,bound=self.binding();values=[]
+        project,bound=self.binding(_resolved=_resolved);values=[]
         if topology.kind==bound.kind=='plain':
             # The locator already names exactly one workspace. Resolve that head,
             # then verify its ORIGINAL location index; never rewrite or search
             # other heads to accommodate Windows path spelling.
-            _,value,_=self.workspace(bound.locator.workspace)
+            _,value,_=self.workspace(bound.locator.workspace,_resolved=_resolved)
             require(value.gitdir is None and same_plain_location(value.root,bound.location),
                     'workspace-location-index-mismatch')
             return (value,) if same_plain_location(value.root,topology.root) else ()
@@ -255,7 +265,7 @@ class Connections:
             move=self.store.head(identities.PROJECT_IDENTITY)
             primary=None
             if move is not None and move.version==2:
-                p,w,_,effective=identities.effective(move,self.store.load)
+                p,w,_,effective=self._effective(move,_resolved)
                 if p==project:primary=(w,effective.root)
             for key,ref in scan_map(self.store.root().heads,self.store.load):
                 if not key.startswith('workspace:'):
@@ -267,7 +277,7 @@ class Connections:
                 path=primary[1].path if primary is not None and primary[0]==ref else registration.root.path
                 root=by_path.get(path)
                 if root is not None:
-                    _,effective,_=self.workspace(registration.workspace)
+                    _,effective,_=self.workspace(registration.workspace,_resolved=_resolved)
                     require(effective.root==root and effective.gitdir==gitdirs[root] and
                             self.store.head(location_key(root))==ref,'workspace-location-index-mismatch')
         for root in gitdirs:
@@ -284,7 +294,7 @@ class Connections:
                         'workspace-binding-stale')
                 continue
             require(owner==project,'workspace-binding-stale')
-            _,value,_=self.workspace(value.workspace)
+            _,value,_=self.workspace(value.workspace,_resolved=_resolved)
             require(value.root==root,'workspace-location-index-mismatch')
             if current_only:
                 require(value.gitdir==gitdirs[root],'workspace-location-changed')

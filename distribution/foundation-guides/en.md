@@ -4,13 +4,19 @@
 
 Colvia is a local workflow tool for working with AI agents. Approve the scope proposed by Codex or Claude Code, then review the result and decide whether to accept it. Colvia keeps approvals and submissions on your device. Open the same project to pick up the work in a new chat or with another agent.
 
-1. [Install and connect the folder](install.md). If your project uses Git, [ask the agent to register Git first](git.md#git-register). In your usual chat, ask, “Connect this folder to Colvia.” Review the files Colvia will add and where it will store records before approving the connection. When the first-connection preview offers Git, choose whether to keep the folder plain or start using Git. Both choices work with empty folders and existing files. Once you have finished any open Work, you can [adopt Git and keep your Work](git.md#adopt-git).
+1. [Install and connect the folder](install.md). Start a new task in an empty folder, or connect a folder that already contains your files. You can use Colvia without Git. In your usual chat, ask, “Connect this folder to Colvia.”
+
+   If you are connecting a Git repository, start at its root. If Git is not registered yet, the connection preview stops and asks you to register it first. [Review and approve the registration](git.md#git-register), then ask for the connection preview.
+
+   Review the folder, the files Colvia will add, and where it will store records before approving the connection. When the first-connection preview offers Git, choose whether to keep the folder plain or start using Git. Both choices work with empty folders and existing files. Once you have finished any open Work, you can [adopt Git and keep your Work](git.md#adopt-git).
 2. [Say what you want to do in the current chat](work.md#start). In an empty folder, a sentence such as “I want to summarize the meeting in one page” is enough to start. You can also connect a project you already work in. The agent uses any goal you’ve shared and the existing project material to propose a plan. Saving a plan keeps the existing contents of the files it lists. These contents and later submissions are kept in records and backups.
 3. [Review the result](work.md#review) and [see the recorded follow-up](work.md#follow-up). Open the same project in a new chat to continue. The agent needs access to both the connected folder and the record folder.
 
 [Switch Work, pause and resume](work.md#work-lifecycle)
 
 [Approve a table edit and a new appendix together](work.md#scope-change)
+
+[Accept and apply 2–8 submissions together on macOS or Windows x64](work.md#grouped-acceptance)
 
 ## Returning to a project
 

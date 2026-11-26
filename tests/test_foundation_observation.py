@@ -37,6 +37,51 @@ class ObservationTests(unittest.TestCase):
             snapshot(self.root,self.budget,boundaries=boundaries,protected={'nested/file'})
         with self.assertRaisesRegex(RecordError,'structural-boundary-changed'):
             snapshot(self.root,self.budget,boundaries={'nested':('other','other')})
+    def test_strict_nested_git_marker_comparison_is_case_insensitive(self):
+        for index, name in enumerate(('.git', '.GIT', '.GiT')):
+            with self.subTest(name=name):
+                root = self.root / str(index)
+                marker = root / 'nested' / name
+                marker.mkdir(parents=True)
+                (marker / 'item').write_bytes(b'synthetic')
+                (root / '.gitignore').write_bytes(b'ordinary')
+                self.assertEqual(['.gitignore', f'nested/{name}/item'],
+                                 [e['path'] for e in snapshot(root, self.budget).entries])
+                with self.assertRaisesRegex(RecordError, 'unregistered-nested-git'):
+                    snapshot(root, self.budget, reject_nested_git=True)
+
+    def test_strict_root_git_marker_keeps_only_proved_boundary(self):
+        marker = self.root / '.GIT'
+        marker.write_bytes(b'synthetic root git marker')
+        proof = identity(marker.lstat())
+        options = dict(reject_nested_git=True, boundaries={'.git': proof})
+        self.assertEqual((), snapshot(self.root, ObservationBudget(1, 0), **options).entries)
+        self.assertEqual((), snapshot(self.root, self.budget, reject_nested_git=True,
+                                     boundaries={'.GIT': proof, '.git': ('other', 'other')}).entries)
+        with self.assertRaisesRegex(RecordError, 'boundary-swallows-protected'):
+            snapshot(self.root, self.budget, protected={'.Git/config'}, **options)
+        with self.assertRaisesRegex(RecordError, 'unregistered-nested-git'):
+            snapshot(self.root, self.budget, reject_nested_git=True)
+        with self.assertRaisesRegex(RecordError, 'structural-boundary-changed'):
+            snapshot(self.root, self.budget, reject_nested_git=True, boundaries={'.git': ('other', 'other')})
+        marker.unlink()
+        marker.symlink_to(self.root / 'missing')
+        with self.assertRaisesRegex(RecordError, 'structural-boundary-changed'):
+            snapshot(self.root, self.budget, reject_nested_git=True,
+                     boundaries={'.git': identity(marker.lstat())})
+
+    def test_root_git_marker_collision_refuses_before_boundary_pruning(self):
+        from contextlib import nullcontext
+        from types import SimpleNamespace
+
+        marker = self.root / '.GIT'
+        marker.write_bytes(b'synthetic')
+        options = dict(reject_nested_git=True, boundaries={'.git': ('other', 'other')})
+        with patch('colvia.platforms.posix.os.scandir',
+                   side_effect=lambda _: nullcontext(iter(SimpleNamespace(name=n) for n in ('.GIT', '.git')))):
+            with self.assertRaisesRegex(RecordError, 'path-collision'):
+                snapshot(self.root, self.budget, **options)
+
     def test_file_changed_while_hashing_is_unavailable(self):
         path=self.root/'changing';path.write_bytes(b'old');original=os.read;changed=False
         def read(fd,n):

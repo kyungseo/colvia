@@ -103,6 +103,64 @@ class StoreTests(unittest.TestCase):
             with self.assertRaises(sqlite3.IntegrityError): self.store.db.execute(query,args)
         self.assertEqual(ref,self.store.head('x'))
 
+    def test_scoped_object_reuse_keeps_exact_keys_and_final_generation_guard(self):
+        from colvia.codec import ObjectRef
+        old=self.publish('seed','old','kept')
+        wrong=ObjectRef('test.result',old.version,old.byte_length,old.sha256)
+        before=self.store.root().ref
+        old_bytes=self.store.load(old)
+        new,raw=self.value('must not publish')
+        captured={}
+
+        def validate(view):
+            captured['view']=view
+            captured['source']=view.load
+            with view.reuse_immutable_objects():
+                captured['wrapped']=view.load
+                self.assertEqual(old_bytes,view(old))
+                with self.assertRaisesRegex(RecordError,'object-unavailable'):
+                    view(wrong)
+                self.active='generation-2'
+                self.assertEqual(old_bytes,view(old))
+
+        with self.assertRaisesRegex(RecordError,'active-generation-changed'):
+            self.store.commit_heads(operation='refused',expected={'new':None},changes={'new':new},
+                                    objects=[(new,raw)],validate=validate)
+        self.assertIs(captured['view'].load,captured['source'])
+        with self.assertRaisesRegex(RecordError,'active-generation-changed'):
+            captured['wrapped'](old)
+        self.active='generation-1'
+        self.assertEqual(before,self.store.root().ref)
+        self.assertIsNone(self.store.head('new'))
+
+    def test_scoped_object_reuse_is_bounded_and_restored_after_refusal(self):
+        from colvia.storage.sqlite import ValidationView
+        from collections import Counter
+
+        def read(ref):
+            calls[ref]+=1
+            if ref=='fault':
+                raise RecordError('store-outcome-unknown')
+            return b'x' * (2 * 1024 * 1024) if ref=='large' else b'x'
+
+        calls=Counter()
+        view=ValidationView(None,read)
+        with self.assertRaisesRegex(RecordError,'synthetic-refusal'):
+            with view.reuse_immutable_objects():
+                wrapped=view.load
+                view('small')
+                view('small')
+                view('large')
+                view('large')
+                for _ in range(2):
+                    with self.assertRaisesRegex(RecordError,'store-outcome-unknown'):
+                        view('fault')
+                raise RecordError('synthetic-refusal')
+        self.assertIs(view.load,read)
+        wrapped('small')
+        wrapped('small')
+        self.assertEqual({'small':3,'large':2,'fault':2},calls)
+
     def test_fence_active_pointer_and_replaced_file_refuse(self):
         self.active='generation-2'
         with self.assertRaisesRegex(RecordError,'active-generation-changed'): self.store.root()

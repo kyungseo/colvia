@@ -9,14 +9,14 @@ from .process import ProcessResult
 from .windows_job import JobAPI
 
 
-def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=None):
+def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=None,admit_input=None):
     require(type(input_bytes) is bytes and len(input_bytes)<=4*1024*1024,'process-input-limit')
     require(type(seconds) in (int,float) and 0<seconds<=60 and type(output_limit) is int and 0<output_limit<=128*1024*1024,'invalid-process-budget')
-    a=api or JobAPI();child=None;owned=set();threads=[];errors=[];lock=threading.Lock();failed=threading.Event()
+    a=api or JobAPI();child=None;owned=set();threads=[];errors=[];lock=threading.Lock();changed=threading.Event()
     output=[bytearray(),bytearray()];count=[0];closed=False;deadline=time.monotonic()+seconds
     def report(error):
         with lock:errors.append(error)
-        failed.set()
+        changed.set()
     def reader(handle,index):
         try:
             while raw:=a.read_pipe(handle,65536):
@@ -27,6 +27,7 @@ def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=
         finally:
             try:a.close(handle)
             except BaseException as error:report(error)
+            finally:changed.set()
     def writer(handle):
         try:
             offset=0
@@ -35,6 +36,7 @@ def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=
         finally:
             try:a.close(handle)
             except BaseException as error:report(error)
+            finally:changed.set()
     def worker(target,*args):
         thread=threading.Thread(target=target,args=args,daemon=True);thread.start();threads.append(thread);owned.remove(args[0])
     try:
@@ -43,14 +45,28 @@ def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=
         stderr=a.pipe();owned.update(stderr)
         child=a.start(args,str(cwd),env,(stdin[0],stdout[1],stderr[1]))
         for h in (stdin[0],stdout[1],stderr[1]):a.close(h);owned.remove(h)
-        worker(reader,stdout[0],0);worker(reader,stderr[0],1);worker(writer,stdin[1])
+        worker(reader,stdout[0],0);worker(reader,stderr[0],1)
+        pending_input=admit_input is not None
+        if not pending_input:
+            worker(writer,stdin[1])
         while True:
-            if failed.is_set():raise errors[0]
+            # Recheck the owned Job even when no stream activity is visible.
+            # Clearing before observing state avoids losing a concurrent EOF.
+            changed.clear()
+            with lock:
+                if errors:raise errors[0]
+            if pending_input:
+                with lock:
+                    transcript=bytes(output[0])
+                if admit_input(child,transcript):
+                    worker(writer,stdin[1]);pending_input=False
             if child.exited() and child.active()==0 and all(not t.is_alive() for t in threads):
                 with lock:
                     if errors:raise errors[0]
-                closed=True;break
-            require(time.monotonic()<deadline,'process-timeout');failed.wait(min(.01,max(0,deadline-time.monotonic())))
+                closed=True
+                require(not pending_input,'windows-child-input-not-admitted')
+                break
+            require(time.monotonic()<deadline,'process-timeout');changed.wait(min(.01,max(0,deadline-time.monotonic())))
         return ProcessResult(child.code(),bytes(output[0]),bytes(output[1]))
     finally:
         closure_error=None

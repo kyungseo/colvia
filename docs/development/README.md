@@ -2,6 +2,23 @@
 
 Use the [document language guide](document-ownership.md#document-language) when adding a plan, follow-up or result. This index uses English throughout. Linked decisions and review records may open in their original Korean. For the subdirectories, start with the [record foundation guide](record-foundation/README.md) or the [verification controls guide](verification/README.md).
 
+- [Consistent Git marker classification](PATCH-20261125-006-git-marker-case-observation.md) — The selected F7 correction for the Windows and macOS workspace observers.
+
+- [Native Windows directory pinning safety trial](CHORE-20261125-005-windows-directory-pinning-safety.md) — Phase F synthetic safety and compatibility evidence.
+
+- [Windows workspace observation design review](CHORE-20261125-004-windows-workspace-observation-design.md) — Phase E evidence and design review based on the accepted Phase D candidate.
+
+- [Windows command latency and observation efficiency](PATCH-20261125-003-read-path-efficiency-phase-d.md) — Phase D validation of startup and Git observation costs using the native x64 entry.
+
+- [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Owner-accepted macOS extension. Native Windows x64 file-based verification passed two, three and eight submissions, with exact application and interruption recovery. The Owner closed that correctness scope and moved Windows performance to the read-path follow-up.
+
+- [Grouped acceptance of two submissions](FEAT-20261122-001-grouped-acceptance.md) — Owner accepted the two-member implementation and authorized its local commit on 2026-11-22.
+- [Eight retained regression findings](grouped-acceptance-regression-followup.md) — Accepted eight-case closure after the multi-submission extension; exact cases and evidence limits.
+
+- [Independent document entry and roadmap guidance](CHORE-20261123-002-independent-document-guidance.md) — Purpose-based starting choices, current and planned behavior, and maintainer entry.
+
+- [Installation and Git guide flow](CHORE-20261123-001-installation-guide-flow.md) — Existing connection choices, account-level registration reuse and paired guide checks.
+
 - [Windows notification detail latency](PATCH-20261121-001-windows-notice-detail-latency.md) — Visible result timing and integrity checks.
 
 - [Public and installed guides for returning to a project](CHORE-20261120-001-public-work-guides.md) — Reader journeys, bilingual diagrams and package verification.
@@ -300,6 +317,18 @@ The private three-arm research obligation does not grant comparative claims: abs
 For the designated FEAT-20261018-003 candidate only, [Windows Verification Amendment 02](../decisions/DR-0007-windows-native-runtime-contract.md#windows-verification-amendment-02--accepted-2026-10-28), accepted on 2026-10-28, replaces parent-optimized full repetition with its fixed selection and mode-boundary checks while retaining complete source-aware normal coverage and all other safety obligations. [Maintaining](../MAINTAINING.md#windows-verification-amendment-02--accepted-2026-10-28) defines its limits and invalidation conditions. The preceding general and historical criteria retain their meaning outside that exact scope; this is not result acceptance or Windows admission.
 
 ## New Source Candidates
+
+- [Windows relative-open observation](CHORE-20261125-005-windows-directory-pinning-safety.md#relative-open-after-publication) — Deferred until after publication and until continuous path-identity and everyday-operation evidence is available.
+
+- [Windows nested Git marker consistency](CHORE-20261125-005-windows-directory-pinning-safety.md#pre-publication-candidate--nested-git-marker-case-on-windows) — Selected by the Owner for the [F7 correction](PATCH-20261125-006-git-marker-case-observation.md) before publication.
+
+- [Reviewing parallel submissions](CHORE-20261125-004-windows-workspace-observation-design.md#after-publication-candidate--reviewing-parallel-submissions) — After publication, compare one developer and one independent reviewer using explicitly admitted evidence. Worker-count expansion and product changes require separate evidence and approval.
+
+- [Read-path efficiency follow-up](read-path-efficiency-followup.md#owner-planning-authorization--2026-11-24) — P1 candidate for guarded read and validation cost across ordinary commands and grouped acceptance. See the [Phase A implementation and measurements](PATCH-20261124-001-read-path-efficiency.md) for the selected work and remaining Windows costs. [Phase B](PATCH-20261125-001-read-path-efficiency-phase-b.md). [Phase C](PATCH-20261125-002-read-path-efficiency-phase-c.md). [Phase D](PATCH-20261125-003-read-path-efficiency-phase-d.md).
+
+- [Windows fixed startup cost](windows-command-startup-followup.md) — Candidate for design review if measured recurring fixed cost still exceeds five seconds per command.
+
+- [Legacy handoff inbox observation race](legacy-handoff-inbox-race-followup.md) — Reproduced in the older receive path. Confirm support scope before selecting a fix.
 
 - [Block credentials before applying to Git](git-precommit-credential-check-followup.md#owner-계획-결정--2026-11-16) — P0. The [implementation and verification record](FEAT-20261118-001-git-credential-gate.md) covers the selected local check before Git objects are written.
 

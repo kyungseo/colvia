@@ -36,10 +36,14 @@ First, read the plan your agent proposes and decide **what it can change**. When
 
 ## Install and start your first task
 
-Install Codex or Claude Code and sign in before starting.
+First, sign in to the Codex or Claude Code app or CLI you use.
 
 1. In the operating-system account that will use Colvia, copy and run the command for your platform from the [official installation page](https://colvia.github.io/downloads/#en). Colvia downloads and verifies the release files and prepares its own Python runtime. On Windows, open regular PowerShell from the Start menu as a standard user. When setup completes, [check the installed version](manual/en/install.md#check-installed-version).
-2. Open the project folder in Codex or Claude Code. If it uses Git and you haven’t registered it with Colvia yet, [ask the agent to register Git](manual/en/git.md#git-register) first and open the repository root. Then ask, “Connect this folder to Colvia.” Review the folder, the files Colvia will add, and where it will keep the records. Approve the connection if the preview looks right. When the connection preview offers Git, you can start with a regular folder or set up Git. If you start without Git, finish any open Work before you [switch to Git and keep your records](manual/en/git.md#adopt-git).
+2. Start a new task in an empty folder, or connect a folder that already contains your files. You can use Colvia without Git. Open the folder in Codex or Claude Code and ask, “Connect this folder to Colvia.”
+
+   If you are connecting a Git repository, start at its root. If Git is not registered yet, the connection preview stops and asks you to register it first. [Review and approve the registration](manual/en/git.md#git-register), then ask for the connection preview.
+
+   Review the folder, the files Colvia will add, and where it will keep the records. Approve the connection if the preview looks right. When the first connection offers a Git choice, you can keep using a regular folder or start using Git. If you start without Git, finish any open Work before you [switch to Git and keep your records](manual/en/git.md#adopt-git).
 3. After connecting the folder, use the same chat to describe what you want and how you’ll know it works. For example, you could say, “Please build a to-do app. I want to add tasks, mark them complete, and still see them when I reopen the app.” The agent proposes one plan covering the files it will create or change and how it will check that the app works. In an existing project, it also consults the README and project rules. If the scope looks right, approve the plan in one go.
 4. The agent builds the app and runs the planned checks. If a check reveals a problem, the agent can fix it within the scope you approved and rerun the same check. If it needs another file or a change to the check criteria, it stops, proposes the change, and waits for your approval. When it finishes checking, the agent submits the app for review with the check results. Colvia keeps the scope you approved and the submitted version. Review the submitted version and its check results, then decide whether to accept it or ask for changes. [Delegate and review](manual/en/work.md#review)
 
@@ -96,7 +100,7 @@ See what needs review, revision or a prior result.
 </td>
 <td width="33%" valign="top" align="center">
 <picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/split-en-dark.png"><img src="manual/assets/gallery/split-en-light.png" width="100%" alt="Review the parts, then accept the combined result separately."></picture><br>
-<strong><a href="manual/en/work.md#child-works">Review a large task in parts</a></strong><br>
+<strong><a href="manual/en/work.md#child-works">Review a large task as child Works</a></strong><br>
 Review the parts, then accept the combined result separately.
 </td>
 <td width="33%" valign="top" align="center">
@@ -140,33 +144,43 @@ If something urgent comes up, pause the current Work and switch to another. When
 
 Open the same project and ask, “What do I need to review in the report I assigned earlier?” When the agent can access the project folder and Colvia records, it can find the approved scope, the last submission, differences from the current files, and any recorded next step.
 
-If you use both Codex and Claude Code, you can switch between them in the same project. For example, before picking up work from Codex in Claude Code, check that Claude Code can read the project folder and Colvia records. You can continue the same Work if its approval is still valid and the workspace and scope still match. [Find a recorded next step](manual/en/work.md#follow-up)
+Hit your Codex usage limit in the middle of an urgent task? Open the same Colvia project folder in Claude Code and say, “Let’s pick up where we left off.” If Claude Code can read the project folder and Colvia records and the existing approval is still valid, it can continue the same Work within the approved scope without a separate handoff document. [Pick up in a new chat or with another agent](manual/en/work.md#resume)
 
 ### Why did we ask for that change?
 
 Ask “Why did we remove the market estimate from the proposal?” You can find the version the reviewer read, the change they requested, and the version they later accepted. If they recorded a reason, you can read it too. A request to remove the figure on its own only tells you what they wanted changed. [Review the decision history](manual/en/work.md#decision-history)
 
-### What comes next, and what needs to happen first?
+### What should I tackle next?
 
-| What you record | What you can ask later | Example |
+Set priorities for the work you’d like to tackle first. After accepting a result, choose what to work on next. If a task depends on another result, link the two Works so the task waits until that result is accepted.
+
+| What to decide | Example question | Example instruction |
 | --- | --- | --- |
 | Candidate priority | What would I like to tackle first? | Give the colleague trial high priority. |
 | Next step after acceptance | What did we decide to do next? | Draft an invitation. |
 | A result another task needs | What is the email waiting for? | Link the cover email to acceptance of the proposal. |
 
-Set a priority to express a preference. Link two Works when one needs a result from the other. You still decide when to start the work. If the reviewer reopens the accepted proposal for changes, the email goes back to waiting for acceptance. [Work dependencies](manual/en/work.md#work-dependencies) · [Candidate priority](manual/en/work.md#candidate-priority)
+You still decide when to start the work. If the reviewer reopens the accepted proposal for changes, the email goes back to waiting for acceptance. [Work dependencies](manual/en/work.md#work-dependencies) · [Candidate priority](manual/en/work.md#candidate-priority)
 
 ## Break larger tasks into smaller pieces
 
-“Fix the login bug here. I’d like Claude Code to update the installation guide at the same time.” In a Git project, ask your first agent for the folder to open in the second app and the request to paste there. [Give two agents separate tasks](manual/en/work.md#child-works)
+When a large task has two or three parts that can change different files independently, try saying, “Run the parts that can be done independently in parallel.” For example, when building a quote screen, you can assign server-side CSV generation and the screen’s CSV download feature separately. The coordinating agent proposes each Work’s file scope and how to check the combined result. Use separate registered working folders and a separate destination in the same Git repository, with matching starting files and Git settings.
 
-Split a larger task into child Works in the same folder to review and accept each result. To apply a result from an isolated folder (a registered Git worktree of the same repository), check **the exact submission and its destination**. If the submission is still under review, approve both applying and accepting it. Colvia records acceptance after applying the files and checking the destination. If you already accepted the submission, approve the application alone.
+On macOS, a coordinator in Claude Code CLI or Codex CLI starts restricted workers in their separate folders and collects their submissions. To start workers, you need to be signed in to the CLI. You may also be asked to approve tool use. In the workflow we verified, one coordinator runs **up to two worker sessions at a time**. The coordinator has a separate session and does not count toward the two workers. For three tasks, it starts two and starts the third after collecting one result. On Windows 11 x64, you start each worker in its folder and use file-based integration checks.
+
+Claude Code CLI and Codex CLI run the workers. Colvia records their submissions, runs the integration checks, and applies the accepted results.
+
+On macOS and Windows 11 x64, you can accept and apply 2–8 submissions together. On Windows 11 ARM64, you accept and apply submissions individually. Each Work contributes one submission to a group. Colvia records the approved plans and submissions and runs integration checks on a separate copy of the combined files. Review each exact submitted version and its changes, the destination, and the check results. When you accept all submissions, Colvia applies them to the original folder and then records the acceptance. A required check that fails or cannot run keeps acceptance on hold. Git commit and push remain separate decisions.
 
 <p align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-en-dark.png"><img src="manual/assets/gallery/parallel-en-light.png" width="480" alt="The reviewer checks the submission from the isolated folder and approves applying it to the destination."></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-en-dark.png"><img src="manual/assets/gallery/parallel-en-light.png" width="912" alt="macOS CLI workflow. Describe the goal and approve the proposed split. One coordinator runs up to two worker sessions at a time in separate folders. Review 2–8 submissions and the integration checks, then accept and apply them to the original folder in one decision."></picture>
 </p>
 
-Apply one submission at a time. Check that the destination has no other Work that is approved, in progress, or under review. You can delegate applying and accepting a specific isolated Work under the conditions in the guide. Review the combined files and checks before accepting the parent Work yourself. The guide also covers when you can resume an interrupted application. [Child Works and results from isolated folders](manual/en/work.md#child-works)
+The diagram shows the macOS CLI workflow, where the coordinator starts the workers.
+
+Before first using the 2–8-member format, keep a new verified record backup and preserve working files separately, even if you used two-member groups before. Older versions, including those supporting only two-member groups, cannot open the upgraded project or later backups. [Accept and apply 2–8 submissions together](manual/en/work.md#grouped-acceptance)
+
+You can also approve and apply isolated results individually, or split a large goal into child Works and review the parent result separately. [Existing individual workflow](manual/en/work.md#child-works)
 
 <a id="git-backups-and-moving-folders"></a>
 
@@ -223,6 +237,8 @@ Messages and materials you share with an agent follow the AI service’s data ha
 
 Colvia Preview supports **macOS on Apple Silicon and Windows 11 on x64 and ARM64**, with **the Codex and Claude Code CLI and desktop apps**. Depending on the app, CLI and permission mode, you may need to grant separate access to the project and Colvia record folders. See [supported environments](manual/en/reference.md#environments) for installation, update and access requirements.
 
+Automatic worker launch is available in the macOS CLI workflow. On macOS and Windows 11 x64, you can accept and apply 2–8 submissions together. On Windows 11 ARM64, you accept and apply submissions individually.
+
 Linux is outside the current support range. Start work in your usual Codex or Claude Code chat. Direct agent invocation is disabled, and simultaneous team editing is unsupported.
 
 <a id="what-we-want-to-improve"></a>
@@ -233,9 +249,14 @@ You decide what to delegate and which results to accept. We want those decisions
 
 - **Fewer interruptions, with the same say in the outcome.** Debugging often reveals another file that needs a change. For that kind of work, and for small edits that are easy to verify, we’re looking for ways to reduce approval round trips while keeping scope approval and result acceptance in your hands.
 - **Keep the way your project already works.** We want it to be easier to use your usual checks, documentation conventions and review process, and still find the scope you approved and the result you accepted in Colvia.
-- **See the decisions behind one task on a single page.** We’d like to bring a Work’s decisions together in order, so you can see which version you reviewed, what was said at the time and which explanations were added later.
+- **See the decisions behind one task on a single page.** You can already look up each Work’s decision history and the versions reviewed at the time. We aim to improve the view so you can follow the decisions in order on one screen and distinguish the decision statements recorded at the time from explanations added later.
 - **Working as a team.** We plan to start with a guide to using Colvia in a shared repository: keep your approvals and acceptance decisions on your device and commit the work you want to share. Then we’ll explore how teammates can see what each person delegated to an agent and which results they accepted.
 
-We’re also exploring ways to review results across Works, support Linux and additional agents, and connect projects and external tools. See the [release notes](https://github.com/colvia/downloads/releases) for features that have shipped.
+We’re also exploring support for Linux and additional agents, and ways to connect projects and external tools. See the [release notes](https://github.com/colvia/downloads/releases) for features that have shipped.
+
+## Project history
+
+- `2026-08-10`: Repository created.
+- `2026-11-17`: Source repository made public.
 
 [When something goes wrong](manual/en/reference.md#problems) · [Questions and bug reports](CONTRIBUTING.md#questions-and-bug-reports) · [Report a security issue privately](SECURITY.md#english) · [Contributing](CONTRIBUTING.md) · [Apache License 2.0](LICENSE)

@@ -116,13 +116,22 @@ class Observer:
                 for name in names:
                     require(not cancelled(),'observation-cancelled')
                     native='/'.join((*parts,name));path=directory/name;logical=logical_path(native)
-                    require(logical.casefold() not in aliases,'path-collision');aliases.add(logical.casefold())
+                    folded=logical.casefold()
+                    require(folded not in aliases,'path-collision');aliases.add(folded)
                     visited+=1;require(visited<=budget.entries,'observation-entry-limit')
+                    git_marker=reject_nested_git and (folded=='.git' or folded.endswith('/.git'))
+                    root_git_marker=git_marker and not parts
+                    # The listing has already refused case-fold collisions.
+                    boundary='.git' if root_git_marker and native not in boundaries else native
                     with self.opened(path,opaque=True) as (_,info):
-                        if native in boundaries:
-                            require(not any(p==logical or p.startswith(logical+'/') for p in protected),'boundary-swallows-protected')
-                            require(not info.get('symlink') and self.identity(info)==boundaries[native],'structural-boundary-changed');continue
-                        if reject_nested_git and name=='.git':
+                        if boundary in boundaries:
+                            require(not any(p==logical or p.startswith(logical+'/') or
+                                            (root_git_marker and p.partition('/')[0].casefold()=='.git')
+                                            for p in protected),'boundary-swallows-protected')
+                            require(not info.get('symlink') and self.identity(info)==boundaries[boundary],
+                                    'structural-boundary-changed')
+                            continue
+                        if git_marker:
                             from ..connection_boundary import ConnectionBoundaryError
                             raise ConnectionBoundaryError('unregistered-nested-git',str(root.joinpath(*parts)),str(root))
                         if reject_nested_colvia and name.casefold()=='.colvia-link.json' and (parts or name!='.colvia-link.json'):

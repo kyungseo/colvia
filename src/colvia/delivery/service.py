@@ -48,6 +48,8 @@ class DeliveryService:
                 value.payload['contract']['scope']['limits']['expires_wall_ns']<=request.payload['deadline_ns'],'delivery-grant-mismatch')
         return request
     def live(self,request,view,*,deadline=True):
+        from ..group_guard import guard as group_guard
+        group_guard(view,request.payload['work'])
         registration=self.obj(link(request,'registration'),view)
         require(view.head(work_key(request.payload['work']))==link(request,'head') and
             view.head(workspace_key(request.payload['workspace']))==registration.ref and

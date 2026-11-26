@@ -2,6 +2,7 @@
 from contextlib import contextmanager,nullcontext
 from pathlib import Path
 import hashlib,stat,tempfile,unittest
+from unittest.mock import Mock, patch
 from colvia.codec import RecordError,require
 from colvia.storage.files import PosixFiles
 from colvia.updates.windows_payload import verify_inventory
@@ -45,5 +46,69 @@ class PinnedPayloadTests(WindowsPayloadAlgorithmTests):
     def verify(self,**kw):
         from colvia.updates.windows_payload import verify_pinned_inventory
         verify_pinned_inventory(self.root,self.entries,self.manifest,self.sha,self.files,**kw)
+
+    def test_retained_proof_detects_membership_and_identity_drift(self):
+        retained = Mock()
+        self.verify(retain=retained)
+        retained.assert_called_once()
+        handles, check = retained.call_args.args
+        try:
+            check()
+            extra = self.root/'extra'
+            extra.write_bytes(b'added')
+            with self.assertRaisesRegex(RecordError, 'slot-(?:directory|file)-changed'):
+                check()
+            extra.unlink()
+            target = self.root/'runtime/python.exe'
+            target.write_bytes(b'changed')
+            with self.assertRaisesRegex(RecordError, 'slot-file-changed'):
+                check()
+        finally:
+            handles.close()
+
+    def test_repeat_inventory_rejects_extra_entry_without_enumerating_the_rest(self):
+        from types import SimpleNamespace
+
+        @contextmanager
+        def entries(_):
+            def unexpected_then_stop():
+                yield SimpleNamespace(name='unexpected')
+                self.fail('consumption enumerated beyond a known changed entry')
+            yield unexpected_then_stop()
+
+        retained = Mock()
+        self.verify(retain=retained)
+        handles, check = retained.call_args.args
+        try:
+            with patch('colvia.updates.windows_payload.os.scandir', entries):
+                with self.assertRaisesRegex(RecordError, 'slot-directory-changed'):
+                    check()
+        finally:
+            handles.close()
+
+    def test_retained_proof_rechecks_privacy_and_closes_handles(self):
+        real_open = self.files.api.opened
+        closed = []
+
+        @contextmanager
+        def tracked(path, **options):
+            with real_open(path, **options) as handle:
+                try:
+                    yield handle
+                finally:
+                    closed.append(path)
+
+        retained = Mock()
+        with patch.object(self.files.api, 'opened', side_effect=tracked):
+            self.verify(retain=retained)
+            self.assertEqual([], closed)
+            handles, check = retained.call_args.args
+            try:
+                with patch.object(self.files.api, 'private', side_effect=RecordError('not-private')):
+                    with self.assertRaisesRegex(RecordError, 'not-private'):
+                        check()
+            finally:
+                handles.close()
+        self.assertEqual(4, len(closed))
 
 if __name__=='__main__':unittest.main()

@@ -150,6 +150,36 @@ class Child:
     def code(self):
         require(self.exited() and self.active()==0,'windows-child-closure-unproven')
         code=self.api.W.DWORD();self.api.ok(self.api.GetExitCodeProcess(self.process,C.byref(code)));return int(code.value)
+    def contains_process(self, pid, executable):
+        """Verify the waiting process belongs to this exact job and image."""
+        a = self.api
+        require(type(pid) is int and 1 < pid <= 0xffffffff and pid != self.pid,
+                'windows-child-identity-invalid')
+        for name, result, args in (
+            ('OpenProcess', a.W.HANDLE, (a.W.DWORD, a.W.BOOL, a.W.DWORD)),
+            ('IsProcessInJob', a.W.BOOL, (a.W.HANDLE, a.W.HANDLE, C.POINTER(a.W.BOOL))),
+            ('QueryFullProcessImageNameW', a.W.BOOL,
+             (a.W.HANDLE, a.W.DWORD, a.W.LPWSTR, C.POINTER(a.W.DWORD))),
+        ):
+            a.bind(a.kernel, name, result, args)
+        process = a.OpenProcess(0x101000, False, pid)
+        a.ok(process)
+        try:
+            member = a.W.BOOL()
+            a.ok(a.IsProcessInJob(process, self.job, C.byref(member)))
+            if not member.value or a.WaitForSingleObject(process, 0) != 258:
+                return False
+            path = C.create_unicode_buffer(32768)
+            length = a.W.DWORD(len(path))
+            a.ok(a.QueryFullProcessImageNameW(process, 0, path, C.byref(length)))
+            image = path.value
+            if image.startswith('\\\\?\\'):
+                image = image[4:]
+            with a.ancestors(image), a.ancestors(executable), a.opened(image, share=1) as live, a.opened(executable, share=1) as known:
+                return a.state(live, image)['identity'] == a.state(known, executable)['identity']
+        finally:
+            a.close(process)
+
     def stop(self):self.api.ok(self.api.TerminateJobObject(self.job,1))
     def close(self):
         try:self.api.close(self.process)

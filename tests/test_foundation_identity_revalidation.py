@@ -108,19 +108,33 @@ class IdentityTests(SetupFixture, unittest.TestCase):
             child=root/'child';child.mkdir()
             with self.assertRaisesRegex(RecordError,'connect-project-overlap'):
                 self.setup.preview(child)
-            (root/'report.md').write_text('Approved result\n')
-            (root/'outside.md').write_text('Unapproved result\n')
-            with self.assertRaises(RecordError):
-                self.submit(operation='blocked-submit')
-            self.assertEqual(active,self.store.head(work_key('report')))
-            (root/'outside.md').unlink()
-            result=self.submit()
-            self.assertTrue(result['current_matches'])
-            final=self.service.accept(operation='accept',work='report',receipt=result['receipt'],statement='Accept')
-            self.assertEqual('completed',final['state'])
-            registry=application_registry()
-            validate_closure([self.store.head(work_key('report')),history],self.store.load,registry,operation_closure(registry))
-            self.assertEqual(history_raw,self.store.load(history))
+            # Identity migration invalidates the location pinned by this handle.
+            migrated = self.store.root().ref
+            with self.assertRaisesRegex(RecordError, 'workspace-location-changed'):
+                self.submit(operation='stale-handle-submit')
+            self.assertEqual(migrated, self.store.root().ref)
+            self.assertEqual(active, self.store.head(work_key('report')))
+            # Reopen as a new command would, preserving the original Work records.
+            with closing(authority.store()) as self.store:
+                fresh_locator = read_locator(root, None)
+                fresh_workspace = LocalWorkspace(self.store, root, fresh_locator.workspace,
+                                                 locator_reader=lambda: fresh_locator)
+                self.service = WorkService(self.store, fresh_workspace)
+                self.assertEqual(active, self.store.head(work_key('report')))
+                self.assertEqual(history_raw, self.store.load(history))
+                (root/'report.md').write_text('Approved result\n')
+                (root/'outside.md').write_text('Unapproved result\n')
+                with self.assertRaisesRegex(RecordError, 'outside-scope-change'):
+                    self.submit(operation='blocked-submit')
+                self.assertEqual(active,self.store.head(work_key('report')))
+                (root/'outside.md').unlink()
+                result=self.submit()
+                self.assertTrue(result['current_matches'])
+                final=self.service.accept(operation='accept',work='report',receipt=result['receipt'],statement='Accept')
+                self.assertEqual('completed',final['state'])
+                registry=application_registry()
+                validate_closure([self.store.head(work_key('report')),history],self.store.load,registry,operation_closure(registry))
+                self.assertEqual(history_raw,self.store.load(history))
 
     def test_plan_drift_and_unknown_roots_refuse_without_publication(self):
         root, project = self.legacy('first')

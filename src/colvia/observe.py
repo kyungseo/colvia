@@ -30,7 +30,11 @@ class Observation:
 def observe(root:Path,budget:ObservationBudget,*,git=None,registrations:tuple[WorkspaceRegistration,...]=(),
             protected=frozenset(),previous_containers=frozenset(),previous_policy=None,
             approved_policy_paths=frozenset(),plain_repository=None,cancelled=lambda:False):
-    topology=discover(root,git)
+    if plain_repository is None:
+        topology,info_path=discover(root,git,with_exclude=True)
+    else:
+        topology=discover(root,git)
+        info_path=None
     actual_root=Path(topology.root.path)
     opaque={};opaque_state={};opaque_bytes=0
     if topology.kind=='plain' or plain_repository is not None:
@@ -56,7 +60,7 @@ def observe(root:Path,budget:ObservationBudget,*,git=None,registrations:tuple[Wo
         inventory=snapshot(actual_root,ObservationBudget(budget.entries,0),admit=lambda _:False,
             boundaries=proof.boundaries,cancelled=cancelled,reject_nested_git=True,reject_nested_colvia=True,opaque_entries=opaque)
         native=[s.native_path for s in inventory.inventory if not stat.S_ISDIR(s.mode)]
-        policy=git.policy(topology,inventory.inventory)
+        policy=git.policy(topology,inventory.inventory,info_path=info_path)
         ignored=git.ignored(actual_root,native)
         admitted={logical_path(p) for p in native}-ignored|set(index)|set(protected)
         result=snapshot(actual_root,ObservationBudget(budget.entries,budget.read_bytes-opaque_bytes),admit=lambda p:p in admitted,protected=protected,

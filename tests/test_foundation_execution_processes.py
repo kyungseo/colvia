@@ -1,5 +1,5 @@
 """Actual harmless child/group observations, not a model or daemon-proof claim."""
-import os,select,signal,subprocess,sys,tempfile,unittest
+import os,select,signal,subprocess,sys,tempfile,time,unittest
 from pathlib import Path
 from unittest.mock import patch
 from colvia.codec import RecordError
@@ -76,6 +76,49 @@ class ProcessPortTests(unittest.TestCase):
         p=self.start('import time;print("ready",flush=True);time.sleep(30)');original=p.stdin;foreign=io.BytesIO()
         p.stdin=foreign
         try:
-            with self.assertRaisesRegex(RecordError,'owned-pipes-required'):self.port.close_io(p)
+            with self.assertRaisesRegex(RecordError,'owned-pipes-required'):self.port.admit_io(p)
             self.assertFalse(foreign.closed);self.assertFalse(original.closed)
+            # Cleanup owns the retained pipes, even after the public attributes change.
+            self.port.stop(p,self.known(p),seconds=4);self.children.remove(p)
+            self.port.close_io(p)
+            self.assertFalse(foreign.closed)
+            self.assertTrue(all(s.closed for s in (original,p.stdout,p.stderr)))
+            with self.assertRaisesRegex(RecordError,'owned-pipes-required'):self.port.close_io(p)
+            self.assertFalse(foreign.closed)
         finally:p.stdin=original;foreign.close()
+
+    def test_signal_permission_denial_never_claims_closure(self):
+        p=self.start('import time;print("ready",flush=True);time.sleep(30)');known=self.known(p)
+        with patch('colvia.platforms.darwin_processes.os.killpg',side_effect=PermissionError(1,'synthetic signal denial')),self.assertRaises(PermissionError):
+            self.port.stop(p,known,seconds=4)
+        self.assertIsNone(p.poll())
+        closed=self.port.stop(p,known,seconds=4)
+        self.assertTrue(closed['group_absent']);self.assertTrue(closed['final_scan_confirmed'])
+        self.port.close_io(p);self.children.remove(p)
+
+    def wait_zombie_without_reaping(self,p):
+        deadline=time.monotonic()+5
+        while time.monotonic()<deadline:
+            state=subprocess.run(['/bin/ps','-p',str(p.pid),'-o','stat='],capture_output=True,text=True,timeout=2)
+            if 'Z' in state.stdout:return
+            time.sleep(.01)
+        self.fail('owned child did not reach observable zombie state')
+
+    def test_exited_unreaped_root_closes_without_signal_permission_error(self):
+        p=self.start('import sys;print("ready",flush=True);sys.stdin.read(1)');known=self.known(p)
+        p.stdin.write(b'x');p.stdin.flush();self.wait_zombie_without_reaping(p)
+        self.assertIsNone(p.returncode)
+        result=self.port.stop(p,known,seconds=4)
+        self.assertTrue(result['group_absent']);self.assertTrue(result['final_scan_confirmed'])
+        self.assertEqual(result['returncode'],0)
+        self.port.close_io(p);self.children.remove(p)
+
+    def test_zombie_root_does_not_hide_live_group_descendant(self):
+        code='import subprocess,sys; subprocess.Popen([sys.executable,"-I","-B","-c","import time;time.sleep(30)"]); print("ready",flush=True);sys.stdin.read(1)'
+        p=self.start(code);known=self.known(p);self.port.observe(p,known);self.assertGreaterEqual(len(known),2)
+        p.stdin.write(b'x');p.stdin.flush();self.wait_zombie_without_reaping(p)
+        self.assertIsNone(p.returncode)
+        result=self.port.stop(p,known,seconds=4)
+        self.assertTrue(result['group_absent']);self.assertTrue(result['final_scan_confirmed'])
+        self.assertTrue(result['children']);self.assertTrue(all(c['absent'] for c in result['children']))
+        self.port.close_io(p);self.children.remove(p)
