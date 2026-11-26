@@ -4,13 +4,13 @@
 
 Colvia Preview 사용 안내입니다. Codex나 Claude Code에서 작업 범위를 승인하고, 결과를 검토해 수락하고, 새 대화에서 이어가는 방법을 안내합니다.
 
-[macOS에서 2~8개 제출본을 함께 수락·반영하기](work.md#grouped-acceptance)
+[macOS 또는 Windows x64에서 제출본 2~8건을 함께 수락·반영하기](work.md#grouped-acceptance)
 
 ## 처음이라면
 
-1. [Colvia 한눈에 보기](overview.md) — 누가 무엇을 결정하고, 무엇이 어디에 남는지 먼저 파악합니다.
-2. [설치와 프로젝트 연결](install.md) — 사용할 운영체제 계정에 설치하고 프로젝트 폴더를 연결합니다.
-3. [따라 하기](tutorial.md) — 고객 문의 보고서나 팀용 할 일 웹앱을 만들며 승인·검토·수락을 직접 해 봅니다.
+- 바로 시작하려면 [설치와 프로젝트 연결](install.md)을 따라 사용할 운영체제 계정에 설치하고 프로젝트 폴더를 연결하세요.
+- 누가 무엇을 결정하고 기록이 어디에 남는지 궁금하면 [Colvia 한눈에 보기](overview.md)를 보세요.
+- 예제로 익히려면 [따라 하기](tutorial.md)에서 고객 문의 보고서나 팀용 할 일 웹앱을 만들며 승인·검토·수락을 해 보세요.
 
 <p align="center">
 <picture><source media="(prefers-color-scheme: dark)" srcset="../assets/gallery/overview-dark.png"><img src="../assets/gallery/overview-light.png" width="900" alt="사용할 계정에 설치한 뒤 폴더마다 연결 내용을 확인하고 승인합니다. 새 일은 작업안을 보고 범위를 승인합니다. 제출본을 검토해 수락하거나 수정을 요청합니다. 하던 일은 프로젝트 현황에서 이어갑니다."></picture><br>

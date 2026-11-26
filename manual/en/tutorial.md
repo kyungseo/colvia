@@ -22,11 +22,13 @@ Colvia records each task you scope and review as a **Work**. Granting file or co
 
 1. On macOS with Apple Silicon or Windows 11 on x64 or ARM64, open Codex or Claude Code and confirm you’re signed in. See the [platform and agent access requirements](reference.md#environments) for your setup.
 2. Copy and run the command for your operating system from the [official installation page](https://colvia.github.io/downloads/#en). On Windows, open regular PowerShell from the Start menu as a standard user. Check the installed version when setup completes. [Installation and connection guide](install.md)
-3. Create a local practice folder and open it in Codex or Claude Code. You can also connect an existing project. If your project uses Git, [ask the agent to register Git first](git.md#git-register) and connect the repository root. Ask:
+3. Create a local practice folder and open it in Codex or Claude Code. You can also connect an existing project. For a Git repository, open its root. Ask:
 
    > Connect this folder to Colvia.
 
-4. In the preview, check the folder, the files Colvia will add, and where it will store the records. Approve the connection if those details are right. If the app or CLI blocks access, [check the permissions it needs](install.md#access). For this exercise, choose “Use a regular folder” unless you want Git.
+4. If the folder is a Git repository and Git is not registered yet, the connection preview stops and asks you to register it first. [Review and approve the registration](git.md#git-register), then ask for the connection preview again.
+
+   In the preview, check the folder, the files Colvia will add, and where it will store the records. Approve the connection if those details are right. If the app or CLI blocks access, [check the permissions it needs](install.md#access). For this exercise, choose “Use a regular folder” unless you want Git.
 5. In the current chat, tell the agent what you want to do in a sentence or two. If you’ve already shared a goal, the agent can use it and your project rules to propose a plan. In an empty folder, you could start with “I’d like to make a team to-do app.”
 
 Pick either exercise to start. If you try both, install Colvia once and connect a new folder for each exercise.

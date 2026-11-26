@@ -2,11 +2,11 @@
 
 [User guide](README.md) · [한국어](../ko/git.md) · English
 
-In a project that uses Git, register Git with Colvia before connecting. Accepting a result and putting that result into Git are separate decisions.
+For a Git repository, start by [asking to connect the folder](install.md#connect). If Git is not registered yet, the connection preview stops and asks you to register it first. Review and approve the registration as described below, then ask for the connection preview. Other projects in the same account can use the registered Git executable. Accepting a result and putting that result into Git are separate decisions.
 
 [Register Git](#git-register) · [Register from the command line](#git-register-cli) · [Put an accepted result into Git](#git-integration) · [Recover an interrupted Git integration](#git-recovery)
 
-When connecting a folder for the first time, ask “Set up Git when you connect this folder.” [See the first-connection choices](install.md#connect).
+When first connecting a folder that does not yet use Git, you can ask “Set up Git when you connect this folder.” See [the conditions and connection preview](install.md#first-git).
 
 <a id="git-and-colvia-records"></a>
 
@@ -36,11 +36,13 @@ After an interruption, ask the agent to resume the Git conversion. It uses the s
 
 ## Register Git
 
-You can connect a plain folder right away. If your project uses Git, ask in your usual chat before connecting the repository:
+Git registration applies to the account’s Colvia installation, so you do not need to repeat it for each project. If Git is already registered, ask to [connect the repository root](install.md#connect). A folder that stays without Git does not need registration.
+
+If the connection preview asks you to register Git, or you want to register it in advance, ask:
 
 > Register the Git executable I use for this project with Colvia.
 
-The agent can find the executable in its current environment and prepare a registration preview. If it finds several paths, choose the Git installation you use. Check the path in the preview and approve the registration. The agent then applies the original preview. To change an existing registration, review the replacement path and approve the replacement separately. Once registration is confirmed, ask to [connect the repository root](install.md#connect). You can reuse the registered Git executable when connecting other projects in the same Colvia installation.
+The agent can find the executable in its current environment and prepare a registration preview. If it finds several paths, choose the Git installation you use. Check the path in the preview and approve the registration. The agent then applies the original preview. To change an existing registration, review the replacement path and approve the replacement separately. The replacement applies to every project using the registered Git executable in this account. Once registration is confirmed, ask to [connect the repository root](install.md#connect).
 
 If the app or CLI blocks the command or a required path, ask the agent what access it needs. If the host lets you grant only that access, use that option. To register Git yourself, follow the [commands below](#git-register-cli).
 

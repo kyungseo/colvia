@@ -1,5 +1,7 @@
 # Maintaining
 
+In the source repository, development of the current SQLite-based Colvia Preview starts at `CONTRIBUTING.md` and the “Developing Colvia” section of `docs/README.md`; its code is under `src/colvia/`. The Source Layout below describes the earlier `continuation-1` profile. The [evidence reuse and selection rules](#evidence-reuse-and-selection) on this page also apply to current source work.
+
 Continuation-1 profile; see [authorization and qualification](README.md#continuation-1).
 
 Current document authority is indexed in [README.md](README.md). These instructions describe the single-home `continuation-1` profile. For source development, consult the exact decision records for Owner acceptance and activation of the successor under DR-0001. The decision records establish source-contract activation; installation verification checks the installed product.

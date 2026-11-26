@@ -16,7 +16,7 @@ Install Colvia once for the operating-system account that will use it. Connect e
 
 ## Install
 
-Copy and run the installation command for your operating system from the [official installation page](https://colvia.github.io/downloads/#en). Colvia downloads and verifies the release files and prepares its own Python runtime. When setup completes, [check the installed version](#check-installed-version). See [updates and recovery](maintenance.md#update) for what to do after installation.
+Copy and run the installation command for your operating system from the [official installation page](https://colvia.github.io/downloads/#en). Colvia downloads and verifies the release files and prepares its own Python runtime. The Preview packages are for macOS on Apple Silicon (ARM64), Windows 11 on ARM64, and Windows 11 on x64. On Windows, match the package to the system type under Settings → System → About. When setup completes, [check the installed version](#check-installed-version). See [updates and recovery](maintenance.md#update) for what to do after installation.
 
 After a trial, you can [uninstall and keep your records](maintenance.md#uninstall) or [remove project connections and account records permanently](maintenance.md#remove-all).
 
@@ -45,17 +45,16 @@ Regular PowerShell on Windows
 
 ## Connect a project folder
 
-After installation, open the project folder in Codex or Claude Code and ask:
+Start a new task in an empty folder, or connect a folder that already contains your files. You can use Colvia without Git. After installation, open the folder in Codex or Claude Code and ask the following. If you are connecting a Git repository, start at its root.
 
 > Connect this folder to Colvia.
 
-If the folder has never been connected and does not use Git, the preview offers Git when the folder is on the same volume as Colvia’s local records and the two directories do not overlap. When offered, choose “Use a regular folder” or “Start using Git here.” Both work with an empty folder or one that already holds files. For Git, check the path, the new local repository and its initial branch (`main`). If Colvia also needs to register Git for your account, the same preview identifies the executable. Approve if those details are right. You can cancel at the preview. Your files stay unstaged, and you can decide on a first commit or a remote later. If connection stops after approval, ask the agent to resume the same connection using its operation ID. Before Colvia prepares the project connection files, you can also ask it to cancel the reservation and preview again. Any repository or account registration already created stays in place.
-
-If you already connected a regular folder, you can [start using Git and keep the existing Work](git.md#adopt-git).
-
-Connect an empty folder to start something new, such as writing a report or building a web app. You can also connect a project you already work in. If the project uses Git, [ask the agent to register Git](git.md#git-register) before connecting the repository root.
+- A folder without Git: you can connect it as a regular folder. If the first connection offers a Git choice, answer “Use a regular folder” or “Start using Git here.” See [the conditions and changes for starting Git](#first-git). A subfolder inside a Git repository counts as part of that repository and can’t be connected on its own, so use a folder outside any Git repository.
+- An existing Git repository: you can use Git already registered with Colvia for the same account. If Git is not registered yet, the connection preview stops and asks you to register it first. [Review and approve the registration](git.md#git-register), then ask for the connection preview. Git registration applies to the account’s Colvia installation; the project connection applies to the selected folder.
 
 In the connection preview, check the folder, the launcher and guidance Colvia will add, and where it will store records. Then approve the connection. Colvia uses your existing project rules and appends its guidance to the agent instructions where applicable.
+
+Once connected, [start with what you want to do](work.md#start).
 
 ### What a connection changes
 
@@ -68,7 +67,19 @@ Colvia keeps Work records for each project in a local SQLite database in the ope
 
 In a connected project, use `./colvia guide` on macOS or the project’s `colvia.cmd` on Windows (`.\colvia.cmd guide` in PowerShell). The agent then runs `ordinary list` through the same launcher to see the current Work.
 
-Once the folder is connected, [start with the work you want to do](work.md#start).
+<a id="first-git"></a>
+
+### Start Git during the first connection
+
+If the folder has never been connected and does not use Git, you can start Git during connection when the folder is on the same volume as Colvia’s local records and the two directories do not overlap. This works with an empty folder or one that already holds files.
+
+If you choose Git, check the folder path and the new local repository’s initial branch (`main`) in the connection preview. If Colvia also needs to register Git for your account, the same preview identifies the executable. Also check the launcher and guidance to be added and where records will be stored. Any Git repository already created and any registration already applied remain if you cancel the connection. Approve if those details are right, or cancel at the preview. Your files stay unstaged, and you can decide on a first commit or a remote later.
+
+For a regular folder you already connected, follow the guide to [start using Git and keep the existing Work](git.md#adopt-git).
+
+### If a connection is interrupted
+
+If connection stops after approval, ask the agent to resume the same connection using its operation ID. If the connection also starts Git, you can instead ask it to cancel the reservation and preview again before Colvia prepares the project connection files. Any repository or account registration already created stays in place.
 
 <a id="access" name="access"></a>
 
