@@ -19,6 +19,7 @@ Colvia Preview는 macOS Apple Silicon과 Windows 11 x64·ARM64에서 Codex와 Cl
 | 운영체제 | macOS Apple Silicon, Windows 11 x64·ARM64 |
 | 에이전트 | Codex와 Claude Code의 CLI·데스크톱 앱. Windows에서는 Windows용 앱과 CLI |
 | 파일시스템 | macOS의 로컬 APFS, Windows의 로컬 NTFS |
+| [병렬 Work](work.md#grouped-acceptance) | macOS의 지원 CLI에서는 조정 에이전트가 작업자를 동시에 최대 두 개 실행합니다. Windows 11 x64에서는 Claude 둘 또는 Claude·Codex 한 쌍을 Claude Code CLI에서 승인해 시작합니다. Codex 둘은 Colvia 콘솔에서 승인해 시작합니다. 두 환경 모두 제출본 2~8건을 묶어 수락·반영할 수 있습니다. Windows 11 ARM64에서는 제출본을 한 건씩 수락·반영합니다. |
 | 검증하지 않은 환경 | 네트워크 공유, 동기화되는 기록 저장소, Windows ReFS·Dev Drive |
 | 후속 후보 | Linux와 추가 에이전트. WSL은 Linux 지원을 검토할 때 함께 다룹니다. |
 

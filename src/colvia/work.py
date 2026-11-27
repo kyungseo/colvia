@@ -270,13 +270,18 @@ class WorkService:
         return dict(work=work,state='active')
 
     @contextmanager
-    def _prepare_submission(self,*,operation,work,summary,checks):
+    def _prepare_submission(self,*,operation,work,summary,checks,expected_active_head=None,expected_scope=None):
         ref,head=self._head(work);require(head.payload['phase']=='active','work-not-active')
+        if expected_active_head is not None:
+            require(ref==expected_active_head,'worker-active-head-changed')
         planref=link(head,'plan');plan=self._object(planref);scope=frozenset(plan.payload['scope'])
         from .rework import attribution,select
         prior=self._object(link(head,'result')) if link(head,'result') else None
         carried=attribution(prior,self.store.load)
         _,entries,current=self._observe_from_plan(plan,carried,reuse_middle=True)
+        if expected_scope is not None:
+            observed=tuple(e for e in current.snapshot.entries if e['path'] in scope)
+            require(observed==tuple(expected_scope),'worker-result-observation-changed')
         entries,adopted,pinned,pinned_root=select(self,head,plan,current)
         changed=verify_scope(entries,current.snapshot.entries,scope)
         submission_input(summary,checks)
@@ -299,8 +304,9 @@ class WorkService:
             yield dict(expected=ref,head=newhead,objects=objects,current=current,scope=scope,pinned=pinned,pinned_root=pinned_root)
 
     @reuse_operation_reads
-    def submit(self,*,operation,work,summary,checks):
-        with self._prepare_submission(operation=operation,work=work,summary=summary,checks=checks) as prepared:
+    def submit(self,*,operation,work,summary,checks,expected_active_head=None,expected_scope=None):
+        with self._prepare_submission(operation=operation,work=work,summary=summary,checks=checks,
+                expected_active_head=expected_active_head,expected_scope=expected_scope) as prepared:
             self._publish(operation,work,prepared['expected'],prepared['head'],prepared['objects'],import_id=operation,
                 recheck=lambda:self._recheck_observation(prepared['current'],prepared['scope']),pinned=prepared['pinned'],pinned_root=prepared['pinned_root'])
         return self.review(work)

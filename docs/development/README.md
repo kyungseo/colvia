@@ -13,6 +13,7 @@ Use the [document language guide](document-ownership.md#document-language) when 
 - [Joint acceptance of two to eight submissions](FEAT-20261122-002-multi-submission-acceptance.md) — Owner-accepted macOS extension. Native Windows x64 file-based verification passed two, three and eight submissions, with exact application and interruption recovery. The Owner closed that correctness scope and moved Windows performance to the read-path follow-up.
 
 - [Grouped acceptance of two submissions](FEAT-20261122-001-grouped-acceptance.md) — Owner accepted the two-member implementation and authorized its local commit on 2026-11-22.
+- [Windows group worker coordination](FEAT-20261126-002-windows-group-worker-coordination.md) — In development for three native x64 CLI combinations. Qualification and release decisions are pending.
 - [Eight retained regression findings](grouped-acceptance-regression-followup.md) — Accepted eight-case closure after the multi-submission extension; exact cases and evidence limits.
 
 - [Independent document entry and roadmap guidance](CHORE-20261123-002-independent-document-guidance.md) — Purpose-based starting choices, current and planned behavior, and maintainer entry.

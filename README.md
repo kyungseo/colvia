@@ -166,7 +166,9 @@ You still decide when to start the work. If the reviewer reopens the accepted pr
 
 When a large task has two or three parts that can change different files independently, try saying, “Run the parts that can be done independently in parallel.” For example, when building a quote screen, you can assign server-side CSV generation and the screen’s CSV download feature separately. The coordinating agent proposes each Work’s file scope and how to check the combined result. Use separate registered working folders and a separate destination in the same Git repository, with matching starting files and Git settings.
 
-On macOS, a coordinator in Claude Code CLI or Codex CLI starts restricted workers in their separate folders and collects their submissions. To start workers, you need to be signed in to the CLI. You may also be asked to approve tool use. In the workflow we verified, one coordinator runs **up to two worker sessions at a time**. The coordinator has a separate session and does not count toward the two workers. For three tasks, it starts two and starts the third after collecting one result. On Windows 11 x64, you start each worker in its folder and use file-based integration checks.
+On macOS, a coordinator in Claude Code CLI or Codex CLI starts workers from the same CLI in separate, restricted folders and collects their submissions. To start workers, you need to be signed in to the CLI. You may also be asked to approve tool use. In the workflow we verified, one coordinator runs **up to two worker sessions at a time**. The coordinator has a separate session and does not count toward the two workers. For three tasks, it starts two and starts the third after collecting one result.
+
+On native Windows 11 x64, you can start two workers with one scope approval. For two Claude workers or one Claude and one Codex worker, review the assignments in Claude Code CLI and approve the one-time Bash request. For two Codex workers, ask Codex for the split and approve both scopes in the Colvia console. Each submission returns to its own Work for review with the file-based integration checks.
 
 Claude Code CLI and Codex CLI run the workers. Colvia records their submissions, runs the integration checks, and applies the accepted results.
 
@@ -237,7 +239,7 @@ Messages and materials you share with an agent follow the AI service’s data ha
 
 Colvia Preview supports **macOS on Apple Silicon and Windows 11 on x64 and ARM64**, with **the Codex and Claude Code CLI and desktop apps**. Depending on the app, CLI and permission mode, you may need to grant separate access to the project and Colvia record folders. See [supported environments](manual/en/reference.md#environments) for installation, update and access requirements.
 
-Automatic worker launch is available in the macOS CLI workflow. On macOS and Windows 11 x64, you can accept and apply 2–8 submissions together. On Windows 11 ARM64, you accept and apply submissions individually.
+Automatic worker launch is available on macOS and native Windows 11 x64 with the [CLI combinations and approval steps in the Work manual](manual/en/work.md#grouped-acceptance). On macOS and Windows 11 x64, you can accept and apply 2–8 submissions together. On Windows 11 ARM64, you accept and apply submissions individually.
 
 Linux is outside the current support range. Start work in your usual Codex or Claude Code chat. Direct agent invocation is disabled, and simultaneous team editing is unsupported.
 
