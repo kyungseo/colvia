@@ -9,7 +9,7 @@ from .process import ProcessResult
 from .windows_job import JobAPI
 
 
-def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=None,admit_input=None):
+def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=None,admit_input=None,started=None,cancelled=None):
     require(type(input_bytes) is bytes and len(input_bytes)<=4*1024*1024,'process-input-limit')
     require(type(seconds) in (int,float) and 0<seconds<=60 and type(output_limit) is int and 0<output_limit<=128*1024*1024,'invalid-process-budget')
     a=api or JobAPI();child=None;owned=set();threads=[];errors=[];lock=threading.Lock();changed=threading.Event()
@@ -44,6 +44,7 @@ def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=
         stdout=a.pipe();owned.update(stdout)
         stderr=a.pipe();owned.update(stderr)
         child=a.start(args,str(cwd),env,(stdin[0],stdout[1],stderr[1]))
+        if started is not None:started(child.pid)
         for h in (stdin[0],stdout[1],stderr[1]):a.close(h);owned.remove(h)
         worker(reader,stdout[0],0);worker(reader,stderr[0],1)
         pending_input=admit_input is not None
@@ -66,6 +67,7 @@ def run(args,*,cwd,env,input_bytes=b'',seconds=10,output_limit=64*1024*1024,api=
                 closed=True
                 require(not pending_input,'windows-child-input-not-admitted')
                 break
+            require(cancelled is None or not cancelled(),'process-cancelled')
             require(time.monotonic()<deadline,'process-timeout');changed.wait(min(.01,max(0,deadline-time.monotonic())))
         return ProcessResult(child.code(),bytes(output[0]),bytes(output[1]))
     finally:

@@ -36,6 +36,8 @@ def parser(*,managed=False):
     p.add_argument('--json',action='store_true');p.add_argument('--operation',default=None)
     sub=p.add_subparsers(dest='group',required=True)
     if managed:
+        if sys.platform == 'win32':
+            sub.add_parser('parallel', help='Review and run two registered Codex Works from a local console')
         guide = sub.add_parser('guide', help='Read the startup guide or one verified topic without opening project records')
         guide.add_argument('topics', nargs='*', metavar='TOPIC', help='One of: ' + ', '.join(TOPIC_NAMES))
         manager=sub.add_parser('manage',add_help=False,help='Use this verified installation manager')
@@ -159,7 +161,9 @@ def parser(*,managed=False):
     grant=workers.add_parser('grant');grant.add_argument('work');grant.add_argument('--owner',required=True);grant.add_argument('--delegate',required=True)
     grant.add_argument('--statement',required=True);grant.add_argument('--revoke',action='store_true')
     grouped=sub.add_parser('group');grouped.add_argument('--destination',required=True)
-    actions=grouped.add_subparsers(dest='action',required=True)
+    # Worker automation remains an engineering entry until Windows qualification.
+    public_group_actions = '{view,candidate,check,cancel,create,approve,dissolve,accept,content}'
+    actions=grouped.add_subparsers(dest='action',required=True,metavar=public_group_actions)
     for name in ('view','candidate','check','cancel'):
         actions.add_parser(name).add_argument('group_name')
     create=actions.add_parser('create');create.add_argument('group_name');create.add_argument('--work',action='append',required=True)
@@ -170,6 +174,21 @@ def parser(*,managed=False):
     accept=actions.add_parser('accept');accept.add_argument('group_name');accept.add_argument('--application',required=True)
     accept.add_argument('--request',required=True);accept.add_argument('--receipt',required=True);accept.add_argument('--statement',required=True);accept.add_argument('--actor',default='owner')
     content=actions.add_parser('content');content.add_argument('group_name');content.add_argument('--work',required=True);content.add_argument('--path',required=True)
+    if managed:
+        for action in ('workers-plan','workers-run'):
+            worker_dispatch=actions.add_parser(action)
+            worker_dispatch.add_argument('group_name')
+            worker_dispatch.add_argument('--journal-root',required=True)
+            worker_dispatch.add_argument('--coordinator',choices=('claude','codex'),required=True)
+            worker_dispatch.add_argument('--worker',action='append',required=True,metavar='WORK=PROVIDER')
+            worker_dispatch.add_argument('--claude-exe')
+            worker_dispatch.add_argument('--codex-exe')
+            if action=='workers-run':
+                worker_dispatch.add_argument('--receipt',required=True)
+                worker_dispatch.add_argument('--statement',required=True)
+        worker_resume=actions.add_parser('workers-resume')
+        worker_resume.add_argument('group_name')
+        worker_resume.add_argument('--journal-root',required=True)
     candidate=sub.add_parser('candidate').add_subparsers(dest='action',required=True)
     save=candidate.add_parser('save');save.add_argument('candidate');save.add_argument('--title',required=True);save.add_argument('--reason',required=True);save.add_argument('--work');save.add_argument('--dismiss',action='store_true')
     listed=candidate.add_parser('list');listed.add_argument('--limit',type=int,default=20);listed.add_argument('--cursor')
@@ -378,6 +397,27 @@ def dispatch(args,store,workspace,authority=None,*,available_features=None,displ
             if candidate_runner.available():
                 runner=candidate_runner
         grouped=GroupService(store,target,authority=effect_authority(args,authority),lifecycle_authority=authority,windows_runner=runner)
+        if args.action in ('workers-plan','workers-run','workers-resume'):
+            from .group_worker_dispatch import Dispatch, dispatch_plan, route
+            from .platforms.windows_group_workers import NativeWorkers, check_instruction_inputs, native_required, paths_for
+            native_required()
+            require(entry is not None,'managed-entry-required')
+            dispatch=Dispatch(grouped,args.group_name,args.journal_root)
+            if args.action=='workers-resume':
+                return dispatch.resume()
+            pairs=[value.partition('=') for value in args.worker]
+            assignments={work:provider for work,_,provider in pairs}
+            require(len(pairs)==len(assignments)==2 and all(separator for _,separator,_ in pairs),
+                    'group-worker-route-invalid')
+            route(args.coordinator,assignments)
+            paths=paths_for(assignments,{key:path for key,path in
+                (('claude',args.claude_exe),('codex',args.codex_exe)) if path is not None})
+            plan=dispatch_plan(grouped,args.group_name,args.coordinator,assignments,paths,args.journal_root)
+            if args.action=='workers-plan':
+                return plan
+            require(args.receipt == plan['dispatch_receipt'], 'group-worker-dispatch-stale')
+            check_instruction_inputs(plan['members'])
+            return dispatch.run(plan,receipt=args.receipt,statement=args.statement,native=NativeWorkers(paths))
         if args.action=='view':
             value=grouped.view(args.group_name);value['destination_path_retained']=retained_path
             return value
@@ -440,7 +480,7 @@ def command_readonly(args):
         return args.action in ('show','history','preview')
     if args.group == 'project' and args.action == 'status':
         return True
-    return (args.group=='group' and args.action in ('view','content')) or (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','history','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)
+    return (args.group=='group' and args.action in ('view','content','workers-plan')) or (args.group=='git-integration' and args.action=='show') or args.group in ('operation','backup') or (args.group=='configuration' and args.action in ('show','preview')) or (args.group=='delivery' and args.action in ('view','preview','details')) or (args.group=='execution' and args.action in ('view','resolve-preview')) or (args.group=='composition' and args.action=='rebind-preview') or (args.group=='worker' and args.action in ('view','preview')) or (args.group=='ordinary' and args.action in ('view','review','plan-review','list','content','history','scope-preview','lifecycle-preview')) or (args.group=='candidate' and args.action in ('list','ranked','priority-preview','priority-history')) or (args.group=='followup' and args.choice is None)
 
 
 def main(argv=None,*,entry=None):
@@ -453,7 +493,7 @@ def main(argv=None,*,entry=None):
     try:
         # Only the ordinary and grouped Work routes carry the Windows proof to
         # workspace open. Release it before forwarding to lifecycle commands.
-        if args.group not in ('ordinary', 'group') or getattr(args, 'finish_plain_work', False):
+        if args.group not in ('ordinary', 'group', 'parallel') or getattr(args, 'finish_plain_work', False):
             close_inventory = getattr(entry, '_close_inventory', None)
             if close_inventory is not None:
                 close_inventory()
@@ -481,6 +521,10 @@ def main(argv=None,*,entry=None):
             entry.require_document_execution()
         available_features=None
         if entry is not None and args.root is None:args.root=str(Path.cwd())
+        if args.group == 'parallel':
+            from .platforms.windows_owner_console import OwnerConsole
+            require(entry is not None and not args.json, 'parallel-interactive-console-required')
+            console = OwnerConsole()
         readonly=command_readonly(args)
         if entry is None:
             authority=Authority(Path(args.authority),project=args.project)
@@ -498,7 +542,19 @@ def main(argv=None,*,entry=None):
             available_features=current
             if args.action!='show' and set(args.enable)-current:
                 available_features=current|entry.optional_features()
-        if entry is not None and args.group=='execution' and args.action in ('resolve-preview','resolve'):
+        if args.group == 'parallel':
+            from .group import GroupService
+            from .group_owner_console import inspect_or_run, select_group
+            from .group_windows_runner import ManagedFileCheck
+            name = select_group(store, workspace.workspace, console)
+            if name is None:
+                return 0
+            runner = ManagedFileCheck(entry)
+            require(runner.available(), 'group-check-environment-unavailable')
+            grouped = GroupService(store, workspace, authority=authority.root, lifecycle_authority=authority,
+                                   windows_runner=runner)
+            value = inspect_or_run(entry, grouped, name, console)
+        elif entry is not None and args.group=='execution' and args.action in ('resolve-preview','resolve'):
             value=entry.document_resolution(args,store,workspace,authority)
         elif entry is not None and args.group=='delivery' and args.action=='finish-execution':
             value=entry.finish_document_delivery(args,store,workspace,authority)

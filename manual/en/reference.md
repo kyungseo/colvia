@@ -19,6 +19,7 @@ Colvia Preview targets macOS on Apple Silicon and Windows 11 on x64 and ARM64, w
 | Operating systems | macOS on Apple Silicon, Windows 11 on x64 and ARM64 |
 | Agents | The Codex and Claude Code CLI and desktop apps. On Windows, this covers native Windows apps and CLIs |
 | Filesystems | Local APFS on macOS, local NTFS on Windows |
+| [Parallel Work](work.md#grouped-acceptance) | On macOS, a supported CLI coordinator starts up to two workers at a time. On native Windows 11 x64, approve two Claude workers or a Claude/Codex pair in Claude Code CLI. For two Codex workers, approve the pair in the Colvia console. Both support grouped acceptance and application of 2–8 submissions. On Windows 11 ARM64, accept and apply each submission individually. |
 | Not qualified | Network shares, synchronized record stores, and Windows ReFS/Dev Drive |
 | Follow-up candidates | Linux and additional agents. We’ll consider WSL as part of Linux support. |
 
