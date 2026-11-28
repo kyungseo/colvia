@@ -319,6 +319,8 @@ For the designated FEAT-20261018-003 candidate only, [Windows Verification Amend
 
 ## New Source Candidates
 
+- [Find which Work a team decision applies to](work-decision-source-followup.md) — Revisit a decision-source reference if people or agents repeatedly cannot match an accessible decision to the approved Work using the current guide.
+
 - [Windows relative-open observation](CHORE-20261125-005-windows-directory-pinning-safety.md#relative-open-after-publication) — Deferred until after publication and until continuous path-identity and everyday-operation evidence is available.
 
 - [Windows nested Git marker consistency](CHORE-20261125-005-windows-directory-pinning-safety.md#pre-publication-candidate--nested-git-marker-case-on-windows) — Selected by the Owner for the [F7 correction](PATCH-20261125-006-git-marker-case-observation.md) before publication.
