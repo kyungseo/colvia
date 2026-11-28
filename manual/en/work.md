@@ -7,18 +7,27 @@ How to assign work in a connected project, review a submission and accept it or 
 [Start](#start) · [What needs my attention today?](#project-status) · [Delegate and review](#review) · [Pick up in a new chat](#resume) · [Revise an earlier result](#revise) · [Find a recorded next step](#follow-up) · [Child Works and isolated folders](#child-works)
 
 ```mermaid
-flowchart LR
-    A["Say what you<br/>want to do"] --> B["Agent proposes<br/>a plan"]
-    B --> C{"Approve scope"}
-    C -->|approve| D["Work and checks"]
-    D --> E["Submit for review"]
-    E --> F{"Review result"}
-    F -->|accept| G["Accepted"]
-    F -->|ask for changes| D
-    G -.->|revise later| D
+flowchart TD
+    A["Describe the work<br/>Agent proposes scope and checks"] --> B{"You approve<br/>each scope"}
+    B -->|"One Work or one at a time"| C["Current chat<br/>Edit, check and revise"]
+    C --> D["Submit for review"]
+    D --> E{"You review<br/>the submission"}
+    E -->|ask for changes| C
+    E -->|accept| F["Accepted"]
+    B -->|"Two independent Works at once"| G["Coordinator<br/>assigns separate workers"]
+    G --> H["Workers edit and check<br/>Coordinator collects submissions"]
+    H --> I{"You review results<br/>Individually or as a group"}
+    H -->|stop condition| J["Coordinator reports which Work needs your decision"]
+    I -->|request changes| K["Revise the affected Work and recheck"]
+    K --> I
+    I -->|"accept individually or accept the whole group"| F
 ```
 
-The two diamonds are your decisions. Approving the scope entrusts the work; accepting is a decision about the submission you just read.
+**One Work or several in order.** Stay in the current chat. Once you approve the scope, the agent in that chat can edit, check and revise within it. You can ask it to work through several Works one at a time, each under its own approval. Review each submission and accept that version or ask for changes.
+
+**Two independent Works at once.** On macOS and native Windows 11 x64, the coordinator can start up to two workers at a time. Ask the agent in your current chat to assign each Work to a worker in a separate working folder. Review and approve both scopes before the workers start. Give each worker a separate set of files. If a stop condition applies, ask the coordinator to tell you which Work needs a decision and why. You can review submissions individually. If you [review them as a group](#grouped-acceptance), you decide whether to accept and apply the entire set after the required checks pass.
+
+Decide when you want to check in with the agent. For human in the loop (HITL), ask it to wait for you at agreed stages. For human on the loop (HOTL), approve the scope, checks and stop conditions, and ask it to continue within those limits until a stop condition or final review. Both approaches apply to one Work or parallel Works. The scope approval and the decision about the exact submission stay with you.
 
 <a id="start" name="start"></a>
 
@@ -125,6 +134,27 @@ You can pick up a coding task the same way.
 
 The agent can compare current files with the accepted submission and show which checks passed, failed, or could not be run. If a check was never recorded, the agent can tell you that.
 
+<a id="resume-approved-work" name="resume-approved-work"></a>
+
+### Example · Resume approved Works
+
+**Approve both scopes up front.** Split CSV generation and a download button into two Works that change different files. Agree on the CSV columns and totals, and how the button receives the CSV. Approve each Work's files, checks, exclusions and stop conditions. If you plan to review and apply them as a group, agree on the check for the combined result and meet the [group's workspace and check requirements](#grouped-acceptance).
+
+**Pick up both Works in a new chat.** Ask “Check the recorded approvals, follow the project README’s links to the team records, and check for later instructions. Continue each Work that can proceed and collect the results for review.” When the goal, files, checks and exclusions still apply, the agent can use the existing approvals. Agree on any new scope before work proceeds, and keep the checkpoints you agreed to.
+
+**Find which Work a later hold applies to.** The following example uses separate working folders and Works outside a group. If only the CSV Work was approved, the button's start decision is still open. If both were approved, suppose a later team decision replaces the earlier one and puts button item `EL-27` on hold until its label and placement are decided. The project may also have an older button Work with the same title and a different approved file.
+
+- **The team record identifies the file.** If it links `EL-27` to `ui/button-b.md`, match the file to its approved Work and apply the hold to that Work. Leave any other same-title Work untouched while its relation to the decision is unconfirmed.
+- **The team record leaves the target unclear.** If two button Works could match, ask “Which approved file does EL-27 refer to?” once. Leave both candidates untouched while you wait and explain that the hold's target is still unconfirmed.
+
+The CSV Work can continue when you ask the agent to proceed, provided its approved scope and contract still apply and it can be checked independently. If you only ask what to do next, the agent can describe the CSV's next step and the button decision still needed.
+
+Colvia can still show an unstarted Work as approved after a hold instruction in the team records. Make sure the next chat sees that instruction. The [pause and resume procedure](#work-lifecycle) applies to active work or to a submission awaiting review. Before starting the held button Work later, confirm that the hold has been lifted and that its scope still applies. Approve any change in scope before editing.
+
+**Review the two submissions and the group check.** When both Works have submissions in the group, use `group check` on those versions and review the output with both exact submissions. For example, check that the button passes the expected CSV contents to the save handler. You decide whether to accept and apply the two results together. If a required check failed or could not run, leave that decision open. When only the CSV has a submission, review its individual checks. Wait for the button submission before running the combined check.
+
+The example of continuing one Work under a later hold covers separate Works. If a hold affects a member of an existing group, keep joint acceptance open and follow the [group review and dissolution rules](#grouped-acceptance) before switching to individual decisions.
+
 <a id="revise" name="revise"></a>
 
 ## Revise an earlier result
@@ -218,7 +248,7 @@ Open that folder yourself in Claude Code and paste the request into a new chat. 
 
 ### Accept and apply 2–8 submissions together
 
-When you have two or three independent tasks, ask the agent to keep their plans and final review together. For example: “Split the CSV server and download button between two agents. Let me review the results and their integration checks, then accept and apply them together.” Grouped acceptance of 2–8 submissions is available on macOS and native Windows 11 x64. On Windows 11 ARM64, use [individual Work](#start).
+When you have two or three independent tasks, you can choose to keep their plans and final review together, including when you run the Works in parallel. For example: “Split the CSV server and download button between two agents. Let me review the results and their integration checks, then accept and apply them together.” Grouped acceptance of 2–8 submissions is available on macOS and native Windows 11 x64. On Windows 11 ARM64, use [individual Work](#start).
 
 Use a separate registered working folder per Work and a separate destination in the same Git repository. At the start, the observed file paths and contents, file modes where supported, and Git observation settings must match across the folders. The tasks must change different regular files. Nested groups and overlapping changes need a different plan.
 

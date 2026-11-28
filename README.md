@@ -32,7 +32,7 @@ You don’t need to know how to code to get started. Once Colvia is installed, y
 <picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/workflow-en-dark.png"><img src="manual/assets/gallery/workflow-en-light.png" width="760" alt="You approve the scope and review the submitted version. Colvia stops submission if tracked changes exceed the scope. It keeps the approved scope, submitted version and your decision."></picture>
 </p>
 
-First, read the plan your agent proposes and decide **what it can change**. When the result is ready, review the submission and its checks, then **accept that version** or ask the agent for changes. Colvia keeps the plan, approvals, submissions and review decisions together in one recorded task, called a Work.
+For one Work, ask the agent in your current chat. First, read the plan it proposes and decide **what it can change**. When the result is ready, review the submission and its checks, then **accept that version** or ask the agent for changes. Colvia keeps the plan, approvals, submissions and review decisions together in one recorded task, called a Work.
 
 ## Install and start your first task
 
@@ -164,7 +164,18 @@ You still decide when to start the work. If the reviewer reopens the accepted pr
 
 ## Break larger tasks into smaller pieces
 
-When a large task has two or three parts that can change different files independently, try saying, “Run the parts that can be done independently in parallel.” For example, when building a quote screen, you can assign server-side CSV generation and the screen’s CSV download feature separately. The coordinating agent proposes each Work’s file scope and how to check the combined result. Use separate registered working folders and a separate destination in the same Git repository, with matching starting files and Git settings.
+**Choose whether the work needs to run at the same time.** For one Work, your current chat is enough. Within the approved scope, your agent can edit, run checks and revise the result. If you have several Works to do in order, ask the same agent to take them one at a time, using the approved scope for each.
+
+```mermaid
+flowchart TD
+    A{"Run in parallel?"}
+    A -->|"One Work, or several in order"| B["Current chat: edit, check and revise"]
+    A -->|"Two independent Works at once"| C["Coordinator assigns separate workers"]
+```
+
+To run two independent Works at once, ask “Run the CSV generation and download button in parallel.” Ask the agent in your current chat to propose two scopes with no overlapping files. Review and approve both scopes before the coordinator starts a worker in each separate working folder. To review and apply the two results as a group, use separate registered working folders and a separate destination in the same Git repository, with matching starting files and Git settings.
+
+**Choose when to check in.** With human in the loop (HITL), the agent waits for you at the stages you agree to. With human on the loop (HOTL), approve the file scope, checks and stop conditions up front, then let the agent continue within those limits until a stop condition or final review. You can choose either approach for one Work or for parallel Works. In a new chat, ask the agent to check later instructions and reuse the approval for each Work whose goal, files, checks and exclusions still apply. Approve a changed scope before that Work continues. Review the exact submissions and check results before deciding whether to accept and apply them. [Example: resume approved Works](manual/en/work.md#resume-approved-work)
 
 On macOS, a coordinator in Claude Code CLI or Codex CLI starts workers from the same CLI in separate, restricted folders and collects their submissions. To start workers, you need to be signed in to the CLI. You may also be asked to approve tool use. In the workflow we verified, one coordinator runs **up to two worker sessions at a time**. The coordinator has a separate session and does not count toward the two workers. For three tasks, it starts two and starts the third after collecting one result.
 
@@ -178,7 +189,7 @@ On macOS and Windows 11 x64, you can accept and apply 2–8 submissions together
 <picture><source media="(prefers-color-scheme: dark)" srcset="manual/assets/gallery/parallel-en-dark.png"><img src="manual/assets/gallery/parallel-en-light.png" width="912" alt="macOS CLI workflow. Describe the goal and approve the proposed split. One coordinator runs up to two worker sessions at a time in separate folders. Review 2–8 submissions and the integration checks, then accept and apply them to the original folder in one decision."></picture>
 </p>
 
-The diagram shows the macOS CLI workflow, where the coordinator starts the workers.
+This diagram shows the parallel macOS CLI path and a grouped review. For one Work, use the flow above with the agent in your current chat.
 
 Before first using the 2–8-member format, keep a new verified record backup and preserve working files separately, even if you used two-member groups before. Older versions, including those supporting only two-member groups, cannot open the upgraded project or later backups. [Accept and apply 2–8 submissions together](manual/en/work.md#grouped-acceptance)
 
